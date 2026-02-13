@@ -1,0 +1,475 @@
+/* ======================================================
+   ROOT / VARIABLES (optional but recommended)
+   ====================================================== */
+:root {
+    --ats-primary: #2e359e;
+    --ats-accent: #4f46e5;
+    --ats-text: #111827;
+    --ats-muted: #6b7280;
+    --ats-border: #e5e7eb;
+    --ats-bg-soft: #f8fafc;
+    --ats-white: #ffffff;
+}
+
+/* ======================================================
+   AUTH / LOGIN STYLES
+   ====================================================== */
+.login-wrapper {
+    min-height: 100vh;
+    background-color: #80abcb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: #ffffff;
+    width: 360px;
+    padding: 32px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(46, 53, 158, 0.25);
+}
+
+.login-card h1 {
+    color: #2e359e;
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+    color: var(--ats-muted);
+}
+
+.form-group input {
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--ats-border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--ats-accent);
+}
+
+.form-actions {
+    margin-top: 1.5rem;
+}
+
+.form-center {
+    display: flex;
+    justify-content: center;
+}
+
+.aws-logo {
+    display: block;
+    margin: 0 auto 16px;
+    max-width: 120px;
+}
+
+.auth-success {
+    color: #16a34a;
+    text-align: center;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+/* ======================================================
+   APP SHELL
+   ====================================================== */
+.app-shell {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* ======================================================
+   SIDEBAR (OVERLAY – DOES NOT PUSH CONTENT)
+   ====================================================== */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 240px;
+    background: linear-gradient(180deg, #0f172a, #020617);
+    color: #ffffff;
+    z-index: 50;
+
+    display: flex;
+    flex-direction: column;
+    transition: width 0.25s ease;
+}
+
+.sidebar.collapsed {
+    width: 64px;
+}
+
+.sidebar.collapsed ~ .app-main {
+    margin-left: 64px;
+}
+
+/* ======================================================
+   SIDEBAR HEADER
+   ====================================================== */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 56px;
+    padding: 0 0.75rem;
+}
+
+.sidebar-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.sidebar-toggle {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ======================================================
+   SIDEBAR NAV
+   ====================================================== */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    padding: 0.55rem 0.75rem;
+    border-radius: 6px;
+
+    color: #cbd5f5;
+    text-decoration: none;
+    font-size: 0.85rem;
+
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.sidebar-link.active {
+    background: rgba(99, 102, 241, 0.25);
+    color: #ffffff;
+}
+
+/* ======================================================
+   MAIN APP AREA
+   ====================================================== */
+.app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    margin-left: 240px; /* push content beside sidebar */
+    transition: margin-left 0.25s ease;
+}
+/* =========================
+   APP HEADER
+   ========================= */
+.header {
+    height: 56px;
+    background: #2f3ba5; /* ATS blue */
+    color: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 1.25rem;
+    box-sizing: border-box;
+
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+/* =========================
+   HEADER TITLE
+   ========================= */
+.header-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin: 0;
+    white-space: nowrap;
+}
+
+/* =========================
+   USER AREA
+   ========================= */
+.header-user {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* =========================
+   USER BUTTON
+   ========================= */
+.user-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 0.25rem;
+
+    display: flex;
+    align-items: center;
+}
+
+/* =========================
+   DROPDOWN MENU
+   ========================= */
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+
+    background: #ffffff;
+    color: #1f2937;
+    min-width: 180px;
+
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    z-index: 50;
+}
+
+/* =========================
+   DROPDOWN CONTENT
+   ========================= */
+.user-name {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dropdown-link {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    background: none;
+    border: none;
+    text-align: left;
+
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: inherit;
+}
+
+.dropdown-link:hover {
+    background: #f3f4f6;
+}
+
+.dropdown-link.danger {
+    color: #dc2626;
+}
+
+
+
+/* ======================================================
+   MAIN CONTENT
+   ====================================================== */
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+
+    padding: 1.5rem;
+    background: var(--ats-bg-soft);
+}
+
+/* ======================================================
+   PAGE HEADER
+   ====================================================== */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.page-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--ats-text);
+}
+
+/* ======================================================
+   BUTTONS
+   ====================================================== */
+.btn-primary {
+    background: var(--ats-primary);
+    color: #ffffff;
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background: var(--ats-accent);
+}
+
+/* ======================================================
+   CARD
+   ====================================================== */
+.card {
+    padding: 1.25rem;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ======================================================
+   TABLE WRAPPER
+   ====================================================== */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--ats-border);
+    background: #ffffff;
+}
+
+/* ======================================================
+   TABLE BASE
+   ====================================================== */
+.ats-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.85rem;
+    color: #374151;
+    min-width: 1200px;
+}
+
+/* ======================================================
+   TABLE HEADER
+   ====================================================== */
+.ats-table thead th {
+    position: sticky;
+    top: 0;
+    background: #f9fafb;
+    font-weight: 600;
+    color: #111827;
+    text-align: left;
+
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--ats-border);
+    white-space: nowrap;
+}
+
+/* ======================================================
+   TABLE BODY
+   ====================================================== */
+.ats-table tbody td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.ats-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.ats-table tbody tr:hover {
+    background: #eef2ff;
+}
+
+/* ======================================================
+   TABLE UTILITIES
+   ====================================================== */
+.table-link {
+    color: var(--ats-accent);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.table-link:hover {
+    text-decoration: underline;
+}
+
+.actions-col {
+    width: 120px;
+}
+
+/* ======================================================
+   EMPTY STATE
+   ====================================================== */
+.empty-state {
+    text-align: center;
+    padding: 1.25rem;
+    font-style: italic;
+    color: var(--ats-muted);
+}
+
+/* ======================================================
+   TRACKER SECTIONS
+   ====================================================== */
+.tracker-section {
+    margin-bottom: 2rem;
+}
+
+.tracker-section strong {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+/* ======================================================
+   SCROLLBAR (OPTIONAL POLISH)
+   ====================================================== */
+.table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #c7d2fe;
+    border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+/* ======================================================
+   MOBILE SAFETY
+   ====================================================== */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 64px;
+    }
+}
