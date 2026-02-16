@@ -9,6 +9,7 @@ namespace App\Models {
      * @property string|null $create_time
      * @property mixed $updated_by
      * @property mixed $created_by
+     * @property bool $active_status
      * @property string $permissions
      * @property string $position
      * @property string $password
@@ -31,6 +32,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePassword($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePosition($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePermissions($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereActiveStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereUpdatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCreateTime($value)

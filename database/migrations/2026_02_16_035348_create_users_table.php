@@ -21,6 +21,10 @@ return new class extends Migration
             $table->string('password'); // keep string type
             $table->string('position', 80);
             $table->string('permissions', 1024);
+
+            // NEW COLUMN: Active status
+            $table->tinyInteger('active_status')->default(1)->comment('1-Active, 0-Inactive');
+
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->dateTime('create_time')->nullable();
