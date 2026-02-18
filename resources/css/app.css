@@ -170,3 +170,151 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* =========================
+   PAGE LAYOUT
+   ========================= */
+.page-content {
+  max-width: 1175px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ats-primary);
+}
+
+/* =========================
+   BUTTONS
+   ========================= */
+.btn-primary {
+  background: var(--ats-primary);
+  color: #ffffff;
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: var(--ats-accent);
+}
+
+/* =========================
+   CARD
+   ========================= */
+.card {
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* =========================
+   TABLE WRAPPER
+   ========================= */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+/* =========================
+   TABLE BASE
+   ========================= */
+.ats-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+/* Only wide tables scroll */
+.ats-table.wide {
+  min-width: 1600px;
+}
+
+/* =========================
+   TABLE HEADER
+   ========================= */
+.ats-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f9fafb;
+  color: #111827;
+  font-weight: 600;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+/* =========================
+   TABLE BODY
+   ========================= */
+.ats-table tbody td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.ats-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.ats-table tbody tr:hover {
+  background: #eef2ff;
+}
+
+/* =========================
+   TABLE UTILITIES
+   ========================= */
+.actions-col {
+  width: 120px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 1.25rem;
+  font-style: italic;
+  color: var(--ats-muted);
+}
+
+.table-link {
+  color: var(--ats-accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.table-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================
+   TRACKER SECTIONS
+   ========================= */
+.tracker-section {
+  margin-bottom: 2rem;
+}
+
+.tracker-section strong {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
