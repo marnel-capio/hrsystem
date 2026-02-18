@@ -1,0 +1,127 @@
+/* =========================
+   AUTH LAYOUT
+   ========================= */
+.login-wrapper {
+  min-height: 100vh;
+  background-color: #80ABCB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   AUTH CARD
+   ========================= */
+.login-card {
+  background: #ffffff;
+  width: 360px;
+  padding: 32px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(46, 53, 158, 0.25);
+}
+
+.create-user-card {
+  width: 100%;
+  max-width: 520px;
+}
+
+/* =========================
+   AUTH HEADINGS
+   ========================= */
+.login-card h1 {
+  color: #2E359E;
+  text-align: center;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+/* =========================
+   FORMS
+   ========================= */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  color: var(--ats-muted);
+}
+
+.form-group input {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--ats-border);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--ats-accent);
+  box-shadow: 0 0 0 2px rgba(46, 53, 158, 0.2);
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+}
+
+.form-center {
+  display: flex;
+  justify-content: center;
+}
+
+/* =========================
+   BUTTONS (AUTH ONLY)
+   ========================= */
+button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #2E359E;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================
+   LINKS & MESSAGES
+   ========================= */
+.forgot {
+  display: block;
+  margin-top: 14px;
+  text-align: center;
+  color: #1C7BA5;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.forgot:hover {
+  text-decoration: underline;
+}
+
+.error {
+  font-size: 12px;
+  color: #1C7BA5;
+}
+
+.auth-success {
+  color: var(--aws-success);
+  text-align: center;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.aws-logo {
+  display: block;
+  margin: 0 auto 16px;
+  max-width: 120px;
+}

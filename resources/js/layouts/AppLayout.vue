@@ -1,18 +1,44 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
-import type { BreadcrumbItem } from '@/types';
-
-type Props = {
-    breadcrumbs?: BreadcrumbItem[];
-};
-
-withDefaults(defineProps<Props>(), {
-    breadcrumbs: () => [],
-});
+import AppSidebar from '@/components/AppSidebar.vue'
+import AppHeader from '@/components/AppHeader.vue'
+import AppFooter from '@/components/AppFooter.vue'
+import '../../css/ats.css'
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
+  <div class="app-shell">
+    <AppSidebar />
+
+    <div class="app-main">
+      <AppHeader />
+
+      <main class="main-content">
         <slot />
-    </AppLayout>
+      </main>
+
+      <AppFooter />
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.app-shell {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;      /* 🔑 THIS LINE FIXES THE OVERFLOW */
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+}
+</style>
