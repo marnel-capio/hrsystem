@@ -1,8 +1,25 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3'
-//import awsLogo from '@/images/aws-logo.jpg'
+import { ref, watch } from 'vue'
+import { useForm, router } from '@inertiajs/vue3'
+import awsLogo from '@/images/aws-logo.jpg'
 
-// Inertia form: fields match your users table
+// ✅ Get props from Inertia
+const props = defineProps<{
+  status?: string
+}>()
+
+// Store status in a local reactive ref
+const statusMessage = ref<string | null>(props.status || null)
+
+// Optional: watch for changes in props (usually not needed unless status updates dynamically)
+watch(
+  () => props.status,
+  (newVal) => {
+    if (newVal) statusMessage.value = newVal
+  }
+)
+
+// Inertia form
 const form = useForm({
   email_address: '',
   password: '',
@@ -12,10 +29,9 @@ const form = useForm({
 const submit = () => {
   form.post('/login', {
     preserveScroll: true,
-    // Let Inertia automatically follow the server redirect
     onSuccess: () => {
-      form.reset('password') // clear password after login
-      // No need to manually redirect, Inertia follows redirect from backend
+      form.reset('password')
+      router.visit('/dashboard')
     },
     onError: (errors) => {
       console.log('Login errors:', errors)
@@ -27,13 +43,18 @@ const submit = () => {
 <template>
   <div class="login-wrapper">
     <div class="login-card">
-      <!-- Logo -->
-      <!-- <img :src="awsLogo" alt="AWS Logo" class="aws-logo" /> -->
+      <img :src="awsLogo" alt="AWS Logo" class="aws-logo" />
       <h1>HR System</h1>
 
-      <!-- Login form -->
+      <!-- Status message -->
+      <div
+        v-if="statusMessage"
+        class="mb-4 text-center text-sm font-medium text-green-600"
+      >
+        {{ statusMessage }}
+      </div>
+
       <form @submit.prevent="submit">
-        <!-- Email input -->
         <div class="form-group">
           <label>Email</label>
           <input
@@ -48,7 +69,6 @@ const submit = () => {
           </span>
         </div>
 
-        <!-- Password input -->
         <div class="form-group">
           <label>Password</label>
           <input
@@ -62,15 +82,11 @@ const submit = () => {
           </span>
         </div>
 
-        <!-- Submit button -->
         <button type="submit" :disabled="form.processing">
           {{ form.processing ? 'Signing in…' : 'Sign In' }}
         </button>
 
-        <!-- Forgot password link -->
-        <a href="/forgot-password" class="forgot">
-          Forgot your password?
-        </a>
+        <a href="/forgot-password" class="forgot">Forgot your password?</a>
       </form>
     </div>
   </div>

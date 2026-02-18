@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Logs;
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -25,20 +27,30 @@ class AuthController extends Controller
         ]);
 
         // Attempt login
-        if (!Auth::validate($credentials)) {
+        if (!Auth::attempt($credentials)) {
             return back()->withErrors([
                 'email_address' => 'Invalid credentials.',
             ]);
         }
         $user = Auth::getProvider()->retrieveByCredentials($credentials);
-        \Log::debug($user);
+        Log::debug($user);
         Auth::login($user);
+        $request->session()->regenerate();
 
-        // Optional: log login
-        // Log::create([...]);
+        // Log the activity
+        $user = Auth::user();
+        Logs::create([
+            'module'     => 'Users',
+            'activity'   => "{$user->first_name} {$user->last_name} logged in successfully",
+            'ip_address' => $request->ip(),
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+            'create_time'=> now(),
+            'update_time'=> now(),
+        ]);
 
         // ✅ Redirect to HRDashboard.vue
-        return redirect()->intended();
+        return redirect()->route('dashboard');
     }
 
     // Logout

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AuthController::showLogin
-* @see app/Http/Controllers/AuthController.php:13
+* @see app/Http/Controllers/AuthController.php:15
 * @route '/login'
 */
 export const showLogin = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ showLogin.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::showLogin
-* @see app/Http/Controllers/AuthController.php:13
+* @see app/Http/Controllers/AuthController.php:15
 * @route '/login'
 */
 showLogin.url = (options?: RouteQueryOptions) => {
@@ -29,7 +29,7 @@ showLogin.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::showLogin
-* @see app/Http/Controllers/AuthController.php:13
+* @see app/Http/Controllers/AuthController.php:15
 * @route '/login'
 */
 showLogin.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -39,7 +39,7 @@ showLogin.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuthController::showLogin
-* @see app/Http/Controllers/AuthController.php:13
+* @see app/Http/Controllers/AuthController.php:15
 * @route '/login'
 */
 showLogin.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -49,7 +49,7 @@ showLogin.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuthController::showLogin
-* @see app/Http/Controllers/AuthController.php:13
+* @see app/Http/Controllers/AuthController.php:15
 * @route '/login'
 */
 const showLoginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -59,7 +59,7 @@ const showLoginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\AuthController::showLogin
-* @see app/Http/Controllers/AuthController.php:13
+* @see app/Http/Controllers/AuthController.php:15
 * @route '/login'
 */
 showLoginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -69,7 +69,7 @@ showLoginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\AuthController::showLogin
-* @see app/Http/Controllers/AuthController.php:13
+* @see app/Http/Controllers/AuthController.php:15
 * @route '/login'
 */
 showLoginForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -86,7 +86,7 @@ showLogin.form = showLoginForm
 
 /**
 * @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:19
+* @see app/Http/Controllers/AuthController.php:21
 * @route '/login'
 */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -101,7 +101,7 @@ login.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:19
+* @see app/Http/Controllers/AuthController.php:21
 * @route '/login'
 */
 login.url = (options?: RouteQueryOptions) => {
@@ -114,7 +114,7 @@ login.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:19
+* @see app/Http/Controllers/AuthController.php:21
 * @route '/login'
 */
 login.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -124,7 +124,7 @@ login.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:19
+* @see app/Http/Controllers/AuthController.php:21
 * @route '/login'
 */
 const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -134,7 +134,7 @@ const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:19
+* @see app/Http/Controllers/AuthController.php:21
 * @route '/login'
 */
 loginForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -146,7 +146,7 @@ login.form = loginForm
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
-* @see app/Http/Controllers/AuthController.php:45
+* @see app/Http/Controllers/AuthController.php:57
 * @route '/logout'
 */
 export const logout = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -161,7 +161,7 @@ logout.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
-* @see app/Http/Controllers/AuthController.php:45
+* @see app/Http/Controllers/AuthController.php:57
 * @route '/logout'
 */
 logout.url = (options?: RouteQueryOptions) => {
@@ -174,7 +174,7 @@ logout.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
-* @see app/Http/Controllers/AuthController.php:45
+* @see app/Http/Controllers/AuthController.php:57
 * @route '/logout'
 */
 logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -184,7 +184,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
-* @see app/Http/Controllers/AuthController.php:45
+* @see app/Http/Controllers/AuthController.php:57
 * @route '/logout'
 */
 const logoutForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -194,7 +194,7 @@ const logoutForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
-* @see app/Http/Controllers/AuthController.php:45
+* @see app/Http/Controllers/AuthController.php:57
 * @route '/logout'
 */
 logoutForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
