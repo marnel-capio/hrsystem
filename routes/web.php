@@ -4,11 +4,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 
-// Home / HR Dashboard
-Route::get('/', function () {
-    return Inertia::render('HRDashboard'); // resources/js/pages/HRDashboard.vue
-})->middleware('auth')->name('dashboard'); // protect with auth
+
 
 // Login page
 Route::get('/login', [AuthController::class, 'showLogin'])
@@ -23,6 +21,10 @@ Route::post('/login', [AuthController::class, 'login'])
 Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout')
     ->middleware('auth');
+
+Route::middleware(['web', 'auth'])->group(function(){
+    Route::get('/', [DashboardController::class, 'index']);
+});
 
 // Include other routes
 require __DIR__.'/settings.php';

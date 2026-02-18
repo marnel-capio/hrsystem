@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Log;
 use Illuminate\Http\Request;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -16,7 +16,7 @@ class AuthController extends Controller
     }
 
     // Handle login submission
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
         // Validate
         $credentials = $request->validate([
@@ -25,20 +25,20 @@ class AuthController extends Controller
         ]);
 
         // Attempt login
-        if (!Auth::attempt($credentials)) {
+        if (!Auth::validate($credentials)) {
             return back()->withErrors([
                 'email_address' => 'Invalid credentials.',
             ]);
         }
-
-        // Regenerate session
-        $request->session()->regenerate();
+        $user = Auth::getProvider()->retrieveByCredentials($credentials);
+        \Log::debug($user);
+        Auth::login($user);
 
         // Optional: log login
         // Log::create([...]);
 
         // ✅ Redirect to HRDashboard.vue
-        return redirect('/'); // your dashboard route
+        return redirect()->intended();
     }
 
     // Logout
