@@ -12,7 +12,6 @@ namespace App\Models {
      * @property bool $active_status
      * @property string $permissions
      * @property string $position
-     * @property string $password
      * @property string $email_address
      * @property string $contact_no
      * @property string $address
@@ -20,6 +19,7 @@ namespace App\Models {
      * @property string $first_name
      * @property string $last_name
      * @property int $id
+     * @property-read mixed $password
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
      * @property-read int|null $notifications_count
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereId($value)
@@ -29,7 +29,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereContactNo($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereEmailAddress($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePassword($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePosition($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePermissions($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereActiveStatus($value)
