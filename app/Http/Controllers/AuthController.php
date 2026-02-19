@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
 use App\Models\Logs;
 use Illuminate\Http\Request;
-use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class AuthController extends Controller
 {
@@ -23,15 +23,27 @@ class AuthController extends Controller
         // Validate
         $credentials = $request->validate([
             'email_address' => ['required', 'email'],
-            'password'      => ['required'],
+            'password' => ['required'],
         ]);
 
         // Attempt login
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             return back()->withErrors([
                 'email_address' => 'Invalid credentials.',
             ]);
         }
+
+        // Active user checker
+        $user = Auth::user();
+
+        if ($user->active_status != 1) {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email_address' => 'Your account is no longer active. Please check it with your manager or admin.',
+            ]);
+        }
+
         $user = Auth::getProvider()->retrieveByCredentials($credentials);
         Log::debug($user);
         Auth::login($user);
@@ -40,13 +52,13 @@ class AuthController extends Controller
         // Log the activity
         $user = Auth::user();
         Logs::create([
-            'module'     => 'Users',
-            'activity'   => "{$user->first_name} {$user->last_name} logged in successfully",
+            'module' => 'Users',
+            'activity' => "{$user->first_name} {$user->last_name} logged in successfully",
             'ip_address' => $request->ip(),
             'created_by' => $user->id,
             'updated_by' => $user->id,
-            'create_time'=> now(),
-            'update_time'=> now(),
+            'create_time' => now(),
+            'update_time' => now(),
         ]);
 
         // ✅ Redirect to HRDashboard.vue

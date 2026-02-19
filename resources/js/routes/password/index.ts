@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import confirmD7e05f from './confirm'
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::request
-* @see app/Http/Controllers/ForgotPasswordController.php:23
+* @see app/Http/Controllers/ForgotPasswordController.php:16
 * @route '/forgot-password'
 */
 export const request = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ request.definition = {
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::request
-* @see app/Http/Controllers/ForgotPasswordController.php:23
+* @see app/Http/Controllers/ForgotPasswordController.php:16
 * @route '/forgot-password'
 */
 request.url = (options?: RouteQueryOptions) => {
@@ -30,7 +30,7 @@ request.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::request
-* @see app/Http/Controllers/ForgotPasswordController.php:23
+* @see app/Http/Controllers/ForgotPasswordController.php:16
 * @route '/forgot-password'
 */
 request.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -40,7 +40,7 @@ request.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::request
-* @see app/Http/Controllers/ForgotPasswordController.php:23
+* @see app/Http/Controllers/ForgotPasswordController.php:16
 * @route '/forgot-password'
 */
 request.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -50,7 +50,7 @@ request.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::request
-* @see app/Http/Controllers/ForgotPasswordController.php:23
+* @see app/Http/Controllers/ForgotPasswordController.php:16
 * @route '/forgot-password'
 */
 const requestForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -60,7 +60,7 @@ const requestForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::request
-* @see app/Http/Controllers/ForgotPasswordController.php:23
+* @see app/Http/Controllers/ForgotPasswordController.php:16
 * @route '/forgot-password'
 */
 requestForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -70,7 +70,7 @@ requestForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::request
-* @see app/Http/Controllers/ForgotPasswordController.php:23
+* @see app/Http/Controllers/ForgotPasswordController.php:16
 * @route '/forgot-password'
 */
 requestForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -188,7 +188,7 @@ reset.form = resetForm
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::email
-* @see app/Http/Controllers/ForgotPasswordController.php:29
+* @see app/Http/Controllers/ForgotPasswordController.php:21
 * @route '/forgot-password'
 */
 export const email = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -203,7 +203,7 @@ email.definition = {
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::email
-* @see app/Http/Controllers/ForgotPasswordController.php:29
+* @see app/Http/Controllers/ForgotPasswordController.php:21
 * @route '/forgot-password'
 */
 email.url = (options?: RouteQueryOptions) => {
@@ -216,7 +216,7 @@ email.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::email
-* @see app/Http/Controllers/ForgotPasswordController.php:29
+* @see app/Http/Controllers/ForgotPasswordController.php:21
 * @route '/forgot-password'
 */
 email.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -226,7 +226,7 @@ email.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::email
-* @see app/Http/Controllers/ForgotPasswordController.php:29
+* @see app/Http/Controllers/ForgotPasswordController.php:21
 * @route '/forgot-password'
 */
 const emailForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -236,7 +236,7 @@ const emailForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\ForgotPasswordController::email
-* @see app/Http/Controllers/ForgotPasswordController.php:29
+* @see app/Http/Controllers/ForgotPasswordController.php:21
 * @route '/forgot-password'
 */
 emailForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
