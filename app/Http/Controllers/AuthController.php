@@ -28,6 +28,18 @@ class AuthController extends Controller
 
         // Attempt login
         if (! Auth::attempt($credentials)) {
+
+            //  Log failed login attempt
+            Logs::create([
+                'module' => 'Users',
+                'activity' => "A person using this email address {$request->email_address} failed to log in.",
+                'ip_address' => $request->ip(),
+                'created_by' => null,
+                'updated_by' => null,
+                'create_time' => now(),
+                'update_time' => now(),
+            ]);
+
             return back()->withErrors([
                 'email_address' => 'Invalid credentials.',
             ]);
@@ -38,6 +50,16 @@ class AuthController extends Controller
 
         if ($user->active_status != 1) {
             Auth::logout();
+
+            Logs::create([
+                'module' => 'Users',
+                'activity' => "A person using this email address {$request->email_address} failed to log in.",
+                'ip_address' => $request->ip(),
+                'created_by' => null,
+                'updated_by' => null,
+                'create_time' => now(),
+                'update_time' => now(),
+            ]);
 
             return back()->withErrors([
                 'email_address' => 'Your account is no longer active. Please check it with your manager or admin.',

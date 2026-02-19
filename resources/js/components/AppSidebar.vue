@@ -11,6 +11,9 @@ import {
     Menu
 } from 'lucide-vue-next'
 
+// 🔹 Import constants
+import { MENU_PERMISSIONS, DISABLED_LINKS } from '@/constants'
+
 // 🔹 Current page
 const page = usePage()
 const current = page.url
@@ -34,37 +37,14 @@ function closeApplicationTracker() { showApplicationTracker.value = false }
 // 🔹 User permission number
 const userPermission: number = Number(page.props.auth.user.permissions)
 
-// 🔹 Menu permissions
-const menuPermissions: Record<string, readonly number[]> = {
-    '/user': [1],
-    '/application-tracker': [1, 2, 3, 5, 6],
-    '/action': [1, 2, 3, 5, 6],
-    '/action/batches': [1, 2, 3],
-    '/action/schedules': [1, 2, 3],
-    '/action/applicants': [1, 2, 3, 5, 6],
-    '/action/applications': [1, 2, 3, 5, 6],
-    '/intermediate': [1, 2, 3, 5, 6],
-    '/intermediate/projects': [1, 5],
-    '/intermediate/requests': [1, 5],
-    '/intermediate/applicants': [1, 2, 3, 5, 6],
-    '/intermediate/applications': [1, 2, 3, 5, 6],
-}
-
-// 🔹 Routes that are **visible but disabled for certain permissions**
-const disabledLinks: Record<string, number[]> = {
-    '/application-tracker': [6],
-    '/action': [5, 6],
-    '/intermediate': [6],
-
-}
-
 // 🔹 Helpers
-function canAccess(path: string) { return menuPermissions[path]?.includes(userPermission) }
-function isDisabled(path: string) { return disabledLinks[path]?.includes(userPermission) }
+function canAccess(path: string) { return MENU_PERMISSIONS[path]?.includes(userPermission) }
+function isDisabled(path: string) { return DISABLED_LINKS[path]?.includes(userPermission) }
 function isActive(path: string) { return current === path }
 function isActiveStartsWith(path: string) { return current.startsWith(path) }
 
 </script>
+
 
 <template>
     <aside :class="['sidebar', { collapsed }]">

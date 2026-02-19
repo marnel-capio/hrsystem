@@ -3,14 +3,12 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
+use App\Models\Logs;
 
 class AWSEmailAddress implements Rule
 {
-    /**
-     * Create a new rule instance.
-     *
-     * @return void
-     */
+    private $value; // store value for logging
+
     public function __construct()
     {
         //
@@ -24,9 +22,26 @@ class AWSEmailAddress implements Rule
      * @return bool
      */
     public function passes($attribute, $value)
-    {   
-        $offset = strpos($value, '@') === FALSE ? -11 : strpos($value, '@') + 1;
-        return substr($value, $offset) === 'awsys-i.com';
+    {
+        $this->value = $value; // save for logging
+
+        $offset = strpos($value, '@') === false ? -11 : strpos($value, '@') + 1;
+        $domain = substr($value, $offset);
+
+        // If domain is wrong, log it
+        if ($domain !== 'awsys-i.com') {
+            Logs::create([
+                'module' => 'Users',
+                'activity' => "A person using this email address {$value} failed to log in.",
+                'ip_address' => request()->ip(),
+                'created_by' => null,
+                'updated_by' => null,
+                'create_time' => now(),
+                'update_time' => now(),
+            ]);
+        }
+
+        return $domain === 'awsys-i.com';
     }
 
     /**

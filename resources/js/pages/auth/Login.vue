@@ -27,6 +27,7 @@ const form = useForm({
 
 // Submit login
 const submit = () => {
+  form.clearErrors()
   form.post('/login', {
     preserveScroll: true,
     onSuccess: () => {
