@@ -16,7 +16,7 @@ const props = defineProps<{
     batch_name: string;
     target_trainees: number;
     deployment_date: string;
-    location: string;
+    target_location: string;
   }>;
 }>();
 
@@ -92,7 +92,7 @@ function formatDeploymentDate(dateStr: string) {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search by Training Type, Deployment, or Location"
+            placeholder="Search by Batch Name, Deployment, or Location"
             class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700"
           />
         </div>
@@ -102,7 +102,7 @@ function formatDeploymentDate(dateStr: string) {
       <table class="w-full table-auto border-collapse border text-sm">
         <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
           <tr>
-            <th class="border px-3 py-2">Training Type</th>
+            <th class="border px-3 py-2">Batch Name</th>
             <th class="border px-3 py-2">Target Trainees</th>
             <th class="border px-3 py-2">Deployment</th>
             <th class="border px-3 py-2">Location</th>

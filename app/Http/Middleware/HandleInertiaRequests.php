@@ -7,6 +7,8 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -23,6 +25,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function version(Request $request): ?string
     {
+
+    
         return parent::version($request);
     }
 
@@ -34,14 +38,21 @@ class HandleInertiaRequests extends Middleware
      * @return array<string, mixed>
      */
     public function share(Request $request): array
-    {
-        return [
-            ...parent::share($request),
-            'name' => config('app.name'),
-            'auth' => [
-                'user' => $request->user(),
-            ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-        ];
-    }
+{
+    return [
+        ...parent::share($request),
+        'name' => config('app.name'),
+        'auth' => [
+            'user' => $request->user(),
+        ],
+        'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+
+        // flash message
+        'flash' => [
+            'success' => fn () => session('success'),
+            'error' => fn () => session('error'),
+        ],
+    ];
+}
+
 }

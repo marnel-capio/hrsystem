@@ -60,15 +60,10 @@ class ResourceScheduleController extends Controller
             'batchName.unique' => config('errors.batch_name_taken')['errorMessage'],
             'location.required' => config('errors.field_required')['errorMessage'],
             'targetTrainees.required' => config('errors.field_required')['errorMessage'],
-            'targetTrainees.integer' => config('errors.target_trainees_invalid')['errorMessage'],
             'targetTrainees.min' => config('errors.target_trainees_min')['errorMessage'],
             'deploymentDate.required' => config('errors.field_required')['errorMessage'],
-            'deploymentDate.date_format' => config('errors.deployment_date_format')['errorMessage'],
-            'wbs.required' => config('errors.wbs_required')['errorMessage'],
             'wbs.*.start.required' => config('errors.wbs_start_required')['errorMessage'],
-            'wbs.*.start.regex' => config('errors.wbs_invalid_format')['errorMessage'],
             'wbs.*.end.required' => config('errors.wbs_end_required')['errorMessage'],
-            'wbs.*.end.regex' => config('errors.wbs_invalid_format')['errorMessage'],
         ];
 
         // Validate input data (performed outside transaction as it's not a DB operation)
@@ -77,21 +72,9 @@ class ResourceScheduleController extends Controller
             'location'       => 'required|string|max:255',
             'targetTrainees' => 'required|integer|min:1',
             'deploymentDate' => 'required|date_format:Y-m',
-            'wbs'            => 'required|array',
-            'wbs.contact_schools.start'      => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.contact_schools.end'        => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.sourcing_testing.start'     => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.sourcing_testing.end'       => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.initial_interviews.start'   => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.initial_interviews.end'     => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.final_interviews.start'     => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.final_interviews.end'       => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.contract_offers.start'      => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.contract_offers.end'        => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.requirements.start'         => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.requirements.end'           => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.training.start'             => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.training.end'               => 'required|regex:/^\d{4}-W\d{2}$/',
+            'wbs'         => 'required|array',
+    'wbs.*.start' => 'required|regex:/^\d{4}-W\d{2}$/',
+    'wbs.*.end'   => 'required|regex:/^\d{4}-W\d{2}$/',
         ], $errorMessages);
 
         // Perform custom WBS validation to ensure end dates are not before start dates
@@ -166,15 +149,10 @@ class ResourceScheduleController extends Controller
             'batchName.unique' => config('errors.batch_name_taken')['errorMessage'],
             'location.required' => config('errors.field_required')['errorMessage'],
             'targetTrainees.required' => config('errors.field_required')['errorMessage'],
-            'targetTrainees.integer' => config('errors.target_trainees_invalid')['errorMessage'],
             'targetTrainees.min' => config('errors.target_trainees_min')['errorMessage'],
             'deploymentDate.required' => config('errors.field_required')['errorMessage'],
-            'deploymentDate.date_format' => config('errors.deployment_date_format')['errorMessage'],
-            'wbs.required' => config('errors.wbs_required')['errorMessage'],
             'wbs.*.start.required' => config('errors.wbs_start_required')['errorMessage'],
-            'wbs.*.start.regex' => config('errors.wbs_invalid_format')['errorMessage'],
             'wbs.*.end.required' => config('errors.wbs_end_required')['errorMessage'],
-            'wbs.*.end.regex' => config('errors.wbs_invalid_format')['errorMessage'],
         ];
 
         // Validate input data (performed outside transaction)
@@ -184,20 +162,10 @@ class ResourceScheduleController extends Controller
             'targetTrainees' => 'required|integer|min:1',
             'deploymentDate' => 'required|date_format:Y-m',
             'wbs'            => 'required|array',
-            'wbs.contact_schools.start'      => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.contact_schools.end'        => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.sourcing_testing.start'     => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.sourcing_testing.end'       => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.initial_interviews.start'   => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.initial_interviews.end'     => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.final_interviews.start'     => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.final_interviews.end'       => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.contract_offers.start'      => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.contract_offers.end'        => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.requirements.start'         => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.requirements.end'           => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.training.start'             => 'required|regex:/^\d{4}-W\xd{2}$/',
-            'wbs.training.end'               => 'required|regex:/^\d{4}-W\xd{2}$/',
+'wbs' => 'required|array',
+'wbs.*.start' => 'required|regex:/^\d{4}-W\d{2}$/',
+'wbs.*.end'   => 'required|regex:/^\d{4}-W\d{2}$/',
+
         ], $errorMessages);
 
         // Perform custom WBS validation
@@ -233,7 +201,7 @@ class ResourceScheduleController extends Controller
             DB::commit();
 
             return redirect()->route('action.schedules.show', $id)
-                             ->with('success', config('errors.record_created_successfully')['errorMessage']);
+                             ->with('success', config('errors.record_updated_successfully')['errorMessage']);
         } catch (\Exception $e) {
             DB::rollBack();
             $error = config('errors.transaction_failed');

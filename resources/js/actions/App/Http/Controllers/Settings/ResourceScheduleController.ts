@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::index
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:25
 * @route '/action/schedules'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::index
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:25
 * @route '/action/schedules'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -29,7 +29,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::index
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:25
 * @route '/action/schedules'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -39,7 +39,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::index
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:25
 * @route '/action/schedules'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -49,7 +49,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::index
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:25
 * @route '/action/schedules'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -59,7 +59,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::index
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:25
 * @route '/action/schedules'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -69,7 +69,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::index
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:25
 * @route '/action/schedules'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -86,7 +86,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::create
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:41
 * @route '/action/schedules/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -101,7 +101,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::create
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:41
 * @route '/action/schedules/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -114,7 +114,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::create
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:41
 * @route '/action/schedules/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -124,7 +124,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::create
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:41
 * @route '/action/schedules/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -134,7 +134,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::create
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:41
 * @route '/action/schedules/create'
 */
 const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -144,7 +144,7 @@ const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::create
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:41
 * @route '/action/schedules/create'
 */
 createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -154,7 +154,7 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::create
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:41
 * @route '/action/schedules/create'
 */
 createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -171,7 +171,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::store
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:55
 * @route '/action/schedules'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -186,7 +186,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::store
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:55
 * @route '/action/schedules'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -199,7 +199,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::store
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:55
 * @route '/action/schedules'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -209,7 +209,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::store
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:55
 * @route '/action/schedules'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -219,7 +219,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::store
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:55
 * @route '/action/schedules'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -231,7 +231,7 @@ store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::show
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:125
 * @route '/action/schedules/{schedule}'
 */
 export const show = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -246,7 +246,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::show
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:125
 * @route '/action/schedules/{schedule}'
 */
 show.url = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -275,7 +275,7 @@ show.url = (args: { schedule: string | number } | [schedule: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::show
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:125
 * @route '/action/schedules/{schedule}'
 */
 show.get = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -285,7 +285,7 @@ show.get = (args: { schedule: string | number } | [schedule: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::show
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:125
 * @route '/action/schedules/{schedule}'
 */
 show.head = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -295,7 +295,7 @@ show.head = (args: { schedule: string | number } | [schedule: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::show
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:125
 * @route '/action/schedules/{schedule}'
 */
 const showForm = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -305,7 +305,7 @@ const showForm = (args: { schedule: string | number } | [schedule: string | numb
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::show
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:125
 * @route '/action/schedules/{schedule}'
 */
 showForm.get = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -315,7 +315,7 @@ showForm.get = (args: { schedule: string | number } | [schedule: string | number
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::show
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:125
 * @route '/action/schedules/{schedule}'
 */
 showForm.head = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -332,7 +332,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::edit
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}/edit'
 */
 export const edit = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -347,7 +347,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::edit
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}/edit'
 */
 edit.url = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -376,7 +376,7 @@ edit.url = (args: { schedule: string | number } | [schedule: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::edit
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}/edit'
 */
 edit.get = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -386,7 +386,7 @@ edit.get = (args: { schedule: string | number } | [schedule: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::edit
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}/edit'
 */
 edit.head = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -396,7 +396,7 @@ edit.head = (args: { schedule: string | number } | [schedule: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::edit
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}/edit'
 */
 const editForm = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -406,7 +406,7 @@ const editForm = (args: { schedule: string | number } | [schedule: string | numb
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::edit
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}/edit'
 */
 editForm.get = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -416,7 +416,7 @@ editForm.get = (args: { schedule: string | number } | [schedule: string | number
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::edit
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}/edit'
 */
 editForm.head = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -433,7 +433,7 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::update
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:142
 * @route '/action/schedules/{schedule}'
 */
 export const update = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -448,7 +448,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::update
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:142
 * @route '/action/schedules/{schedule}'
 */
 update.url = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -477,7 +477,7 @@ update.url = (args: { schedule: string | number } | [schedule: string | number ]
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::update
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:142
 * @route '/action/schedules/{schedule}'
 */
 update.put = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -487,7 +487,7 @@ update.put = (args: { schedule: string | number } | [schedule: string | number ]
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::update
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:142
 * @route '/action/schedules/{schedule}'
 */
 update.patch = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -497,7 +497,7 @@ update.patch = (args: { schedule: string | number } | [schedule: string | number
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::update
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:142
 * @route '/action/schedules/{schedule}'
 */
 const updateForm = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -512,7 +512,7 @@ const updateForm = (args: { schedule: string | number } | [schedule: string | nu
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::update
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:142
 * @route '/action/schedules/{schedule}'
 */
 updateForm.put = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -527,7 +527,7 @@ updateForm.put = (args: { schedule: string | number } | [schedule: string | numb
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::update
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:142
 * @route '/action/schedules/{schedule}'
 */
 updateForm.patch = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -544,7 +544,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::destroy
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}'
 */
 export const destroy = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -559,7 +559,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::destroy
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}'
 */
 destroy.url = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -588,7 +588,7 @@ destroy.url = (args: { schedule: string | number } | [schedule: string | number 
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::destroy
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}'
 */
 destroy.delete = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -598,7 +598,7 @@ destroy.delete = (args: { schedule: string | number } | [schedule: string | numb
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::destroy
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}'
 */
 const destroyForm = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -613,7 +613,7 @@ const destroyForm = (args: { schedule: string | number } | [schedule: string | n
 
 /**
 * @see \App\Http\Controllers\Settings\ResourceScheduleController::destroy
-* @see [unknown]:0
+* @see app/Http/Controllers/Settings/ResourceScheduleController.php:0
 * @route '/action/schedules/{schedule}'
 */
 destroyForm.delete = (args: { schedule: string | number } | [schedule: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
