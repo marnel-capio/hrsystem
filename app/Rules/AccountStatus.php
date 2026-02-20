@@ -2,17 +2,20 @@
 
 namespace App\Rules;
 
-use App\Models\Logs;
+use App\Models\Log;
 use App\Models\User;
 use Illuminate\Contracts\Validation\Rule;
 
 class AccountStatus implements Rule
 {
     private $message;
+    private string $action; // "log in" or "send reset password link"
+    private string $module;
 
-    public function __construct()
+    public function __construct(string $action = 'log in', string $module = 'Users')
     {
-        //
+        $this->action = $action;
+        $this->module = $module;
     }
 
     public function passes($attribute, $value)
@@ -22,15 +25,11 @@ class AccountStatus implements Rule
 
         // If user exists and is inactive
         if ($user && $user->active_status == 0) {
-            Logs::create([
-                'module' => 'Users',
-                'activity' => "A person using this email address {$value} failed to log in.",
-                'ip_address' => request()->ip(),
-                'created_by' => null,
-                'updated_by' => null,
-                'create_time' => now(),
-                'update_time' => now(),
-            ]);
+            Log::createLog(
+                $this->module,
+                "A person using this email address {$value} failed to {$this->action}.",
+                null
+            );
 
             $this->message = 'Your account is no longer active. Please check it with your manager or admin.';
 

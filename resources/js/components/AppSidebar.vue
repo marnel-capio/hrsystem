@@ -11,9 +11,6 @@ import {
     Menu
 } from 'lucide-vue-next'
 
-// 🔹 Import constants
-import { MENU_PERMISSIONS, DISABLED_LINKS } from '@/constants'
-
 // 🔹 Current page
 const page = usePage()
 const current = page.url
@@ -37,129 +34,122 @@ function closeApplicationTracker() { showApplicationTracker.value = false }
 // 🔹 User permission number
 const userPermission: number = Number(page.props.auth.user.permissions)
 
+// 🔹 Shared constants from Laravel config
+const menuPermissions = (page.props.menuPermissions as Record<string, number[]>) || {}
+const hiddenLinks = (page.props.hiddenLinks as Record<string, number[]>) || {}
+
 // 🔹 Helpers
-function canAccess(path: string) { return MENU_PERMISSIONS[path]?.includes(userPermission) }
-function isDisabled(path: string) { return DISABLED_LINKS[path]?.includes(userPermission) }
+function canAccess(path: string) {
+    return menuPermissions?.[path]?.includes(userPermission) ?? true
+}
+function isHidden(path: string) {
+    return hiddenLinks?.[path]?.includes(userPermission) ?? false
+}
 function isActive(path: string) { return current === path }
 function isActiveStartsWith(path: string) { return current.startsWith(path) }
-
 </script>
 
-
 <template>
-    <aside :class="['sidebar', { collapsed }]">
-        <div class="sidebar-header">
-            <Link href="/" class="sidebar-home">
-                <span v-if="!collapsed" class="sidebar-title">HR System</span>
-            </Link>
-            <button class="sidebar-toggle" @click="toggleSidebar">
-                <Menu :size="20" />
-            </button>
+<aside :class="['sidebar', { collapsed }]">
+    <div class="sidebar-header">
+        <Link href="/" class="sidebar-home">
+            <span v-if="!collapsed" class="sidebar-title">HR System</span>
+        </Link>
+        <button class="sidebar-toggle" @click="toggleSidebar">
+            <Menu :size="20" />
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <!-- USERS -->
+        <Link v-if="canAccess('/user') && !isHidden('/user')" href="/user" class="sidebar-link"
+            :class="{ active: isActiveStartsWith('/user') }" @click="closeApplicationTracker">
+            <User :size="18" />
+            <span v-if="!collapsed">Users</span>
+        </Link>
+
+        <!-- APPLICATION TRACKER TOGGLER (always visible if user can access tracker) -->
+        <div v-if="canAccess('/application-tracker')" class="sidebar-link"
+            :class="{ active: isActiveStartsWith('/application-tracker') || isActiveStartsWith('/action') || isActiveStartsWith('/intermediate') }"
+            @click="toggleApplicationTracker">
+            <ChartLine :size="18" />
+            <span v-if="!collapsed">Application Tracker</span>
         </div>
 
-        <nav class="sidebar-nav">
-            <!-- USERS -->
-            <Link v-if="canAccess('/user')" href="/user" class="sidebar-link"
-                :class="{ active: current.startsWith('/user') }" @click="closeApplicationTracker">
-                <User :size="18" />
-                <span v-if="!collapsed">Users</span>
+        <!-- SUBMENU -->
+        <div v-if="showApplicationTracker && !collapsed" class="sidebar-submenu">
+
+            <!-- DASHBOARD (hidden only for 4,6,7) -->
+            <Link v-if="canAccess('/dashboard') && !isHidden('/dashboard')" href="/application-tracker"
+                class="sidebar-group" :class="{ active: isActive('/application-tracker') }">
+                <ChartColumnIncreasing :size="16" />
+                <span>Dashboard</span>
             </Link>
 
-            <!-- APPLICATION TRACKER TOGGLER -->
-            <div v-if="canAccess('/application-tracker')" class="sidebar-link"
-                :class="{ active: isActiveStartsWith('/application-tracker') || isActiveStartsWith('/action') || isActiveStartsWith('/intermediate') }"
-                @click="toggleApplicationTracker">
-                <ChartLine :size="18" />
-                <span v-if="!collapsed">Application Tracker</span>
+            <!-- ACTION -->
+            <div v-if="canAccess('/action') && !isHidden('/action')" class="sidebar-group"
+                :class="{ active: isActiveStartsWith('/action') }">
+                <FileChartColumnIncreasing :size="16" />
+                <span>Action</span>
             </div>
 
-            <!-- SUBMENU -->
-            <div v-if="showApplicationTracker && !collapsed" class="sidebar-submenu">
+            <Link v-if="canAccess('/action/batches')" href="/action/batches" class="sidebar-sublink level-1"
+                :class="{ active: isActiveStartsWith('/action/batches') }">
+                <FileText :size="14" />
+                <span>Action Batches</span>
+            </Link>
 
-                <!-- DASHBOARD -->
-                <Link v-if="canAccess('/application-tracker')"
-                    :href="!isDisabled('/application-tracker') ? '/application-tracker' : undefined"
-                    class="sidebar-group"
-                    :class="{ active: isActive('/application-tracker'), 'disabled-link': isDisabled('/application-tracker') }"
-                    @click.stop.prevent="isDisabled('/application-tracker') ? null : $event">
-                    <ChartColumnIncreasing :size="16" />
-                    <span>Dashboard</span>
-                </Link>
+            <Link v-if="canAccess('/action/schedules')" href="/action/schedules" class="sidebar-sublink level-1"
+                :class="{ active: isActiveStartsWith('/action/schedules') }">
+                <FileText :size="14" />
+                <span>Resource Schedules</span>
+            </Link>
 
-                <!-- ACTION -->
-                <div v-if="canAccess('/action')" class="sidebar-group"
-                    :class="{ active: current.startsWith('/action') }" @click.stop>
-                    <FileChartColumnIncreasing :size="16" />
-                    <Link :href="isDisabled('/action') ? '#' : '/action'">
-                        <span :class="{ 'disabled-link': isDisabled('/action') }">Action</span>
-                    </Link>
-                </div>
+            <Link v-if="canAccess('/action/applicants')" href="/action/applicants" class="sidebar-sublink level-1"
+                :class="{ active: isActiveStartsWith('/action/applicants') }">
+                <CircleUser :size="14" />
+                <span>Action Applicants</span>
+            </Link>
 
-                <Link v-if="canAccess('/action/batches')" href="/action/batches" class="sidebar-sublink level-1"
-                    :class="{ active: isActiveStartsWith('/action/batches') }" @click.stop>
-                    <FileText :size="14" />
-                    <span>Action Batches</span>
-                </Link>
+            <Link v-if="canAccess('/action/applications')" href="/action/applications" class="sidebar-sublink level-1"
+                :class="{ active: isActiveStartsWith('/action/applications') }">
+                <FileText :size="14" />
+                <span>Action Application</span>
+            </Link>
 
-                <Link v-if="canAccess('/action/schedules')" href="/action/schedules" class="sidebar-sublink level-1"
-                    :class="{ active: isActiveStartsWith('/action/schedules') }" @click.stop>
-                    <FileText :size="14" />
-                    <span>Resource Schedules</span>
-                </Link>
-
-                <Link v-if="canAccess('/action/applicants')" href="/action/applicants" class="sidebar-sublink level-1"
-                    :class="{ active: isActiveStartsWith('/action/applicants') }" @click.stop>
-                    <CircleUser :size="14" />
-                    <span>Action Applicants</span>
-                </Link>
-
-                <Link v-if="canAccess('/action/applications')" href="/action/applications"
-                    class="sidebar-sublink level-1" :class="{ active: isActiveStartsWith('/action/applications') }"
-                    @click.stop>
-                    <FileText :size="14" />
-                    <span>Action Application</span>
-                </Link>
-
-                <!-- INTERMEDIATE -->
-                <div v-if="canAccess('/intermediate')" class="sidebar-group"
-                    :class="{ active: current.startsWith('/intermediate') }" @click.stop>
-                    <FileChartColumnIncreasing :size="16" />
-                    <Link :href="isDisabled('/intermediate') ? '#' : '/intermediate'">
-                        <span :class="{ 'disabled-link': isDisabled('/intermediate') }">Intermediate</span>
-                    </Link>
-                </div>
-
-                <Link v-if="canAccess('/intermediate/projects')" href="/intermediate/projects"
-                    class="sidebar-sublink level-1" :class="{ active: isActiveStartsWith('/intermediate/projects') }"
-                    @click.stop>
-                    <FileText :size="14" />
-                    <span>Projects</span>
-                </Link>
-
-                <Link v-if="canAccess('/intermediate/requests')" href="/intermediate/requests"
-                    class="sidebar-sublink level-1" :class="{ active: isActiveStartsWith('/intermediate/requests') }"
-                    @click.stop>
-                    <FileText :size="14" />
-                    <span>Resource Requisition Forms</span>
-                </Link>
-
-                <Link v-if="canAccess('/intermediate/applicants')" href="/intermediate/applicants"
-                    class="sidebar-sublink level-1" :class="{ active: isActiveStartsWith('/intermediate/applicants') }"
-                    @click.stop>
-                    <CircleUser :size="14" />
-                    <span>Intermediate Applicants</span>
-                </Link>
-
-                <Link v-if="canAccess('/intermediate/applications')" href="/intermediate/applications"
-                    class="sidebar-sublink level-1"
-                    :class="{ active: isActiveStartsWith('/intermediate/applications') }" @click.stop>
-                    <FileText :size="14" />
-                    <span>Intermediate Application</span>
-                </Link>
-
+            <!-- INTERMEDIATE -->
+            <div v-if="canAccess('/intermediate') && !isHidden('/intermediate')" class="sidebar-group"
+                :class="{ active: isActiveStartsWith('/intermediate') }">
+                <FileChartColumnIncreasing :size="16" />
+                <span>Intermediate</span>
             </div>
-        </nav>
-    </aside>
+
+            <Link v-if="canAccess('/intermediate/projects')" href="/intermediate/projects" class="sidebar-sublink level-1"
+                :class="{ active: isActiveStartsWith('/intermediate/projects') }">
+                <FileText :size="14" />
+                <span>Projects</span>
+            </Link>
+
+            <Link v-if="canAccess('/intermediate/requests')" href="/intermediate/requests" class="sidebar-sublink level-1"
+                :class="{ active: isActiveStartsWith('/intermediate/requests') }">
+                <FileText :size="14" />
+                <span>Resource Requisition Forms</span>
+            </Link>
+
+            <Link v-if="canAccess('/intermediate/applicants')" href="/intermediate/applicants" class="sidebar-sublink level-1"
+                :class="{ active: isActiveStartsWith('/intermediate/applicants') }">
+                <CircleUser :size="14" />
+                <span>Intermediate Applicants</span>
+            </Link>
+
+            <Link v-if="canAccess('/intermediate/applications')" href="/intermediate/applications" class="sidebar-sublink level-1"
+                :class="{ active: isActiveStartsWith('/intermediate/applications') }">
+                <FileText :size="14" />
+                <span>Intermediate Application</span>
+            </Link>
+        </div>
+    </nav>
+</aside>
 </template>
 
 <style scoped>
@@ -211,11 +201,5 @@ function isActiveStartsWith(path: string) { return current.startsWith(path) }
 
 .sidebar-group.active svg {
     opacity: 1;
-}
-
-/* Disabled link styling */
-.disabled-link {
-    pointer-events: none;
-    opacity: 0.5;
 }
 </style>

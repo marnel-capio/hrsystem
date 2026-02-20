@@ -3,54 +3,62 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
-use App\Models\Logs;
+use App\Models\Log;
+use App\Models\User;
 
 class AWSEmailAddress implements Rule
 {
-    private $value; // store value for logging
+    private string $messageText; // store dynamic error message
+    private string $module;
 
-    public function __construct()
+    public function __construct(string $module = 'Users')
     {
-        //
+        $this->module = $module;
+        $this->messageText = 'Invalid email address.';
     }
 
     /**
      * Determine if the validation rule passes.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
      */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
-        $this->value = $value; // save for logging
-
-        $offset = strpos($value, '@') === false ? -11 : strpos($value, '@') + 1;
-        $domain = substr($value, $offset);
-
-        // If domain is wrong, log it
+        // Check AWS domain
+        $domain = substr(strrchr($value, "@"), 1) ?: '';
         if ($domain !== 'awsys-i.com') {
-            Logs::create([
-                'module' => 'Users',
-                'activity' => "A person using this email address {$value} failed to log in.",
-                'ip_address' => request()->ip(),
-                'created_by' => null,
-                'updated_by' => null,
-                'create_time' => now(),
-                'update_time' => now(),
-            ]);
+            $this->messageText = 'The :attribute must be your AWS email address.';
+
+            // Log failed attempt
+            Log::createLog(
+                $this->module,
+                "A person using this email address {$value} failed validation (invalid AWS domain).",
+                null
+            );
+
+            return false;
         }
 
-        return $domain === 'awsys-i.com';
+        // Check if email exists in the database
+        $user = User::where('email_address', $value)->first();
+        if (! $user) {
+            $this->messageText = 'The email address is not registered.';
+
+            // Log failed attempt
+            Log::createLog(
+                $this->module,
+                "A person using this email address {$value} failed validation (email not registered).",
+                null
+            );
+
+            return false;
+        }
+        return true;
     }
 
     /**
      * Get the validation error message.
-     *
-     * @return string
      */
-    public function message()
+    public function message(): string
     {
-        return 'The :attribute must be your AWS email address.';
+        return $this->messageText;
     }
 }
