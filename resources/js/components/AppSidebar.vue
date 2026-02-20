@@ -11,16 +11,13 @@ import {
     Menu
 } from 'lucide-vue-next'
 
-// 🔹 Current page
 const page = usePage()
 const current = page.url
 
-// 🔹 Sidebar collapse
 const collapsed = ref(localStorage.getItem('sidebar-collapsed') === 'true')
 function toggleSidebar() { collapsed.value = !collapsed.value }
 watch(collapsed, (value) => localStorage.setItem('sidebar-collapsed', String(value)))
 
-// 🔹 Application Tracker toggle
 const showApplicationTracker = ref(localStorage.getItem('app-tracker-open') === 'true')
 watch(showApplicationTracker, (value) => localStorage.setItem('app-tracker-open', String(value)))
 watch(() => page.url, (url) => {
@@ -31,12 +28,12 @@ watch(() => page.url, (url) => {
 function toggleApplicationTracker() { showApplicationTracker.value = !showApplicationTracker.value }
 function closeApplicationTracker() { showApplicationTracker.value = false }
 
-// 🔹 User permission number
+// 🔹 User permission
 const userPermission: number = Number(page.props.auth.user.permissions)
 
-// 🔹 Shared constants from Laravel config
-const menuPermissions = (page.props.menuPermissions as Record<string, number[]>) || {}
-const hiddenLinks = (page.props.hiddenLinks as Record<string, number[]>) || {}
+// 🔹 Permissions and hidden links from shared props
+const menuPermissions = page.props.menuPermissions as Record<string, number[]> || {}
+const hiddenLinks = page.props.hiddenLinks as Record<string, number[]> || {}
 
 // 🔹 Helpers
 function canAccess(path: string) {

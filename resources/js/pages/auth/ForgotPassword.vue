@@ -43,7 +43,7 @@ defineProps<{
         <div class="my-6 flex items-center justify-start">
           <Button class="w-full" :disabled="processing" data-test="email-password-reset-link-button">
             <Spinner v-if="processing" />
-            Email password reset link
+            Email newly generated password 
           </Button>
         </div>
       </Form>

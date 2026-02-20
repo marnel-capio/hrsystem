@@ -5,8 +5,11 @@ namespace App\Providers;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +27,21 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // 🔹 Share global props with Inertia
+        Inertia::share([
+            'menuPermissions' => Config::get('constants.menuPermissions'),
+            'hiddenLinks' => Config::get('constants.hiddenLinks'),
+            'auth' => function () {
+                $user = Auth::user();
+                return $user ? [
+                    'id' => $user->id,
+                    'permissions' => $user->permissions,
+                    'name' => $user->name,
+                    // Add any other user info you need globally
+                ] : null;
+            },
+        ]);
     }
 
     /**
@@ -31,12 +49,13 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureDefaults(): void
     {
+        // Use immutable dates
         Date::use(CarbonImmutable::class);
 
-        DB::prohibitDestructiveCommands(
-            app()->isProduction(),
-        );
+        // Prevent destructive commands in production
+        DB::prohibitDestructiveCommands(app()->isProduction());
 
+        // Default password rules
         Password::defaults(fn (): ?Password => app()->isProduction()
             ? Password::min(12)
                 ->mixedCase()

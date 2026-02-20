@@ -73,7 +73,7 @@ const fullName = computed(() => {
           {{ fullName }}
         </div>
 
-        <a href="/account" class="dropdown-link">
+        <a href="/user/{id}" class="dropdown-link">
           Account Settings
         </a>
 
