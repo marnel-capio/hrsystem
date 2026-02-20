@@ -36,23 +36,29 @@ class ResourceSchedule extends Model
         'updated_time' => 'datetime',
     ];
 
-    /* ============================================================
-     * QUERY HELPERS
-     * ============================================================ */
-
-    /**
-     * Scope: Order by created_time
-     */
-    public function scopeOrdered(Builder $query)
-    {
-        return $query->orderBy('created_time', 'desc');
-    }
 
     /**
      * Get list page data
      */
     public static function listPageData()
     {
-        return static::ordered()->get();
+        return static::orderBy('created_time', 'desc')->get();
     }
+
+    
+    /**
+     * Search
+     */
+    public function scopeSearch($query, $term)
+{
+    if (!$term) return $query;
+
+    $term = strtolower($term);
+
+    return $query->where(function ($q) use ($term) {
+        $q->whereRaw("LOWER(batch_name) LIKE ?", ["%{$term}%"])
+          ->orWhereRaw("LOWER(target_location) LIKE ?", ["%{$term}%"])
+          ->orWhereRaw("LOWER(DATE_FORMAT(deployment_date, '%M %Y')) LIKE ?", ["%{$term}%"]);
+    });
+}
 }
