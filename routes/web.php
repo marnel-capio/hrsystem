@@ -16,17 +16,6 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-// DASHBOARD
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// ===============================
-// LIST PAGE FOR SCHEDULES
-// ===============================
-Route::get('action/schedules', [ResourceScheduleController::class, 'index'])
-    ->name('action.schedules.index');
-
 // Load additional settings routes
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
@@ -47,8 +36,15 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout')
     ->middleware('auth');
 
-Route::middleware(['web', 'auth'])->group(function(){
-    Route::get('/', [DashboardController::class, 'index']);
+// Protected routes
+Route::middleware(['web', 'auth'])->group(function () {
+
+    // DASHBOARD
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // LIST PAGE FOR SCHEDULES
+    Route::get('action/schedules', [ResourceScheduleController::class, 'index'])
+        ->name('action.schedules.index');
 });
 
 // Include other routes
