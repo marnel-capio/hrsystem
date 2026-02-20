@@ -3,38 +3,50 @@ import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { usePage, router } from '@inertiajs/vue3'
 import { UserCog } from 'lucide-vue-next'
 
-// Get Inertia page props and typed user
 interface AuthUser {
+  id?: number
   first_name?: string
   last_name?: string
   email_address?: string
+  permissions?: number
 }
 
 const page = usePage()
 const user = page.props.auth?.user as AuthUser | undefined
 
+// ✅ permissions from backend constants
+const menuPermissions = page.props.menuPermissions as Record<string, number[]> || {}
+const hiddenLinks = page.props.hiddenLinks as Record<string, number[]> || {}
+
+const userPermission = Number(user?.permissions ?? 0)
+
+// ✅ helpers (same as sidebar)
+function canAccess(path: string) {
+  return menuPermissions?.[path]?.includes(userPermission) ?? true
+}
+
+function isHidden(path: string) {
+  return hiddenLinks?.[path]?.includes(userPermission) ?? false
+}
+
 // Dropdown state
 const open = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 
-// Toggle dropdown
 function toggle() {
   open.value = !open.value
 }
 
-// Logout function
 function logout() {
   router.post('/logout')
 }
 
-// Close dropdown when clicking outside
 function handleClickOutside(e: MouseEvent) {
   if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
     open.value = false
   }
 }
 
-// Lifecycle hooks
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
@@ -43,7 +55,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-// Computed full name
 const fullName = computed(() => {
   const first = user?.first_name?.trim() || ''
   const last = user?.last_name?.trim() || ''
@@ -62,24 +73,29 @@ const fullName = computed(() => {
       <button
         class="user-btn"
         @click.stop="toggle"
-        aria-haspopup="true"
-        :aria-expanded="open"
       >
         <UserCog :size="20" />
       </button>
 
       <div v-if="open" class="user-dropdown">
+
         <div class="user-name">
           {{ fullName }}
         </div>
 
-        <a href="/user/{id}" class="dropdown-link">
+        <!-- ✅ Account Settings hidden for permission 7 -->
+        <a
+          v-if="canAccess('/account/settings') && !isHidden('/account/settings')"
+          :href="`/user/${user?.id}`"
+          class="dropdown-link"
+        >
           Account Settings
         </a>
 
         <button class="dropdown-link danger" @click="logout">
           Log out
         </button>
+
       </div>
     </div>
   </header>

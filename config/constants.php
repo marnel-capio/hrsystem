@@ -3,7 +3,7 @@
 return [
     'menuPermissions' => [
         '/user' => [1],
-        '/application-tracker' => [1, 2, 3, 5, 6], // all who can see tracker
+        '/application-tracker' => [1, 2, 3, 5, 6], 
         '/action/batches' => [1, 2, 3],
         '/action/schedules' => [1, 2, 3],
         '/action/applicants' => [1, 2, 3, 5, 6],
@@ -13,10 +13,14 @@ return [
         '/intermediate/applicants' => [1, 2, 3, 5, 6],
         '/intermediate/applications' => [1, 2, 3, 5, 6],
         '/dashboard' => [1,2,3,5], // only users allowed to see dashboard
+        '/walk-in-application' => [1, 7],
+        '/account/settings' => [1,2,3,4,5,6],
     ],
     'hiddenLinks' => [
         '/dashboard' => [4, 6, 7], // hide dashboard for these
         '/action' => [4, 7],
         '/intermediate' => [4, 7],
+        '/account/settings' => [7],
+        
     ],
 ];
