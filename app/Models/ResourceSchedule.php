@@ -1,21 +1,19 @@
-<?php
+<?php 
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
-/**
- * ResourceSchedule Model
- *
- * Represents a resource schedule entity with batch details, location, trainees, deployment date,
- * and a work breakdown schedule (WBS). Includes audit fields for tracking creation and updates.
- */
 class ResourceSchedule extends Model
 {
     /**
-     * The attributes that are mass assignable.
-     *
-     * These fields can be filled via mass assignment (e.g., create() or update()).
+     * Disable default timestamps — we use custom fields
+     */
+    public $timestamps = false;
+
+    /**
+     * Mass assignable fields (not used ywt, but kept safe)
      */
     protected $fillable = [
         'batch_name',
@@ -30,47 +28,31 @@ class ResourceSchedule extends Model
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * 'wbs' is cast to an array for easy manipulation.
-     * 'created_time' and 'updated_time' are cast to datetime for Carbon instances.
+     * Casts
      */
     protected $casts = [
-        'wbs' => 'array',
+        'wbs'          => 'array',
         'created_time' => 'datetime',
         'updated_time' => 'datetime',
     ];
 
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * Set to false because we use custom audit fields ('created_time', 'updated_time')
-     * instead of Laravel's default 'created_at' and 'updated_at'.
-     */
-    public $timestamps = false;
+    /* ============================================================
+     * QUERY HELPERS
+     * ============================================================ */
 
     /**
-     * Boot the model and set up event listeners.
-     *
-     * Automatically sets audit fields ('created_by', 'created_time', 'updated_by', 'updated_time')
-     * based on the authenticated user when creating or updating records.
+     * Scope: Order by created_time
      */
-    protected static function booted()
+    public function scopeOrdered(Builder $query)
     {
-        static::creating(function ($model) {
-            $user = auth()->user();
-            if ($user) {
-                $model->created_by = $user->name;  // Store user's name (or ID if preferred)
-                $model->created_time = now();
-            }
-        });
+        return $query->orderBy('created_time', 'desc');
+    }
 
-        static::updating(function ($model) {
-            $user = auth()->user();
-            if ($user) {
-                $model->updated_by = $user->name;  // Store user's name (or ID if preferred)
-                $model->updated_time = now();
-            }
-        });
+    /**
+     * Get list page data
+     */
+    public static function listPageData()
+    {
+        return static::ordered()->get();
     }
 }
