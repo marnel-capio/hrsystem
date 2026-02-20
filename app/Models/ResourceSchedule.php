@@ -62,7 +62,7 @@ class ResourceSchedule extends Model
         return DB::transaction(function () use ($validated) {
             return self::create([
                 'batch_name'       => $validated['batchName'],
-                'target_location'  => $validated['location'],
+                'target_location' => $validated['location'] === 'Cebu' ? 2 : ($validated['location'] === 'Manila' ? 1 : $validated['location']),                
                 'target_trainees'  => $validated['targetTrainees'],
                 'deployment_date'  => $validated['deploymentDate'],
                 'wbs'              => $validated['wbs'],

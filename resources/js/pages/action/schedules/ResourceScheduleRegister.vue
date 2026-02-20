@@ -1,9 +1,9 @@
-<!-- To add if login coding is finished:
-        -User permission validation -->
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+
+
 
 // Define props to receive centralized error messages from the backend
 const props = defineProps<{
@@ -46,6 +46,7 @@ function formatActivityName(key: string) {
   };
   return names[key] || key;
 }
+
 
 // Initialize reactive state for WBS form with default week ranges
 const ganttForm = ref(
@@ -193,6 +194,7 @@ function createResourceSchedule() {
     },
   });
 }
+
 </script>
 
 <template>
@@ -223,18 +225,17 @@ function createResourceSchedule() {
                 {{ form.errors.batchName }}
               </p>
             </div>
-
-            <div>
-              <label class="text-sm font-semibold">Target Location</label>
-              <select v-model="form.location" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
-                <option value="">Select</option>
-                <option value="Cebu">Cebu</option>
-                <option value="Manila">Manila</option>
-              </select>
-              <p v-if="form.errors.location" class="text-red-600 text-xs mt-1">
-                {{ form.errors.location }}
-              </p>
-            </div>
+<div>
+  <label class="text-sm font-semibold">Target Location</label>
+  <select v-model="form.location" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
+    <option value="">Select</option>
+    <option value="Manila">Manila</option>
+    <option value="Cebu">Cebu</option>
+  </select>
+  <p v-if="form.errors.location" class="text-red-600 text-xs mt-1">
+    {{ form.errors.location }}
+  </p>
+</div>
 
             <div>
               <label class="text-sm font-semibold">Target Trainees</label>
@@ -325,11 +326,26 @@ function createResourceSchedule() {
             <div v-else class="text-sm text-zinc-500">Select weeks to generate preview.</div>
           </div>
 
-          <div class="flex justify-end mt-6">
-            <button type="submit" :disabled="form.processing" class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-bold shadow-lg">
-              Create
-            </button>
-          </div>
+<!-- Buttons container -->
+<div class="flex justify-end gap-3 mt-6">
+    <!-- Cancel button -->
+  <button 
+    type="button" 
+    @click="$inertia.visit('/action/schedules')" 
+        class="px-6 py-2.5 text-sm font-medium text-zinc-600 hover:text-zinc-900"
+  >
+    Cancel
+  </button>
+
+  <!-- Create button -->
+  <button 
+    type="submit" 
+    :disabled="form.processing" 
+        class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-bold shadow-lg"
+  >
+    Create
+  </button>
+</div>
         </form>
       </div>
     </div>
