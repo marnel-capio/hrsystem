@@ -127,8 +127,8 @@ function closeApplicationTracker() {
                     </Link>
                 </div>
 
-                <Link href="/action/batches" class="sidebar-sublink level-1"
-                    :class="{ active: isActiveStartsWith('/action/batches') }" @click.stop>
+                <Link href="/action/batches/list" class="sidebar-sublink level-1"
+                    :class="{ active: isActiveStartsWith('/action/batches/list') }" @click.stop>
                     <FileText :size="14" />
                     <span>Action Batches</span>
                 </Link>
