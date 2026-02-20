@@ -72,11 +72,11 @@ function formatActivityName(key: string) {
 const ganttForm = ref(
   Object.fromEntries(
     ganttActivities.map(a => [
-      a, 
-      { 
-        start: props.schedule.wbs?.[a]?.start || "2026-W05", 
-        end: props.schedule.wbs?.[a]?.end || "2026-W06",
-        error: "" 
+      a,
+      {
+        start: props.schedule.wbs?.[a]?.start ?? "",
+        end: props.schedule.wbs?.[a]?.end ?? "",
+        error: ""
       }
     ])
   )
