@@ -1,17 +1,13 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Laravel\Fortify\Features;
+use App\Http\Controllers\Settings\ResourceScheduleController;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
-})->name('home');
+// Show the register page
+Route::get('action/schedules/register', [ResourceScheduleController::class, 'create'])
+    ->name('action.schedules.create')
+    ->middleware(['auth', 'verified']);
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-require __DIR__.'/settings.php';
+// Handle form submission
+Route::post('action/schedules', [ResourceScheduleController::class, 'store'])
+    ->name('action.schedules.store')
+    ->middleware(['auth', 'verified']);
