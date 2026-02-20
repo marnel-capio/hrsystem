@@ -48,10 +48,10 @@ function formatActivityName(key: string) {
 }
 
 
-// Initialize reactive state for WBS form with default week ranges
+// Initialize reactive state for WBS form
 const ganttForm = ref(
   Object.fromEntries(
-    ganttActivities.map(a => [a, { start: "2026-W05", end: "2026-W06", error: "" }])
+    ganttActivities.map(a => [a, { start: "", end: "", error: "" }])
   )
 );
 
