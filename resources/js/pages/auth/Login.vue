@@ -1,110 +1,77 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { register } from '@/routes';
-import { store } from '@/routes/login';
-import { request } from '@/routes/password';
+import { useForm } from '@inertiajs/vue3'
+//import awsLogo from '@/images/aws-logo.jpg'
 
-defineProps<{
-    status?: string;
-    canResetPassword: boolean;
-    canRegister: boolean;
-}>();
+// Inertia form: fields match your users table
+const form = useForm({
+  email_address: '',
+  password: '',
+})
+
+// Submit login
+const submit = () => {
+  form.post('/login', {
+    preserveScroll: true,
+    // Let Inertia automatically follow the server redirect
+    onSuccess: () => {
+      form.reset('password') // clear password after login
+      // No need to manually redirect, Inertia follows redirect from backend
+    },
+    onError: (errors) => {
+      console.log('Login errors:', errors)
+    },
+  })
+}
 </script>
 
 <template>
-    <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
-    >
-        <Head title="Log in" />
+  <div class="login-wrapper">
+    <div class="login-card">
+      <!-- Logo -->
+      <!-- <img :src="awsLogo" alt="AWS Logo" class="aws-logo" /> -->
+      <h1>HR System</h1>
 
-        <div
-            v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
-        >
-            {{ status }}
+      <!-- Login form -->
+      <form @submit.prevent="submit">
+        <!-- Email input -->
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            v-model="form.email_address"
+            type="email"
+            placeholder="Enter your email"
+            autofocus
+            required
+          />
+          <span v-if="form.errors.email_address" class="error">
+            {{ form.errors.email_address }}
+          </span>
         </div>
 
-        <Form
-            v-bind="store.form()"
-            :reset-on-success="['password']"
-            v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
-        >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        name="email"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="errors.email" />
-                </div>
+        <!-- Password input -->
+        <div class="form-group">
+          <label>Password</label>
+          <input
+            v-model="form.password"
+            type="password"
+            placeholder="Enter your password"
+            required
+          />
+          <span v-if="form.errors.password" class="error">
+            {{ form.errors.password }}
+          </span>
+        </div>
 
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink
-                            v-if="canResetPassword"
-                            :href="request()"
-                            class="text-sm"
-                            :tabindex="5"
-                        >
-                            Forgot password?
-                        </TextLink>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        name="password"
-                        required
-                        :tabindex="2"
-                        autocomplete="current-password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="errors.password" />
-                </div>
+        <!-- Submit button -->
+        <button type="submit" :disabled="form.processing">
+          {{ form.processing ? 'Signing in…' : 'Sign In' }}
+        </button>
 
-                <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" :tabindex="3" />
-                        <span>Remember me</span>
-                    </Label>
-                </div>
-
-                <Button
-                    type="submit"
-                    class="mt-4 w-full"
-                    :tabindex="4"
-                    :disabled="processing"
-                    data-test="login-button"
-                >
-                    <Spinner v-if="processing" />
-                    Log in
-                </Button>
-            </div>
-
-            <div
-                class="text-center text-sm text-muted-foreground"
-                v-if="canRegister"
-            >
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
-            </div>
-        </Form>
-    </AuthBase>
+        <!-- Forgot password link -->
+        <a href="/forgot-password" class="forgot">
+          Forgot your password?
+        </a>
+      </form>
+    </div>
+  </div>
 </template>

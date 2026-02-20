@@ -1,6 +1,6 @@
 
 <?php
-// NOTE: Not the final resource table migration. This is being updated. Some columns present in DB tables are still not added here.
+// NOTE: Not the final resource table migration. This is being updated. Some columns present in DB tables are still not added here
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
