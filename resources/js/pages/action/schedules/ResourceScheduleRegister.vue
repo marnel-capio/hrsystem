@@ -50,7 +50,7 @@ function formatActivityName(key: string) {
 // Initialize reactive state for WBS form with default week ranges
 const ganttForm = ref(
   Object.fromEntries(
-    ganttActivities.map(a => [a, { start: "", end: "", error: "" }])
+    ganttActivities.map(a => [a, { start: "2026-W05", end: "2026-W06", error: "" }])
   )
 );
 
@@ -133,6 +133,17 @@ onMounted(() => {
     }, 5000);
   }
 });
+
+// Gantt preview colors
+const wbsColors: Record<string, string> = {
+  contact_schools: '#166534',   // dark green
+  sourcing_testing: '#dc2626',  // red 
+  initial_interviews: '#f97316', // orange
+  final_interviews: '#2563eb',  // blue
+  contract_offers: '#7c3aed',   // purple
+  requirements: '#ec4899',      // pink
+  training: '#84cc16',          // light green
+};
 
 // Validate WBS ranges and display errors using centralized messages
 function validateWBS() {
@@ -278,7 +289,7 @@ function createResourceSchedule() {
                 <div class="p-2 bg-zinc-50 font-bold border-b">Activity</div>
 
                 <template v-for="m in monthSpans" :key="m.month">
-                  <div :style="`grid-column: span ${m.count}`" class="text-center font-bold text-xs p-1 bg-blue-50 border-b">
+                  <div :style="`grid-column: span ${m.count}`" class="text-center font-bold text-base p-2 bg-blue-50 border-b">
                     {{ m.month }}
                   </div>
                 </template>
@@ -298,9 +309,14 @@ function createResourceSchedule() {
                   </div>
 
                   <template v-for="(_, i) in ganttWeeks" :key="i">
-                    <div class="border h-7 relative">
-                      <div v-if="i >= row.startIndex && i <= row.endIndex" class="absolute inset-0 bg-blue-500/80 rounded-sm"></div>
-                    </div>
+<div class="border h-7 relative">
+  <div
+    v-if="i >= row.startIndex && i <= row.endIndex && row.startIndex !== -1"
+    class="absolute inset-0 rounded-sm"
+    :style="`background-color: ${wbsColors[row.activity] || '#000'}; opacity: 0.8;`"
+  ></div>
+</div>
+
                   </template>
                 </template>
               </div>

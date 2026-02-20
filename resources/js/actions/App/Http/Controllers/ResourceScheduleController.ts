@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::create
 * @see app/Http/Controllers/ResourceScheduleController.php:14
@@ -245,12 +245,6 @@ showForm.head = (args: { id: string | number } | [id: string | number ] | string
 
 show.form = showForm
 
+const ResourceScheduleController = { create, store, show }
 
-
-const schedules = {
-    create: Object.assign(create, create),
-    store: Object.assign(store, store),
-    show: Object.assign(show, show),
-}
-
-export default schedules
+export default ResourceScheduleController

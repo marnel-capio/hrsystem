@@ -1,8 +1,8 @@
-import Settings from './Settings'
+import ResourceScheduleController from './ResourceScheduleController'
 
 
 const Controllers = {
-    Settings: Object.assign(Settings, Settings),
+    ResourceScheduleController: Object.assign(ResourceScheduleController, ResourceScheduleController),
 }
 
 export default Controllers
