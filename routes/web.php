@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
-use App\Http\Controllers\Settings\ResourceScheduleController;
+use App\Http\Controllers\ResourceScheduleController;
 
 /**
  * Web Routes
