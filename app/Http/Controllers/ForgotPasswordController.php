@@ -20,7 +20,7 @@ class ForgotPasswordController extends Controller
 
     public function store(EmailRequest $request)
     {
-        $user = User::where('email_address', $request->email_address)->first();
+        $user = User::findByEmail($request->email_address);
 
         if (!$user) {
             return back()->withErrors([

@@ -54,9 +54,9 @@ class LoginRequest extends FormRequest
     {
         $rules = [];
         if($this->isMethod('POST')){
-            $rules = ['email_address' => ['bail', 'required', 'email', 'max:80', 'min:15', new AWSEmailAddress(), 'exists:users,email_address', new AccountStatus()]];
+            $rules = ['email_address' => ['bail', 'required', 'max:80', new AWSEmailAddress(), 'exists:users,email_address', new AccountStatus()]];
             if(strpos($this->header('referer'), route('login')) !== FALSE){
-                $rules['password'] = 'required|max:80|min:8';
+                $rules['password'] = 'required|max:16|min:8';
             }
         }
         return $rules;
