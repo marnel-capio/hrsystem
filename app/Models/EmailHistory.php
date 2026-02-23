@@ -22,30 +22,4 @@ class EmailHistory extends Model
         'create_time',
         'update_time',
     ];
-
-    /**
-     * Record an email attempt
-     */
-    public static function logEmail(
-        int $status,
-        string $subject,
-        string $fromName,
-        string $emailFrom,
-        string $emailTo,
-        string $emailBody,
-        ?int $userId = null
-    ) {
-        return self::create([
-            'status' => $status,
-            'subject' => $subject,
-            'from' => $fromName,
-            'email_from' => $emailFrom,
-            'email_to' => $emailTo,
-            'email_body' => $emailBody,
-            'created_by' => $userId,
-            'updated_by' => $userId,
-            'create_time' => now(),
-            'update_time' => now(),
-        ]);
-    }
 }

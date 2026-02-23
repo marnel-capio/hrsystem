@@ -31,9 +31,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
-        // 🔹 Register EmailSent listener
-        Event::listen(EmailSent::class, [LogMail::class, 'handle']);
-
         // 🔹 Share global props with Inertia
         Inertia::share([
             'menuPermissions' => Config::get('constants.menuPermissions'),

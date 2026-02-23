@@ -51,36 +51,12 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        try {
-            // Only send the email
-            Mail::to($user->email_address)->send(new NewPasswordMail(
-                $user->first_name,
-                $user->email_address,
-                $newPassword
-            ));
-
-            // Fire event — listener handles EmailHistory
-            event(new EmailSent(
-                1, // status = success
-                'Your New Password',
-                'HR System',
-                'no-reply@awsys-i.com',
-                $user->email_address,
-                "Hello {$user->first_name}, your new password is {$newPassword}",
-                $user->id
-            ));
-        } catch (\Exception $e) {
-            // Fire failure event — listener handles EmailHistory
-            event(new EmailSent(
-                0, // status = failed
-                'Your New Password',
-                'HR System',
-                'no-reply@awsys-i.com',
-                $user->email_address,
-                "Hello {$user->first_name}, your new password is {$newPassword}",
-                $user->id
-            ));
-        }
+        // Only send the email
+        Mail::to($user->email_address)->send(new NewPasswordMail(
+            $user->first_name,
+            $user->email_address,
+            $newPassword
+        ));
 
         return redirect('/login')->with('status', 'A new password has been sent to your email.');
     }

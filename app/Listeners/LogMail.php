@@ -2,37 +2,62 @@
 
 namespace App\Listeners;
 
-use App\Events\EmailSent;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Support\Facades\Log;
 use App\Models\EmailHistory;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\Mime\Address;
 
 class LogMail
 {
     /**
+     * Create the event listener.
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
      * Handle the event.
      */
-    public function handle(EmailSent $event)
+    public function handle(MessageSent $event): void
     {
-        // Generate a hash of the email content to detect duplicates
-        $hash = md5($event->emailBody);
-
-        // Check if a record already exists with same email, subject, and content
-        $exists = EmailHistory::where('email_to', $event->emailTo)
-            ->where('subject', $event->subject)
-            ->whereRaw('MD5(email_body) = ?', [$hash])
-            ->exists();
-
-        if ($exists) {
-            return; // Skip duplicate
+        $fromEmail = '';
+        $fromName = '';
+        $mailBody =  (array) $event->message->getBody();
+        $ctr=0;
+        $body = "";
+        foreach ($mailBody as $key => $val) {
+            if ($ctr == 1) {
+                $body = $val;
+            } else if ($ctr > 1) {
+                break;
+            }
+            $ctr++;
         }
-
-        EmailHistory::logEmail(
-            $event->status,
-            $event->subject,
-            $event->fromName,
-            $event->emailFrom,
-            $event->emailTo,
-            $event->emailBody,
-            $event->userId
-        );
+        foreach ($event->message->getFrom() as $address) {
+            $fromEmail = $address->getAddress(); // "from@example.com"
+            $fromName = $address->getName();     // "Sender Name"
+        }
+        foreach ($event->message->getTo() as $address) {
+            $toEmail = $address->getAddress(); // "from@example.com"
+            $toName = $address->getName();     // "Sender Name"
+            EmailHistory::create([
+                'status' => 1,
+                'subject' => $event->message->getSubject(),
+                'from' => $fromName,
+                'email_from' => $fromEmail,
+                'email_to' => $toEmail,
+                'email_body' => $body,
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+                'create_time' => now(),
+                'update_time' => now(),
+            ]);
+        }
+        
     }
 }
