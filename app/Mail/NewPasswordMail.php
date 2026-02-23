@@ -39,7 +39,7 @@ class NewPasswordMail extends Mailable
             ->from('no-reply@hrsystem.com', 'HR Administration') // FROM NAME
             ->to($this->emailAddress) // Arg1: recipient email
             ->subject('【HR System】Password Reset Information') // Subject
-            ->view('emails.new-password') // plain text email view
+            ->view('emails.ATS-0001') // plain text email view
             ->with([
                 'firstName' => $this->firstName,       // Arg2
                 'newPassword' => $this->newPassword,   // Arg3

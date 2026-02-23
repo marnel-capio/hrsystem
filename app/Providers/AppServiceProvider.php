@@ -6,10 +6,13 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use App\Events\EmailSent;
+use App\Listeners\LogMail;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // 🔹 Register EmailSent listener
+        Event::listen(EmailSent::class, [LogMail::class, 'handle']);
 
         // 🔹 Share global props with Inertia
         Inertia::share([

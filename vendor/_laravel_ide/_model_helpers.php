@@ -14,12 +14,10 @@ namespace App\Models {
      * @property string $email_from
      * @property string $from
      * @property string $subject
-     * @property string $email_code
      * @property bool $status
      * @property int $id
      * @method static \Illuminate\Database\Eloquent\Builder<EmailHistory>|EmailHistory whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<EmailHistory>|EmailHistory whereStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<EmailHistory>|EmailHistory whereEmailCode($value)
      * @method static \Illuminate\Database\Eloquent\Builder<EmailHistory>|EmailHistory whereSubject($value)
      * @method static \Illuminate\Database\Eloquent\Builder<EmailHistory>|EmailHistory whereFrom($value)
      * @method static \Illuminate\Database\Eloquent\Builder<EmailHistory>|EmailHistory whereEmailFrom($value)

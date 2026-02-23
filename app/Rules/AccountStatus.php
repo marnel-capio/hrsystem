@@ -2,14 +2,14 @@
 
 namespace App\Rules;
 
-use App\Models\Log;
-use App\Models\User;
 use Illuminate\Contracts\Validation\Rule;
+use App\Models\User;
+use App\Models\Log;
 
 class AccountStatus implements Rule
 {
-    private $message;
-    private string $action; // "log in" or "send reset password link"
+    private string $message;
+    private string $action;
     private string $module;
 
     public function __construct(string $action = 'log in', string $module = 'Users')
@@ -20,10 +20,8 @@ class AccountStatus implements Rule
 
     public function passes($attribute, $value)
     {
-        // Get user by email_address ONLY
-        $user = User::where('email_address', $value)->first();
+        $user = User::findByEmail($value);
 
-        // If user exists and is inactive
         if ($user && $user->active_status == 0) {
             Log::createLog(
                 $this->module,
@@ -32,7 +30,6 @@ class AccountStatus implements Rule
             );
 
             $this->message = 'Your account is no longer active. Please check it with your manager or admin.';
-
             return false;
         }
 

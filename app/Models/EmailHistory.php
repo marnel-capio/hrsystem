@@ -12,7 +12,6 @@ class EmailHistory extends Model
 
     protected $fillable = [
         'status',
-        'email_code',
         'subject',
         'from',
         'email_from',
@@ -29,7 +28,6 @@ class EmailHistory extends Model
      */
     public static function logEmail(
         int $status,
-        string $emailCode,
         string $subject,
         string $fromName,
         string $emailFrom,
@@ -39,7 +37,6 @@ class EmailHistory extends Model
     ) {
         return self::create([
             'status' => $status,
-            'email_code' => $emailCode,
             'subject' => $subject,
             'from' => $fromName,
             'email_from' => $emailFrom,

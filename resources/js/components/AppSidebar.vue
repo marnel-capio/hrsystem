@@ -77,8 +77,8 @@ function isActiveStartsWith(path: string) { return current.startsWith(path) }
             <div v-if="showApplicationTracker && !collapsed" class="sidebar-submenu">
 
                 <!-- DASHBOARD (hidden only for 4,6,7) -->
-                <Link v-if="canAccess('/dashboard') && !isHidden('/dashboard')" href="/application-tracker"
-                    class="sidebar-group" :class="{ active: isActive('/application-tracker') }">
+                <Link v-if="canAccess('/application-tracker-dashboard') && !isHidden('/application-tracker-dashboard')" href="/application-tracker-dashboard"
+                    class="sidebar-group" :class="{ active: isActive('/application-tracker-dashboard') }">
                     <ChartColumnIncreasing :size="16" />
                     <span>Dashboard</span>
                 </Link>
@@ -152,7 +152,7 @@ function isActiveStartsWith(path: string) { return current.startsWith(path) }
                     :class="{ active: isActiveStartsWith('/walk-in-application') }">
 
                     <FileChartColumnIncreasing :size="16" />
-                    <span>Application</span>
+                    <span>Walk-in Application</span>
 
                 </Link>
             </div>
