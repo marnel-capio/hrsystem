@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,19 +21,10 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot()
-{
-    // Other boot code...
- 
-    // Define permission for viewing action batches
-    Gate::define('view_action_batches', function ($user) {
-        // Example: allow all authenticated users
-        return $user != null;
- 
-        // Or restrict to certain roles:
-        // return in_array($user->role, ['admin', 'supervisor']);
-    });
-}
+    public function boot(): void
+    {
+        $this->configureDefaults();
+    }
 
     /**
      * Configure default behaviors for production-ready applications.
