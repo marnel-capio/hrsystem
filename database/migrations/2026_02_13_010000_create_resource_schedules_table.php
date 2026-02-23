@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('resource_schedules', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('action_batch_id')->unsigned();
-            $table->string('batch_name', 10); //added, originally not in bd and db tables. will add to those excel files.
             $table->tinyInteger('target_location'); // 1-Manila, 2-Cebu
             $table->tinyInteger('target_trainees');
             $table->string('deployment_date', 10);
