@@ -13,14 +13,14 @@ class ResourceSchedule extends Model
     public $timestamps = false;
 
     /**
-     * Mass assignable fields (not used ywt, but kept safe)
+     * Mass assignable fields
      */
     protected $fillable = [
-        'batch_name',
+        'action_batch_id',
         'target_location',
         'target_trainees',
         'deployment_date',
-        'wbs',
+        'remarks',
         'created_by',
         'created_time',
         'updated_by',
@@ -31,34 +31,44 @@ class ResourceSchedule extends Model
      * Casts
      */
     protected $casts = [
-        'wbs'          => 'array',
-        'created_time' => 'datetime',
-        'updated_time' => 'datetime',
+        'created_time'    => 'datetime',
+        'updated_time'    => 'datetime',
+        'deployment_date' => 'date',
     ];
 
+    /**
+     * Relationship to action_batches
+     */
+    public function actionBatch()
+    {
+        return $this->belongsTo(ActionBatch::class, 'action_batch_id', 'action_batch_id');
+    }
+
+    /**
+     * Scope search (for index live search)
+     */
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        if (!$term) return $query;
+
+        $term = strtolower($term);
+
+        // Eager load actionBatch and filter
+        return $query->with('actionBatch')->whereHas('actionBatch', function ($q) use ($term) {
+            $q->whereRaw("LOWER(action_batch) LIKE ?", ["%{$term}%"]);
+        })
+        ->orWhereRaw("LOWER(target_location) LIKE ?", ["%{$term}%"])
+        ->orWhereRaw("LOWER(DATE_FORMAT(deployment_date, '%M %Y')) LIKE ?", ["%{$term}%"]);
+    }
 
     /**
      * Get list page data
      */
-    public static function listPageData()
+    public static function listPageData(?string $search = null)
     {
-        return static::orderBy('created_time', 'desc')->get();
+        return static::search($search)
+            ->with('actionBatch')
+            ->orderBy('created_time', 'desc')
+            ->get();
     }
-
-    
-    /**
-     * Search
-     */
-    public function scopeSearch($query, $term)
-{
-    if (!$term) return $query;
-
-    $term = strtolower($term);
-
-    return $query->where(function ($q) use ($term) {
-        $q->whereRaw("LOWER(batch_name) LIKE ?", ["%{$term}%"])
-          ->orWhereRaw("LOWER(target_location) LIKE ?", ["%{$term}%"])
-          ->orWhereRaw("LOWER(DATE_FORMAT(deployment_date, '%M %Y')) LIKE ?", ["%{$term}%"]);
-    });
-}
 }

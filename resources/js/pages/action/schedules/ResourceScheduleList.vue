@@ -13,15 +13,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 const props = defineProps<{
   schedules: Array<{
     id: number;
-    batch_name: string;
+    action_batch: string;  // <-- updated
     target_trainees: number;
     deployment_date: string;
-    target_location: string;
+    target_location: number; // 1 = Manila, 2 = Cebu
   }>;
   filters: {
     search: string;
   };
 }>();
+
+// Map location number to string
+function formatLocation(loc: number) {
+  return loc === 1 ? 'Manila' : loc === 2 ? 'Cebu' : 'Unknown';
+}
 
 // Search input bound to backend
 const searchQuery = ref(props.filters.search || '');
@@ -99,12 +104,12 @@ function formatDeploymentDate(dateStr: string) {
           <tr v-for="rs in props.schedules" :key="rs.id">
             <td class="border px-3 py-2">
               <a :href="`/action/schedules/${rs.id}`" class="text-blue-600 hover:underline">
-                {{ rs.batch_name }}
+                {{ rs.action_batch }}
               </a>
             </td>
             <td class="border px-3 py-2">{{ rs.target_trainees }}</td>
             <td class="border px-3 py-2">{{ formatDeploymentDate(rs.deployment_date) }}</td>
-            <td class="border px-3 py-2">{{ rs.target_location }}</td>
+            <td class="border px-3 py-2">{{ formatLocation(rs.target_location) }}</td>
           </tr>
         </tbody>
       </table>
