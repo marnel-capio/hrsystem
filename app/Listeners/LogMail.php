@@ -52,8 +52,8 @@ class LogMail
                 'email_from' => $fromEmail,
                 'email_to' => $toEmail,
                 'email_body' => $body,
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
+                'created_by' => 1,
+                'updated_by' => 1,
                 'create_time' => now(),
                 'update_time' => now(),
             ]);

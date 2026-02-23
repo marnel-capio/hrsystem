@@ -22,7 +22,6 @@ class AWSEmailAddress implements Rule
         $domain = substr(strrchr($value, "@"), 1) ?: '';
         if ($domain !== 'awsys-i.com') {
             $this->messageText = 'The :attribute must be your AWS email address.';
-            Log::createLog($this->module, "A person using {$value} failed validation (invalid AWS domain).", null);
             return false;
         }
 
@@ -30,7 +29,6 @@ class AWSEmailAddress implements Rule
 
         if (! $user) {
             $this->messageText = 'The email address is not registered.';
-            Log::createLog($this->module, "A person using {$value} failed validation (email not registered).", null);
             return false;
         }
 

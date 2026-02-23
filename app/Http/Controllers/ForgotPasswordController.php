@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmailRequest;
 use App\Mail\NewPasswordMail;
-use App\Events\EmailSent;
 use App\Models\Log;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +20,14 @@ class ForgotPasswordController extends Controller
 
     public function store(EmailRequest $request)
     {
-        $user = User::findByEmail($request->email_address);
+        $user = User::where('email_address', $request->email_address)->first();
+
+        if (!$user) {
+            return back()->withErrors([
+                'email_address' => 'No user found with this email.',
+            ]);
+        }
+
         $newPassword = $this->generateStrongPassword();
 
         try {
@@ -51,12 +57,17 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        // Only send the email
-        Mail::to($user->email_address)->send(new NewPasswordMail(
-            $user->first_name,
-            $user->email_address,
-            $newPassword
-        ));
+        try {
+            // Send the new password email
+            Mail::to($user->email_address)->send(new NewPasswordMail(
+                $user->first_name,
+                $user->email_address,
+                $newPassword,
+                $user->id // optional for header in listener
+            ));
+        } catch (\Exception $e) {
+            // Optional: handle failures manually if needed
+        }
 
         return redirect('/login')->with('status', 'A new password has been sent to your email.');
     }

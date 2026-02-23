@@ -23,12 +23,6 @@ class AccountStatus implements Rule
         $user = User::findByEmail($value);
 
         if ($user && $user->active_status == 0) {
-            Log::createLog(
-                $this->module,
-                "A person using this email address {$value} failed to {$this->action}.",
-                null
-            );
-
             $this->message = 'Your account is no longer active. Please check it with your manager or admin.';
             return false;
         }
