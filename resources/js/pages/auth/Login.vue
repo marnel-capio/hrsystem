@@ -63,7 +63,6 @@ const submit = () => {
             type="text"
             placeholder="Enter your email"
             autofocus
-            
           />
           <span v-if="form.errors.email_address" class="error">
             {{ form.errors.email_address }}
@@ -76,7 +75,6 @@ const submit = () => {
             v-model="form.password"
             type="password"
             placeholder="Enter your password"
-            
           />
           <span v-if="form.errors.password" class="error">
             {{ form.errors.password }}

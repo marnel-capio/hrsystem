@@ -28,7 +28,7 @@ class LoginRequest extends FormRequest
     public function messages()
     {
         return [
-            'email_address.exists' => "No user found with this email address.",
+            'email_address.exists' => "The email address is not registered.",
         ];
     }
 
