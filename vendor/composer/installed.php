@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'laravel/vue-starter-kit',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => null,
+        'pretty_version' => 'dev-develop',
+        'version' => 'dev-develop',
+        'reference' => '141501714e1c8eb504ad5324c16f050eb1ac72e2',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -401,9 +401,9 @@
             ),
         ),
         'inertiajs/inertia-laravel' => array(
-            'pretty_version' => 'v2.0.19',
-            'version' => '2.0.19.0',
-            'reference' => '732a991342a0f82653a935440e2f3b9be1eb6f6e',
+            'pretty_version' => 'v2.0.20',
+            'version' => '2.0.20.0',
+            'reference' => '02a719d1120378aed68053b5b2d35157140df50e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../inertiajs/inertia-laravel',
             'aliases' => array(),
@@ -414,6 +414,15 @@
             'replaced' => array(
                 0 => '*',
             ),
+        ),
+        'laravel/boost' => array(
+            'pretty_version' => 'v2.0.6',
+            'version' => '2.0.6.0',
+            'reference' => '1e1cb76e8e87ca3dd3c3d64deccbc97f4de38215',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../laravel/boost',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'laravel/fortify' => array(
             'pretty_version' => 'v1.34.1',
@@ -432,6 +441,15 @@
             'install_path' => __DIR__ . '/../laravel/framework',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'laravel/mcp' => array(
+            'pretty_version' => 'v0.5.4',
+            'version' => '0.5.4.0',
+            'reference' => '4f97e50a8e9c60d91aafb472c9b593b1d3181adb',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../laravel/mcp',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'laravel/pail' => array(
             'pretty_version' => 'v1.2.5',
@@ -459,6 +477,15 @@
             'install_path' => __DIR__ . '/../laravel/prompts',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'laravel/roster' => array(
+            'pretty_version' => 'v0.2.9',
+            'version' => '0.2.9.0',
+            'reference' => '82bbd0e2de614906811aebdf16b4305956816fa6',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../laravel/roster',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'laravel/sail' => array(
             'pretty_version' => 'v1.52.0',
@@ -488,9 +515,9 @@
             'dev_requirement' => false,
         ),
         'laravel/vue-starter-kit' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => null,
+            'pretty_version' => 'dev-develop',
+            'version' => 'dev-develop',
+            'reference' => '141501714e1c8eb504ad5324c16f050eb1ac72e2',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
