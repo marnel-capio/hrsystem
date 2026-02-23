@@ -30,6 +30,7 @@ class LogMail
         $mailBody =  (array) $event->message->getBody();
         $ctr=0;
         $body = "";
+        $userId =  $event->data['userId'];
         foreach ($mailBody as $key => $val) {
             if ($ctr == 1) {
                 $body = $val;
@@ -52,8 +53,8 @@ class LogMail
                 'email_from' => $fromEmail,
                 'email_to' => $toEmail,
                 'email_body' => $body,
-                'created_by' => 1,
-                'updated_by' => 1,
+                'created_by' => $userId,
+                'updated_by' => $userId,
                 'create_time' => now(),
                 'update_time' => now(),
             ]);

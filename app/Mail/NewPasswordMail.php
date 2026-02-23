@@ -13,6 +13,7 @@ class NewPasswordMail extends Mailable
     public string $firstName;
     public string $emailAddress;
     public string $newPassword;
+    public string $userId;
 
     /**
      * Create a new message instance.
@@ -21,11 +22,12 @@ class NewPasswordMail extends Mailable
      * @param string $emailAddress
      * @param string $newPassword
      */
-    public function __construct(string $firstName, string $emailAddress, string $newPassword)
+    public function __construct(string $firstName, string $emailAddress, string $newPassword, string $userId)
     {
         $this->firstName = $firstName;
         $this->emailAddress = $emailAddress;
         $this->newPassword = $newPassword;
+        $this->userId = $userId;
     }
 
     /**
