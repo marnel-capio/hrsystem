@@ -3,29 +3,42 @@ import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
-
-
-// Define props to receive centralized error messages from the backend
+// Props from backend
 const props = defineProps<{
   errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
+  actionBatches: { id: number; action_batch: string }[];
 }>();
 
-// Access Inertia page props for flash messages
+// Inertia page
 const page = usePage();
 
-// Initialize Inertia form with default values
+// Initialize form with all required fields
 const form = useForm({
-  batchName: "",
-  location: "",
-  targetTrainees: "",
-  deploymentDate: "",
-  wbs: {},
+  action_batch_id: "",
+  target_location: "",
+  target_trainees: "",
+  deployment_date: "",
+  contact_schools_startdate: "",
+  contact_schools_enddate: "",
+  source_testing_startdate: "",
+  source_testing_enddate: "",
+  initial_interviews_startdate: "",
+  initial_interviews_enddate: "",
+  final_interviews_startdate: "",
+  final_interviews_enddate: "",
+  contract_offers_startdate: "",
+  contract_offers_enddate: "",
+  requirements_startdate: "",
+  requirements_enddate: "",
+  training_startdate: "",
+  training_enddate: "",
+  remarks: "",
 });
 
-// Define the list of WBS activities
+// Gantt activity keys
 const ganttActivities = [
   "contact_schools",
-  "sourcing_testing",
+  "source_testing",
   "initial_interviews",
   "final_interviews",
   "contract_offers",
@@ -33,11 +46,11 @@ const ganttActivities = [
   "training"
 ];
 
-// Format activity keys into readable names
+// UI labels
 function formatActivityName(key: string) {
   const names: Record<string, string> = {
     contact_schools: "Contact Schools",
-    sourcing_testing: "Sourcing & Testing",
+    source_testing: "Sourcing & Testing",
     initial_interviews: "Initial Interviews",
     final_interviews: "Final Interviews",
     contract_offers: "Contract Offers",
@@ -47,22 +60,20 @@ function formatActivityName(key: string) {
   return names[key] || key;
 }
 
-
-// Initialize reactive state for WBS form
+// Reactive Gantt inputs
 const ganttForm = ref(
   Object.fromEntries(
     ganttActivities.map(a => [a, { start: "", end: "", error: "" }])
   )
 );
 
-// Helper to convert week string to a numerical key for comparison
+// Week helper functions
 function weekToKey(weekStr: string) {
   if (!weekStr) return null;
   const [year, wk] = weekStr.split("-W").map(Number);
   return year * 100 + wk;
 }
 
-// Format week string into a display label (e.g., "Jan W1")
 function formatWeekLabel(weekStr: string) {
   const [year, weekNum] = weekStr.split("-W").map(Number);
   const jan4 = new Date(year, 0, 4);
@@ -71,7 +82,7 @@ function formatWeekLabel(weekStr: string) {
   return `${month} W${weekNum}`;
 }
 
-// Compute the list of unique weeks for the Gantt chart based on WBS ranges
+// Compute unique weeks for Gantt preview
 const ganttWeeks = computed(() => {
   const keys: number[] = [];
   ganttActivities.forEach(act => {
@@ -94,7 +105,7 @@ const ganttWeeks = computed(() => {
   });
 });
 
-// Compute month spans for the Gantt chart header
+// Month spans
 const monthSpans = computed(() => {
   const spans: any[] = [];
   let current: any = null;
@@ -111,7 +122,7 @@ const monthSpans = computed(() => {
   return spans;
 });
 
-// Compute rows for the Gantt chart bars
+// Gantt rows
 const ganttRows = computed(() => {
   return ganttActivities.map(act => {
     const { start, end } = ganttForm.value[act];
@@ -123,30 +134,25 @@ const ganttRows = computed(() => {
   });
 });
 
-// Compute success message from flash data
+// Success message
 const successMessage = computed(() => (page.props.flash as any)?.success || '');
-
-// Auto-clear success message after 5 seconds on component mount
+const showSuccess = ref(successMessage.value);
 onMounted(() => {
-  if (successMessage.value) {
-    setTimeout(() => {
-      (page.props.flash as any).success = '';
-    }, 5000);
-  }
+  if (showSuccess.value) setTimeout(() => showSuccess.value = false, 5000);
 });
 
-// Gantt preview colors
+// Gantt colors
 const wbsColors: Record<string, string> = {
-  contact_schools: '#166534',   // dark green
-  sourcing_testing: '#dc2626',  // red 
-  initial_interviews: '#f97316', // orange
-  final_interviews: '#2563eb',  // blue
-  contract_offers: '#7c3aed',   // purple
-  requirements: '#ec4899',      // pink
-  training: '#84cc16',          // light green
+  contact_schools: '#166534',
+  source_testing: '#dc2626',
+  initial_interviews: '#f97316',
+  final_interviews: '#2563eb',
+  contract_offers: '#7c3aed',
+  requirements: '#ec4899',
+  training: '#84cc16',
 };
 
-// Validate WBS ranges and display errors using centralized messages
+// Validate WBS ranges
 function validateWBS() {
   let hasErrors = false;
   let firstErrorAct: string | null = null;
@@ -162,39 +168,26 @@ function validateWBS() {
   });
   if (hasErrors && firstErrorAct) {
     const errorElement = document.getElementById('error-' + firstErrorAct);
-    if (errorElement) {
-      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    if (errorElement) errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   return hasErrors;
 }
 
-// Handle form submission with WBS validation and API call
+// Submit form
 function createResourceSchedule() {
-  if (validateWBS()) {
-    return;
-  }
+  if (validateWBS()) return;
 
-  const wbsPayload: Record<string, { start: string; end: string }> = {};
-  ganttActivities.forEach(a => {
-    wbsPayload[a] = {
-      start: ganttForm.value[a].start,
-      end: ganttForm.value[a].end
-    };
-  });
-
-  form.wbs = wbsPayload;
+  // Map ganttForm to form fields
+ganttActivities.forEach(act => {
+  (form as any)[`${act}_startdate`] = ganttForm.value[act].start;
+  (form as any)[`${act}_enddate`] = ganttForm.value[act].end;
+});
 
   form.post('/action/schedules', {
-    onSuccess: (page) => {
-      console.log('Inertia onSuccess: Page props:', page.props);
-    },
-    onError: (errors) => {
-      console.log('Inertia onError: Errors:', errors);
-    },
+    onSuccess: () => { showSuccess.value = true },
+    onError: (errors) => console.log(errors),
   });
 }
-
 </script>
 
 <template>
@@ -204,148 +197,155 @@ function createResourceSchedule() {
     <div class="max-w-5xl mx-auto w-full space-y-10 p-8">
       <h1 class="text-3xl font-bold mb-6">Create Resource Schedule</h1>
 
-      <!-- Display success message if present -->
-      <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+      <div v-if="showSuccess" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
         {{ successMessage }}
       </div>
 
       <div class="bg-white dark:bg-zinc-900 p-10 rounded-2xl border shadow-xl space-y-10">
         <form @submit.prevent="createResourceSchedule">
-          <!-- Basic Information Section -->
+
+          <!-- Basic Info -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <label class="text-sm font-semibold">Batch Name</label>
-              <select v-model="form.batchName" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
+              <select v-model="form.action_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
                 <option value="">Select</option>
-                <option value="ACTION 39">ACTION 39</option>
-                <option value="ACTION 40">ACTION 40</option>
-                <option value="ACTION 41">ACTION 41</option>
+                <option v-for="batch in props.actionBatches" :key="batch.id" :value="batch.id">
+                  {{ batch.action_batch }}
+                </option>
               </select>
-              <p v-if="form.errors.batchName" class="text-red-600 text-xs mt-1">
-                {{ form.errors.batchName }}
+              <p v-if="form.errors.action_batch_id" class="text-red-600 text-xs mt-1">
+                {{ form.errors.action_batch_id }}
               </p>
             </div>
-<div>
-  <label class="text-sm font-semibold">Target Location</label>
-  <select v-model="form.location" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
-    <option value="">Select</option>
-    <option value="Manila">Manila</option>
-    <option value="Cebu">Cebu</option>
-  </select>
-  <p v-if="form.errors.location" class="text-red-600 text-xs mt-1">
-    {{ form.errors.location }}
-  </p>
-</div>
+
+            <div>
+              <label class="text-sm font-semibold">Target Location</label>
+              <select v-model="form.target_location" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
+                <option value="">Select</option>
+                <option value="1">Manila</option>
+                <option value="2">Cebu</option>
+              </select>
+              <p v-if="form.errors.target_location" class="text-red-600 text-xs mt-1">
+                {{ form.errors.target_location }}
+              </p>
+            </div>
 
             <div>
               <label class="text-sm font-semibold">Target Trainees</label>
-              <input v-model="form.targetTrainees" type="number" class="w-full bg-zinc-50 border rounded-lg p-2.5" required />
-              <p v-if="form.errors.targetTrainees" class="text-red-600 text-xs mt-1">
-                {{ form.errors.targetTrainees }}
+              <input v-model="form.target_trainees" type="number" class="w-full bg-zinc-50 border rounded-lg p-2.5" required />
+              <p v-if="form.errors.target_trainees" class="text-red-600 text-xs mt-1">
+                {{ form.errors.target_trainees }}
               </p>
             </div>
 
             <div>
               <label class="text-sm font-semibold">Date of Deployment</label>
-              <input v-model="form.deploymentDate" type="month" class="w-full bg-zinc-50 border rounded-lg p-2.5" required />
-              <p v-if="form.errors.deploymentDate" class="text-red-600 text-xs mt-1">
-                {{ form.errors.deploymentDate }}
+              <input v-model="form.deployment_date" type="month" class="w-full bg-zinc-50 border rounded-lg p-2.5" required />
+              <p v-if="form.errors.deployment_date" class="text-red-600 text-xs mt-1">
+                {{ form.errors.deployment_date }}
               </p>
             </div>
           </div>
 
-          <!-- Work Breakdown Schedule Section -->
+          <!-- Gantt Section -->
+<!-- Work Breakdown Schedule Section -->
 <h2 class="text-xl font-bold mb-4 mt-10">Work Breakdown Schedule (WBS)</h2>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <template v-for="act in ganttActivities" :key="act">
-              <div>
-                <label class="font-semibold">{{ formatActivityName(act) }}</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+  <template v-for="act in ganttActivities" :key="act">
+    <div>
+      <label class="font-semibold">{{ formatActivityName(act) }}</label>
 
-                <div class="grid grid-cols-2 gap-3 mt-1 mb-1">
-                  <div>
-                    <label class="text-xs text-zinc-500 block mb-1">Start</label>
-                    <input type="week" v-model="ganttForm[act].start" class="w-full bg-zinc-50 border rounded-lg p-2" required />
-                  </div>
+      <div class="grid grid-cols-2 gap-3 mt-1 mb-1">
+        <div>
+          <label class="text-xs text-zinc-500 block mb-1">Start</label>
+          <input
+            type="week"
+            v-model="ganttForm[act].start"
+            class="w-full bg-zinc-50 border rounded-lg p-2"
+            required
+          />
+        </div>
 
-                  <div>
-                    <label class="text-xs text-zinc-500 block mb-1">End</label>
-                    <input type="week" v-model="ganttForm[act].end" class="w-full bg-zinc-50 border rounded-lg p-2" required />
-                  </div>
-                </div>
+        <div>
+          <label class="text-xs text-zinc-500 block mb-1">End</label>
+          <input
+            type="week"
+            v-model="ganttForm[act].end"
+            class="w-full bg-zinc-50 border rounded-lg p-2"
+            required
+          />
+        </div>
+      </div>
 
-                <p v-if="ganttForm[act].error" :id="'error-' + act" class="text-red-600 text-xs">
-                  {{ ganttForm[act].error }}
-                </p>
-              </div>
-            </template>
-          </div>
-
-          <!-- Gantt Chart Preview -->
-          <div class="mt-12">
-            <h2 class="font-bold text-xl mb-4">WBS Preview</h2>
-
-            <div v-if="ganttWeeks.length" class="overflow-x-auto border p-6 rounded-xl shadow-sm">
-              <div class="grid gap-0.5" :style="`grid-template-columns: 220px repeat(${ganttWeeks.length}, 1fr)`">
-                <div class="p-2 bg-zinc-50 font-bold border-b">Activity</div>
-
-                <template v-for="m in monthSpans" :key="m.month">
-                  <div :style="`grid-column: span ${m.count}`" class="text-center font-bold text-base p-2 bg-blue-50 border-b">
-                    {{ m.month }}
-                  </div>
-                </template>
-
-                <div></div>
-
-                <template v-for="w in ganttWeeks" :key="w">
-                  <div class="text-[11px] text-center p-1 bg-blue-50 border-b">
-                    {{ formatWeekLabel(w) }}
-                  </div>
-                </template>
-
-                <!-- Activity Bars -->
-                <template v-for="row in ganttRows" :key="row.activity">
-                  <div class="font-semibold py-2 border-r pr-2">
-                    {{ formatActivityName(row.activity) }}
-                  </div>
-
-                  <template v-for="(_, i) in ganttWeeks" :key="i">
-<div class="border h-7 relative">
-  <div
-    v-if="i >= row.startIndex && i <= row.endIndex && row.startIndex !== -1"
-    class="absolute inset-0 rounded-sm"
-    :style="`background-color: ${wbsColors[row.activity] || '#000'}; opacity: 0.8;`"
-  ></div>
+      <p v-if="ganttForm[act].error" :id="'error-' + act" class="text-red-600 text-xs">
+        {{ ganttForm[act].error }}
+      </p>
+    </div>
+  </template>
 </div>
 
-                  </template>
-                </template>
-              </div>
-            </div>
+<!-- Gantt Chart Preview -->
+<div class="mt-12">
+  <h2 class="font-bold text-xl mb-4">WBS Preview</h2>
 
-            <div v-else class="text-sm text-zinc-500">Select weeks to generate preview.</div>
+  <div v-if="ganttWeeks.length" class="overflow-x-auto border p-6 rounded-xl shadow-sm">
+    <div class="grid gap-0.5" :style="`grid-template-columns: 220px repeat(${ganttWeeks.length}, 1fr)`">
+      <!-- Header: Activity -->
+      <div class="p-2 bg-zinc-50 font-bold border-b">Activity</div>
+
+      <!-- Header: Month spans -->
+      <template v-for="m in monthSpans" :key="m.month">
+        <div
+          :style="`grid-column: span ${m.count}`"
+          class="text-center font-bold text-base p-2 bg-blue-50 border-b"
+        >
+          {{ m.month }}
+        </div>
+      </template>
+
+      <div></div> <!-- spacer -->
+
+      <!-- Header: Week labels -->
+      <template v-for="w in ganttWeeks" :key="w">
+        <div class="text-[11px] text-center p-1 bg-blue-50 border-b">
+          {{ formatWeekLabel(w) }}
+        </div>
+      </template>
+
+      <!-- Activity Rows -->
+      <template v-for="row in ganttRows" :key="row.activity">
+        <div class="font-semibold py-2 border-r pr-2">
+          {{ formatActivityName(row.activity) }}
+        </div>
+
+        <template v-for="(_, i) in ganttWeeks" :key="i">
+          <div class="border h-7 relative">
+            <div
+              v-if="i >= row.startIndex && i <= row.endIndex && row.startIndex !== -1"
+              class="absolute inset-0 rounded-sm"
+              :style="`background-color: ${wbsColors[row.activity] || '#000'}; opacity: 0.8;`"
+            ></div>
+          </div>
+        </template>
+      </template>
+    </div>
+  </div>
+
+  <div v-else class="text-sm text-zinc-500">Select weeks to generate preview.</div>
+</div>
+
+          <!-- Buttons -->
+          <div class="flex justify-end gap-3 mt-6">
+            <button type="button" @click="$inertia.visit('/action/schedules')" class="px-6 py-2.5 text-sm font-medium text-zinc-600 hover:text-zinc-900">
+              Cancel
+            </button>
+            <button type="submit" :disabled="form.processing" class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-bold shadow-lg">
+              Create
+            </button>
           </div>
 
-<!-- Buttons container -->
-<div class="flex justify-end gap-3 mt-6">
-    <!-- Cancel button -->
-  <button 
-    type="button" 
-    @click="$inertia.visit('/action/schedules')" 
-        class="px-6 py-2.5 text-sm font-medium text-zinc-600 hover:text-zinc-900"
-  >
-    Cancel
-  </button>
-
-  <!-- Create button -->
-  <button 
-    type="submit" 
-    :disabled="form.processing" 
-        class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-bold shadow-lg"
-  >
-    Create
-  </button>
-</div>
         </form>
       </div>
     </div>

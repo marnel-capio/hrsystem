@@ -11,11 +11,9 @@ return new class extends Migration
         Schema::create('resource_schedules', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('action_batch_id')->unsigned()->nullable(); //nullable for now since wala pang action batches na coded
-            $table->string('batch_name', 10); //added, originally not in bd and db tables. will add to those excel files.
             $table->tinyInteger('target_location'); // 1-Manila, 2-Cebu
             $table->tinyInteger('target_trainees');
             $table->string('deployment_date', 10);
-            $table->json('wbs')->nullable();
             $table->string('contact_schools_startdate', 10)->nullable();
             $table->string('contact_schools_enddate', 10)->nullable();
             $table->string('source_testing_startdate', 10)->nullable();

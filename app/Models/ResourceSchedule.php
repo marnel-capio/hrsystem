@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Models;
 
@@ -10,83 +10,126 @@ class ResourceSchedule extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'batch_name',
+        'action_batch_id',
         'target_location',
         'target_trainees',
         'deployment_date',
-        'wbs',
+        'contact_schools_startdate',
+        'contact_schools_enddate',
+        'source_testing_startdate',
+        'source_testing_enddate',
+        'initial_interviews_startdate',
+        'initial_interviews_enddate',
+        'final_interviews_startdate',
+        'final_interviews_enddate',
+        'contract_offers_startdate',
+        'contract_offers_enddate',
+        'requirements_startdate',
+        'requirements_enddate',
+        'training_startdate',
+        'training_enddate',
+        'remarks',
         'created_by',
         'created_time',
         'updated_by',
         'updated_time',
     ];
 
-    protected $casts = [
-        'wbs'          => 'array',
-        'created_time' => 'datetime',
-        'updated_time' => 'datetime',
-    ];
+    /**
+     * Relationship to ActionBatch
+     */
+    public function actionBatch()
+    {
+        return $this->belongsTo(ActionBatch::class, 'action_batch_id');
+    }
 
     /**
-     * Validate request and create a new schedule
+     * Create schedule from request
      */
     public static function createFromRequest($request)
     {
-        // Validation rules
         $validated = $request->validate([
-            'batchName'      => 'required|string|max:255|unique:resource_schedules,batch_name',
-            'location'       => 'required|string|max:255',
-            'targetTrainees' => 'required|integer|min:1',
-            'deploymentDate' => 'required|date_format:Y-m',
-            'wbs'            => 'required|array',
-            'wbs.*.start'    => 'required|regex:/^\d{4}-W\d{2}$/',
-            'wbs.*.end'      => 'required|regex:/^\d{4}-W\d{2}$/',
-        ], [
-            'batchName.required' => config('errors.field_required.errorMessage'),
-            'batchName.unique'   => config('errors.batch_name_taken.errorMessage'),
-            'location.required'  => config('errors.field_required.errorMessage'),
-            'targetTrainees.required' => config('errors.field_required.errorMessage'),
-            'targetTrainees.integer'  => config('errors.target_trainees_invalid.errorMessage'),
-            'targetTrainees.min'      => config('errors.target_trainees_min.errorMessage'),
-            'deploymentDate.required' => config('errors.field_required.errorMessage'),
-            'deploymentDate.date_format' => config('errors.deployment_date_format.errorMessage'),
-            'wbs.required' => config('errors.wbs_required.errorMessage'),
-            'wbs.*.start.required' => config('errors.wbs_start_required.errorMessage'),
-            'wbs.*.end.required'   => config('errors.wbs_end_before_start.errorMessage'),
+            'action_batch_id' => 'required|exists:action_batches,id',
+            'location'        => 'required|string|max:255',
+            'targetTrainees'  => 'required|integer|min:1',
+            'deploymentDate'  => 'required|date_format:Y-m',
+            // WBS validation
+            'contact_schools_startdate' => 'required|regex:/^\d{4}-W\d{2}$/',
+            'contact_schools_enddate'   => 'required|regex:/^\d{4}-W\d{2}$/',
+            'source_testing_startdate'  => 'required|regex:/^\d{4}-W\d{2}$/',
+            'source_testing_enddate'    => 'required|regex:/^\d{4}-W\d{2}$/',
+            'initial_interviews_startdate' => 'required|regex:/^\d{4}-W\d{2}$/',
+            'initial_interviews_enddate'   => 'required|regex:/^\d{4}-W\d{2}$/',
+            'final_interviews_startdate'   => 'required|regex:/^\d{4}-W\d{2}$/',
+            'final_interviews_enddate'     => 'required|regex:/^\d{4}-W\d{2}$/',
+            'contract_offers_startdate'    => 'required|regex:/^\d{4}-W\d{2}$/',
+            'contract_offers_enddate'      => 'required|regex:/^\d{4}-W\d{2}$/',
+            'requirements_startdate'       => 'required|regex:/^\d{4}-W\d{2}$/',
+            'requirements_enddate'         => 'required|regex:/^\d{4}-W\d{2}$/',
+            'training_startdate'           => 'required|regex:/^\d{4}-W\d{2}$/',
+            'training_enddate'             => 'required|regex:/^\d{4}-W\d{2}$/',
         ]);
 
-        // Validate WBS ranges
-        self::validateWbsRanges($validated['wbs']);
+        self::validateWbsRanges($validated);
 
-        // Create the schedule in a transaction
         return DB::transaction(function () use ($validated) {
             return self::create([
-                'batch_name'       => $validated['batchName'],
-                'target_location' => $validated['location'] === 'Cebu' ? 2 : ($validated['location'] === 'Manila' ? 1 : $validated['location']),                
-                'target_trainees'  => $validated['targetTrainees'],
-                'deployment_date'  => $validated['deploymentDate'],
-                'wbs'              => $validated['wbs'],
-                'created_by'       => auth()->id(),
-                'created_time'     => now(),
+                'action_batch_id' => $validated['action_batch_id'],
+                'target_location' => $validated['location'] === 'Manila' ? 1 : 2,
+                'target_trainees' => $validated['targetTrainees'],
+                'deployment_date' => $validated['deploymentDate'],
+
+                // WBS fields
+                'contact_schools_startdate' => $validated['contact_schools_startdate'],
+                'contact_schools_enddate'   => $validated['contact_schools_enddate'],
+                'source_testing_startdate'  => $validated['source_testing_startdate'],
+                'source_testing_enddate'    => $validated['source_testing_enddate'],
+                'initial_interviews_startdate' => $validated['initial_interviews_startdate'],
+                'initial_interviews_enddate'   => $validated['initial_interviews_enddate'],
+                'final_interviews_startdate'   => $validated['final_interviews_startdate'],
+                'final_interviews_enddate'     => $validated['final_interviews_enddate'],
+                'contract_offers_startdate'    => $validated['contract_offers_startdate'],
+                'contract_offers_enddate'      => $validated['contract_offers_enddate'],
+                'requirements_startdate'       => $validated['requirements_startdate'],
+                'requirements_enddate'         => $validated['requirements_enddate'],
+                'training_startdate'           => $validated['training_startdate'],
+                'training_enddate'             => $validated['training_enddate'],
+
+                'created_by'      => auth()->id(),
+                'created_time'    => now(),
             ]);
         });
     }
 
     /**
-     * Validate WBS ranges (throws exception on error)
+     * WBS range validation
      */
-    public static function validateWbsRanges(array $wbs)
+    public static function validateWbsRanges(array $data)
     {
-        foreach ($wbs as $activity => $range) {
-            [$startYear, $startWeek] = explode('-W', $range['start']);
-            [$endYear, $endWeek]     = explode('-W', $range['end']);
+        $activities = [
+            'contact_schools',
+            'source_testing',
+            'initial_interviews',
+            'final_interviews',
+            'contract_offers',
+            'requirements',
+            'training',
+        ];
+
+        foreach ($activities as $act) {
+            $start = $data[$act . '_startdate'];
+            $end   = $data[$act . '_enddate'];
+
+            [$startYear, $startWeek] = explode('-W', $start);
+            [$endYear, $endWeek]     = explode('-W', $end);
 
             $startDate = (new \DateTime())->setISODate((int)$startYear, (int)$startWeek);
             $endDate   = (new \DateTime())->setISODate((int)$endYear, (int)$endWeek);
 
             if ($endDate < $startDate) {
-                $label = ucfirst(str_replace('_', ' ', $activity));
-                abort(422, str_replace(':activity', $label, config('errors.wbs_end_before_start.errorMessage')));
+                abort(422, str_replace(':activity', ucfirst(str_replace('_', ' ', $act)),
+                    config('errors.wbs_end_before_start.errorMessage')
+                ));
             }
         }
     }
