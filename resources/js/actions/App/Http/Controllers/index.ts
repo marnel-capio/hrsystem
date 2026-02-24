@@ -1,13 +1,9 @@
-import AuthController from './AuthController'
-import DashboardController from './DashboardController'
-import ResourceScheduleController from './ResourceScheduleController'
+import ActionBatchController from './ActionBatchController'
 import Settings from './Settings'
 
 
 const Controllers = {
-    AuthController: Object.assign(AuthController, AuthController),
-    DashboardController: Object.assign(DashboardController, DashboardController),
-    ResourceScheduleController: Object.assign(ResourceScheduleController, ResourceScheduleController),
+    ActionBatchController: Object.assign(ActionBatchController, ActionBatchController),
     Settings: Object.assign(Settings, Settings),
 }
 
