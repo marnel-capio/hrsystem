@@ -22,7 +22,7 @@ class ForgotPasswordController extends Controller
     {
         $user = User::findByEmail($request->email_address);
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors([
                 'email_address' => 'No user found with this email.',
             ]);
@@ -36,6 +36,9 @@ class ForgotPasswordController extends Controller
             $user->password = Hash::make($newPassword);
             $user->save();
 
+            // TEMPORARY: force an exception to test the catch block
+            //throw new \Exception('Please try again.');
+
             Log::createLog(
                 'Users',
                 "Password reset for user {$user->first_name} {$user->last_name}",
@@ -48,7 +51,7 @@ class ForgotPasswordController extends Controller
 
             Log::createLog(
                 'Users',
-                "Failed password reset for {$user->first_name} {$user->last_name}: ".$e->getMessage(),
+                "Failed password reset for {$user->first_name} {$user->last_name}. ".$e->getMessage(),
                 $user->id
             );
 
@@ -81,17 +84,18 @@ class ForgotPasswordController extends Controller
         $all = $upper.$lower.$numbers.$special;
 
         $password = [
-            $upper[random_int(0, strlen($upper)-1)],
-            $lower[random_int(0, strlen($lower)-1)],
-            $numbers[random_int(0, strlen($numbers)-1)],
-            $special[random_int(0, strlen($special)-1)]
+            $upper[random_int(0, strlen($upper) - 1)],
+            $lower[random_int(0, strlen($lower) - 1)],
+            $numbers[random_int(0, strlen($numbers) - 1)],
+            $special[random_int(0, strlen($special) - 1)],
         ];
 
         for ($i = 4; $i < 8; $i++) {
-            $password[] = $all[random_int(0, strlen($all)-1)];
+            $password[] = $all[random_int(0, strlen($all) - 1)];
         }
 
         shuffle($password);
+
         return implode('', $password);
     }
 }

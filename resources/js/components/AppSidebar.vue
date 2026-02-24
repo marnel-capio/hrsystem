@@ -49,12 +49,12 @@ function isActiveStartsWith(path: string) { return current.startsWith(path) }
 <template>
     <aside :class="['sidebar', { collapsed }]">
         <div class="sidebar-header">
-            <Link href="/" class="sidebar-home">
-                <span v-if="!collapsed" class="sidebar-title">HR System</span>
-            </Link>
             <button class="sidebar-toggle" @click="toggleSidebar">
                 <Menu :size="20" />
             </button>
+            <Link href="/" class="sidebar-home">
+                <span v-if="!collapsed" class="sidebar-title">HR System</span>
+            </Link>
         </div>
 
         <nav class="sidebar-nav">
