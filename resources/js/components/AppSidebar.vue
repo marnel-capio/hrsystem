@@ -127,8 +127,8 @@ function isActiveStartsWith(path: string) { return current.startsWith(path) }
                     <span>Projects</span>
                 </Link>
 
-                <Link v-if="canAccess('/intermediate/requests')" href="/intermediate/requests"
-                    class="sidebar-sublink level-1" :class="{ active: isActiveStartsWith('/intermediate/requests') }">
+                <Link v-if="canAccess('/intermediate/resource-requisitions')" href="/intermediate/resource-requisitions"
+                    class="sidebar-sublink level-1" :class="{ active: isActiveStartsWith('/intermediate/resource-requisitions') }">
                     <FileText :size="14" />
                     <span>Resource Requisition Forms</span>
                 </Link>

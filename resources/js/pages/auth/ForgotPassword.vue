@@ -30,7 +30,7 @@ defineProps<{
           <Label for="email">Email address</Label>
           <Input
             id="email"
-            type="email"
+            type="text"
             name="email_address"
             autocomplete="off"
             autofocus

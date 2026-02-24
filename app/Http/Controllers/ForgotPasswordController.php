@@ -37,7 +37,7 @@ class ForgotPasswordController extends Controller
             $user->save();
 
             // TEMPORARY: force an exception to test the catch block
-            //throw new \Exception('Please try again.');
+            //throw new \Exception('');
 
             Log::createLog(
                 'Users',

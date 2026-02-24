@@ -29,7 +29,7 @@ class EmailRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email_address.required' => 'This field is required.',
+            'email_address.required' => 'The email field is required.',
             'email_address.email' => 'The email address must be a valid email address.',
             'email_address.max' => 'The email address must not be greater than 80 characters.',
         ];
