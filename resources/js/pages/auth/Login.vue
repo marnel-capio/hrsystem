@@ -1,31 +1,38 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useForm, router } from '@inertiajs/vue3'
 import awsLogo from '@/images/aws-logo.jpg'
 
-// ✅ Get props from Inertia
+// ✅ Props from Inertia flash messages
 const props = defineProps<{
-  status?: string
+  flash?: {
+    success?: string
+  }
 }>()
 
-// Store status in a local reactive ref
-const statusMessage = ref<string | null>(props.status || null)
+// Toast state
+const showSuccess = ref(false)
+const successMessage = ref<string | null>(null)
 
-// Optional: watch for changes in props (usually not needed unless status updates dynamically)
-watch(
-  () => props.status,
-  (newVal) => {
-    if (newVal) statusMessage.value = newVal
+// Show toast if flash.success exists
+onMounted(() => {
+  if (props.flash?.success) {
+    successMessage.value = props.flash.success
+    showSuccess.value = true
+
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+      showSuccess.value = false
+    }, 5000)
   }
-)
+})
 
-// Inertia form
+// Inertia login form
 const form = useForm({
   email_address: '',
   password: '',
 })
 
-// Submit login
 const submit = () => {
   form.clearErrors()
   form.post('/login', {
@@ -46,14 +53,6 @@ const submit = () => {
     <div class="login-card">
       <img :src="awsLogo" alt="AWS Logo" class="aws-logo" />
       <h1>HR System</h1>
-
-      <!-- Status message -->
-      <div
-        v-if="statusMessage"
-        class="mb-4 text-center text-sm font-medium text-green-600"
-      >
-        {{ statusMessage }}
-      </div>
 
       <form @submit.prevent="submit">
         <div class="form-group">
@@ -88,5 +87,83 @@ const submit = () => {
         <a href="/forgot-password" class="forgot">Forgot your password?</a>
       </form>
     </div>
+
+    <!-- Toast / Alert full-width at top -->
+<div v-if="showSuccess" class="full-width-alert">
+  <div class="alert-success-banner">
+    <div class="alert-body">{{ successMessage }}</div>
+    <button type="button" class="close-btn" @click="showSuccess = false">×</button>
+  </div>
+</div>
   </div>
 </template>
+
+<style scoped>
+/* Full-width top alert */
+.full-width-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 1055;
+  display: flex;
+  justify-content: center;
+  pointer-events: none; /* doesn’t block page clicks */
+}
+
+/* Banner styling – slimmer version */
+.alert-success-banner {
+  background-color: #28a745; /* green success */
+  color: #fff;
+  padding: 0.4rem 1rem; /* slimmer vertical padding */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  pointer-events: auto; /* allow button click */
+  animation: slideDown 0.4s ease-out;
+  font-size: 0.95rem; /* slightly smaller text */
+}
+
+/* Text */
+.alert-body {
+  flex: 1;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Close button styling */
+.close-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  font-size: 1rem; /* slightly smaller */
+  width: 28px;
+  height: 28px; /* smaller than before */
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+  transform: scale(1.1);
+}
+
+/* Slide-down animation */
+@keyframes slideDown {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+</style>

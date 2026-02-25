@@ -37,7 +37,7 @@ class ForgotPasswordController extends Controller
             $user->save();
 
             // TEMPORARY: force an exception to test the catch block
-            //throw new \Exception('');
+            // throw new \Exception('');
 
             Log::createLog(
                 'Users',
@@ -72,7 +72,10 @@ class ForgotPasswordController extends Controller
             // Optional: handle failures manually if needed
         }
 
-        return redirect('/login')->with('status', 'Your password was successfully updated. A temporary password has been sent to your email.');
+        return redirect()->route('login')->with(
+            'success',
+            'Your password was successfully updated. A temporary password has been sent to your email.'
+        );
     }
 
     private function generateStrongPassword(): string
