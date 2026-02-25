@@ -80,9 +80,6 @@ const submit = () => {
                         placeholder="Remarks"
                         class="border p-2 rounded w-full"
                     />
-                    <span v-if="errors.remarks" class="text-red-600 text-xs mt-1">
-                        {{errors.remarks }}
-                    </span>
                 </div>
             </div>
  

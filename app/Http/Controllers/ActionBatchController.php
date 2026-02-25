@@ -38,9 +38,10 @@ class ActionBatchController extends Controller
                 'max:20',
                 'unique:action_batches,action_batch'
             ],
-            'remarks' => 'nullable|string|max:1024',
-            
-        ]);
+            'remarks' => 'nullable|string|max:1024',]
+            , [
+    'action_batch.unique' => 'Action Batch already exist.'
+]);
  
         ActionBatchModel::create([
             'action_batch' => strtoupper($request->action_batch),
