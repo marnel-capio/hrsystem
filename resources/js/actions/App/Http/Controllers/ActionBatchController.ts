@@ -1,73 +1,92 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches'
+* @see \App\Http\Controllers\ActionBatchController::show
+ * @see app/Http/Controllers/ActionBatchController.php:13
+ * @route '/action/batches/{id}'
  */
-const index6a7767732185e5ad4936faa232bd89ab = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index6a7767732185e5ad4936faa232bd89ab.url(options),
+export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
     method: 'get',
 })
 
-index6a7767732185e5ad4936faa232bd89ab.definition = {
+show.definition = {
     methods: ["get","head"],
-    url: '/action/batches',
+    url: '/action/batches/{id}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches'
+* @see \App\Http\Controllers\ActionBatchController::show
+ * @see app/Http/Controllers/ActionBatchController.php:13
+ * @route '/action/batches/{id}'
  */
-index6a7767732185e5ad4936faa232bd89ab.url = (options?: RouteQueryOptions) => {
-    return index6a7767732185e5ad4936faa232bd89ab.definition.url + queryParams(options)
+show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return show.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches'
+* @see \App\Http\Controllers\ActionBatchController::show
+ * @see app/Http/Controllers/ActionBatchController.php:13
+ * @route '/action/batches/{id}'
  */
-index6a7767732185e5ad4936faa232bd89ab.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index6a7767732185e5ad4936faa232bd89ab.url(options),
+show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches'
+* @see \App\Http\Controllers\ActionBatchController::show
+ * @see app/Http/Controllers/ActionBatchController.php:13
+ * @route '/action/batches/{id}'
  */
-index6a7767732185e5ad4936faa232bd89ab.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index6a7767732185e5ad4936faa232bd89ab.url(options),
+show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: show.url(args, options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches'
+* @see \App\Http\Controllers\ActionBatchController::show
+ * @see app/Http/Controllers/ActionBatchController.php:13
+ * @route '/action/batches/{id}'
  */
-    const index6a7767732185e5ad4936faa232bd89abForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: index6a7767732185e5ad4936faa232bd89ab.url(options),
+    const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches'
+* @see \App\Http\Controllers\ActionBatchController::show
+ * @see app/Http/Controllers/ActionBatchController.php:13
+ * @route '/action/batches/{id}'
  */
-        index6a7767732185e5ad4936faa232bd89abForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index6a7767732185e5ad4936faa232bd89ab.url(options),
+        showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches'
+* @see \App\Http\Controllers\ActionBatchController::show
+ * @see app/Http/Controllers/ActionBatchController.php:13
+ * @route '/action/batches/{id}'
  */
-        index6a7767732185e5ad4936faa232bd89abForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index6a7767732185e5ad4936faa232bd89ab.url({
+        showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -76,91 +95,7 @@ index6a7767732185e5ad4936faa232bd89ab.head = (options?: RouteQueryOptions): Rout
             method: 'get',
         })
     
-    index6a7767732185e5ad4936faa232bd89ab.form = index6a7767732185e5ad4936faa232bd89abForm
-    /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches/create'
- */
-const indexb348c80b12761851da58903f661b5d50 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: indexb348c80b12761851da58903f661b5d50.url(options),
-    method: 'get',
-})
-
-indexb348c80b12761851da58903f661b5d50.definition = {
-    methods: ["get","head"],
-    url: '/action/batches/create',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches/create'
- */
-indexb348c80b12761851da58903f661b5d50.url = (options?: RouteQueryOptions) => {
-    return indexb348c80b12761851da58903f661b5d50.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches/create'
- */
-indexb348c80b12761851da58903f661b5d50.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: indexb348c80b12761851da58903f661b5d50.url(options),
-    method: 'get',
-})
-/**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches/create'
- */
-indexb348c80b12761851da58903f661b5d50.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: indexb348c80b12761851da58903f661b5d50.url(options),
-    method: 'head',
-})
-
-    /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches/create'
- */
-    const indexb348c80b12761851da58903f661b5d50Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: indexb348c80b12761851da58903f661b5d50.url(options),
-        method: 'get',
-    })
-
-            /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches/create'
- */
-        indexb348c80b12761851da58903f661b5d50Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: indexb348c80b12761851da58903f661b5d50.url(options),
-            method: 'get',
-        })
-            /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:11
- * @route '/action/batches/create'
- */
-        indexb348c80b12761851da58903f661b5d50Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: indexb348c80b12761851da58903f661b5d50.url({
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    indexb348c80b12761851da58903f661b5d50.form = indexb348c80b12761851da58903f661b5d50Form
-
-export const index = {
-    '/action/batches': index6a7767732185e5ad4936faa232bd89ab,
-    '/action/batches/create': indexb348c80b12761851da58903f661b5d50,
-}
-
-const ActionBatchController = { index }
+    show.form = showForm
+const ActionBatchController = { show }
 
 export default ActionBatchController

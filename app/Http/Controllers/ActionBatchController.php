@@ -1,28 +1,18 @@
 <?php
+ 
 namespace App\Http\Controllers;
  
 use App\Models\ActionBatchModel;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Action;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
  
 class ActionBatchController extends Controller
 {
-    public function index(Request $request)
+    public function show($id)
     {
-        // if (! Auth::user()->can('view_action_batches')) {
-        //     abort(403, 'Unauthorized');
-        // }
- 
-        $search = $request->input('search');
-        $batches = ActionBatchModel::getPaginated($search, 10);
- 
-        return Inertia::render('action/batches/ActionBatchList', [
-            'batches' => $batches,
-            'filters' => [
-                'search' => $search,
-            ],
-        ]);
+        $batch = ActionBatchModel::findOrFail($id);
+        return Inertia::render('action/batches/ActionBatchEditDetail', ['batch'=> $batch]);
     }
 }
- 

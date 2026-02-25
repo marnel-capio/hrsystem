@@ -16,21 +16,4 @@ class ActionBatchModel extends Model
         'updated_by',
         'updated_time',
     ];
- 
-    public function scopeSearch($query, $search)
-    {
-        if ($search) {
-            $query->where('action_batch', 'like', "%{$search}%");
-        }
-        return $query;
-    }
-
-    public static function getPaginated($search = null, $perPage = 20)
-    {
-        return self::query()
-            ->search($search)
-            ->orderBy('id', 'desc')
-            ->paginate($perPage)
-            ->withQueryString();
-    }
 }
