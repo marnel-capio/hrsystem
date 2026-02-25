@@ -10,9 +10,9 @@ class ActionBatchController extends Controller
 {
     public function index(Request $request)
     {
-        if (! Auth::user()->can('view_action_batches')) {
-            abort(403, 'Unauthorized');
-        }
+        // if (! Auth::user()->can('view_action_batches')) {
+        //     abort(403, 'Unauthorized');
+        // }
  
         $search = $request->input('search');
         $batches = ActionBatchModel::getPaginated($search, 10);
