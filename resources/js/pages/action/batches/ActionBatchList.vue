@@ -34,6 +34,8 @@ const startPage = computed(() => {
 const endPage = computed(() => {
     return Math.min(startPage.value + blockSize - 1, lastPage.value)
 })
+
+const batchesTotal = computed(()=>page.props.batches_total);
  
 const pageNumbers = computed(() => {
     const pages = []
@@ -69,8 +71,8 @@ function nextBlock() {
 <div class="page-header flex justify-between items-center mb-6">
     <h2 class="text-lg font-semibold">Action Batch List</h2>
     <Link href="/action/batches/create"
-          class="bg-blue-600 text-white px-4 py-2 text-xs rounded">
-        Register Action Batch
+          class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded">
+        Create Action Batch
     </Link>
 </div>
  
@@ -84,7 +86,10 @@ function nextBlock() {
             class="p-2 border rounded w-full"
         />
     </div>
- 
+    <!-- DISPLAY ITEM COUNT -->
+    <div class="mb-2 text-xs text-gray-600">
+        Showing {{ batches.data.length>0? batches.to: 0 }} out of {{ batchesTotal }} items
+    </div>
     <!-- TABLE -->
     <div class="overflow-x-auto">
         <table class="min-w-full border text-xs">
