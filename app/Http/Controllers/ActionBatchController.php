@@ -19,7 +19,7 @@ class ActionBatchController extends Controller
  
         $search = $request->input('search');
  
-        $batches = ActionBatchModel::getPaginated($search, 10);
+        $batches = ActionBatchModel::getPaginated($search, 20);
         $batchesTotal = ActionBatchModel::count();
  
         return Inertia::render('action/batches/ActionBatchList', [
