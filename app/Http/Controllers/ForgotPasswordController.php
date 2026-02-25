@@ -72,7 +72,7 @@ class ForgotPasswordController extends Controller
             // Optional: handle failures manually if needed
         }
 
-        return redirect('/login')->with('status', 'A new password has been sent to your email.');
+        return redirect('/login')->with('status', 'Your password was successfully updated. A temporary password has been sent to your email.');
     }
 
     private function generateStrongPassword(): string
