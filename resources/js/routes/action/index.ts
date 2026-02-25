@@ -1,78 +1,7 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
-/**
- * @see routes/web.php:27
- * @route '/action'
- */
-export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-
-index.definition = {
-    methods: ["get","head"],
-    url: '/action',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
- * @see routes/web.php:27
- * @route '/action'
- */
-index.url = (options?: RouteQueryOptions) => {
-    return index.definition.url + queryParams(options)
-}
-
-/**
- * @see routes/web.php:27
- * @route '/action'
- */
-index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-/**
- * @see routes/web.php:27
- * @route '/action'
- */
-index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index.url(options),
-    method: 'head',
-})
-
-    /**
- * @see routes/web.php:27
- * @route '/action'
- */
-    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: index.url(options),
-        method: 'get',
-    })
-
-            /**
- * @see routes/web.php:27
- * @route '/action'
- */
-        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index.url(options),
-            method: 'get',
-        })
-            /**
- * @see routes/web.php:27
- * @route '/action'
- */
-        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index.url({
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    index.form = indexForm
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:12
+ * @see app/Http/Controllers/ActionBatchController.php:14
  * @route '/action/batches/create'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -87,7 +16,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:12
+ * @see app/Http/Controllers/ActionBatchController.php:14
  * @route '/action/batches/create'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -96,7 +25,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:12
+ * @see app/Http/Controllers/ActionBatchController.php:14
  * @route '/action/batches/create'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -105,7 +34,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:12
+ * @see app/Http/Controllers/ActionBatchController.php:14
  * @route '/action/batches/create'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -115,7 +44,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:12
+ * @see app/Http/Controllers/ActionBatchController.php:14
  * @route '/action/batches/create'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -125,7 +54,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:12
+ * @see app/Http/Controllers/ActionBatchController.php:14
  * @route '/action/batches/create'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -134,7 +63,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:12
+ * @see app/Http/Controllers/ActionBatchController.php:14
  * @route '/action/batches/create'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -150,7 +79,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:26
+ * @see app/Http/Controllers/ActionBatchController.php:32
  * @route '/action/batches/store'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -165,7 +94,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:26
+ * @see app/Http/Controllers/ActionBatchController.php:32
  * @route '/action/batches/store'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -174,7 +103,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:26
+ * @see app/Http/Controllers/ActionBatchController.php:32
  * @route '/action/batches/store'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -184,7 +113,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:26
+ * @see app/Http/Controllers/ActionBatchController.php:32
  * @route '/action/batches/store'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -194,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:26
+ * @see app/Http/Controllers/ActionBatchController.php:32
  * @route '/action/batches/store'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -203,108 +132,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
         })
     
     store.form = storeForm
-/**
-* @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:60
- * @route '/action/batches/{id}'
- */
-export const detail = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: detail.url(args, options),
-    method: 'get',
-})
-
-detail.definition = {
-    methods: ["get","head"],
-    url: '/action/batches/{id}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:60
- * @route '/action/batches/{id}'
- */
-detail.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { id: args }
-    }
-
-    
-    if (Array.isArray(args)) {
-        args = {
-                    id: args[0],
-                }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-                        id: args.id,
-                }
-
-    return detail.definition.url
-            .replace('{id}', parsedArgs.id.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:60
- * @route '/action/batches/{id}'
- */
-detail.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: detail.url(args, options),
-    method: 'get',
-})
-/**
-* @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:60
- * @route '/action/batches/{id}'
- */
-detail.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: detail.url(args, options),
-    method: 'head',
-})
-
-    /**
-* @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:60
- * @route '/action/batches/{id}'
- */
-    const detailForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: detail.url(args, options),
-        method: 'get',
-    })
-
-            /**
-* @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:60
- * @route '/action/batches/{id}'
- */
-        detailForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: detail.url(args, options),
-            method: 'get',
-        })
-            /**
-* @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:60
- * @route '/action/batches/{id}'
- */
-        detailForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: detail.url(args, {
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    detail.form = detailForm
 const action = {
-    index: Object.assign(index, index),
-create: Object.assign(create, create),
+    create: Object.assign(create, create),
 store: Object.assign(store, store),
-detail: Object.assign(detail, detail),
 }
 
 export default action
