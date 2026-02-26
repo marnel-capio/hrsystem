@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\ResourceSchedule;
-use Illuminate\Support\Facades\DB;
 
 class ResourceScheduleController extends Controller
 {
@@ -17,7 +16,8 @@ class ResourceScheduleController extends Controller
 
         $schedules = ResourceSchedule::select(
                 'resource_schedules.*', 
-                'action_batches.action_batch'
+                'action_batches.action_batch',
+                'action_batches.target_trainees' // Get target_trainees from action_batches
             )
             ->join('action_batches', 'resource_schedules.action_batch_id', '=', 'action_batches.id')
             ->when($search, function ($query, $search) {
@@ -27,9 +27,9 @@ class ResourceScheduleController extends Controller
             ->get();
 
         return inertia('action/schedules/ResourceScheduleList', [
-    'schedules'       => $schedules,
-    'filters'        => ['search' => $search],
-    'userPermissions' => auth()->user()->permissions, 
-]);
+            'schedules'       => $schedules,
+            'filters'        => ['search' => $search],
+            'userPermissions' => auth()->user()->permissions, 
+        ]);
     }
 }
