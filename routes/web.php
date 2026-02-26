@@ -39,26 +39,26 @@ Route::middleware(['web', 'auth'])->group(function () {
     // DASHBOARD
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // LIST PAGE FOR SCHEDULES - Permission check
+    // LIST PAGE FOR SCHEDULES - Permission check in route
     Route::get('action/schedules', function () {
         $user = auth()->user();
         
         if (!in_array((int)$user->permissions, [1, 2, 3])) {
-            // Redirect with error as query parameter
-            return redirect('/?error=' . urlencode('Access denied: You are not authorized to view this page.'));
+            // Use Inertia redirect with error in query string
+            return Inertia::location(route('dashboard') . '?error=Access%20denied:%20You%20are%20not%20authorized%20to%20view%20this%20page.');
         }
 
         return app(ResourceScheduleController::class)->index();
     })->name('action.schedules.index');
 
 
-    // CREATE PAGE FOR SCHEDULES - Permission check
+    // CREATE PAGE FOR SCHEDULES - Permission check in route
     Route::get('action/schedules/create', function () {
         $user = auth()->user();
         
         if (!in_array((int)$user->permissions, [1, 2])) {
-            // Redirect with error as query parameter
-            return redirect('/?error=' . urlencode('Access denied: You are not authorized to view this page.'));
+            // Use Inertia redirect with error in query string
+            return Inertia::location(route('dashboard') . '?error=Access%20denied:%20You%20are%20not%20authorized%20to%20view%20this%20page.');
         }
 
         return app(ResourceScheduleController::class)->create();

@@ -28,29 +28,22 @@ const closeModal = () => {
 <template>
     <AppLayout>
 
-     <!--Modal for error validations-->
 <div 
     v-if="errorMessage" 
-    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-auto max-w-4xl px-4"
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
 >
     <div 
-        class="relative bg-white border border-red-300 rounded-lg shadow-xl p-4 animate-slide-down"
+        class="relative bg-red-500 border border-red-200 rounded-lg shadow-md p-4 flex justify-center items-center gap-4 animate-slide-down"
     >
-
-        <!-- Message -->
-        <p class="text-black-700 text-lg">
-            ⚠️ {{ errorMessage }}
-        </p>
-
-                <!-- Close X -->
-        <button 
-            @click="closeModal"
-            class=""
-        >
-            OK
-        </button>
+        <div class="flex items-center gap-3 pr-0 text-center">
+            <span class="text-red text-xl">⚠️</span>
+            <p class="text-white text-m font-medium text-center">
+                {{ errorMessage }}
+            </p>
+        </div>
     </div>
 </div>
+
         <div class="dashboard-wrapper">
             <h1 class="dashboard-title">
                 Hi, this is the HR Dashboard Page.
@@ -71,5 +64,20 @@ const closeModal = () => {
     font-size: 1.6rem;
     font-weight: 600;
     color: var(--ats-text);
+}
+
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.animate-slide-down {
+    animation: slide-down 0.3s ease-out;
 }
 </style>
