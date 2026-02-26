@@ -49,12 +49,6 @@ class ForgotPasswordController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::createLog(
-                'Users',
-                "Failed password reset for {$user->first_name} {$user->last_name}. ".$e->getMessage(),
-                $user->id
-            );
-
             return back()->withErrors([
                 'email_address' => 'Failed to reset password. Please try again.',
             ]);
