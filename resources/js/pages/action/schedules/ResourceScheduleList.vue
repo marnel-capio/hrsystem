@@ -9,18 +9,20 @@ const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Resource Schedule', href: '#' },
 ];
 
+
 // Props from backend
 const props = defineProps<{
   schedules: Array<{
     id: number;
-    action_batch: string;  // <-- updated
+    action_batch: string;
     target_trainees: number;
     deployment_date: string;
-    target_location: number; // 1 = Manila, 2 = Cebu
+    target_location: number;
   }>;
   filters: {
     search: string;
   };
+  userPermissions: number;
 }>();
 
 // Map location number to string
@@ -34,8 +36,8 @@ const searchQuery = ref(props.filters.search || '');
 // Watch searchQuery and send request to backend (live search)
 watch(searchQuery, (newVal) => {
   router.get('/action/schedules', { search: newVal }, {
-    preserveState: true, // preserves scroll, table state
-    replace: true,       // updates URL without full reload
+    preserveState: true,
+    replace: true,
   });
 });
 
@@ -43,7 +45,7 @@ watch(searchQuery, (newVal) => {
 function formatDeploymentDate(dateStr: string) {
   if (!dateStr) return '';
   try {
-    const date = new Date(dateStr + '-01'); // add day for valid date
+    const date = new Date(dateStr + '-01');
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   } catch {
     return dateStr;
@@ -61,13 +63,15 @@ function formatDeploymentDate(dateStr: string) {
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">Resource Schedules</h1>
 
-        <a
-          href="/action/schedules/create"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-          style="background-color: #1C7BA5;"
-        >
-          Create Resource Schedule
-        </a>
+<a
+  v-if="props.userPermissions != 3"
+  href="/action/schedules/create"
+  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+  style="background-color: #1C7BA5;"
+>
+  Create Resource Schedule
+</a>
+
       </div>
 
       <!-- Search Input -->

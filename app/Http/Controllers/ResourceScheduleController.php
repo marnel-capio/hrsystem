@@ -27,8 +27,9 @@ class ResourceScheduleController extends Controller
             ->get();
 
         return inertia('action/schedules/ResourceScheduleList', [
-            'schedules' => $schedules,
-            'filters'   => ['search' => $search],
-        ]);
+    'schedules'       => $schedules,
+    'filters'        => ['search' => $search],
+    'userPermissions' => auth()->user()->permissions, 
+]);
     }
 }

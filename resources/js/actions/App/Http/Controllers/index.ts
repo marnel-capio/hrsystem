@@ -1,10 +1,10 @@
-import ActionBatchController from './ActionBatchController'
+import AuthController from './AuthController'
+import DashboardController from './DashboardController'
 import Settings from './Settings'
-
-
 const Controllers = {
-    ActionBatchController: Object.assign(ActionBatchController, ActionBatchController),
-    Settings: Object.assign(Settings, Settings),
+    AuthController: Object.assign(AuthController, AuthController),
+DashboardController: Object.assign(DashboardController, DashboardController),
+Settings: Object.assign(Settings, Settings),
 }
 
 export default Controllers

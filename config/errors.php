@@ -1,11 +1,19 @@
 <?php
 
+//unsure if gagamitin pa ito or if the error validations will be hardcoded inline in web.php like it is now
+
 return [
     
  // Universal message for all transaction failed
     'transaction_failed' => [
         'errorCode' => 'TRANSACTION_FAILED',
         'errorMessage' => 'An error occurred while creating the record. Please try again.',
+    ],
+
+    // Unauthorized access
+    'unauthorized' => [
+        'errorCode' => 'UNAUTHORIZED',
+        'errorMessage' => 'Access denied: You are not authorized to view this page.',
     ],
 
 
