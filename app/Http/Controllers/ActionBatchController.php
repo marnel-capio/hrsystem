@@ -11,11 +11,11 @@ class ActionBatchController extends Controller
 {
     public function index(Request $request)
     {
-        // if (!Auth::user()->can('view_action_batches')) {
-        //     return redirect()
-        //         ->route('dashboard')
-        //         ->with('error', 'Access denied: You are not authorized to view this page.');
-        // }
+        if (!Auth::user()->can('view_action_batches')) {
+            return redirect()
+                ->route('dashboard')
+                ->with('error', 'Access denied: You are not authorized to view this page.');
+        }
  
         $search = $request->input('search');
  

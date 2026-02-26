@@ -14,11 +14,7 @@ Route::get('/', function () {
 Route::get('dashboard', function () {
     return Inertia::render('HRDashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
- 
-// ACTION
-Route::get('/action', fn () => Inertia::render('action/Action'))
-    ->middleware(['auth'])
-    ->name('action.index');
+
  
 Route::get('/action/batches', [ActionBatchController::class, 'index'])
     ->middleware(['auth'])
