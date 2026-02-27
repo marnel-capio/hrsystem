@@ -1,19 +1,50 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Link } from '@inertiajs/vue3'
+import { ref, onMounted } from 'vue'
 
-defineProps<{
+const props = defineProps<{
     users: {
         id: number
         name: string
         email: string
         created_at: string
     }[]
+    flash?: {
+        error?: string
+    }
 }>()
+
+const showError = ref(false)
+const errorMessage = ref<string | null>(null)
+
+onMounted(() => {
+    if (props.flash?.error) {
+        errorMessage.value = props.flash.error
+        showError.value = true
+
+        setTimeout(() => {
+            showError.value = false
+        }, 10000)
+    }
+})
+
 </script>
 
 <template>
     <AppLayout>
+        <!-- Error Toast -->
+        <div v-if="showError" class="full-width-alert">
+            <div class="alert-error-banner">
+                <div class="alert-body">
+                    {{ errorMessage }}
+                </div>
+                <button type="button" class="close-btn" @click="showError = false">
+                    ×
+                </button>
+            </div>
+        </div>
+
         <!-- PAGE HEADER -->
         <div class="page-content">
             <div class="page-header">
@@ -155,5 +186,68 @@ defineProps<{
     margin: 0 auto;
     padding: 0 1.5rem;
 }
+/* Full-width alert container */
+.full-width-alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    z-index: 1055;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+}
 
+/* Red banner */
+.alert-error-banner {
+    background-color: #dc3545;
+    color: #fff;
+    padding: 0.4rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+    animation: slideDown 0.4s ease-out;
+    font-size: 0.95rem;
+}
+
+.alert-body {
+    flex: 1;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Slim close button */
+.close-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    font-size: 0.95rem;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.35);
+    transform: scale(1.08);
+}
+
+@keyframes slideDown {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
 </style>

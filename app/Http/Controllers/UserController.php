@@ -40,6 +40,9 @@ class UserController extends Controller
                 'create_time' => now(),
             ]);
 
+            // TEMPORARY: force an exception to test the catch block
+            // throw new \Exception('');
+
             Log::createLog(
                 'Users',
                 "User with {$user->email_address} email address is registered.",
@@ -47,6 +50,13 @@ class UserController extends Controller
             );
 
             DB::commit();
+
+            // dd([
+            //     'redirecting_to' => route('user.show', $user->id),
+            //     'new_user_id' => $user->id,
+            //     'logged_in_id' => auth()->id(),
+            //     'permission' => auth()->user()->permissions,
+            // ]);
 
             return redirect()
                 ->route('user.show', $user->id)
@@ -57,47 +67,46 @@ class UserController extends Controller
             DB::rollBack();
 
             return redirect()
-                ->back()
-                ->withInput()
+                ->route('user.index')
                 ->with('error', 'An error occurred while creating the record. Please try again.');
         }
     }
 
-    // public function show($id)
-    // {
-    //     $user = User::findOrFail($id);
+    public function show($id)
+    {
+        $user = User::findOrFail($id);
 
-    //     $positionMap = [
-    //         1 => 'HR Staff',
-    //         2 => 'Technical Recruiter',
-    //         3 => 'HR Assistant',
-    //         4 => 'HR Senior Assistant',
-    //         5 => 'HR Associate',
-    //         6 => 'HR Senior Associate',
-    //         7 => 'HR Supervisor',
-    //         8 => 'HR Assistant Manager',
-    //         9 => 'HR Manager',
-    //         10 => 'BU Manager',
-    //         11 => 'Others',
-    //     ];
+        $positionMap = [
+            1 => 'HR Staff',
+            2 => 'Technical Recruiter',
+            3 => 'HR Assistant',
+            4 => 'HR Senior Assistant',
+            5 => 'HR Associate',
+            6 => 'HR Senior Associate',
+            7 => 'HR Supervisor',
+            8 => 'HR Assistant Manager',
+            9 => 'HR Manager',
+            10 => 'BU Manager',
+            11 => 'Others',
+        ];
 
-    //     $permissionMap = [
-    //         1 => 'HR Admin',
-    //         2 => 'HR Manager',
-    //         3 => 'HR Recruiter',
-    //         4 => 'HR',
-    //         5 => 'BU Manager',
-    //         6 => 'Interviewer',
-    //         7 => 'Walk-in',
-    //     ];
+        $permissionMap = [
+            1 => 'HR Admin',
+            2 => 'HR Manager',
+            3 => 'HR Recruiter',
+            4 => 'HR',
+            5 => 'BU Manager',
+            6 => 'Interviewer',
+            7 => 'Walk-in',
+        ];
 
-    //     $user->position_label = $positionMap[$user->position] ?? 'Unknown';
-    //     $user->permission_label = $permissionMap[$user->permissions] ?? 'Unknown';
+        $user->position_label = $positionMap[$user->position] ?? 'Unknown';
+        $user->permission_label = $permissionMap[$user->permissions] ?? 'Unknown';
 
-    //     return Inertia::render('User/UserDetail', [
-    //         'user' => $user,
-    //     ]);
-    // }
+        return Inertia::render('User/UserDetail', [
+            'user' => $user,
+        ]);
+    }
 
     /**
      * Display a list of users
