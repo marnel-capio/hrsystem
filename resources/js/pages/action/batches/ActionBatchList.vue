@@ -93,33 +93,37 @@ function nextBlock() {
     <!-- TABLE -->
     <div class="overflow-x-auto">
         <table class="min-w-full border text-xs">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="p-3 border text-left">Action Batch</th>
-                    <th class="p-3 border text-left">Remarks</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="batch in batches.data" :key="batch.id"
-                    class="hover:bg-gray-50">
-                    
-                    <td class="p-3 border text-blue-600 hover:underline cursor-pointer"
-                        @click="$inertia.get(`/action/batches/${batch.id}`)">
-                        {{ batch.action_batch }}
-                    </td>
- 
-                    <td class="p-3 border">
-                        {{ batch.remarks }}
-                    </td>
-                </tr>
- 
-                <tr v-if="batches.data.length === 0">
-                    <td colspan="3" class="text-center p-6 text-gray-500">
-                        No records found
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <thead class="bg-gray-100">
+        <tr>
+            <th class="p-3 border text-left w-1/4">Action Batch</th>
+            <th class="p-3 border text-left w-1/5">Target Trainees</th>
+            <th class="p-3 border text-left w-1/5">Target Start Date</th> 
+            <th class="p-3 border text-left w-2/3">Remarks</th> 
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="batch in batches.data" :key="batch.id" class="hover:bg-gray-50">
+            <td class="p-3 border text-blue-600 hover:underline cursor-pointer" @click="$inertia.get(`/action/batches/${batch.id}`)">
+                {{ batch.action_batch }}
+            </td>
+            <td class="p-3 border">
+                {{ batch.target_trainees }}
+            </td>
+            <td class="p-3 border">
+                {{ batch.target_date }}
+            </td>
+            <td class="p-3 border">
+                {{ batch.remarks }}
+            </td>
+        </tr>
+
+        <tr v-if="batches.data.length === 0">
+            <td colspan="4" class="text-center p-6 text-gray-500">
+                No records found
+            </td>
+        </tr>
+    </tbody>
+</table>
     </div>
  
     <div class="flex justify-center mt-3 gap-2 text-xs">
