@@ -8,14 +8,13 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Traits\ForwardsCalls;
 
-
 /**
  * @mixin \Illuminate\Routing\Router
  */
 class RouteServiceProvider extends ServiceProvider
 {
     use ForwardsCalls;
-    public const HOME = '/dashboard';
+
     /**
      * The controller namespace for the application.
      *

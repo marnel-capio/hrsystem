@@ -77,8 +77,6 @@ editForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 edit.form = editForm
 
-
-
 const appearance = {
     edit: Object.assign(edit, edit),
 }

@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('resource_schedules', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('action_batch_id')->unsigned();
+            $table->bigInteger('prev_batch_id')->nullable();;  
             $table->tinyInteger('target_location'); // 1-Manila, 2-Cebu
             $table->tinyInteger('target_trainees');
             $table->string('deployment_date', 10);
@@ -28,7 +29,7 @@ return new class extends Migration
             $table->string('requirements_enddate', 10);
             $table->string('training_startdate', 10);
             $table->string('training_enddate', 10);
-            $table->string('remarks', 1024);
+            $table->string('remarks', 1024)->nullable();
             $table->bigInteger('created_by')->unsigned();
             $table->dateTime('created_time');
             $table->bigInteger('updated_by')->unsigned();

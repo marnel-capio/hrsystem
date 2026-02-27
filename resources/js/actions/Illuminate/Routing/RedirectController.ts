@@ -204,6 +204,4 @@ RedirectControllerForm.options = (options?: RouteQueryOptions): RouteFormDefinit
 
 RedirectController.form = RedirectControllerForm
 
-
-
 export default RedirectController

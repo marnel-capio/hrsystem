@@ -11,8 +11,6 @@ import ConfirmedTwoFactorAuthenticationController from './ConfirmedTwoFactorAuth
 import TwoFactorQrCodeController from './TwoFactorQrCodeController'
 import TwoFactorSecretKeyController from './TwoFactorSecretKeyController'
 import RecoveryCodeController from './RecoveryCodeController'
-
-
 const Controllers = {
     NewPasswordController: Object.assign(NewPasswordController, NewPasswordController),
 RegisteredUserController: Object.assign(RegisteredUserController, RegisteredUserController),

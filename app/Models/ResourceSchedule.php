@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ResourceSchedule extends Model
 {
@@ -11,6 +12,7 @@ class ResourceSchedule extends Model
 
     protected $fillable = [
         'action_batch_id',
+        'prev_batch_id',
         'target_location',
         'target_trainees',
         'deployment_date',
@@ -35,6 +37,25 @@ class ResourceSchedule extends Model
         'updated_time',
     ];
 
+        /**
+     * Get list page data
+     */
+    public static function listPageData(?string $search = null)
+    {
+        return static::query()
+            ->select('resource_schedules.*', 'action_batches.action_batch', 'action_batches.target_trainees')
+            ->join('action_batches', 'resource_schedules.action_batch_id', '=', 'action_batches.id')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('action_batches.action_batch', 'like', "%{$search}%")
+                      ->orWhere('resource_schedules.target_location', 'like', "%{$search}%")
+                      ->orWhereRaw("DATE_FORMAT(resource_schedules.deployment_date, '%M %Y') LIKE ?", ["%{$search}%"]);
+                });
+            })
+            ->orderBy('resource_schedules.created_time', 'desc')
+            ->get();
+    }
+
     /**
      * Relationship to ActionBatch
      */
@@ -44,15 +65,52 @@ class ResourceSchedule extends Model
     }
 
     /**
+     * Get action batches for dropdown
+     * 
+     * @param bool $excludeScheduled - If true, excludes batches that already have a resource schedule
+     *                                 If false, returns only batches that have a resource schedule
+     */
+    public static function getActionBatches($excludeScheduled = true)
+    {
+        // Get IDs of action batches that already have a resource schedule
+        $scheduledBatchIds = self::pluck('action_batch_id')->toArray();
+
+        $query = DB::table('action_batches')
+            ->select('id', 'action_batch', 'target_trainees');
+
+        if ($excludeScheduled) {
+            // For action_batch_id dropdown - exclude scheduled batches
+            $query->whereNotIn('id', $scheduledBatchIds);
+        } else {
+            // For prev_batch_id dropdown - only scheduled batches
+            $query->whereIn('id', $scheduledBatchIds);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Get schedule with action batch
+     */
+    public static function getWithActionBatch($id)
+    {
+        return self::select('resource_schedules.*', 'action_batches.action_batch')
+            ->join('action_batches', 'resource_schedules.action_batch_id', '=', 'action_batches.id')
+            ->where('resource_schedules.id', $id)
+            ->firstOrFail();
+    }
+
+    /**
      * Create schedule from request
      */
     public static function createFromRequest($request)
     {
         $validated = $request->validate([
             'action_batch_id' => 'required|exists:action_batches,id',
-            'location'        => 'required|string|max:255',
-            'targetTrainees'  => 'required|integer|min:1',
-            'deploymentDate'  => 'required|date_format:Y-m',
+            'prev_batch_id' => 'nullable|exists:action_batches,id',
+            'target_location' => 'required|string|max:255',
+            'target_trainees' => 'required|integer|min:1',
+            'deployment_date' => 'required|date_format:Y-m',
             // WBS validation
             'contact_schools_startdate' => 'required|regex:/^\d{4}-W\d{2}$/',
             'contact_schools_enddate'   => 'required|regex:/^\d{4}-W\d{2}$/',
@@ -72,12 +130,20 @@ class ResourceSchedule extends Model
 
         self::validateWbsRanges($validated);
 
-        return DB::transaction(function () use ($validated) {
+        $user = auth()->user();
+
+        // Get the batch name from action_batches table
+        $actionBatch = DB::table('action_batches')
+            ->where('id', $validated['action_batch_id'])
+            ->first();
+
+        return DB::transaction(function () use ($validated, $actionBatch, $user) {
             return self::create([
                 'action_batch_id' => $validated['action_batch_id'],
-                'target_location' => $validated['location'] === 'Manila' ? 1 : 2,
-                'target_trainees' => $validated['targetTrainees'],
-                'deployment_date' => $validated['deploymentDate'],
+                'prev_batch_id' => $validated['prev_batch_id'] ?? null,
+                'target_location' => $validated['target_location'] === 'Manila' ? 1 : 2,
+                'target_trainees' => $validated['target_trainees'],
+                'deployment_date' => $validated['deployment_date'],
 
                 // WBS fields
                 'contact_schools_startdate' => $validated['contact_schools_startdate'],
@@ -95,8 +161,10 @@ class ResourceSchedule extends Model
                 'training_startdate'           => $validated['training_startdate'],
                 'training_enddate'             => $validated['training_enddate'],
 
-                'created_by'      => auth()->id(),
-                'created_time'    => now(),
+                'created_by'   => $user->id,
+                'created_time' => now(),
+                'updated_by'   => $user->id,
+                'updated_time' => now(),
             ]);
         });
     }
@@ -128,9 +196,11 @@ class ResourceSchedule extends Model
 
             if ($endDate < $startDate) {
                 abort(422, str_replace(':activity', ucfirst(str_replace('_', ' ', $act)),
-                    config('errors.wbs_end_before_start.errorMessage')
+                    config('Start week cannot be after end week.')
                 ));
             }
         }
     }
+
+    
 }

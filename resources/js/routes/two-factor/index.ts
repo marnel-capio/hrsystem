@@ -675,18 +675,16 @@ showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 show.form = showForm
 
-
-
 const twoFactor = {
     login: Object.assign(login, loginDf2c2a),
-    enable: Object.assign(enable, enable),
-    confirm: Object.assign(confirm, confirm),
-    disable: Object.assign(disable, disable),
-    qrCode: Object.assign(qrCode, qrCode),
-    secretKey: Object.assign(secretKey, secretKey),
-    recoveryCodes: Object.assign(recoveryCodes, recoveryCodes),
-    regenerateRecoveryCodes: Object.assign(regenerateRecoveryCodes, regenerateRecoveryCodes),
-    show: Object.assign(show, show),
+enable: Object.assign(enable, enable),
+confirm: Object.assign(confirm, confirm),
+disable: Object.assign(disable, disable),
+qrCode: Object.assign(qrCode, qrCode),
+secretKey: Object.assign(secretKey, secretKey),
+recoveryCodes: Object.assign(recoveryCodes, recoveryCodes),
+regenerateRecoveryCodes: Object.assign(regenerateRecoveryCodes, regenerateRecoveryCodes),
+show: Object.assign(show, show),
 }
 
 export default twoFactor
