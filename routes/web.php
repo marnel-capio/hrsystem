@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\ActionBatchController;
+use App\Http\Controllers\UserController;
 
 
 Route::get('/', function () {
@@ -12,6 +13,10 @@ Route::get('/', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+
+Route::get('/user', fn () => Inertia::render('User/Index'))->name('user.index');
+Route::get('/user/register', fn () => Inertia::render('User/Register'))->name('user.register');
+Route::post('/user', [UserController::class, 'store'])->name('user.store');
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
