@@ -71,5 +71,10 @@ class User extends Authenticatable
             $user->updated_by = auth()->id() ?? null;
         });
     }
+
+    public static function findByEmail(string $email): ?self
+    {
+        return self::where('email_address', $email)->first();
+    }
 }
 

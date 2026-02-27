@@ -7,6 +7,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\ActionBatchController;
+use App\Http\Controllers\ForgotPasswordController;
+use Laravel\Fortify\Features;
 
 /**
  * Web Routes
@@ -28,14 +30,28 @@ Route::get('/login', [AuthController::class, 'showLogin'])
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('guest');
 
-// Logout
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->name('logout')
-    ->middleware('auth');
+Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
 
 // Protected routes
 Route::middleware(['web', 'auth'])->group(function () {
 
+
+    // Logout
+    Route::post('/logout', [AuthController::class, 'logout'])
+    ->name('logout')
+    ->middleware('auth');
+    
+    // Action 
+    Route::get('/action', fn () => Inertia::render('action/Action'))->name('action.index');
+    Route::get('/action/applications', fn () => Inertia::render('action/Applications'))->name('action.applications');
+    Route::get('/action/batches', action: [ActionBatchController::class, 'index'])->name('action.list');    
+    Route::get('/action/batches/create', [ActionBatchController::class, 'index'])->name('action.create');    
+
+    Route::get('/action/batches', [ActionBatchController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('action.list');
+    
     // DASHBOARD
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
