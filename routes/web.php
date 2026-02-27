@@ -15,10 +15,6 @@ use App\Http\Controllers\UserController;
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('guest');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
 
@@ -37,9 +33,11 @@ Route::middleware(['web', 'auth'])->group(function(){
     ->name('logout')
     ->middleware('auth');
     
+    // User
     Route::get('/user', fn () => Inertia::render('User/Index'))->name('user.index');
-Route::get('/user/register', fn () => Inertia::render('User/Register'))->name('user.register');
-Route::post('/user', [UserController::class, 'store'])->name('user.store');
+    Route::get('/user/register', fn () => Inertia::render('User/Register'))->name('user.register');
+    Route::post('/user', [UserController::class, 'store'])->name('user.store');
+    // Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
 
     // Action 
     Route::get('/action', fn () => Inertia::render('action/Action'))->name('action.index');

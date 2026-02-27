@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
@@ -14,24 +14,20 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    // ❌ Disable default timestamps
     public $timestamps = false;
 
     protected $fillable = [
         'first_name',
         'last_name',
         'middle_name',
-        'email_address',
-        'password',
         'address',
         'contact_no',
+        'email_address',
+        'password',
         'position',
         'permissions',
         'active_status',
         'created_by',
-        'updated_by',
-        'create_time',
-        'update_time',
     ];
 
     protected $hidden = [
@@ -45,11 +41,6 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
     ];
-
-    public function getAuthIdentifierName()
-    {
-        return 'email_address';
-    }
 
     public function setPasswordAttribute($value)
     {
@@ -77,4 +68,3 @@ class User extends Authenticatable
         return self::where('email_address', $email)->first();
     }
 }
-

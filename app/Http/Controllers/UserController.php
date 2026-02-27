@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterUserRequest;
+use App\Models\Log;
 use App\Models\User;
 use App\Rules\RequiredField;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
@@ -18,17 +20,19 @@ class UserController extends Controller
 
     public function store(RegisterUserRequest $request)
     {
+        DB::beginTransaction();
+
         try {
             $validated = $request->validated();
 
-            User::create([
+            $user = User::create([
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
                 'middle_name' => $validated['middle_name'] ?? null,
                 'address' => $validated['address'],
                 'contact_no' => $validated['contact_no'],
                 'email_address' => $validated['email_address'],
-                'password' => $validated['password'],
+                'password' => Hash::make($validated['password']), // IMPORTANT
                 'position' => $validated['position'],
                 'permissions' => $validated['permissions'],
                 'active_status' => 1,
@@ -36,14 +40,64 @@ class UserController extends Controller
                 'create_time' => now(),
             ]);
 
-            return redirect()
-                ->route('user.index')
-                ->with('success', 'User account created successfully.');
+            Log::createLog(
+                'Users',
+                "User with {$user->email_address} email address is registered.",
+                $user->id
+            );
 
-        } catch (ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
+            DB::commit();
+
+            return redirect()
+                ->route('user.show', $user->id)
+                ->with('success', 'Record created successfully.');
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'An error occurred while creating the record. Please try again.');
         }
     }
+
+    // public function show($id)
+    // {
+    //     $user = User::findOrFail($id);
+
+    //     $positionMap = [
+    //         1 => 'HR Staff',
+    //         2 => 'Technical Recruiter',
+    //         3 => 'HR Assistant',
+    //         4 => 'HR Senior Assistant',
+    //         5 => 'HR Associate',
+    //         6 => 'HR Senior Associate',
+    //         7 => 'HR Supervisor',
+    //         8 => 'HR Assistant Manager',
+    //         9 => 'HR Manager',
+    //         10 => 'BU Manager',
+    //         11 => 'Others',
+    //     ];
+
+    //     $permissionMap = [
+    //         1 => 'HR Admin',
+    //         2 => 'HR Manager',
+    //         3 => 'HR Recruiter',
+    //         4 => 'HR',
+    //         5 => 'BU Manager',
+    //         6 => 'Interviewer',
+    //         7 => 'Walk-in',
+    //     ];
+
+    //     $user->position_label = $positionMap[$user->position] ?? 'Unknown';
+    //     $user->permission_label = $permissionMap[$user->permissions] ?? 'Unknown';
+
+    //     return Inertia::render('User/UserDetail', [
+    //         'user' => $user,
+    //     ]);
+    // }
 
     /**
      * Display a list of users

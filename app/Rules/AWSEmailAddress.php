@@ -3,8 +3,8 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
-use App\Models\User;
-use App\Models\Log;
+// use App\Models\User;
+// use App\Models\Log;
 
 class AWSEmailAddress implements Rule
 {
@@ -25,12 +25,12 @@ class AWSEmailAddress implements Rule
             return false;
         }
 
-        $user = User::findByEmail($value);
+        // $user = User::findByEmail($value);
 
-        if (! $user) {
-            $this->messageText = 'The email address is not registered.';
-            return false;
-        }
+        // if (! $user) {
+        //     $this->messageText = 'The email address is not registered.';
+        //     return false;
+        // }
 
         return true;
     }

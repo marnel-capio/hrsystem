@@ -2,11 +2,13 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\RequiredField;
+use App\Rules\AlphaSpaceDash;
 use App\Rules\AWSEmailAddress;
-use App\Rules\PasswordRules; 
 use App\Rules\ContactNumber;
+use App\Rules\MaxLength;
+use App\Rules\PasswordRules;
+use App\Rules\RequiredField;
+use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterUserRequest extends FormRequest
 {
@@ -24,11 +26,11 @@ class RegisterUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name'    => ['required', 'string', 'max:80', new RequiredField],
-            'last_name'     => ['required', 'string', 'max:80', new RequiredField],
-            'middle_name'   => ['nullable', 'string', 'max:80'],
-            'address'       => ['required', 'string', 'max:1024', new RequiredField],
-            'contact_no'    => ['required', 'string', 'max:20', new ContactNumber(), new RequiredField],
+            'first_name' => ['required', 'string', new MaxLength(80), new AlphaSpaceDash, new RequiredField],
+            'last_name' => ['required', 'string', new MaxLength(80), new AlphaSpaceDash, new RequiredField],
+            'middle_name' => ['nullable', 'string', new MaxLength(80), new AlphaSpaceDash],
+            'address' => ['required', 'string', new MaxLength(1024), new RequiredField],
+            'contact_no' => ['required', 'string', 'max:20', new ContactNumber, new RequiredField],
             // Custom AWSEmailAddress rule added here
             'email_address' => [
                 'required',
@@ -36,20 +38,20 @@ class RegisterUserRequest extends FormRequest
                 'max:80',
                 'unique:users,email_address',
                 new RequiredField,
-                //new AWSEmailAddress(), // ensures @awsys-i.com and registered
+                new AWSEmailAddress, // ensures @awsys-i.com
             ],
             // Custom password rule added here
-            'password'      => [
+            'password' => [
                 'required',
                 'string',
                 'min:8',
                 'max:64',
                 'confirmed',
                 new RequiredField,
-                new PasswordRules(), // enforces uppercase, lowercase, number, special char
+                new PasswordRules, // enforces uppercase, lowercase, number, special char
             ],
-            'position'      => ['required', 'string', 'max:80', new RequiredField],
-            'permissions'   => ['required', 'integer', new RequiredField],
+            'position' => ['required', 'numeric', new RequiredField],
+            'permissions' => ['required', 'numeric', new RequiredField],
         ];
     }
 
@@ -60,6 +62,11 @@ class RegisterUserRequest extends FormRequest
     {
         return [
             'required' => 'This field is required.',
+
+            'first_name.max' => 'This field exceeds the maximum allowed length.',
+            'last_name.max' => 'This field exceeds the maximum allowed length.',
+            'middle_name.max' => 'This field exceeds the maximum allowed length.',
+            'address.max' => 'This field exceeds the maximum allowed length.',
             'email_address.unique' => 'This email address is already registered.',
             'password.confirmed' => 'Passwords do not match.',
         ];

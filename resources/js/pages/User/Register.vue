@@ -29,6 +29,21 @@ function submit() {
     })
 }
 
+// Positions dropdown values
+const positionOptions = [
+    { label: 'HR Staff', value: 1 },
+    { label: 'Technical Recruiter', value: 2 },
+    { label: 'HR Assistant', value: 3 },
+    { label: 'HR Senior Assistant', value: 4 },
+    { label: 'HR Associate', value: 5 },
+    { label: 'HR Senior Associate', value: 6 },
+    { label: 'HR Supervisor', value: 7 },
+    { label: 'HR Assistant Manager', value: 8 },
+    { label: 'HR Manager', value: 9 },
+    { label: 'BU Manager', value: 10 },
+    { label: 'Others', value: 11 },
+]
+
 // Permissions dropdown values
 const permissionLevels = [
     { label: 'HR Admin', value: 1 },
@@ -39,6 +54,8 @@ const permissionLevels = [
     { label: 'Interviewer', value: 6 },
     { label: 'Walk-in', value: 7 },
 ]
+
+
 </script>
 
 <template>
@@ -106,8 +123,15 @@ const permissionLevels = [
                     <!-- Position & Permissions -->
                     <div class="form-group">
                         <label>Position</label>
-                        <input v-model="form.position" type="text" placeholder="Enter position" />
-                        <span v-if="form.errors.position" class="error">{{ form.errors.position }}</span>
+                        <select v-model="form.position">
+                            <option disabled value="">Select Position</option>
+                            <option v-for="pos in positionOptions" :key="pos.value" :value="pos.value">
+                                {{ pos.label }}
+                            </option>
+                        </select>
+                        <span v-if="form.errors.position" class="error">
+                            {{ form.errors.position }}
+                        </span>
                     </div>
 
                     <div class="form-group">
