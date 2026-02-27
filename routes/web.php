@@ -11,7 +11,7 @@ use App\Http\Controllers\ActionBatchController;
 |--------------------------------------------------------------------------
 */
  
-// Home
+// HOME
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canRegister' => Features::enabled(Features::registration()),
@@ -19,13 +19,13 @@ Route::get('/', function () {
 })->name('home');
  
  
-// Dashboard
+// DASHBOARD
 Route::get('/dashboard', function () {
     return Inertia::render('HRDashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
  
  
-// ACTION BATCH LIST (with permission check in route)
+// ACTION BATCH LIST
 Route::get('action/batches', function () {
  
     $user = auth()->user();
@@ -35,9 +35,9 @@ Route::get('action/batches', function () {
         !in_array($user->position, ['Admin', 'HR Manager', 'HR Recruiter']) ||
         $user->active_status != 1
     ) {
-        return Inertia::location(
-            route('dashboard') . '?error=Access%20denied:%20You%20are%20not%20authorized%20to%20view%20this%20page.'
-        );
+        return redirect()
+            ->route('dashboard')
+            ->with('error', 'Access denied: You are not authorized to view this page.');
     }
  
     return app(ActionBatchController::class)->index(request());
@@ -46,24 +46,20 @@ Route::get('action/batches', function () {
  
  
 // ACTION BATCH CREATE (ONLY Admin & HR Manager)
-Route::get('action/batches/create', function () {
+Route::get('action/batches', function () {
  
     $user = auth()->user();
  
     if (
         !$user ||
-        !in_array($user->position, ['Admin', 'HR Manager']) ||
+        !in_array($user->position, ['Admin', 'HR Manager', 'HR Recruiter']) ||
         $user->active_status != 1
     ) {
-        return Inertia::location(
-            route('dashboard') . '?error=Access%20denied:%20You%20are%20not%20authorized%20to%20access%20this%20page.'
-        );
+        return redirect()
+            ->route('dashboard')
+            ->with('error', 'Access denied: You are not authorized to view this page.');
     }
  
-    return app(ActionBatchController::class)->create();
+    return app(App\Http\Controllers\ActionBatchController::class)->index(request());
  
-})->middleware(['auth'])->name('action.batches.create');
- 
- 
-require __DIR__.'/settings.php';
- 
+})->middleware(['auth']);
