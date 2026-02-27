@@ -3,39 +3,40 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
+use App\Models\User;
+use App\Models\Log;
 
 class AWSEmailAddress implements Rule
 {
-    /**
-     * Create a new rule instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    private string $messageText;
+    private string $module;
+
+    public function __construct(string $module = 'Users')
     {
-        //
+        $this->module = $module;
+        $this->messageText = 'Invalid email address.';
     }
 
-    /**
-     * Determine if the validation rule passes.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
-     */
-    public function passes($attribute, $value)
-    {   
-        $offset = strpos($value, '@') === FALSE ? -11 : strpos($value, '@') + 1;
-        return substr($value, $offset) === 'awsys-i.com';
+    public function passes($attribute, $value): bool
+    {
+        $domain = substr(strrchr($value, "@"), 1) ?: '';
+        if ($domain !== 'awsys-i.com') {
+            $this->messageText = 'The :attribute must be your AWS email address.';
+            return false;
+        }
+
+        $user = User::findByEmail($value);
+
+        if (! $user) {
+            $this->messageText = 'The email address is not registered.';
+            return false;
+        }
+
+        return true;
     }
 
-    /**
-     * Get the validation error message.
-     *
-     * @return string
-     */
-    public function message()
+    public function message(): string
     {
-        return 'The :attribute must be your AWS email address.';
+        return $this->messageText;
     }
 }

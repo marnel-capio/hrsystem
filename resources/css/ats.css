@@ -122,30 +122,52 @@
 /* ======================================================
    SIDEBAR HEADER
    ====================================================== */
+/* =========================
+   SIDEBAR HEADER FIX
+========================= */
 .sidebar-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-
+    justify-content: flex-start;   /* keep left-aligned */
     height: 56px;
     padding: 0 0.75rem;
-}
-
-.sidebar-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    white-space: nowrap;
+    gap: 0.75rem;                  /* space between toggle and title */
+    border-bottom: 1px solid rgba(255,255,255,0.1); /* subtle separator */
 }
 
 .sidebar-toggle {
+    width: 40px;                    /* fixed width */
+    height: 40px;                   /* fixed height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     border: none;
     color: inherit;
     cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
 
+.sidebar-toggle:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.sidebar-home {
     display: flex;
     align-items: center;
-    justify-content: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #fff;
+    white-space: nowrap;
+    padding-left: 0.25rem;         /* small gap from toggle */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-home {
+    opacity: 0;
+    transform: translateX(-10px);   /* smooth hide on collapse */
+    pointer-events: none;
 }
 
 /* ======================================================
