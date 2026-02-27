@@ -8,7 +8,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\ActionBatchController;
 use App\Http\Controllers\ForgotPasswordController;
-use Laravel\Fortify\Features;
 
 /**
  * Web Routes
