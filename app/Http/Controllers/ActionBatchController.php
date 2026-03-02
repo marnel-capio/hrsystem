@@ -34,5 +34,15 @@ class ActionBatchController extends Controller
         'user_permissions' => $user->permissions,
     ]);
 }
-   
+
+//For testing purposes:
+   public function create()
+{
+    return Inertia::render('action/batches/ActionBatchRegister');
+}
+public function show($id)
+    {
+        $batch = ActionBatchModel::findOrFail($id);
+        return Inertia::render('action/batches/ActionBatchDetail', ['batch'=> $batch]);
+    }
 }

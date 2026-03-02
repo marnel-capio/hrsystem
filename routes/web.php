@@ -43,6 +43,12 @@ Route::middleware(['web', 'auth'])->group(function(){
     Route::get('/action/batches', [ActionBatchController::class, 'index'])
     ->middleware(['auth'])
     ->name('action.list');
+
+    //For Testing purposes
+    Route::get('/action/batches/create', [ActionBatchController::class, 'create'])
+    ->middleware(['auth'])
+    ->name('action.create');
+    Route::get('/action/batches/{id}', [ActionBatchController::class, 'show']);
     
 });
  

@@ -19,6 +19,7 @@ watch(search, (value: string) => {
   )
 })
 
+
 const currentPage = computed(() => batches.value.current_page)
 const lastPage = computed(() => batches.value.last_page)
 
@@ -63,10 +64,10 @@ function nextBlock() {
     <div class="page-content">
  
       <div class="page-header flex justify-between items-center mb-6">
-        <h2 class="text-lg font-semibold">Action Batch List</h2>
+          <h2 class="text-lg font-semibold">Action Batch List</h2>
           <Link
             v-if="userPermissions === 1 || userPermissions === 2"
-            href="/action/batches/create"
+            :href="`/action/batches/create`"
             class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded">
             Create Action Batch
           </Link>
@@ -109,7 +110,7 @@ function nextBlock() {
               >
                 <td class="p-3 border-b  text-blue-600 hover:underline cursor-pointer">
                   <Link
-                  href="/action/batches/{id}">
+                  :href="`/action/batches/${batch.id}`">
                   {{ batch.action_batch }}
                 </Link>
                 </td>
