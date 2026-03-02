@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class ResourceSchedule extends Model
 {
@@ -37,7 +36,24 @@ class ResourceSchedule extends Model
         'updated_time',
     ];
 
-        /**
+    /**
+     * Validation messages
+     */
+    public static function messages()
+    {
+        return [
+            // ALL required fields
+            '*.required' => config('errors.field_required.errorMessage'),
+
+            // Target trainees must be >= 1
+            'target_trainees.min' => config('errors.target_trainees_min.errorMessage'),
+
+            // Invalid week formats
+            '*.regex' => 'Invalid week format. Expected YYYY-WW.',
+        ];
+    }
+
+    /**
      * Get list page data
      */
     public static function listPageData(?string $search = null)
@@ -66,9 +82,6 @@ class ResourceSchedule extends Model
 
     /**
      * Get action batches for dropdown
-     * 
-     * @param bool $excludeScheduled - If true, excludes batches that already have a resource schedule
-     *                                 If false, returns only batches that have a resource schedule
      */
     public static function getActionBatches($excludeScheduled = true)
     {
@@ -101,51 +114,51 @@ class ResourceSchedule extends Model
     }
 
     /**
-     * Create schedule from request
+     * Create schedule with validation + custom messages
      */
     public static function createFromRequest($request)
     {
-        $validated = $request->validate([
-            'action_batch_id' => 'required|exists:action_batches,id',
-            'prev_batch_id' => 'nullable|exists:action_batches,id',
-            'target_location' => 'required|string|max:255',
-            'target_trainees' => 'required|integer|min:1',
-            'deployment_date' => 'required|date_format:Y-m',
-            // WBS validation
-            'contact_schools_startdate' => 'required|regex:/^\d{4}-W\d{2}$/',
-            'contact_schools_enddate'   => 'required|regex:/^\d{4}-W\d{2}$/',
-            'source_testing_startdate'  => 'required|regex:/^\d{4}-W\d{2}$/',
-            'source_testing_enddate'    => 'required|regex:/^\d{4}-W\d{2}$/',
-            'initial_interviews_startdate' => 'required|regex:/^\d{4}-W\d{2}$/',
-            'initial_interviews_enddate'   => 'required|regex:/^\d{4}-W\d{2}$/',
-            'final_interviews_startdate'   => 'required|regex:/^\d{4}-W\d{2}$/',
-            'final_interviews_enddate'     => 'required|regex:/^\d{4}-W\d{2}$/',
-            'contract_offers_startdate'    => 'required|regex:/^\d{4}-W\d{2}$/',
-            'contract_offers_enddate'      => 'required|regex:/^\d{4}-W\d{2}$/',
-            'requirements_startdate'       => 'required|regex:/^\d{4}-W\d{2}$/',
-            'requirements_enddate'         => 'required|regex:/^\d{4}-W\d{2}$/',
-            'training_startdate'           => 'required|regex:/^\d{4}-W\d{2}$/',
-            'training_enddate'             => 'required|regex:/^\d{4}-W\d{2}$/',
-        ]);
+        $validated = $request->validate(
+            [
+                'action_batch_id' => 'required|exists:action_batches,id',
+                'prev_batch_id'   => 'nullable|exists:action_batches,id',
+                'target_location' => 'required|string|max:255',
+                'target_trainees' => 'required|integer|min:1',
+                'deployment_date' => 'required|date_format:Y-m',
 
+                // WBS fields
+                'contact_schools_startdate' => 'required|regex:/^\d{4}-W\d{2}$/',
+                'contact_schools_enddate'   => 'required|regex:/^\d{4}-W\d{2}$/',
+                'source_testing_startdate'  => 'required|regex:/^\d{4}-W\d{2}$/',
+                'source_testing_enddate'    => 'required|regex:/^\d{4}-W\d{2}$/',
+                'initial_interviews_startdate' => 'required|regex:/^\d{4}-W\d{2}$/',
+                'initial_interviews_enddate'   => 'required|regex:/^\d{4}-W\d{2}$/',
+                'final_interviews_startdate'   => 'required|regex:/^\d{4}-W\d{2}$/',
+                'final_interviews_enddate'     => 'required|regex:/^\d{4}-W\d{2}$/',
+                'contract_offers_startdate'    => 'required|regex:/^\d{4}-W\d{2}$/',
+                'contract_offers_enddate'      => 'required|regex:/^\d{4}-W\d{2}$/',
+                'requirements_startdate'       => 'required|regex:/^\d{4}-W\d{2}$/',
+                'requirements_enddate'         => 'required|regex:/^\d{4}-W\d{2}$/',
+                'training_startdate'           => 'required|regex:/^\d{4}-W\d{2}$/',
+                'training_enddate'             => 'required|regex:/^\d{4}-W\d{2}$/',
+            ],
+            self::messages()
+        );
+
+        // Validate WBS start/end ranges
         self::validateWbsRanges($validated);
 
         $user = auth()->user();
 
-        // Get the batch name from action_batches table
-        $actionBatch = DB::table('action_batches')
-            ->where('id', $validated['action_batch_id'])
-            ->first();
-
-        return DB::transaction(function () use ($validated, $actionBatch, $user) {
+        return DB::transaction(function () use ($validated, $user) {
             return self::create([
                 'action_batch_id' => $validated['action_batch_id'],
-                'prev_batch_id' => $validated['prev_batch_id'] ?? null,
+                'prev_batch_id'   => $validated['prev_batch_id'] ?? null,
                 'target_location' => $validated['target_location'] === 'Manila' ? 1 : 2,
                 'target_trainees' => $validated['target_trainees'],
                 'deployment_date' => $validated['deployment_date'],
 
-                // WBS fields
+                // WBS
                 'contact_schools_startdate' => $validated['contact_schools_startdate'],
                 'contact_schools_enddate'   => $validated['contact_schools_enddate'],
                 'source_testing_startdate'  => $validated['source_testing_startdate'],
@@ -170,7 +183,7 @@ class ResourceSchedule extends Model
     }
 
     /**
-     * WBS range validation
+     * Validate WBS week range
      */
     public static function validateWbsRanges(array $data)
     {
@@ -195,12 +208,8 @@ class ResourceSchedule extends Model
             $endDate   = (new \DateTime())->setISODate((int)$endYear, (int)$endWeek);
 
             if ($endDate < $startDate) {
-                abort(422, str_replace(':activity', ucfirst(str_replace('_', ' ', $act)),
-                    config('Start week cannot be after end week.')
-                ));
+                abort(422, config('errors.wbs_end_before_start.errorMessage'));
             }
         }
     }
-
-    
 }

@@ -5,21 +5,13 @@ return [
     // Universal message for all required fields
     'field_required' => [
         'errorCode' => 'ErrMsg00013',
-        'errorMessage' => 'This is a required field.',
+        'errorMessage' => 'This field is required.',
     ],
 
-    
      // Universal message for all record created succesfully
     'record_created_successfully' => [
         'errorCode' => 'SucMsg00001',
         'errorMessage' => 'Record created successfully!',
-    ],
-
-
-    //RESOURCE SCHED REGISTER ERROR MSGS
-    'batch_name_taken' => [
-        'errorCode' => 'ErrMsg00018',
-        'errorMessage' => 'The batch name has already been taken.',
     ],
 
     'target_trainees_min' => [

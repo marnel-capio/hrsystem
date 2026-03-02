@@ -14,7 +14,7 @@ const props = defineProps<{
 // Inertia page
 const page = usePage();
 
-// Initialize form with all required fields
+// Initialize form with all  fields
 const form = useForm({
   action_batch_id: "",
   prev_batch_id: "",
@@ -187,10 +187,14 @@ function createResourceSchedule() {
     (form as any)[`${act}_enddate`] = ganttForm.value[act].end;
   });
 
-  form.post('/action/schedules', {
-    onSuccess: () => { showSuccess.value = true },
-    onError: (errors) => console.log(errors),
-  });
+form.post('/action/schedules', {
+  onSuccess: () => { showSuccess.value = true },
+  onError: (errors) => {
+    ganttActivities.forEach(act => {
+      ganttForm.value[act].error = errors[`${act}_startdate`] || errors[`${act}_enddate`] || "";
+    });
+  },
+});
 }
 
 // When user selects a batch, auto-fill target_trainees
@@ -227,7 +231,7 @@ function closeSuccess() {
             <!-- Batch Name -->
             <div>
               <label class="text-sm font-semibold">Batch Name</label>
-              <select v-model="form.action_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
+              <select v-model="form.action_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5" >
                 <option value="">Select</option>
                 <option v-for="batch in props.newBatches" :key="batch.id" :value="batch.id">
                   {{ batch.action_batch }}
@@ -241,7 +245,7 @@ function closeSuccess() {
             <!-- Target Location -->
             <div>
               <label class="text-sm font-semibold">Target Location</label>
-              <select v-model="form.target_location" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
+              <select v-model="form.target_location" class="w-full bg-zinc-50 border rounded-lg p-2.5" >
                 <option value="">Select</option>
                 <option value="1">Manila</option>
                 <option value="2">Cebu</option>
@@ -254,7 +258,7 @@ function closeSuccess() {
             <!-- Target Trainees -->
             <div>
               <label class="text-sm font-semibold">Target Trainees</label>
-              <input v-model="form.target_trainees" type="number" placeholder="Selected Batch Name will fill this field" class="w-full bg-zinc-50 border rounded-lg p-2.5" required disabled/>
+              <input v-model="form.target_trainees" type="number" placeholder="Selected Batch Name will fill this field" class="w-full bg-zinc-50 border rounded-lg p-2.5"  disabled/>
               <p v-if="form.errors.target_trainees" class="text-red-600 text-xs mt-1">
                 {{ form.errors.target_trainees }}
               </p>
@@ -263,7 +267,7 @@ function closeSuccess() {
             <!-- Date of Deployment -->
             <div>
               <label class="text-sm font-semibold">Date of Deployment</label>
-              <input v-model="form.deployment_date" type="month" class="w-full bg-zinc-50 border rounded-lg p-2.5" required />
+              <input v-model="form.deployment_date" type="month" class="w-full bg-zinc-50 border rounded-lg p-2.5"  />
               <p v-if="form.errors.deployment_date" class="text-red-600 text-xs mt-1">
                 {{ form.errors.deployment_date }}
               </p>
@@ -289,9 +293,7 @@ function closeSuccess() {
           
 
           <!-- Gantt Section -->
-          <h2 class="text-xl font-bold mb-4 mt-10">Work Breakdown Schedule (WBS)</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mt-10">
             <template v-for="act in ganttActivities" :key="act">
               <div>
                 <label class="font-semibold">{{ formatActivityName(act) }}</label>
@@ -303,7 +305,7 @@ function closeSuccess() {
                       type="week"
                       v-model="ganttForm[act].start"
                       class="w-full bg-zinc-50 border rounded-lg p-2"
-                      required
+                      
                     />
                   </div>
 
@@ -313,7 +315,7 @@ function closeSuccess() {
                       type="week"
                       v-model="ganttForm[act].end"
                       class="w-full bg-zinc-50 border rounded-lg p-2"
-                      required
+                      
                     />
                   </div>
                 </div>
@@ -374,6 +376,21 @@ function closeSuccess() {
 
             <div v-else class="text-sm text-zinc-500">Select weeks to generate preview.</div>
           </div>
+
+          
+                    <!-- Remarks Field -->
+<div class="mt-10">
+  <label class="text-sm font-semibold">Remarks</label>
+  <textarea
+    v-model="form.remarks"
+    class="w-full bg-zinc-50 border rounded-lg p-2.5 mt-1"
+    rows="4"
+    placeholder="Enter any remarks here..."
+  ></textarea>
+  <p v-if="form.errors.remarks" class="text-red-600 text-xs mt-1">
+    {{ form.errors.remarks }}
+  </p>
+</div>
 
           <!-- Buttons -->
           <div
