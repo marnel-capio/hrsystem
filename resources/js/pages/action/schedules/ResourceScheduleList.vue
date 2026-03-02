@@ -31,11 +31,8 @@ function formatLocation(loc: number) {
 
 // Search input bound to backend
 const searchQuery = ref(props.filters.search || '');
-watch(searchQuery, (newVal) => {
-  router.get('/action/schedules', { search: newVal }, {
-    preserveState: true,
-    replace: true,
-  });
+watch(searchQuery, () => {
+  currentPage.value = 1; // reset page
 });
 
 // Format deployment date
