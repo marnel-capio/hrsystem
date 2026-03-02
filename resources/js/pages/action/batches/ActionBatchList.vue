@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
-import { computed, ref, watch } from 'vue'
- 
+
 const page = usePage<any>()
- 
+
 const batches = computed(() => page.props.batches)
 const filters = computed(() => page.props.filters)
-const authUser = computed(() => page.props.auth.user)
- 
+// const authUser = computed(() => page.props.auth.user)
+const userPermissions = computed(() => Number(page.props.user_permissions))
 const search = ref(filters.value.search || '')
- 
+
 watch(search, (value: string) => {
   router.get(
     '/action/batches',
@@ -18,27 +18,17 @@ watch(search, (value: string) => {
     { preserveState: true, replace: true }
   )
 })
- 
+
 const currentPage = computed(() => batches.value.current_page)
 const lastPage = computed(() => batches.value.last_page)
- 
-const blockSize = 5
-const authUser = computed(() => page.props.auth.user)
 
-const currentBlock = computed(() =>
-  Math.ceil(currentPage.value / blockSize)
-)
- 
-const startPage = computed(() =>
-  (currentBlock.value - 1) * blockSize + 1
-)
- 
-const endPage = computed(() =>
-  Math.min(startPage.value + blockSize - 1, lastPage.value)
-)
- 
+const blockSize = 5
+const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize))
+const startPage = computed(() => (currentBlock.value - 1) * blockSize + 1)
+const endPage = computed(() => Math.min(startPage.value + blockSize - 1, lastPage.value))
+
 const batchesTotal = computed(() => page.props.batches_total)
- 
+
 const pageNumbers = computed(() => {
   const pages = []
   for (let i = startPage.value; i <= endPage.value; i++) {
@@ -46,7 +36,7 @@ const pageNumbers = computed(() => {
   }
   return pages
 })
- 
+
 function goToPage(pageNumber: number) {
   router.get(
     '/action/batches',
@@ -54,13 +44,13 @@ function goToPage(pageNumber: number) {
     { preserveState: true }
   )
 }
- 
+
 function prevBlock() {
   if (startPage.value > 1) {
     goToPage(startPage.value - 1)
   }
 }
- 
+
 function nextBlock() {
   if (endPage.value < lastPage.value) {
     goToPage(endPage.value + 1)
@@ -74,14 +64,12 @@ function nextBlock() {
  
       <div class="page-header flex justify-between items-center mb-6">
         <h2 class="text-lg font-semibold">Action Batch List</h2>
- 
-        <!-- SHOW ONLY FOR ADMIN & HR MANAGER -->
-        <Link
-  v-if="authUser.position === 'Admin' || authUser.position === 'HR Manager'"
-  href="/action/batches/create"
-  class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded">
-  Create Action Batch
-</Link>
+         <Link
+            v-if="userPermissions === 1 || userPermissions===2"
+          href="/action/batches/create"
+          class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded">
+          Create Action Batch
+        </Link>
       </div>
  
       <div class="card bg-white p-6 rounded shadow">
