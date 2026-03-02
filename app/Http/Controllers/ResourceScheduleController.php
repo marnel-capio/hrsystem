@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Log;
 use Illuminate\Http\Request;
 use App\Models\ResourceSchedule;
+use Illuminate\Support\Facades\DB;
 
 class ResourceScheduleController extends Controller
 {
 
-/**
+    /**
      * Display the list page. Redirect to this page if user clicks Cancel in Register page.
      */
     public function index()
@@ -49,10 +51,35 @@ class ResourceScheduleController extends Controller
      */
     public function store(Request $request)
     {
-        $schedule = ResourceSchedule::createFromRequest($request);
+        try {
+            $schedule = ResourceSchedule::createFromRequest($request);
 
-        return redirect()->route('action.schedules.show', $schedule->id)
-            ->with('success', "Record created successfully.");
+            // Get action_batch name directly from DB
+            $actionBatchName = DB::table('action_batches')
+                ->where('id', $schedule->action_batch_id)
+                ->value('action_batch');
+
+            // Log successful creation with action_batch name
+            Log::createLog(
+                'ResourceSchedules',
+                "Created resource schedule for {$actionBatchName}",
+                $schedule->id
+            );
+
+            return redirect()->route('action.schedules.show', $schedule->id)
+                ->with('success', "Record created successfully.");
+        } catch (\Exception $e) {
+            // Log unsuccessful creation
+            Log::createLog(
+                'ResourceSchedules',
+                "Failed to create resource schedule for {$actionBatchName}",
+                null
+            );
+
+            return back()->withErrors([
+                'general' => 'Failed to create record. Please try again.',
+            ])->withInput();
+        }
     }
 
     /**
