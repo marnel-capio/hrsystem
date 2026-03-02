@@ -19,13 +19,6 @@ const form = useForm({
 // Submit handler
 function submit() {
     form.post('/user', {
-        onError: (errors) => {
-            // Optional: log errors
-            console.log(errors)
-        },
-        onSuccess: () => {
-            router.visit('/user') // redirect to users list
-        },
     })
 }
 

@@ -45,7 +45,7 @@ class UserController extends Controller
 
             Log::createLog(
                 'Users',
-                "User with {$user->email_address} email address is registered.",
+                "User with {$user->email_address} email address is registered successfully.",
                 $user->id
             );
 
