@@ -80,7 +80,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
  * @see app/Http/Controllers/ActionBatchController.php:39
- * @route '/action/batches/create'
+ * @route '/action/batches/register'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
@@ -89,13 +89,13 @@ export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 create.definition = {
     methods: ["get","head"],
-    url: '/action/batches/create',
+    url: '/action/batches/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
  * @see app/Http/Controllers/ActionBatchController.php:39
- * @route '/action/batches/create'
+ * @route '/action/batches/register'
  */
 create.url = (options?: RouteQueryOptions) => {
     return create.definition.url + queryParams(options)
@@ -104,7 +104,7 @@ create.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
  * @see app/Http/Controllers/ActionBatchController.php:39
- * @route '/action/batches/create'
+ * @route '/action/batches/register'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
@@ -113,7 +113,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
  * @see app/Http/Controllers/ActionBatchController.php:39
- * @route '/action/batches/create'
+ * @route '/action/batches/register'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(options),
@@ -123,7 +123,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     /**
 * @see \App\Http\Controllers\ActionBatchController::create
  * @see app/Http/Controllers/ActionBatchController.php:39
- * @route '/action/batches/create'
+ * @route '/action/batches/register'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: create.url(options),
@@ -133,7 +133,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             /**
 * @see \App\Http\Controllers\ActionBatchController::create
  * @see app/Http/Controllers/ActionBatchController.php:39
- * @route '/action/batches/create'
+ * @route '/action/batches/register'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: create.url(options),
@@ -142,7 +142,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             /**
 * @see \App\Http\Controllers\ActionBatchController::create
  * @see app/Http/Controllers/ActionBatchController.php:39
- * @route '/action/batches/create'
+ * @route '/action/batches/register'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: create.url({

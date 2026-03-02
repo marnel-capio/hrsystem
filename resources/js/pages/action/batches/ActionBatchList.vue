@@ -67,7 +67,7 @@ function nextBlock() {
           <h2 class="text-lg font-semibold">Action Batch List</h2>
           <Link
             v-if="userPermissions === 1 || userPermissions === 2"
-            :href="`/action/batches/create`"
+            :href="`/action/batches/register`"
             class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded">
             Create Action Batch
           </Link>
