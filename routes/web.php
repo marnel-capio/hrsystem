@@ -30,8 +30,8 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::middleware(['check.permission'])->group(function () {
 
-        Route::get('/user', fn () => Inertia::render('User/Index'))->name('user.index');
-        Route::get('/user/register', fn () => Inertia::render('User/Register'))->name('user.register');
+        Route::get('/user', fn () => Inertia::render('user/Index'))->name('user.index');
+        Route::get('/user/register', fn () => Inertia::render('user/Register'))->name('user.register');
         Route::post('/user', [UserController::class, 'store'])->name('user.store');
         Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
     });

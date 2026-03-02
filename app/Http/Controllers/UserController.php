@@ -103,7 +103,7 @@ class UserController extends Controller
         $user->position_label = $positionMap[$user->position] ?? 'Unknown';
         $user->permission_label = $permissionMap[$user->permissions] ?? 'Unknown';
 
-        return Inertia::render('User/UserDetail', [
+        return Inertia::render('user/UserDetail', [
             'user' => $user,
         ]);
     }

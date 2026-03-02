@@ -81,11 +81,11 @@ const submit = () => {
 
     <!-- Toast / Alert full-width at top -->
     <div v-if="showSuccess" class="full-width-alert">
-      <div class="alert-success-banner">
-        <div class="alert-body">{{ successMessage }}</div>
-        <button type="button" class="close-btn" @click="showSuccess = false">×</button>
-      </div>
-    </div>
+            <div class="alert-banner alert-success-banner">
+                <div class="alert-body">{{ successMessage }}</div>
+                <button type="button" class="close-btn" @click="showSuccess = false">×</button>
+            </div>
+        </div>
   </div>
 </template>
 
