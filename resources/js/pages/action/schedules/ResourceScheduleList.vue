@@ -61,7 +61,7 @@ function formatDeploymentDate(dateStr: string) {
 
       <!-- Header with Create Button -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">Resource Schedules</h1>
+        <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">Resource Schedule List</h1>
 
 <a
   v-if="props.userPermissions != 3"
