@@ -34,4 +34,5 @@ class ActionBatchController extends Controller
         'user_permissions' => $user->permissions,
     ]);
 }
+   
 }

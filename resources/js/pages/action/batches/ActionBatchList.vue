@@ -64,12 +64,12 @@ function nextBlock() {
  
       <div class="page-header flex justify-between items-center mb-6">
         <h2 class="text-lg font-semibold">Action Batch List</h2>
-         <Link
-            v-if="userPermissions === 1 || userPermissions===2"
-          href="/action/batches/create"
-          class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded">
-          Create Action Batch
-        </Link>
+          <Link
+            v-if="userPermissions === 1 || userPermissions === 2"
+            href="/action/batches/create"
+            class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded">
+            Create Action Batch
+          </Link>
       </div>
  
       <div class="card bg-white p-6 rounded shadow">
@@ -107,11 +107,11 @@ function nextBlock() {
                 :key="batch.id"
                 class="hover:bg-gray-50"
               >
-                <td
-                  class="p-3 border text-blue-600 hover:underline cursor-pointer"
-                  @click="$inertia.get(`/action/batches/${batch.id}`)"
-                >
+                <td class="p-3 border-b  text-blue-600 hover:underline cursor-pointer">
+                  <Link
+                  href="/action/batches/{id}">
                   {{ batch.action_batch }}
+                </Link>
                 </td>
                 <td class="p-3 border">
                   {{ batch.target_trainees }}
