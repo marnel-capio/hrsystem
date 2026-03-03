@@ -8,24 +8,30 @@ import { Head } from '@inertiajs/vue3'
 const page =usePage<any>()
 const form = ref({
     action_batch: '',
+    target_trainees: '',
+    target_date: '',
     remarks: ''
 })
  
 const errors = ref({
-    action_batch: ''
+    error_field: ''
 })
  
 const validate = () => {
-    errors.value.action_batch = ''
+    errors.value.error_field = ''
  
     if (!form.value.action_batch.trim()) {
-        errors.value.action_batch = 'This field is required.'
+        errors.value.error_field = 'This field is required.'
+        return false
+    }
+    if (!form.value.target_trainees.trim()) {
+        errors.value.error_field = 'This field is required.'
         return false
     }
  
    const value = form.value.action_batch.trim()
     if (value.length > 20) {
-        errors.value.action_batch = 
+        errors.value.error_field = 
             'Invalid input. This field must not exceed 20 characters.'
         return false
     }
@@ -65,8 +71,22 @@ const submit = () => {
                         placeholder="Action batch"
                         class="border p-2 rounded w-full"
                     />
-                    <span v-if="page.props.errors?.action_batch || errors.action_batch" class="text-red-600 text-xs mt-1">
-                        {{ page.props.errors?.action_batch || errors.action_batch }}
+                    <span v-if=" errors.error_field" class="text-red-600 text-xs mt-1">
+                        {{ errors.error_field }}
+                    </span>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-5">
+                <div class="flex flex-col col-span-2">
+                    <label class="text-xs font-semibold mb-1">Target Trainees</label>
+                    <input
+                        v-model="form.target_trainees"
+                        @input="formatToUppercase"
+                        placeholder="Target Trainees"
+                        class="border p-2 rounded w-full"
+                    />
+                    <span v-if="page.props.errors?.action_batch || errors.error_field" class="text-red-600 text-xs mt-1">
+                        {{ page.props.errors?.action_batch || errors.error_field }}
                     </span>
                 </div>
             </div>

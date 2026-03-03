@@ -1,110 +1,169 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { register } from '@/routes';
-import { store } from '@/routes/login';
-import { request } from '@/routes/password';
+import { ref, onMounted } from 'vue'
+import { useForm, router } from '@inertiajs/vue3'
+import awsLogo from '@/images/aws-logo.jpg'
 
-defineProps<{
-    status?: string;
-    canResetPassword: boolean;
-    canRegister: boolean;
-}>();
+// ✅ Props from Inertia flash messages
+const props = defineProps<{
+  flash?: {
+    success?: string
+  }
+}>()
+
+// Toast state
+const showSuccess = ref(false)
+const successMessage = ref<string | null>(null)
+
+// Show toast if flash.success exists
+onMounted(() => {
+  if (props.flash?.success) {
+    successMessage.value = props.flash.success
+    showSuccess.value = true
+
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+      showSuccess.value = false
+    }, 5000)
+  }
+})
+
+// Inertia login form
+const form = useForm({
+  email_address: '',
+  password: '',
+})
+
+const submit = () => {
+  form.clearErrors()
+  form.post('/login', {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset('password')
+      router.visit('/dashboard')
+    },
+    onError: (errors) => {
+      console.log('Login errors:', errors)
+    },
+  })
+}
 </script>
 
 <template>
-    <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
-    >
-        <Head title="Log in" />
+  <div class="login-wrapper">
+    <div class="login-card">
+      <img :src="awsLogo" alt="AWS Logo" class="aws-logo" />
+      <h1>HR System</h1>
 
-        <div
-            v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
-        >
-            {{ status }}
+      <form @submit.prevent="submit">
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            v-model="form.email_address"
+            type="text"
+            placeholder="Enter your email"
+            autofocus
+          />
+          <span v-if="form.errors.email_address" class="error">
+            {{ form.errors.email_address }}
+          </span>
         </div>
 
-        <Form
-            v-bind="store.form()"
-            :reset-on-success="['password']"
-            v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
-        >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        name="email"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="errors.email" />
-                </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input
+            v-model="form.password"
+            type="password"
+            placeholder="Enter your password"
+          />
+          <span v-if="form.errors.password" class="error">
+            {{ form.errors.password }}
+          </span>
+        </div>
 
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink
-                            v-if="canResetPassword"
-                            :href="request()"
-                            class="text-sm"
-                            :tabindex="5"
-                        >
-                            Forgot password?
-                        </TextLink>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        name="password"
-                        required
-                        :tabindex="2"
-                        autocomplete="current-password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="errors.password" />
-                </div>
+        <button type="submit" :disabled="form.processing">
+          {{ form.processing ? 'Signing in…' : 'Sign In' }}
+        </button>
 
-                <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" :tabindex="3" />
-                        <span>Remember me</span>
-                    </Label>
-                </div>
+        <a href="/forgot-password" class="forgot">Forgot your password?</a>
+      </form>
+    </div>
 
-                <Button
-                    type="submit"
-                    class="mt-4 w-full"
-                    :tabindex="4"
-                    :disabled="processing"
-                    data-test="login-button"
-                >
-                    <Spinner v-if="processing" />
-                    Log in
-                </Button>
-            </div>
-
-            <div
-                class="text-center text-sm text-muted-foreground"
-                v-if="canRegister"
-            >
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
-            </div>
-        </Form>
-    </AuthBase>
+    <!-- Toast / Alert full-width at top -->
+<div v-if="showSuccess" class="full-width-alert">
+  <div class="alert-success-banner">
+    <div class="alert-body">{{ successMessage }}</div>
+    <button type="button" class="close-btn" @click="showSuccess = false">×</button>
+  </div>
+</div>
+  </div>
 </template>
+
+<style scoped>
+/* Full-width top alert */
+.full-width-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 1055;
+  display: flex;
+  justify-content: center;
+  pointer-events: none; /* doesn’t block page clicks */
+}
+
+/* Banner styling – slimmer version */
+.alert-success-banner {
+  background-color: #28a745; /* green success */
+  color: #fff;
+  padding: 0.4rem 1rem; /* slimmer vertical padding */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  pointer-events: auto; /* allow button click */
+  animation: slideDown 0.4s ease-out;
+  font-size: 0.95rem; /* slightly smaller text */
+}
+
+/* Text */
+.alert-body {
+  flex: 1;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Close button styling */
+.close-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  font-size: 1rem; /* slightly smaller */
+  width: 28px;
+  height: 28px; /* smaller than before */
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+  transform: scale(1.1);
+}
+
+/* Slide-down animation */
+@keyframes slideDown {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+</style>
