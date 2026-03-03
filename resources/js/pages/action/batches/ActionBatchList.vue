@@ -7,7 +7,6 @@ const page = usePage<any>()
 
 const batches = computed(() => page.props.batches)
 const filters = computed(() => page.props.filters)
-// const authUser = computed(() => page.props.auth.user)
 const userPermissions = computed(() => Number(page.props.user_permissions))
 const search = ref(filters.value.search || '')
 
@@ -18,7 +17,6 @@ watch(search, (value: string) => {
     { preserveState: true, replace: true }
   )
 })
-
 
 const currentPage = computed(() => batches.value.current_page)
 const lastPage = computed(() => batches.value.last_page)
@@ -57,6 +55,8 @@ function nextBlock() {
     goToPage(endPage.value + 1)
   }
 }
+
+const shouldShowPagination = computed(() => batchesTotal.value > 20)
 </script>
  
 <template>
@@ -135,8 +135,7 @@ function nextBlock() {
         </div>
  
         <!-- PAGINATION -->
-        <div class="flex justify-center mt-3 gap-2 text-xs">
- 
+        <div v-if="shouldShowPagination" class="flex justify-center mt-3 gap-2 text-xs">
           <span
             @click="startPage !== 1 && prevBlock()"
             class="px-3 py-2 border rounded cursor-pointer"
@@ -162,7 +161,6 @@ function nextBlock() {
           >
             Next
           </span>
- 
         </div>
       </div>
     </div>
