@@ -1,11 +1,7 @@
-<<<<<<< HEAD
-=======
-import schedules from './schedules'
->>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import schedules from './schedules'
 /**
-* @see routes/web.php:78
+* @see routes/web.php:84
 * @route '/action'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,12 +10,12 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 index.definition = {
-    methods: ["get", "head"],
+    methods: ["get","head"],
     url: '/action',
-} satisfies RouteDefinition<["get", "head"]>
+} satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:78
+* @see routes/web.php:84
 * @route '/action'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -31,7 +27,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:78
+* @see routes/web.php:84
 * @route '/action'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -40,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:78
+* @see routes/web.php:84
 * @route '/action'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -48,10 +44,8 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
-<<<<<<< HEAD
-=======
 /**
-* @see routes/web.php:40
+* @see routes/web.php:84
 * @route '/action'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -60,40 +54,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:40
-* @route '/action'
-*/
-indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-/**
-* @see routes/web.php:40
-* @route '/action'
-*/
-indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-index.form = indexForm
->>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
-/**
-* @see routes/web.php:78
-* @route '/action'
-*/
-const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see routes/web.php:78
+* @see routes/web.php:84
 * @route '/action'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -102,7 +63,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:78
+* @see routes/web.php:84
 * @route '/action'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -118,7 +79,7 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
-* @see routes/web.php:79
+* @see routes/web.php:85
 * @route '/action/applications'
 */
 export const applications = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -127,12 +88,12 @@ export const applications = (options?: RouteQueryOptions): RouteDefinition<'get'
 })
 
 applications.definition = {
-    methods: ["get", "head"],
+    methods: ["get","head"],
     url: '/action/applications',
-} satisfies RouteDefinition<["get", "head"]>
+} satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:79
+* @see routes/web.php:85
 * @route '/action/applications'
 */
 applications.url = (options?: RouteQueryOptions) => {
@@ -144,7 +105,7 @@ applications.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:79
+* @see routes/web.php:85
 * @route '/action/applications'
 */
 applications.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -153,7 +114,7 @@ applications.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:79
+* @see routes/web.php:85
 * @route '/action/applications'
 */
 applications.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -162,21 +123,16 @@ applications.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:79
-=======
-* @see routes/web.php:41
->>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
+* @see routes/web.php:85
 * @route '/action/applications'
 */
 const applicationsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: applications.url(options),
     method: 'get',
 })
-<<<<<<< HEAD
 
 /**
-* @see routes/web.php:79
+* @see routes/web.php:85
 * @route '/action/applications'
 */
 applicationsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -185,7 +141,7 @@ applicationsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 })
 
 /**
-* @see routes/web.php:79
+* @see routes/web.php:85
 * @route '/action/applications'
 */
 applicationsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -200,32 +156,6 @@ applicationsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'
 
 applications.form = applicationsForm
 
-=======
-
-/**
-* @see routes/web.php:41
-* @route '/action/applications'
-*/
-applicationsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: applications.url(options),
-    method: 'get',
-})
-/**
-* @see routes/web.php:41
-* @route '/action/applications'
-*/
-applicationsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: applications.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-applications.form = applicationsForm
->>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
 /**
 * @see \App\Http\Controllers\ActionBatchController::list
 * @see app/Http/Controllers/ActionBatchController.php:12
@@ -237,9 +167,9 @@ export const list = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 list.definition = {
-    methods: ["get", "head"],
+    methods: ["get","head"],
     url: '/action/batches',
-} satisfies RouteDefinition<["get", "head"]>
+} satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\ActionBatchController::list
@@ -293,10 +223,7 @@ listForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: list.url(options),
     method: 'get',
 })
-<<<<<<< HEAD
 
-=======
->>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
 /**
 * @see \App\Http\Controllers\ActionBatchController::list
 * @see app/Http/Controllers/ActionBatchController.php:12
@@ -313,10 +240,7 @@ listForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 list.form = listForm
-<<<<<<< HEAD
 
-=======
->>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
 * @see app/Http/Controllers/ActionBatchController.php:39
@@ -328,9 +252,9 @@ export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 create.definition = {
-    methods: ["get", "head"],
+    methods: ["get","head"],
     url: '/action/batches/register',
-} satisfies RouteDefinition<["get", "head"]>
+} satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
@@ -384,10 +308,7 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: create.url(options),
     method: 'get',
 })
-<<<<<<< HEAD
 
-=======
->>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
 /**
 * @see \App\Http\Controllers\ActionBatchController::create
 * @see app/Http/Controllers/ActionBatchController.php:39
@@ -404,10 +325,7 @@ createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 create.form = createForm
-<<<<<<< HEAD
 
-=======
->>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
 const action = {
     schedules: Object.assign(schedules, schedules),
 index: Object.assign(index, index),
