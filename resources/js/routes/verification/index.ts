@@ -218,15 +218,16 @@ send.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController::send
- * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationNotificationController.php:19
- * @route '/email/verification-notification'
- */
-        sendForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: send.url(options),
-            method: 'post',
-        })
-    
-    send.form = sendForm
+* @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationNotificationController.php:19
+* @route '/email/verification-notification'
+*/
+sendForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: send.url(options),
+    method: 'post',
+})
+
+send.form = sendForm
+
 const verification = {
     notice: Object.assign(notice, notice),
 verify: Object.assign(verify, verify),

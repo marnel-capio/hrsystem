@@ -1,10 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 import confirmD7e05f from './confirm'
 /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::request
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:22
- * @route '/forgot-password'
- */
+* @see \App\Http\Controllers\ForgotPasswordController::request
+* @see app/Http/Controllers/ForgotPasswordController.php:16
+* @route '/forgot-password'
+*/
 export const request = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: request.url(options),
     method: 'get',
@@ -16,68 +16,70 @@ request.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::request
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:22
- * @route '/forgot-password'
- */
+* @see \App\Http\Controllers\ForgotPasswordController::request
+* @see app/Http/Controllers/ForgotPasswordController.php:16
+* @route '/forgot-password'
+*/
 request.url = (options?: RouteQueryOptions) => {
     return request.definition.url + queryParams(options)
 }
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::request
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:22
- * @route '/forgot-password'
- */
+* @see \App\Http\Controllers\ForgotPasswordController::request
+* @see app/Http/Controllers/ForgotPasswordController.php:16
+* @route '/forgot-password'
+*/
 request.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: request.url(options),
     method: 'get',
 })
 /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::request
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:22
- * @route '/forgot-password'
- */
+* @see \App\Http\Controllers\ForgotPasswordController::request
+* @see app/Http/Controllers/ForgotPasswordController.php:16
+* @route '/forgot-password'
+*/
 request.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: request.url(options),
     method: 'head',
 })
 
-    /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::request
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:22
- * @route '/forgot-password'
- */
-    const requestForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: request.url(options),
-        method: 'get',
-    })
+/**
+* @see \App\Http\Controllers\ForgotPasswordController::request
+* @see app/Http/Controllers/ForgotPasswordController.php:16
+* @route '/forgot-password'
+*/
+const requestForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: request.url(options),
+    method: 'get',
+})
 
-            /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::request
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:22
- * @route '/forgot-password'
- */
-        requestForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: request.url(options),
-            method: 'get',
-        })
-            /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::request
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:22
- * @route '/forgot-password'
- */
-        requestForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: request.url({
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    request.form = requestForm
+/**
+* @see \App\Http\Controllers\ForgotPasswordController::request
+* @see app/Http/Controllers/ForgotPasswordController.php:16
+* @route '/forgot-password'
+*/
+requestForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: request.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ForgotPasswordController::request
+* @see app/Http/Controllers/ForgotPasswordController.php:16
+* @route '/forgot-password'
+*/
+requestForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: request.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+request.form = requestForm
+
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::reset
  * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:44
@@ -176,10 +178,10 @@ reset.head = (args: { token: string | number } | [token: string | number ] | str
     
     reset.form = resetForm
 /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::email
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:30
- * @route '/forgot-password'
- */
+* @see \App\Http\Controllers\ForgotPasswordController::email
+* @see app/Http/Controllers/ForgotPasswordController.php:21
+* @route '/forgot-password'
+*/
 export const email = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: email.url(options),
     method: 'post',
@@ -191,45 +193,46 @@ email.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::email
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:30
- * @route '/forgot-password'
- */
+* @see \App\Http\Controllers\ForgotPasswordController::email
+* @see app/Http/Controllers/ForgotPasswordController.php:21
+* @route '/forgot-password'
+*/
 email.url = (options?: RouteQueryOptions) => {
     return email.definition.url + queryParams(options)
 }
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::email
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:30
- * @route '/forgot-password'
- */
+* @see \App\Http\Controllers\ForgotPasswordController::email
+* @see app/Http/Controllers/ForgotPasswordController.php:21
+* @route '/forgot-password'
+*/
 email.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: email.url(options),
     method: 'post',
 })
 
-    /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::email
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:30
- * @route '/forgot-password'
- */
-    const emailForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: email.url(options),
-        method: 'post',
-    })
+/**
+* @see \App\Http\Controllers\ForgotPasswordController::email
+* @see app/Http/Controllers/ForgotPasswordController.php:21
+* @route '/forgot-password'
+*/
+const emailForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: email.url(options),
+    method: 'post',
+})
 
-            /**
-* @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::email
- * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:30
- * @route '/forgot-password'
- */
-        emailForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: email.url(options),
-            method: 'post',
-        })
-    
-    email.form = emailForm
+/**
+* @see \App\Http\Controllers\ForgotPasswordController::email
+* @see app/Http/Controllers/ForgotPasswordController.php:21
+* @route '/forgot-password'
+*/
+emailForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: email.url(options),
+    method: 'post',
+})
+
+email.form = emailForm
+
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
  * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
@@ -427,20 +430,21 @@ confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \Laravel\Fortify\Http\Controllers\ConfirmedPasswordStatusController::confirmation
- * @see vendor/laravel/fortify/src/Http/Controllers/ConfirmedPasswordStatusController.php:17
- * @route '/user/confirmed-password-status'
- */
-        confirmationForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: confirmation.url({
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    confirmation.form = confirmationForm
+* @see vendor/laravel/fortify/src/Http/Controllers/ConfirmedPasswordStatusController.php:17
+* @route '/user/confirmed-password-status'
+*/
+confirmationForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: confirmation.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+confirmation.form = confirmationForm
+
 const password = {
     request: Object.assign(request, request),
 reset: Object.assign(reset, reset),

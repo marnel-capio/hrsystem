@@ -193,20 +193,21 @@ destroy.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
 
             /**
 * @see \App\Http\Controllers\Settings\ProfileController::destroy
- * @see app/Http/Controllers/Settings/ProfileController.php:47
- * @route '/settings/profile'
- */
-        destroyForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: destroy.url({
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'DELETE',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'post',
-        })
-    
-    destroy.form = destroyForm
+* @see app/Http/Controllers/Settings/ProfileController.php:47
+* @route '/settings/profile'
+*/
+destroyForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+destroy.form = destroyForm
+
 const profile = {
     edit: Object.assign(edit, edit),
 update: Object.assign(update, update),

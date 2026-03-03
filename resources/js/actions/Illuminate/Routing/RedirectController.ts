@@ -173,18 +173,19 @@ RedirectController.options = (options?: RouteQueryOptions): RouteDefinition<'opt
         })
             /**
 * @see \Illuminate\Routing\RedirectController::__invoke
- * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
- * @route '/settings'
- */
-        RedirectControllerForm.options = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: RedirectController.url({
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'OPTIONS',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    RedirectController.form = RedirectControllerForm
+* @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+* @route '/settings'
+*/
+RedirectControllerForm.options = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: RedirectController.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'OPTIONS',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+RedirectController.form = RedirectControllerForm
+
 export default RedirectController
