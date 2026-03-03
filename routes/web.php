@@ -1,5 +1,5 @@
 <?php
-
+ 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -24,24 +24,29 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLogin'])
     ->name('login')
     ->middleware('guest');
-
+ 
 // Login POST
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('guest');
-
+ 
 Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
-
-// Protected routes
-Route::middleware(['web', 'auth'])->group(function () {
-
-
+ 
+// ------------------------
+// Authenticated Routes
+// ------------------------
+Route::middleware(['web', 'auth'])->group(function(){
+    Route::get('/', [DashboardController::class, 'index']);
+ 
+    // HR Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard');
+ 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout')
     ->middleware('auth');
 
-    
     // DASHBOARD
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -70,7 +75,25 @@ Route::middleware(['web', 'auth'])->group(function () {
     //     return app(ResourceScheduleController::class)->create();
     // })->name('action.schedules.register');
 
-});
 
 // Include other routes
+   
+    // Action
+    Route::get('/action', fn () => Inertia::render('action/Action'))->name('action.index');
+    Route::get('/action/applications', fn () => Inertia::render('action/Applications'))->name('action.applications');
+    Route::get('/action/batches', action: [ActionBatchController::class, 'index'])->name('action.list');    
+    Route::get('/action/batches', [ActionBatchController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('action.list');
+
+    //For Testing purposes
+    Route::get('/action/batches/register', [ActionBatchController::class, 'create'])
+    ->middleware(['auth'])
+    ->name('action.create');
+    Route::get('/action/batches/{id}', [ActionBatchController::class, 'show']);
+    
+});
+ 
+ 
 require __DIR__.'/settings.php';
+ 
