@@ -40,16 +40,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout')
     ->middleware('auth');
-    
-    // Action 
-    Route::get('/action', fn () => Inertia::render('action/Action'))->name('action.index');
-    Route::get('/action/applications', fn () => Inertia::render('action/Applications'))->name('action.applications');
-    Route::get('/action/batches', action: [ActionBatchController::class, 'index'])->name('action.list');    
-    Route::get('/action/batches/create', [ActionBatchController::class, 'index'])->name('action.create');    
 
-    Route::get('/action/batches', [ActionBatchController::class, 'index'])
-    ->middleware(['auth'])
-    ->name('action.list');
     
     // DASHBOARD
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -68,7 +59,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
 
     // CREATE PAGE FOR SCHEDULES - Permission check in route
-    Route::get('action/schedules/create', function () {
+    Route::get('action/schedules/register', function () {
         $user = auth()->user();
         
         if (!in_array((int)$user->permissions, [1, 2])) {
@@ -77,7 +68,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         }
 
         return app(ResourceScheduleController::class)->create();
-    })->name('action.schedules.create');
+    })->name('action.schedules.register');
 
 });
 

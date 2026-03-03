@@ -171,7 +171,10 @@ function nextBlock() {
       </table>
 
       <!-- Block Pagination -->
-      <div class="flex justify-center mt-3 gap-2 text-xs" v-if="filteredSchedules.length > 0">
+      <div
+        class="flex justify-center mt-3 gap-2 text-xs"
+        v-if="filteredSchedules.length > perPage"
+      >
         <span
           @click="prevBlock"
           class="px-3 py-2 border rounded cursor-pointer"

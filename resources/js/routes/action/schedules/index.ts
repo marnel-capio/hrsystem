@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:58
+* @see routes/web.php:49
 * @route '/action/schedules'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:58
+* @see routes/web.php:49
 * @route '/action/schedules'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:58
+* @see routes/web.php:49
 * @route '/action/schedules'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:58
+* @see routes/web.php:49
 * @route '/action/schedules'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:58
+* @see routes/web.php:49
 * @route '/action/schedules'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -53,7 +53,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:58
+* @see routes/web.php:49
 * @route '/action/schedules'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -62,7 +62,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:58
+* @see routes/web.php:49
 * @route '/action/schedules'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -78,73 +78,73 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
-* @see routes/web.php:71
-* @route '/action/schedules/create'
+* @see routes/web.php:62
+* @route '/action/schedules/register'
 */
-export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: create.url(options),
+export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: register.url(options),
     method: 'get',
 })
 
-create.definition = {
+register.definition = {
     methods: ["get","head"],
-    url: '/action/schedules/create',
+    url: '/action/schedules/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:71
-* @route '/action/schedules/create'
+* @see routes/web.php:62
+* @route '/action/schedules/register'
 */
-create.url = (options?: RouteQueryOptions) => {
+register.url = (options?: RouteQueryOptions) => {
 
 
 
 
-    return create.definition.url + queryParams(options)
+    return register.definition.url + queryParams(options)
 }
 
 /**
-* @see routes/web.php:71
-* @route '/action/schedules/create'
+* @see routes/web.php:62
+* @route '/action/schedules/register'
 */
-create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: create.url(options),
+register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: register.url(options),
     method: 'get',
 })
 
 /**
-* @see routes/web.php:71
-* @route '/action/schedules/create'
+* @see routes/web.php:62
+* @route '/action/schedules/register'
 */
-create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: create.url(options),
+register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: register.url(options),
     method: 'head',
 })
 
 /**
-* @see routes/web.php:71
-* @route '/action/schedules/create'
+* @see routes/web.php:62
+* @route '/action/schedules/register'
 */
-const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: create.url(options),
+const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: register.url(options),
     method: 'get',
 })
 
 /**
-* @see routes/web.php:71
-* @route '/action/schedules/create'
+* @see routes/web.php:62
+* @route '/action/schedules/register'
 */
-createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: create.url(options),
+registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: register.url(options),
     method: 'get',
 })
 
 /**
-* @see routes/web.php:71
-* @route '/action/schedules/create'
+* @see routes/web.php:62
+* @route '/action/schedules/register'
 */
-createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: create.url({
+registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: register.url({
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -153,11 +153,11 @@ createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
     method: 'get',
 })
 
-create.form = createForm
+register.form = registerForm
 
 const schedules = {
     index: Object.assign(index, index),
-create: Object.assign(create, create),
+register: Object.assign(register, register),
 }
 
 export default schedules
