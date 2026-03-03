@@ -4,8 +4,8 @@ import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { usePage } from '@inertiajs/vue3'
 import { Head } from '@inertiajs/vue3'
- 
-const page =usePage<any>()
+
+const page = usePage<any>()
 const loading = ref(false);
 const form = ref({
     action_batch: '',
@@ -13,13 +13,13 @@ const form = ref({
     target_date: '',
     remarks: ''
 })
- 
+
 const errors = ref({
     action_batch: '',
     target_trainees: '',
     target_date: ''
 })
- 
+
 const validate = () => {
     errors.value.action_batch = ''
     errors.value.target_trainees = ''
@@ -52,14 +52,21 @@ const validate = () => {
     if (!form.value.target_date.trim()) {
         errors.value.target_date = 'This field is required.'
         isValid = false
+    } else {
+        const selectedDate = new Date(form.value.target_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate <= today) {
+            errors.value.target_date = 'Please choose a valid date.'
+            isValid = false
+        }
     }
 
     return isValid;
 }
 
-
-const formatToUppercase = ()=>{
-  form.value.action_batch = form.value.action_batch. toUpperCase()
+const formatToUppercase = () => {
+    form.value.action_batch = form.value.action_batch.toUpperCase()
 }
 
 const submit = () => {
@@ -74,17 +81,17 @@ const submit = () => {
     });
 };
 </script>
- 
+
 <template>
     <Head title="Action Batch Register"/>
- 
+
     <AppLayout>
         <div class="flex justify-between items-center mx-5 mb-3">
             <h2 class="text-xl font-bold">Create Action Batch</h2>
         </div>
- 
+
         <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
- 
+
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col col-span-2">
                     <label class="text-xs font-semibold mb-1">Action Batch</label>
@@ -119,6 +126,7 @@ const submit = () => {
                     <label class="text-xs font-semibold mb-1">Target Start Date</label>
                     <input
                         v-model="form.target_date"
+                        type="date"
                         placeholder="Target Start Date"
                         class="border p-2 rounded w-full"
                     />
@@ -127,7 +135,7 @@ const submit = () => {
                     </span>
                 </div>
             </div>
- 
+
             <div class="grid grid-cols-2 gap-4 mt-5">
                 <div class="flex flex-col col-span-2">
                     <label class="text-xs font-semibold mb-1">Remarks</label>
@@ -139,7 +147,7 @@ const submit = () => {
                     />
                 </div>
             </div>
- 
+
             <div class="mt-10 w-full flex justify-end space-x-2">
                 <span
                     class="px-4 text-xs cursor-pointer border py-2 rounded hover:bg-gray-200"
@@ -147,7 +155,7 @@ const submit = () => {
                 >
                     Cancel
                 </span>
- 
+
                 <span
                     :class="{'cursor-wait': loading}"
                     class="px-4 text-xs cursor-pointer py-2 bg-[#2176ff] text-white rounded hover:bg-blue-400"
@@ -159,4 +167,3 @@ const submit = () => {
         </div>
     </AppLayout>
 </template>
- 
