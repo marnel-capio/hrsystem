@@ -12,7 +12,8 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('action_batch_id')->unsigned();
             $table->tinyInteger('target_location'); // 1-Manila, 2-Cebu
-            $table->tinyInteger('target_trainees');
+            // target trainees will now be taken from action_batches
+            // $table->tinyInteger('target_trainees');
             $table->string('deployment_date', 10);
             $table->string('contact_schools_startdate', 10);
             $table->string('contact_schools_enddate', 10);
