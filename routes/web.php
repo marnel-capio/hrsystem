@@ -59,16 +59,16 @@ Route::middleware(['web', 'auth'])->group(function () {
 
 
     // CREATE PAGE FOR SCHEDULES - Permission check in route
-    Route::get('action/schedules/register', function () {
-        $user = auth()->user();
+    // Route::get('action/schedules/register', function () {
+    //     $user = auth()->user();
         
-        if (!in_array((int)$user->permissions, [1, 2])) {
-            // Use Inertia redirect with error in query string
-            return Inertia::location(route('dashboard') . '?error=Access%20denied:%20You%20are%20not%20authorized%20to%20view%20this%20page.');
-        }
+    //     if (!in_array((int)$user->permissions, [1, 2])) {
+    //         // Use Inertia redirect with error in query string
+    //         return Inertia::location(route('dashboard') . '?error=Access%20denied:%20You%20are%20not%20authorized%20to%20view%20this%20page.');
+    //     }
 
-        return app(ResourceScheduleController::class)->create();
-    })->name('action.schedules.register');
+    //     return app(ResourceScheduleController::class)->create();
+    // })->name('action.schedules.register');
 
 });
 

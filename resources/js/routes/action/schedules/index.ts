@@ -77,87 +77,8 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 index.form = indexForm
 
-/**
-* @see routes/web.php:62
-* @route '/action/schedules/register'
-*/
-export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
-    method: 'get',
-})
-
-register.definition = {
-    methods: ["get","head"],
-    url: '/action/schedules/register',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see routes/web.php:62
-* @route '/action/schedules/register'
-*/
-register.url = (options?: RouteQueryOptions) => {
-
-
-
-
-    return register.definition.url + queryParams(options)
-}
-
-/**
-* @see routes/web.php:62
-* @route '/action/schedules/register'
-*/
-register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
-    method: 'get',
-})
-
-/**
-* @see routes/web.php:62
-* @route '/action/schedules/register'
-*/
-register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: register.url(options),
-    method: 'head',
-})
-
-/**
-* @see routes/web.php:62
-* @route '/action/schedules/register'
-*/
-const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: register.url(options),
-    method: 'get',
-})
-
-/**
-* @see routes/web.php:62
-* @route '/action/schedules/register'
-*/
-registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: register.url(options),
-    method: 'get',
-})
-
-/**
-* @see routes/web.php:62
-* @route '/action/schedules/register'
-*/
-registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: register.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-register.form = registerForm
-
 const schedules = {
     index: Object.assign(index, index),
-register: Object.assign(register, register),
 }
 
 export default schedules

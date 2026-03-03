@@ -113,7 +113,7 @@ function nextBlock() {
 
         <a
           v-if="props.userPermissions != 3"
-          href="/action/schedules/create"
+          href="/action/schedules/register"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
           style="background-color: #1C7BA5;"
         >
