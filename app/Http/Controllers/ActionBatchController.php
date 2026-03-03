@@ -49,7 +49,6 @@ public function store(Request $request)
 {
     $user = Auth::user();
 
-    // Validate the incoming request
     $validated = $request->validate([
         'action_batch' => 'required|string|max:20|unique:action_batches,action_batch',
         'target_trainees' => 'required|integer|max:99',
@@ -59,7 +58,6 @@ public function store(Request $request)
         'action_batch.unique' => 'Action Batch already exist.'
     ]);
 
-    // Save to DB
     $batch = new ActionBatchModel();
     $batch->action_batch = strtoupper($validated['action_batch']); 
     $batch->target_trainees = $validated['target_trainees'];

@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:96
+ * @see app/Http/Controllers/ActionBatchController.php:94
  * @route '/action/batches/{id})'
  */
 export const detail = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -172,7 +172,7 @@ detail.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:96
+ * @see app/Http/Controllers/ActionBatchController.php:94
  * @route '/action/batches/{id})'
  */
 detail.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -200,7 +200,7 @@ detail.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:96
+ * @see app/Http/Controllers/ActionBatchController.php:94
  * @route '/action/batches/{id})'
  */
 detail.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -209,7 +209,7 @@ detail.get = (args: { id: string | number } | [id: string | number ] | string | 
 })
 /**
 * @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:96
+ * @see app/Http/Controllers/ActionBatchController.php:94
  * @route '/action/batches/{id})'
  */
 detail.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -219,7 +219,7 @@ detail.head = (args: { id: string | number } | [id: string | number ] | string |
 
     /**
 * @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:96
+ * @see app/Http/Controllers/ActionBatchController.php:94
  * @route '/action/batches/{id})'
  */
     const detailForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -229,7 +229,7 @@ detail.head = (args: { id: string | number } | [id: string | number ] | string |
 
             /**
 * @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:96
+ * @see app/Http/Controllers/ActionBatchController.php:94
  * @route '/action/batches/{id})'
  */
         detailForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -238,7 +238,7 @@ detail.head = (args: { id: string | number } | [id: string | number ] | string |
         })
             /**
 * @see \App\Http\Controllers\ActionBatchController::detail
- * @see app/Http/Controllers/ActionBatchController.php:96
+ * @see app/Http/Controllers/ActionBatchController.php:94
  * @route '/action/batches/{id})'
  */
         detailForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

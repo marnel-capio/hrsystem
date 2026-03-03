@@ -38,11 +38,11 @@ const validate = () => {
         }
     }
 
-    if (!form.value.target_trainees.trim()) {
+    if (!form.value.target_trainees.toString().trim()) {
         errors.value.target_trainees = 'This field is required.'
         isValid = false
     } else {
-        const targetTraineesValue = form.value.target_trainees.trim()
+        const targetTraineesValue = form.value.target_trainees.toString().trim()
         if (targetTraineesValue.length > 2) {
             errors.value.target_trainees = 'Invalid input. This field must not exceed 2 characters.'
             isValid = false
@@ -113,6 +113,7 @@ const submit = () => {
                     <input
                         v-model="form.target_trainees"
                         placeholder="Target Trainees"
+                        type="number"
                         class="border p-2 rounded w-full"
                     />
                     <span v-if="page.props.errors?.target_trainees || errors.target_trainees" class="text-red-600 text-xs mt-1">
