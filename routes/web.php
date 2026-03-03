@@ -1,5 +1,5 @@
 <?php
-
+ 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -20,15 +20,17 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+ 
+ 
 // Login page
 Route::get('/login', [AuthController::class, 'showLogin'])
     ->name('login')
     ->middleware('guest');
-
+ 
 // Login POST
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('guest');
-
+ 
 Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
 
@@ -51,7 +53,9 @@ Route::middleware(['web', 'auth'])->group(function () {
         
         if (!in_array((int)$user->permissions, [1, 2, 3])) {
             // Use Inertia redirect with error in query string
-            return Inertia::location(route('dashboard') . '?error=Access%20denied:%20You%20are%20not%20authorized%20to%20view%20this%20page.');
+            return redirect()
+    ->route('dashboard')
+    ->with('error', 'Access denied: You are not authorized to view this page.');
         }
 
         return app(ResourceScheduleController::class)->index();
@@ -70,7 +74,24 @@ Route::middleware(['web', 'auth'])->group(function () {
     //     return app(ResourceScheduleController::class)->create();
     // })->name('action.schedules.register');
 
+        // Action
+    Route::get('/action', fn () => Inertia::render('action/Action'))->name('action.index');
+    Route::get('/action/applications', fn () => Inertia::render('action/Applications'))->name('action.applications');
+    Route::get('/action/batches', action: [ActionBatchController::class, 'index'])->name('action.list');    
+    Route::get('/action/batches', [ActionBatchController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('action.list');
+
+    //For Testing purposes
+    Route::get('/action/batches/register', [ActionBatchController::class, 'create'])
+    ->middleware(['auth'])
+    ->name('action.create');
+    Route::get('/action/batches/{id}', [ActionBatchController::class, 'show']);
+
 });
 
 // Include other routes
+ 
+ 
 require __DIR__.'/settings.php';
+ 
