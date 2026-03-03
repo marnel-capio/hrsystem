@@ -1,7 +1,7 @@
 <?php
  
 namespace App\Http\Controllers;
- 
+use Illuminate\Support\Facades\DB;
 use App\Models\ActionBatchModel;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -70,6 +70,16 @@ public function store(Request $request)
     $batch->updated_by = $user->id;
     $batch->updated_time = now();
     $batch->save();
+
+    DB::table('logs')->insert([
+        'module' => 'Action',
+        'activity' => 'Created a new action batch ' . $batch->action_batch,
+        'ip_address' => $request->ip(),
+        'created_by' => $user->id,
+        'updated_by' => $user->id,
+        'create_time' => now(),
+        'update_time' => now(),
+    ]);
 
     return redirect()
         ->route('action.batches.detail', ['id' => $batch->id])
