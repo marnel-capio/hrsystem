@@ -20,8 +20,11 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+<<<<<<< HEAD
  
  
+=======
+>>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
 // Login page
 Route::get('/login', [AuthController::class, 'showLogin'])
     ->name('login')
@@ -33,17 +36,30 @@ Route::post('/login', [AuthController::class, 'login'])
  
 Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
+<<<<<<< HEAD
 
 // Protected routes
 Route::middleware(['web', 'auth'])->group(function () {
 
 
+=======
+ 
+// ------------------------
+// Authenticated Routes
+// ------------------------
+Route::middleware(['web', 'auth'])->group(function(){
+    Route::get('/', [DashboardController::class, 'index']);
+ 
+    // HR Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard');
+ 
+>>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout')
     ->middleware('auth');
 
-    
     // DASHBOARD
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -74,7 +90,14 @@ Route::middleware(['web', 'auth'])->group(function () {
     //     return app(ResourceScheduleController::class)->create();
     // })->name('action.schedules.register');
 
+<<<<<<< HEAD
         // Action
+=======
+
+// Include other routes
+   
+    // Action
+>>>>>>> 45a2c07bd1b0bbe478e6229c58e585e564a051ac
     Route::get('/action', fn () => Inertia::render('action/Action'))->name('action.index');
     Route::get('/action/applications', fn () => Inertia::render('action/Applications'))->name('action.applications');
     Route::get('/action/batches', action: [ActionBatchController::class, 'index'])->name('action.list');    
