@@ -13,9 +13,8 @@ class ActionBatchModel extends Model
     protected $fillable = [
         'action_batch',
         'target_trainees',
-        'Target_date',
+        'target_date',
         'remarks',
-        'status',
         'created_by',
         'created_time',
         'updated_by',

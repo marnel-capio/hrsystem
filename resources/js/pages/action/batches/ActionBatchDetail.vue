@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
  
 const page = usePage<any>()
@@ -12,6 +12,7 @@ const form = ref({
 })
  
 const showModal = ref(false)
+const showSuccess = ref(false)  
  
 const submit = () => {
     router.post(`/action/batches/update/${batch.value.id}`, form.value)
@@ -21,12 +22,42 @@ const submit = () => {
 const cancel = () => {
     showModal.value = false
 }
+
+const successMessage = computed(() => page.props.flash?.success) 
+const closeModal = () => {
+  showSuccess.value = false
+}
+
+watch(successMessage, (val) => {
+  if (val) {
+    showSuccess.value = true
+  }
+}, { immediate: true })
 </script>
- 
 <template>
   <Head title="Action Batch Detail"/>
  
   <AppLayout>
+    <div v-if="showSuccess" 
+         class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4">
+
+      <div class="relative bg-green-500 border border-green-200 rounded-lg shadow-md p-4 flex items-left gap-4 animate-slide-down"> 
+
+        <div class="flex-1 flex justify-start items-left gap-3"> 
+          <span class="text-white text-xl"> </span> 
+          <p class="text-white text-m font-medium text-left">
+            {{ successMessage }} 
+          </p>
+        </div>
+
+        <button
+          style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
+          @click="closeModal">
+          X
+        </button>
+
+      </div>  
+    </div>
  
     <!-- Header -->
     <div class="flex justify-between mx-5 mb-3">
@@ -37,7 +68,7 @@ const cancel = () => {
         class="bg-[#1C7BA5] text-white px-4 py-2 rounded shadow hover:bg-blue-500 text-xs"
       >
         Edit
-    </span>
+      </span>
     </div>
  
     <!-- Main Content -->
@@ -53,36 +84,33 @@ const cancel = () => {
  
         <div class="bg-white rounded-xl p-4 shadow border">
           <table class="min-w-full table-auto">
-          <tbody>
-            <tr>
-              <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600 w-40">
-                Created by
-              </th>
-              <td class="text-xs px-2"></td>
-            </tr>
- 
-            <tr>
-              <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
-                Updated by
-              </th>
-              <td class="text-xs px-2"></td>
-            </tr>
- 
-            <tr>
-              <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
-                Created Time
-              </th>
-              <td class="text-xs px-2"></td>
-            </tr>
- 
-            <tr>
-              <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
-                Updated Time
-              </th>
-              <td class="text-xs px-2"></td>
-            </tr>
-          </tbody>
-        </table>
+            <tbody>
+              <tr>
+                <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600 w-40">
+                  Created by
+                </th>
+                <td class="text-xs px-2">{{ batch.created_by }}</td> 
+              </tr>
+              <tr>
+                <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
+                  Updated by
+                </th>
+                <td class="text-xs px-2">{{ batch.updated_by }}</td> 
+              </tr>
+              <tr>
+                <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
+                  Created Time
+                </th>
+                <td class="text-xs px-2">{{ batch.created_time }}</td>  
+              </tr>
+              <tr>
+                <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
+                  Updated Time
+                </th>
+                <td class="text-xs px-2">{{ batch.updated_time }}</td> 
+              </tr>
+            </tbody>
+          </table>
         </div>
  
       </div>
@@ -91,7 +119,7 @@ const cancel = () => {
       <div class="col-span-2 bg-white rounded-xl shadow border p-6">
  
         <h4 class="text-xs font-bold mb-3 text-center">REMARKS</h4>
-          <p class="text-xs ">{{ batch.remarks }}</p>
+        <p class="text-xs">{{ batch.remarks }}</p>
  
       </div>
     </div>
@@ -111,7 +139,7 @@ const cancel = () => {
             <input
               v-model="form.name"
               class="border p-2 rounded text-sm w-full"
-            />{{ action_batch }}
+            />
           </div>
 
           <div class="mt-4 flex flex-col">
@@ -120,7 +148,7 @@ const cancel = () => {
               v-model="form.remarks"
               rows="5"
               class="border p-2 rounded w-full text-sm"
-            >{{ remarks }}</textarea>
+            ></textarea>
           </div>
         </div>
  
@@ -145,5 +173,4 @@ const cancel = () => {
     </div>
  
   </AppLayout>
-</template>
- 
+</template> 

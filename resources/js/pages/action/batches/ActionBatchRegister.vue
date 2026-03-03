@@ -6,6 +6,7 @@ import { usePage } from '@inertiajs/vue3'
 import { Head } from '@inertiajs/vue3'
  
 const page =usePage<any>()
+const loading = ref(false);
 const form = ref({
     action_batch: '',
     target_trainees: '',
@@ -14,42 +15,64 @@ const form = ref({
 })
  
 const errors = ref({
-    error_field: ''
+    action_batch: '',
+    target_trainees: '',
+    target_date: ''
 })
  
 const validate = () => {
-    errors.value.error_field = ''
- 
+    errors.value.action_batch = ''
+    errors.value.target_trainees = ''
+    errors.value.target_date = ''
+
+    let isValid = true;
+
     if (!form.value.action_batch.trim()) {
-        errors.value.error_field = 'This field is required.'
-        return false
+        errors.value.action_batch = 'This field is required.'
+        isValid = false
+    } else {
+        const abvalue = form.value.action_batch.trim()
+        if (abvalue.length > 20) {
+            errors.value.action_batch = 'Invalid input. This field must not exceed 20 characters.'
+            isValid = false
+        }
     }
+
     if (!form.value.target_trainees.trim()) {
-        errors.value.error_field = 'This field is required.'
-        return false
+        errors.value.target_trainees = 'This field is required.'
+        isValid = false
+    } else {
+        const targetTraineesValue = form.value.target_trainees.trim()
+        if (targetTraineesValue.length > 2) {
+            errors.value.target_trainees = 'Invalid input. This field must not exceed 2 characters.'
+            isValid = false
+        }
     }
- 
-   const value = form.value.action_batch.trim()
-    if (value.length > 20) {
-        errors.value.error_field = 
-            'Invalid input. This field must not exceed 20 characters.'
-        return false
+
+    if (!form.value.target_date.trim()) {
+        errors.value.target_date = 'This field is required.'
+        isValid = false
     }
- 
-    return true
- 
-    return true
+
+    return isValid;
 }
+
 
 const formatToUppercase = ()=>{
   form.value.action_batch = form.value.action_batch. toUpperCase()
 }
 
 const submit = () => {
-    if (!validate()) return
- 
-    router.post('/action/batches/store', form.value)
-}
+    if (!validate()) return;
+
+    loading.value = true;
+
+    router.post('/action/batches/store', form.value, {
+        onFinish: () => {
+            loading.value = false; 
+        }
+    });
+};
 </script>
  
 <template>
@@ -71,22 +94,36 @@ const submit = () => {
                         placeholder="Action batch"
                         class="border p-2 rounded w-full"
                     />
-                    <span v-if=" errors.error_field" class="text-red-600 text-xs mt-1">
-                        {{ errors.error_field }}
+                    <span v-if="page.props.errors?.action_batch || errors.action_batch" class="text-red-600 text-xs mt-1">
+                        {{ page.props.errors?.action_batch || errors.action_batch }}
                     </span>
                 </div>
             </div>
+
             <div class="grid grid-cols-2 gap-4 mt-5">
                 <div class="flex flex-col col-span-2">
                     <label class="text-xs font-semibold mb-1">Target Trainees</label>
                     <input
                         v-model="form.target_trainees"
-                        @input="formatToUppercase"
                         placeholder="Target Trainees"
                         class="border p-2 rounded w-full"
                     />
-                    <span v-if="page.props.errors?.action_batch || errors.error_field" class="text-red-600 text-xs mt-1">
-                        {{ page.props.errors?.action_batch || errors.error_field }}
+                    <span v-if="page.props.errors?.target_trainees || errors.target_trainees" class="text-red-600 text-xs mt-1">
+                        {{ page.props.errors?.target_trainees || errors.target_trainees }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-5">
+                <div class="flex flex-col col-span-2">
+                    <label class="text-xs font-semibold mb-1">Target Start Date</label>
+                    <input
+                        v-model="form.target_date"
+                        placeholder="Target Start Date"
+                        class="border p-2 rounded w-full"
+                    />
+                    <span v-if="page.props.errors?.target_date || errors.target_date" class="text-red-600 text-xs mt-1">
+                        {{ page.props.errors?.target_date || errors.target_date }}
                     </span>
                 </div>
             </div>
@@ -106,12 +143,13 @@ const submit = () => {
             <div class="mt-10 w-full flex justify-end space-x-2">
                 <span
                     class="px-4 text-xs cursor-pointer border py-2 rounded hover:bg-gray-200"
-                    @click="$inertia.get('/action/batches/list')"
+                    @click="$inertia.get('/action/batches')"
                 >
                     Cancel
                 </span>
  
                 <span
+                    :class="{'cursor-wait': loading}"
                     class="px-4 text-xs cursor-pointer py-2 bg-[#2176ff] text-white rounded hover:bg-blue-400"
                     @click="submit"
                 >
