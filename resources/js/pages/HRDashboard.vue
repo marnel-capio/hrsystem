@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { ref, onMounted } from 'vue'
 
@@ -41,20 +42,36 @@ onMounted(() => {
                 Hi, this is the HR Dashboard Page.
             </h1>
         </div>
-    </AppLayout>
+
+        <button
+          style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
+          @click="closeModal">
+          X
+        </button>
+
+      </div>
+    </div>
+
+    <div class="dashboard-wrapper">
+      <h1 class="dashboard-title">
+        Hi, this is the HR Dashboard Page.
+      </h1>
+    </div>
+
+  </AppLayout>
 </template>
 
 <style scoped>
 .dashboard-wrapper {
-    min-height: 60vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dashboard-title {
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: var(--ats-text);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--ats-text);
 }
 </style>
