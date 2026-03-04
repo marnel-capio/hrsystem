@@ -32,23 +32,23 @@ function closeSuccess() {
     <!-- Success Notification -->
     <div 
       v-if="showSuccess"
-        class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
+      class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
     >
       <div 
-            class="relative bg-green-500 border-green-200 rounded-lg shadow-md p-4 flex items-center gap-4 animate-slide-down"
+        class="relative bg-green-500 border-green-200 rounded-lg shadow-md p-4 flex items-center justify-between gap-4 animate-slide-down"
       >
-        <div class="flex-1 flex justify-center items-center gap-3">
-
-        <p class="text-white text-m font-medium text-center">
+        <!-- Success Message -->
+        <p class="text-white text-m font-medium text-left flex-1">
           {{ successMessage }}
         </p>
-        </div>
-              <button 
-        style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
-        @click="closeSuccess"
-      >
-        X
-      </button>
+
+        <!-- Close Button -->
+        <button 
+          style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
+          @click="closeSuccess"
+        >
+          X
+        </button>
       </div>
     </div>
 

@@ -7,12 +7,16 @@ import AppLayout from '@/layouts/AppLayout.vue';
 // Props from backend
 const props = defineProps<{
   errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
-  newBatches: { id: number; action_batch: string; target_trainees: number }[];
+  newBatches: { id: number; action_batch: string; target_trainees: number; target_date: string; }[];
   prevBatches: { id: number; action_batch: string }[];
 }>();
 
 // Inertia page
 const page = usePage();
+
+// Error notification
+const errorMessage = computed(() => (page.props.flash as any)?.error || '');
+const showError = ref(false);
 
 // Initialize form with all  fields
 const form = useForm({
@@ -143,7 +147,15 @@ const successMessage = computed(() => (page.props.flash as any)?.success || '');
 const showSuccess = ref(successMessage.value);
 onMounted(() => {
   if (showSuccess.value) setTimeout(() => showSuccess.value = false, 5000);
+  if (errorMessage.value) {
+    showError.value = true;
+    setTimeout(() => showError.value = false, 5000);
+  }
 });
+
+function closeError() {
+  showError.value = false;
+}
 
 // Gantt colors
 const wbsColors: Record<string, string> = {
@@ -197,19 +209,34 @@ form.post('/action/schedules', {
 });
 }
 
-// When user selects a batch, auto-fill target_trainees
-watch(() => form.action_batch_id, (newId) => {
-  const batch = props.newBatches.find(b => b.id === Number(newId));
-  if (batch) {
-    form.target_trainees = batch.target_trainees;
-  } else {
-    form.target_trainees = '';
+watch(errorMessage, (val) => {
+  if (val) {
+    showError.value = true;
+    setTimeout(() => showError.value = false, 5000);
   }
 });
 
-function closeSuccess() {
-  showSuccess.value = false;
-}
+// When user selects a batch, auto-fill target_trainees and deployment date
+watch(() => form.action_batch_id, (newId) => {
+  const batch = props.newBatches.find(b => b.id === Number(newId));
+
+  if (batch) {
+    form.target_trainees = batch.target_trainees;
+
+    // If target_date has day, strip it for input type="month"
+    if (batch.target_date) {
+      form.deployment_date = batch.target_date.length > 7
+        ? batch.target_date.substring(0, 7)
+        : batch.target_date;
+    } else {
+      form.deployment_date = '';
+    }
+  } else {
+    form.target_trainees = '';
+    form.deployment_date = '';
+  }
+});
+
 </script>
 
 <template>
@@ -219,9 +246,28 @@ function closeSuccess() {
     <div class="max-w-5xl mx-auto w-full space-y-10 p-8">
       <h1 class="text-3xl font-bold mb-6">Create Resource Schedule</h1>
 
-      <div v-if="showSuccess" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-        {{ successMessage }}
-      </div>
+      <!-- Error Notification -->
+<div 
+    v-if="showError"
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
+>
+  <div 
+        class="relative bg-red-500 border-red-200 rounded-lg shadow-md p-4 flex items-center gap-4 animate-slide-down"
+  >
+    <div class="flex-1 flex justify-center items-center gap-3">
+      <p class="text-white text-m font-medium text-center">
+        {{ errorMessage }}
+      </p>
+    </div>
+    <button 
+      style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
+      @click="closeError"
+    >
+      X
+    </button>
+  </div>
+</div>
+
 
       <div class="bg-white dark:bg-zinc-900 p-10 rounded-2xl border shadow-xl space-y-10">
         <form @submit.prevent="createResourceSchedule">
@@ -267,7 +313,7 @@ function closeSuccess() {
             <!-- Date of Deployment -->
             <div>
               <label class="text-sm font-semibold">Date of Deployment</label>
-              <input v-model="form.deployment_date" type="month" class="w-full bg-zinc-50 border rounded-lg p-2.5"  />
+              <input v-model="form.deployment_date" readonly placeholder="Selected Batch Name will fill this field" class="w-full bg-zinc-50 border rounded-lg p-2.5"  />
               <p v-if="form.errors.deployment_date" class="text-red-600 text-xs mt-1">
                 {{ form.errors.deployment_date }}
               </p>
@@ -408,3 +454,20 @@ function closeSuccess() {
     </div>
   </AppLayout>
 </template>
+
+<style scoped>
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+</style>
