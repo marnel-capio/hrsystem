@@ -45,16 +45,15 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \Laravel\Fortify\Http\Controllers\ConfirmablePasswordController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/ConfirmablePasswordController.php:51
-* @route '/user/confirm-password'
-*/
-storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: store.url(options),
-    method: 'post',
-})
-
-store.form = storeForm
-
+ * @see vendor/laravel/fortify/src/Http/Controllers/ConfirmablePasswordController.php:51
+ * @route '/user/confirm-password'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 const confirm = {
     store: Object.assign(store, store),
 }

@@ -67,18 +67,14 @@ const closeModal = () => {
   font-weight: 600;
   color: var(--ats-text);
 }
+
 @keyframes slide-down {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-slide-down {
-    animation: slide-down 0.3s ease-out;
+  animation: slide-down 0.3s ease-out;
 }
+
 </style>

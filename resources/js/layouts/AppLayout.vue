@@ -3,6 +3,11 @@ import AppSidebar from '@/components/AppSidebar.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import '../../css/ats.css'
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+ 
+const page = usePage<any>()
+const flash = computed(() => page.props.flash)
 </script>
  
 <template>
@@ -42,4 +47,8 @@ import '../../css/ats.css'
   overflow-x: hidden;
 }
 </style>
+<<<<<<< HEAD
  
+=======
+ 
+>>>>>>> feature/action/action-batch/register
