@@ -34,7 +34,7 @@ onMounted(() => {
     <AppLayout>
         <!-- Error Toast -->
         <div v-if="showError" class="full-width-alert">
-            <div class="alert-error-banner">
+            <div class="alert-banner alert-error-banner">
                 <div class="alert-body">{{ errorMessage }}</div>
                 <button type="button" class="close-btn" @click="showError = false">×</button>
             </div>

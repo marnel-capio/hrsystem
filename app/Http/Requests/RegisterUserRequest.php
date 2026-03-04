@@ -52,6 +52,7 @@ class RegisterUserRequest extends FormRequest
             ],
             'position' => ['required', 'numeric', new RequiredField],
             'permissions' => ['required', 'numeric', new RequiredField],
+            'active_status' => ['required', 'boolean'],
         ];
     }
 

@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { ref, onMounted } from 'vue'
 
 const props = defineProps<{
-    flash?: {
-        error?: string
-    }
+  flash?: {
+    error?: string
+  }
 }>()
 
 // Toast state
@@ -15,40 +14,25 @@ const errorMessage = ref<string | null>(null)
 
 // Show toast if flash.error exists
 onMounted(() => {
-    if (props.flash?.error) {
-        errorMessage.value = props.flash.error
-        showError.value = true
+  if (props.flash?.error) {
+    errorMessage.value = props.flash.error
+    showError.value = true
 
-        // Auto hide after 5 seconds
-        setTimeout(() => {
-            showError.value = false
-        }, 5000)
-    }
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+      showError.value = false
+    }, 5000)
+  }
 })
 </script>
 
 <template>
-    <AppLayout>
-        <!-- Error Toast -->
-        <div v-if="showError" class="full-width-alert">
-            <div class="alert-banner alert-error-banner">
-                <div class="alert-body">{{ errorMessage }}</div>
-                <button type="button" class="close-btn" @click="showError = false">×</button>
-            </div>
-        </div>
-
-        <div class="dashboard-wrapper">
-            <h1 class="dashboard-title">
-                Hi, this is the HR Dashboard Page.
-            </h1>
-        </div>
-
-        <button
-          style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
-          @click="closeModal">
-          X
-        </button>
-
+  <AppLayout>
+    <!-- Error Toast -->
+    <div v-if="showError" class="full-width-alert">
+      <div class="alert-banner alert-error-banner">
+        <div class="alert-body">{{ errorMessage }}</div>
+        <button type="button" class="close-btn" @click="showError = false">×</button>
       </div>
     </div>
 
@@ -57,7 +41,6 @@ onMounted(() => {
         Hi, this is the HR Dashboard Page.
       </h1>
     </div>
-
   </AppLayout>
 </template>
 

@@ -25,6 +25,9 @@ class UserController extends Controller
         try {
             $validated = $request->validated();
 
+            // Cast active_status to int (0 or 1)
+            $validated['active_status'] = (int) $validated['active_status'];
+
             $user = User::create([
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
@@ -35,7 +38,7 @@ class UserController extends Controller
                 'password' => Hash::make($validated['password']), // IMPORTANT
                 'position' => $validated['position'],
                 'permissions' => $validated['permissions'],
-                'active_status' => 1,
+                'active_status' => $validated['active_status'],
                 'created_by' => auth()->id(),
                 'create_time' => now(),
             ]);
@@ -66,6 +69,8 @@ class UserController extends Controller
 
             DB::rollBack();
 
+            dd($e->getMessage());
+            
             return redirect()
                 ->route('user.index')
                 ->with('error', 'An error occurred while creating the record. Please try again.');

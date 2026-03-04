@@ -14,6 +14,7 @@ const form = useForm({
     password_confirmation: '',
     position: '',
     permissions: '',
+    active_status: 1,
 })
 
 // Submit handler
@@ -136,6 +137,13 @@ const permissionLevels = [
                             </option>
                         </select>
                         <span v-if="form.errors.permissions" class="error">{{ form.errors.permissions }}</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" v-model="form.active_status" :true-value="1" :false-value="0" />
+                            Active User
+                        </label>
                     </div>
 
                     <!-- Submit -->
