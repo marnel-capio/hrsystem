@@ -15,13 +15,13 @@ class ContactNumber implements Rule
     {
         // Must be numeric
         if (!is_numeric($value)) {
-            $this->messageText = 'The contact number must contain only numbers.';
+            $this->messageText = config('errors.contact_number_numeric.errorMessage');
             return false;
         }
 
         // Must be exactly 11 digits
         if (strlen($value) !== 11) {
-            $this->messageText = 'The contact number must be exactly 11 digits.';
+            $this->messageText = config('errors.contact_number_length.errorMessage');
             return false;
         }
 

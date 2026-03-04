@@ -17,7 +17,10 @@ class MaxLength implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (mb_strlen($value) > $this->max) {
-            $fail("This field exceeds the maximum allowed length.");
+
+            $message = config('errors.max_length_exceeded.errorMessage');
+
+            $fail($message);
         }
     }
 }

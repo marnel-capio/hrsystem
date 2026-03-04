@@ -1,6 +1,27 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { useForm, Link, router } from '@inertiajs/vue3'
+import { useForm, Link } from '@inertiajs/vue3'
+
+// Props coming from controller
+const props = defineProps<{
+    positions: Record<number, string>,
+    permissions: Record<number, string>
+}>()
+
+// Convert config objects into dropdown arrays
+const positionOptions = Object.entries(props.positions).map(
+    ([value, label]) => ({
+        value: Number(value),
+        label
+    })
+)
+
+const permissionLevels = Object.entries(props.permissions).map(
+    ([value, label]) => ({
+        value: Number(value),
+        label
+    })
+)
 
 // Form state
 const form = useForm({
@@ -19,37 +40,8 @@ const form = useForm({
 
 // Submit handler
 function submit() {
-    form.post('/user', {
-    })
+    form.post('/user')
 }
-
-// Positions dropdown values
-const positionOptions = [
-    { label: 'HR Staff', value: 1 },
-    { label: 'Technical Recruiter', value: 2 },
-    { label: 'HR Assistant', value: 3 },
-    { label: 'HR Senior Assistant', value: 4 },
-    { label: 'HR Associate', value: 5 },
-    { label: 'HR Senior Associate', value: 6 },
-    { label: 'HR Supervisor', value: 7 },
-    { label: 'HR Assistant Manager', value: 8 },
-    { label: 'HR Manager', value: 9 },
-    { label: 'BU Manager', value: 10 },
-    { label: 'Others', value: 11 },
-]
-
-// Permissions dropdown values
-const permissionLevels = [
-    { label: 'HR Admin', value: 1 },
-    { label: 'HR Manager', value: 2 },
-    { label: 'HR Recruiter', value: 3 },
-    { label: 'HR', value: 4 },
-    { label: 'BU Manager', value: 5 },
-    { label: 'Interviewer', value: 6 },
-    { label: 'Walk-in', value: 7 },
-]
-
-
 </script>
 
 <template>
@@ -110,16 +102,21 @@ const permissionLevels = [
                     <div class="form-group">
                         <label>Confirm Password</label>
                         <input v-model="form.password_confirmation" type="password" placeholder="Confirm password" />
-                        <span v-if="form.errors.password_confirmation" class="error">{{
-                            form.errors.password_confirmation }}</span>
+                        <span v-if="form.errors.password_confirmation" class="error">
+                            {{ form.errors.password_confirmation }}
+                        </span>
                     </div>
 
-                    <!-- Position & Permissions -->
+                    <!-- Position -->
                     <div class="form-group">
                         <label>Position</label>
                         <select v-model="form.position">
                             <option disabled value="">Select Position</option>
-                            <option v-for="pos in positionOptions" :key="pos.value" :value="pos.value">
+                            <option
+                                v-for="pos in positionOptions"
+                                :key="pos.value"
+                                :value="pos.value"
+                            >
                                 {{ pos.label }}
                             </option>
                         </select>
@@ -128,28 +125,48 @@ const permissionLevels = [
                         </span>
                     </div>
 
+                    <!-- Permissions -->
                     <div class="form-group">
                         <label>Permissions</label>
                         <select v-model="form.permissions">
                             <option disabled value="">Select Role</option>
-                            <option v-for="perm in permissionLevels" :key="perm.value" :value="perm.value">
+                            <option
+                                v-for="perm in permissionLevels"
+                                :key="perm.value"
+                                :value="perm.value"
+                            >
                                 {{ perm.label }}
                             </option>
                         </select>
-                        <span v-if="form.errors.permissions" class="error">{{ form.errors.permissions }}</span>
+                        <span v-if="form.errors.permissions" class="error">
+                            {{ form.errors.permissions }}
+                        </span>
                     </div>
 
+                    <!-- Active -->
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" v-model="form.active_status" :true-value="1" :false-value="0" />
+                            <input
+                                type="checkbox"
+                                v-model="form.active_status"
+                                :true-value="1"
+                                :false-value="0"
+                            />
                             Active User
                         </label>
                     </div>
 
                     <!-- Submit -->
                     <div class="form-actions">
-                        <Link href="/user" class="btn btn-secondary">Cancel</Link>
-                        <button type="submit" :disabled="form.processing" class="btn btn-primary">
+                        <Link href="/user" class="btn btn-secondary">
+                            Cancel
+                        </Link>
+
+                        <button
+                            type="submit"
+                            :disabled="form.processing"
+                            class="btn btn-primary"
+                        >
                             {{ form.processing ? 'Creating…' : 'Register' }}
                         </button>
                     </div>
@@ -159,6 +176,7 @@ const permissionLevels = [
         </div>
     </AppLayout>
 </template>
+
 
 <style scoped>
 /* Page header */

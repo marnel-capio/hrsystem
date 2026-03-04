@@ -13,6 +13,6 @@ class RequiredField implements Rule
 
     public function message()
     {
-        return 'This field is required';
+        return config('errors.field_required.errorMessage');
     }
 }

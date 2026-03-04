@@ -52,7 +52,7 @@ Route::middleware(['auth'])->group(function () {
             ->name('user.index');
 
         // Register new user page
-        Route::get('/user/register', fn () => Inertia::render('user/Register'))
+        Route::get('/user/register', [UserController::class, 'create'])
             ->name('user.register');
 
         // Store new user

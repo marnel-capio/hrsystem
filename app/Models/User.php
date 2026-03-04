@@ -43,6 +43,22 @@ class User extends Authenticatable
         'active_status' => 'boolean',
     ];
 
+    public static function register(array $data): self
+    {
+        return self::create([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'middle_name' => $data['middle_name'] ?? null,
+            'address' => $data['address'],
+            'contact_no' => $data['contact_no'],
+            'email_address' => $data['email_address'],
+            'password' => $data['password'],
+            'position' => $data['position'],
+            'permissions' => $data['permissions'],
+            'active_status' => (int) $data['active_status'],
+        ]);
+    }
+
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = Hash::needsRehash($value) ? Hash::make($value) : $value;
@@ -67,5 +83,15 @@ class User extends Authenticatable
     public static function findByEmail(string $email): ?self
     {
         return self::where('email_address', $email)->first();
+    }
+
+    public function getPositionLabelAttribute(): string
+    {
+        return config('constants.positions')[$this->position] ?? '';
+    }
+
+    public function getPermissionLabelAttribute(): string
+    {
+        return config('constants.permissionsList')[$this->permissions] ?? '';
     }
 }

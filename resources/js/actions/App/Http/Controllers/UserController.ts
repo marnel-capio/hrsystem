@@ -1,7 +1,85 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\UserController::create
+ * @see app/Http/Controllers/UserController.php:16
+ * @route '/user/register'
+ */
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
+    method: 'get',
+})
+
+create.definition = {
+    methods: ["get","head"],
+    url: '/user/register',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\UserController::create
+ * @see app/Http/Controllers/UserController.php:16
+ * @route '/user/register'
+ */
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\UserController::create
+ * @see app/Http/Controllers/UserController.php:16
+ * @route '/user/register'
+ */
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\UserController::create
+ * @see app/Http/Controllers/UserController.php:16
+ * @route '/user/register'
+ */
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\UserController::create
+ * @see app/Http/Controllers/UserController.php:16
+ * @route '/user/register'
+ */
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\UserController::create
+ * @see app/Http/Controllers/UserController.php:16
+ * @route '/user/register'
+ */
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\UserController::create
+ * @see app/Http/Controllers/UserController.php:16
+ * @route '/user/register'
+ */
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    create.form = createForm
+/**
 * @see \App\Http\Controllers\UserController::store
- * @see app/Http/Controllers/UserController.php:21
+ * @see app/Http/Controllers/UserController.php:24
  * @route '/user'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +94,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\UserController::store
- * @see app/Http/Controllers/UserController.php:21
+ * @see app/Http/Controllers/UserController.php:24
  * @route '/user'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +103,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\UserController::store
- * @see app/Http/Controllers/UserController.php:21
+ * @see app/Http/Controllers/UserController.php:24
  * @route '/user'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +113,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\UserController::store
- * @see app/Http/Controllers/UserController.php:21
+ * @see app/Http/Controllers/UserController.php:24
  * @route '/user'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\UserController::store
- * @see app/Http/Controllers/UserController.php:21
+ * @see app/Http/Controllers/UserController.php:24
  * @route '/user'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -56,7 +134,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\UserController::show
- * @see app/Http/Controllers/UserController.php:80
+ * @see app/Http/Controllers/UserController.php:56
  * @route '/user/{id}'
  */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +149,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\UserController::show
- * @see app/Http/Controllers/UserController.php:80
+ * @see app/Http/Controllers/UserController.php:56
  * @route '/user/{id}'
  */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -99,7 +177,7 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\UserController::show
- * @see app/Http/Controllers/UserController.php:80
+ * @see app/Http/Controllers/UserController.php:56
  * @route '/user/{id}'
  */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -108,7 +186,7 @@ show.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\UserController::show
- * @see app/Http/Controllers/UserController.php:80
+ * @see app/Http/Controllers/UserController.php:56
  * @route '/user/{id}'
  */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -118,7 +196,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\UserController::show
- * @see app/Http/Controllers/UserController.php:80
+ * @see app/Http/Controllers/UserController.php:56
  * @route '/user/{id}'
  */
     const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -128,7 +206,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\UserController::show
- * @see app/Http/Controllers/UserController.php:80
+ * @see app/Http/Controllers/UserController.php:56
  * @route '/user/{id}'
  */
         showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -137,7 +215,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\UserController::show
- * @see app/Http/Controllers/UserController.php:80
+ * @see app/Http/Controllers/UserController.php:56
  * @route '/user/{id}'
  */
         showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -151,6 +229,6 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
     
     show.form = showForm
-const UserController = { store, show }
+const UserController = { create, store, show }
 
 export default UserController

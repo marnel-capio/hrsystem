@@ -28,6 +28,6 @@ class PasswordRules implements Rule
 
     public function message(): string
     {
-        return 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (!@#$%&*_)';
+        return config('errors.password_complexity_failed.errorMessage');
     }
 }
