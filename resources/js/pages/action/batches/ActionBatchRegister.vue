@@ -17,13 +17,17 @@ const form = ref({
 const errors = ref({
     action_batch: '',
     target_trainees: '',
-    target_date: ''
+    target_date: '',
+    remarks: ''
+
 })
 
 const validate = () => {
     errors.value.action_batch = ''
     errors.value.target_trainees = ''
     errors.value.target_date = ''
+    errors.value.remarks = ''
+
 
     let isValid = true;
 
@@ -61,6 +65,12 @@ const validate = () => {
             isValid = false
         }
     }
+
+    const remarksValue = form.value.remarks.toString().trim()
+    if (remarksValue.length > 1024) {
+            errors.value.remarks = 'Invalid input. This field must not exceed 1024 characters.'
+            isValid = false
+        }
 
     return isValid;
 }
@@ -146,6 +156,9 @@ const submit = () => {
                         placeholder="Remarks"
                         class="border p-2 rounded w-full"
                     />
+                    <span v-if="page.props.errors?.remarks || errors.remarks" class="text-red-600 text-xs mt-1">
+                        {{ page.props.errors?.remarks || errors.remarks }}
+                    </span>
                 </div>
             </div>
 
