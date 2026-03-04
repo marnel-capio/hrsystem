@@ -20,10 +20,12 @@ class ResourceScheduleController extends Controller
 
         $schedules = ResourceSchedule::listPageData($search);
 
-        return inertia('action/schedules/ResourceScheduleList', [
+        return Inertia::render('action/schedules/ResourceScheduleList', [
             'schedules'       => $schedules,
             'filters'         => ['search' => $search],
             'userPermissions' => auth()->user()->permissions,
+            // 2. Explicitly pass the flash data to Inertia props
+            'flash'           => $flash,
         ]);
     }
 

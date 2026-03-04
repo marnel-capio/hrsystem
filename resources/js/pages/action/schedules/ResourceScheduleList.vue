@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
@@ -8,7 +8,6 @@ import { type BreadcrumbItem } from '@/types';
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Resource Schedule', href: '#' },
 ];
-
 
 // Props from backend
 const props = defineProps<{
@@ -32,24 +31,73 @@ function formatLocation(loc: number) {
 
 // Search input bound to backend
 const searchQuery = ref(props.filters.search || '');
-
-// Watch searchQuery and send request to backend (live search)
-watch(searchQuery, (newVal) => {
-  router.get('/action/schedules', { search: newVal }, {
-    preserveState: true,
-    replace: true,
-  });
+watch(searchQuery, () => {
+  currentPage.value = 1; // reset page
 });
 
-// Method to format deployment date (e.g., "2026-02" -> "February 2026")
+// Format deployment date
 function formatDeploymentDate(dateStr: string) {
   if (!dateStr) return '';
-  try {
-    const date = new Date(dateStr + '-01');
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-  } catch {
-    return dateStr;
-  }
+  
+  const date = new Date(dateStr); // Use the string directly
+  if (isNaN(date.getTime())) return dateStr; // fallback if invalid
+  
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+}
+
+// ---------------- Pagination Setup ----------------
+const currentPage = ref(1);
+const perPage = 20; // items per page
+const blockSize = 5; // number of page buttons
+
+// Filtered schedules based on search
+const filteredSchedules = computed(() => {
+  const q = searchQuery.value.toLowerCase();
+  if (!q) return props.schedules;
+return props.schedules.filter((rs) => {
+  const batch = rs.action_batch.toLowerCase();
+  const locLabel = formatLocation(rs.target_location).toLowerCase();
+  const locNumber = String(rs.target_location); // allow search "1" or "2"
+  const deployment = formatDeploymentDate(rs.deployment_date).toLowerCase();
+
+  return (
+    batch.includes(q) ||
+    locLabel.includes(q) ||    // match Manila, Cebu
+    locNumber.includes(q) ||   // match 1, 2
+    deployment.includes(q)
+  );
+});
+});
+
+// Total pages
+const totalPages = computed(() =>
+  Math.ceil(filteredSchedules.value.length / perPage)
+);
+
+// Paginated schedules
+const paginatedSchedules = computed(() => {
+  const start = (currentPage.value - 1) * perPage;
+  return filteredSchedules.value.slice(start, start + perPage);
+});
+
+// Block pagination
+const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize));
+const startPage = computed(() => (currentBlock.value - 1) * blockSize + 1);
+const endPage = computed(() => Math.min(startPage.value + blockSize - 1, totalPages.value));
+const pageNumbers = computed(() => {
+  const pages = [];
+  for (let i = startPage.value; i <= endPage.value; i++) pages.push(i);
+  return pages;
+});
+
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages.value) currentPage.value = page;
+}
+function prevBlock() {
+  if (startPage.value > 1) goToPage(startPage.value - 1);
+}
+function nextBlock() {
+  if (endPage.value < totalPages.value) goToPage(endPage.value + 1);
 }
 </script>
 
@@ -63,15 +111,14 @@ function formatDeploymentDate(dateStr: string) {
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">Resource Schedule List</h1>
 
-<a
-  v-if="props.userPermissions != 3"
-  href="/action/schedules/create"
-  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-  style="background-color: #1C7BA5;"
->
-  Create Resource Schedule
-</a>
-
+        <a
+          v-if="props.userPermissions != 3"
+          href="/action/schedules/register"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+          style="background-color: #1C7BA5;"
+        >
+          Create Resource Schedule
+        </a>
       </div>
 
       <!-- Search Input -->
@@ -105,7 +152,7 @@ function formatDeploymentDate(dateStr: string) {
           </tr>
         </thead>
         <tbody class="bg-white dark:bg-zinc-900">
-          <tr v-for="rs in props.schedules" :key="rs.id">
+          <tr v-for="rs in paginatedSchedules" :key="rs.id">
             <td class="border px-3 py-2">
               <a :href="`/action/schedules/${rs.id}`" class="text-blue-600 hover:underline">
                 {{ rs.action_batch }}
@@ -115,12 +162,44 @@ function formatDeploymentDate(dateStr: string) {
             <td class="border px-3 py-2">{{ formatDeploymentDate(rs.deployment_date) }}</td>
             <td class="border px-3 py-2">{{ formatLocation(rs.target_location) }}</td>
           </tr>
+          <tr v-if="paginatedSchedules.length === 0">
+            <td colspan="4" class="text-center p-6 text-zinc-500">
+              No resource schedules found.
+            </td>
+          </tr>
         </tbody>
       </table>
 
-      <!-- Message if no schedules -->
-      <div v-if="props.schedules.length === 0" class="text-center text-zinc-500 mt-4">
-        No resource schedules found.
+      <!-- Block Pagination -->
+      <div
+        class="flex justify-center mt-3 gap-2 text-xs"
+        v-if="filteredSchedules.length > perPage"
+      >
+        <span
+          @click="prevBlock"
+          class="px-3 py-2 border rounded cursor-pointer"
+          :class="{ 'opacity-50 cursor-not-allowed': startPage === 1 }"
+        >
+          Prev
+        </span>
+
+        <span
+          v-for="pageNumber in pageNumbers"
+          :key="pageNumber"
+          @click="goToPage(pageNumber)"
+          class="px-3 py-2 border rounded cursor-pointer"
+          :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''"
+        >
+          {{ pageNumber }}
+        </span>
+
+        <span
+          @click="nextBlock"
+          class="px-3 py-2 border rounded cursor-pointer"
+          :class="{ 'opacity-50 cursor-not-allowed': endPage === totalPages }"
+        >
+          Next
+        </span>
       </div>
 
     </div>
