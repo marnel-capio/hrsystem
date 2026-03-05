@@ -84,7 +84,7 @@ const submit = () => {
 
     router.post('/action/batches/store', form.value, {
         onFinish: () => {
-            loading.value = false; W
+            loading.value = false; 
         }
     });
 };
