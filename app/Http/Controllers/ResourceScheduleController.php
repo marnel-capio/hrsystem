@@ -17,15 +17,6 @@ class ResourceScheduleController extends Controller
      */    
     public function index()
     {
-        $user = auth()->user();
-        
-        if (!in_array((int)$user->permissions, [1, 2, 3])) {
-            // Use Inertia redirect with error in query string
-            return redirect()
-                ->route('dashboard')
-                ->with('error', 'Access denied: You are not authorized to view this page.');
-        }
-    
         $search = request('search', '');
 
         $schedules = ResourceSchedule::listPageData($search);
@@ -43,13 +34,6 @@ class ResourceScheduleController extends Controller
      */
     public function create()
     {
-
-    $user = auth()->user();
-        
-        if (!in_array((int)$user->permissions, [1, 2])) {
-            return redirect()
-                ->route('dashboard')
-                ->with('error', 'Access denied: You are not authorized to view this page.');        }
 
         $newBatches = ResourceSchedule::getActionBatches(true);   // exclude scheduled batches
         $prevBatches = ResourceSchedule::getActionBatches(false); // only scheduled batches
@@ -100,12 +84,12 @@ class ResourceScheduleController extends Controller
             DB::commit(); // commit everything
 
             return redirect()->route('action.schedules.show', $schedule->id)
-                            ->with('success', 'Record created successfully.');
+                            ->with('success', config('errors.record_created_successfully.errorMessage'));
         } catch (\Exception $e) {
             DB::rollBack(); // rollback any DB changes
 
             return back()->with([
-        'error' => 'Failed to create record. Please try again.',
+        'error' => config('errors.transaction_failed.errorMessage'),
         'flash_time' => microtime(true)
     ])->withInput();
         }

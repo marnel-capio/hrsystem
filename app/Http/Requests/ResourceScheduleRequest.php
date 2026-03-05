@@ -43,9 +43,12 @@ class ResourceScheduleRequest extends FormRequest
 
     public function messages(): array
     {
+        $errors = config('errors');
+
         return [
-            '*.required' => 'This field is required.',
-            'target_trainees.min' => 'Target trainees must be at least 1.',
+            '*.required' => $errors['field_required']['errorMessage'],
+            'target_trainees.min' => $errors['target_trainees_min']['errorMessage'],
+            'deployment_date.date_format' => $errors['deployment_date_format']['errorMessage'],
             'remarks.max' => 'This field must not exceed 1024 characters.',
         ];
     }
@@ -80,7 +83,10 @@ class ResourceScheduleRequest extends FormRequest
             $endDate   = (new \DateTime())->setISODate((int)$endYear, (int)$endWeek);
 
             if ($endDate < $startDate) {
-                $validator->errors()->add("{$act}_enddate", 'End week cannot be before start week.');
+                $validator->errors()->add(
+                    "{$act}_enddate",
+                    config('errors.wbs_end_before_start.errorMessage')
+                );            
             }
         }
     }
