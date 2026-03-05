@@ -62,6 +62,7 @@ class ResourceScheduleRequest extends FormRequest
 
     private function validateWbsRanges($validator)
     {
+        $errors = config('errors');
         $activities = [
             'contact_schools',
             'source_testing',
@@ -76,17 +77,36 @@ class ResourceScheduleRequest extends FormRequest
             $start = $this->input("{$act}_startdate");
             $end   = $this->input("{$act}_enddate");
 
+            // Skip if either start or end is missing (required validator will catch it)
+            if (!$start) {
+                $validator->errors()->add("{$act}_startdate", $errors['wbs_start_required']['errorMessage']);
+                continue;
+            }
+            if (!$end) {
+                $validator->errors()->add("{$act}_enddate", $errors['wbs_end_required']['errorMessage']);
+                continue;
+            }
+
+            // Check ISO week format (YYYY-W##)
+            if (!preg_match('/^\d{4}-W\d{2}$/', $start)) {
+                $validator->errors()->add("{$act}_startdate", $errors['wbs_invalid_format']['errorMessage']);
+                continue;
+            }
+            if (!preg_match('/^\d{4}-W\d{2}$/', $end)) {
+                $validator->errors()->add("{$act}_enddate", $errors['wbs_invalid_format']['errorMessage']);
+                continue;
+            }
+
+            // Convert to DateTime for comparison
             [$startYear, $startWeek] = explode('-W', $start);
             [$endYear, $endWeek]     = explode('-W', $end);
 
             $startDate = (new \DateTime())->setISODate((int)$startYear, (int)$startWeek);
             $endDate   = (new \DateTime())->setISODate((int)$endYear, (int)$endWeek);
 
+            // Ensure end week is not before start week
             if ($endDate < $startDate) {
-                $validator->errors()->add(
-                    "{$act}_enddate",
-                    config('errors.wbs_end_before_start.errorMessage')
-                );            
+                $validator->errors()->add("{$act}_enddate", $errors['wbs_end_before_start']['errorMessage']);
             }
         }
     }

@@ -254,8 +254,8 @@ watch(() => form.action_batch_id, (newId) => {
   <div 
         class="relative bg-red-500 border-red-200 rounded-lg shadow-md p-4 flex items-center gap-4 animate-slide-down"
   >
-    <div class="flex-1 flex justify-center items-center gap-3">
-      <p class="text-white text-m font-medium text-center">
+    <div class="flex-1 flex justify-start items-center gap-3">
+      <p class="text-white text-m font-medium text-left">
         {{ errorMessage }}
       </p>
     </div>
