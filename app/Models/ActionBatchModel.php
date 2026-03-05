@@ -8,7 +8,7 @@ class ActionBatchModel extends Model
 {
     protected $table = 'action_batches';
  
-    public $timestamps = false;
+    public $timestamps = true;
  
     protected $fillable = [
         'action_batch',
@@ -38,4 +38,6 @@ class ActionBatchModel extends Model
             ->paginate($perPage)
             ->withQueryString();
     }
+    const CREATED_AT = 'created_time';
+    const UPDATED_AT = 'updated_time';
 }

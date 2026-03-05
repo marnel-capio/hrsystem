@@ -13,7 +13,6 @@ const formatDate = (dateString: string | null) => {
   const date = new Date(dateString)
   const options: Intl.DateTimeFormatOptions = {
     month: 'long',
-    day: 'numeric',
     year: 'numeric',
   }
   return date.toLocaleDateString('en-US', options)
@@ -35,8 +34,12 @@ const formatDateTime = (dateString: string | null) => {
 const successMessage = computed(() => page.props.flash?.success) 
 const closeModal = () => { showSuccess.value = false }
 watch(successMessage, (val) => { if (val) { showSuccess.value = true } }, { immediate: true })
-</script>
 
+const redirectToEditPage = () => {
+  const batchId = batch.value.id; 
+  router.get(`/action/batches/${batchId}/edit`);
+};
+</script>
 <template>
   <Head title="Action Batch Detail"/>
  
@@ -68,8 +71,8 @@ watch(successMessage, (val) => { if (val) { showSuccess.value = true } }, { imme
  
       <span
         v-if="userPermissions === 1 || userPermissions === 2"
-        href="/action/batches/{id}/edit"
-        class="bg-[#1C7BA5] text-white px-4 py-2 rounded shadow hover:bg-blue-500 text-xs"
+        class="bg-[#1C7BA5] text-white px-4 py-2 rounded shadow text-xs cursor-pointer"
+        @click="redirectToEditPage"
       >
         Edit
       </span>

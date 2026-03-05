@@ -80,12 +80,12 @@ public function store(Request $request)
     ]);
 
     return redirect()
-        ->route('action.batches.detail', ['id' => $batch->id])
+        ->route('action.batches.show', ['id' => $batch->id])
         ->with('success', 'Record created successfully.');
 }
 
 
-//Link from List to Detail
+//EDI/DETAIL PAGE FUNCTIONS
 public function show($id)
 {
     $user = Auth::user();
@@ -108,23 +108,64 @@ public function show($id)
     ]);
 }
 
-   
-//Link from Register to Detail
-public function detail($id)
+public function edit($id)
 {
     $user = Auth::user();
 
-    if (!in_array($user->permissions, [1, 2, 3])) {
+    if (!in_array($user->permissions, [1, 2])) {
         return redirect()
             ->route('dashboard')
             ->with('error', 'Access denied: You are not authorized to view this page.');
     }
-    $batch = ActionBatchModel::findOrFail($id);
-    $createdByUser = \App\Models\User::find($batch->created_by);
-    $updatedByUser = \App\Models\User::find($batch->updated_by);
-    $batch->created_by_name = $createdByUser ? $createdByUser->first_name . ' ' . $createdByUser->last_name : 'Unknown';
-    $batch->updated_by_name = $updatedByUser ? $updatedByUser->first_name . ' ' . $updatedByUser->last_name : 'Unknown';
 
-    return Inertia::render('action/batches/ActionBatchDetail', ['batch' => $batch, 'user_permissions' => $user->permissions]);
+    $batch = ActionBatchModel::findOrFail($id);
+    return Inertia::render('action/batches/ActionBatchEdit', [
+        'batch' => $batch,
+        'user_permissions' => $user->permissions,
+    ]);
 }
+
+public function update(Request $request, $id)
+{
+    $user = Auth::user();
+
+    if (!in_array($user->permissions, [1, 2])) {
+        return redirect()
+            ->route('dashboard')
+            ->with('error', 'Access denied: You are not authorized to edit this batch.');
+    }
+
+    $validated = $request->validate([
+        'action_batch' => 'required|string|max:20',
+        'target_trainees' => 'required|integer|max:99',
+        'target_date' => 'required|date',
+        'remarks' => 'nullable|string|max:1024',
+    ]);
+
+    $batch = ActionBatchModel::findOrFail($id);
+    $batch->action_batch = strtoupper($validated['action_batch']);
+    $batch->target_trainees = $validated['target_trainees'];
+    $batch->target_date = $validated['target_date'];
+    $batch->remarks = $validated['remarks'];
+    $batch->updated_by = $user->id;
+    $batch->updated_time = now();
+    $batch->save();
+
+    DB::table('logs')->insert([
+        'module' => 'Action',
+        'activity' => 'Updated Action Batch ' . $batch->action_batch,
+        'ip_address' => $request->ip(),
+        'created_by' => $user->id,
+        'updated_by' => $user->id,
+        'create_time' => now(),
+        'update_time' => now(),
+    ]);
+
+    return redirect()->route('action.batches.show', ['id' => $batch->id])
+        ->with('success', 'Action batch updated successfully.');
+}
+
+
+
+
 }

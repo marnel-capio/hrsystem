@@ -137,7 +137,7 @@ const submit = () => {
                     <label class="text-xs font-semibold mb-1">Target Start Date</label>
                     <input
                         v-model="form.target_date"
-                        type="date"
+                        type="month"
                         placeholder="Target Start Date"
                         class="border p-2 rounded w-full"
                     />

@@ -44,16 +44,20 @@ Route::middleware(['web', 'auth'])->group(function() {
         ->middleware(['auth'])
         ->name('action.batches.create');
     
-    Route::get('/action/batches/{id})', [ActionBatchController::class, 'detail'])
-        ->middleware(['auth'])
-        ->name('action.batches.detail');
-    
     // Store action batch
     Route::post('/action/batches/store', [ActionBatchController::class, 'store'])->name('action.batches.store');
 
     Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])
         ->middleware(['auth'])
         ->name('action.batches.show');
+
+    Route::get('/action/batches/{id}/edit', [ActionBatchController::class, 'edit'])
+        ->middleware(['auth'])
+        ->name('action.batches.edit');
+
+    Route::post('/action/batches/{id}/update', [ActionBatchController::class, 'update'])
+        ->middleware(['auth'])
+        ->name('action.batches.update');
 });
 
 require __DIR__.'/settings.php';
