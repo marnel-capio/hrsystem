@@ -1,6 +1,6 @@
 import batches from './batches'
-const action = {
+const listaction = {
     batches: Object.assign(batches, batches),
 }
 
-export default action
+export default listaction
