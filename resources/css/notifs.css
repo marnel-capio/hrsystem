@@ -1,0 +1,84 @@
+/* Full-width alert container */
+.full-width-alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    z-index: 1055;
+    display: flex;
+    justify-content: center;
+    pointer-events: none; /* doesn’t block page clicks */
+}
+
+/* Generic banner */
+.alert-banner {
+    color: #fff;
+    padding: 0.4rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 100%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    pointer-events: auto; /* allow button click */
+    animation: slideDown 0.4s ease-out;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Success variant */
+.alert-success-banner {
+    composes: alert-banner;
+    background-color: #28a745;
+}
+
+/* Error variant */
+.alert-error-banner {
+    composes: alert-banner;
+    background-color: #dc3545;
+}
+
+/* Info variant */
+.alert-info-banner {
+    composes: alert-banner;
+    background-color: #007bff;
+}
+
+/* Message text */
+.alert-body {
+    flex: 1;
+    text-align: left;
+}
+
+/* Close button */
+.close-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    font-size: 0.95rem;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.35);
+    transform: scale(1.08);
+}
+
+/* Slide-down animation */
+@keyframes slideDown {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

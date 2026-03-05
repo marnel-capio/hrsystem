@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,24 +15,20 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    // ❌ Disable default timestamps
     public $timestamps = false;
 
     protected $fillable = [
         'first_name',
         'last_name',
         'middle_name',
-        'email_address',
-        'password',
         'address',
         'contact_no',
+        'email_address',
+        'password',
         'position',
         'permissions',
         'active_status',
         'created_by',
-        'updated_by',
-        'create_time',
-        'update_time',
     ];
 
     protected $hidden = [
@@ -44,11 +41,23 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
+        'active_status' => 'boolean',
     ];
 
-    public function getAuthIdentifierName()
+    public static function register(array $data): self
     {
-        return 'email_address';
+        return self::create([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'middle_name' => $data['middle_name'] ?? null,
+            'address' => $data['address'],
+            'contact_no' => $data['contact_no'],
+            'email_address' => $data['email_address'],
+            'password' => $data['password'],
+            'position' => $data['position'],
+            'permissions' => $data['permissions'],
+            'active_status' => (int) $data['active_status'],
+        ]);
     }
 
     public function setPasswordAttribute($value)
@@ -75,6 +84,16 @@ class User extends Authenticatable
     public static function findByEmail(string $email): ?self
     {
         return self::where('email_address', $email)->first();
+    }
+
+    public function getPositionLabelAttribute(): string
+    {
+        return config('constants.positions')[$this->position] ?? '';
+    }
+
+    public function getPermissionLabelAttribute(): string
+    {
+        return config('constants.permissionsList')[$this->permissions] ?? '';
     }
 }
 

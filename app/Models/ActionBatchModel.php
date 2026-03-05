@@ -8,12 +8,12 @@ class ActionBatchModel extends Model
 {
     protected $table = 'action_batches';
  
-    public $timestamps = true;
+    public $timestamps = false;
  
     protected $fillable = [
         'action_batch',
         'target_trainees',
-        'target_date',
+        'Target_date',
         'remarks',
         'created_by',
         'created_time',

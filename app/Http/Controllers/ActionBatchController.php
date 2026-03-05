@@ -1,6 +1,8 @@
 <?php
  
 namespace App\Http\Controllers;
+ 
+namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use App\Models\ActionBatchModel;
 use Illuminate\Http\Request;
@@ -13,6 +15,7 @@ class ActionBatchController extends Controller
 {
     $user = Auth::user();
 
+    // Permission Check
     if (!in_array($user->permissions, [1, 2, 3])) {
         return redirect()
             ->route('dashboard')
@@ -34,66 +37,14 @@ class ActionBatchController extends Controller
     ]);
 }
 
+//For testing purposes:
    public function create()
 {
-    $user = Auth::user();
-    if (!in_array($user->permissions, [1, 2])) {
-        return redirect()
-            ->route('dashboard')
-            ->with('error', 'Access denied: You are not authorized to view this page.');
-    }
-    return Inertia::render(component: 'action/batches/ActionBatchRegister');
+    return Inertia::render('action/batches/ActionBatchRegister');
 }
-
-public function store(Request $request)
-{
-    $user = Auth::user();
-
-    $validated = $request->validate([
-        'action_batch' => 'required|string|max:20|unique:action_batches,action_batch',
-        'target_trainees' => 'required|integer|max:99',
-        'target_date' => 'required|string|max:10',
-        'remarks' => 'nullable|string|max:1024',
-    ], [
-        'action_batch.unique' => 'Action Batch already exist.'
-    ]);
-
-    $batch = new ActionBatchModel();
-    $batch->action_batch = strtoupper($validated['action_batch']); 
-    $batch->target_trainees = $validated['target_trainees'];
-    $batch->target_date = $validated['target_date'];
-    $batch->remarks = $validated['remarks'] ?? null;
-    $batch->created_by = $user->id;
-    $batch->created_time = now();
-    $batch->updated_by = $user->id;
-    $batch->updated_time = now();
-    $batch->save();
-
-    DB::table('logs')->insert([
-        'module' => 'Action',
-        'activity' => 'Created a new action batch ' . $batch->action_batch,
-        'ip_address' => $request->ip(),
-        'created_by' => $user->id,
-        'updated_by' => $user->id,
-        'create_time' => now(),
-        'update_time' => now(),
-    ]);
-
-    return redirect()
-        ->route('action.batches.detail', ['id' => $batch->id])
-        ->with('success', 'Record created successfully.');
-}
-
 public function show($id)
     {
         $batch = ActionBatchModel::findOrFail($id);
         return Inertia::render('action/batches/ActionBatchDetail', ['batch'=> $batch]);
     }
-
-
-public function detail($id)
-{
-    $batch = ActionBatchModel::findOrFail($id);
-    return Inertia::render('action/batches/ActionBatchDetail', ['batch' => $batch]);
-}
 }
