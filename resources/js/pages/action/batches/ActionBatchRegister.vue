@@ -19,7 +19,6 @@ const errors = ref({
     target_trainees: '',
     target_date: '',
     remarks: ''
-
 })
 
 const validate = () => {
@@ -27,7 +26,6 @@ const validate = () => {
     errors.value.target_trainees = ''
     errors.value.target_date = ''
     errors.value.remarks = ''
-
 
     let isValid = true;
 
@@ -68,9 +66,9 @@ const validate = () => {
 
     const remarksValue = form.value.remarks.toString().trim()
     if (remarksValue.length > 1024) {
-            errors.value.remarks = 'Invalid input. This field must not exceed 1024 characters.'
-            isValid = false
-        }
+        errors.value.remarks = 'Invalid input. This field must not exceed 1024 characters.'
+        isValid = false
+    }
 
     return isValid;
 }
@@ -135,9 +133,10 @@ const submit = () => {
             <div class="grid grid-cols-2 gap-4 mt-5">
                 <div class="flex flex-col col-span-2">
                     <label class="text-xs font-semibold mb-1">Target Start Date</label>
+                    <!-- Change input type to month -->
                     <input
                         v-model="form.target_date"
-                        type="date"
+                        type="month"
                         placeholder="Target Start Date"
                         class="border p-2 rounded w-full"
                     />

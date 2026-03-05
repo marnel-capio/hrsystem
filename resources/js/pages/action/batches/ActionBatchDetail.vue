@@ -81,46 +81,6 @@ watch(successMessage, (val) => {
           <h3 class="text-lg font-bold text-center">{{ batch.action_batch }}</h3>
           <p class="text-xs opacity-80 text-center">Action Batch Detail</p>
         </div>
- 
-        <div class="bg-white rounded-xl p-4 shadow border">
-          <table class="min-w-full table-auto">
-            <tbody>
-              <tr>
-                <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600 w-40">
-                  Created by
-                </th>
-                <td class="text-xs px-2">{{ batch.created_by }}</td> 
-              </tr>
-              <tr>
-                <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
-                  Updated by
-                </th>
-                <td class="text-xs px-2">{{ batch.updated_by }}</td> 
-              </tr>
-              <tr>
-                <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
-                  Created Time
-                </th>
-                <td class="text-xs px-2">{{ batch.created_time }}</td>  
-              </tr>
-              <tr>
-                <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
-                  Updated Time
-                </th>
-                <td class="text-xs px-2">{{ batch.updated_time }}</td> 
-              </tr>
-            </tbody>
-          </table>
-        </div>
- 
-      </div>
- 
-      <!-- RIGHT -->
-      <div class="col-span-2 bg-white rounded-xl shadow border p-6">
- 
-        <h4 class="text-xs font-bold mb-3 text-center">REMARKS</h4>
-        <p class="text-xs">{{ batch.remarks }}</p>
- 
       </div>
     </div>
  
