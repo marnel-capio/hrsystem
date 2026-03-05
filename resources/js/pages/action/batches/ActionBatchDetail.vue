@@ -81,6 +81,17 @@ watch(successMessage, (val) => {
           <h3 class="text-lg font-bold text-center">{{ batch.action_batch }}</h3>
           <p class="text-xs opacity-80 text-center">Action Batch Detail</p>
         </div>
+ 
+        
+ 
+      </div>
+ 
+      <!-- RIGHT -->
+      <div class="col-span-2 bg-white rounded-xl shadow border p-6">
+ 
+        <h4 class="text-xs font-bold mb-3 text-center">REMARKS</h4>
+        <p class="text-xs">{{ batch.remarks }}</p>
+ 
       </div>
     </div>
  
