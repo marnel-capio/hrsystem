@@ -34,12 +34,10 @@ Route::middleware(['web', 'auth'])->group(function() {
         ->name('logout')
         ->middleware('auth');
    
-    // Action
-    Route::get('/action', fn () => Inertia::render('action/Action'))->name('action.index');
-    Route::get('/action/applications', fn () => Inertia::render('action/Applications'))->name('action.applications');
-    
     // Action Batches Routes
-    Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list');    
+    Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list')
+        ->middleware(['auth'])
+        ->name('action.batches.list');;    
 
     // For creating action batch
     Route::get('/action/batches/register', [ActionBatchController::class, 'create'])
@@ -53,7 +51,9 @@ Route::middleware(['web', 'auth'])->group(function() {
     // Store action batch
     Route::post('/action/batches/store', [ActionBatchController::class, 'store'])->name('action.batches.store');
 
-    Route::get('/action/batches/{id}', [ActionBatchController::class, 'show']);
+    Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])
+        ->middleware(['auth'])
+        ->name('action.batches.show');
 });
 
 require __DIR__.'/settings.php';

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use App\Models\ActionBatchModel;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\Action;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
  
@@ -85,16 +84,47 @@ public function store(Request $request)
         ->with('success', 'Record created successfully.');
 }
 
+
+//Link from List to Detail
 public function show($id)
-    {
-        $batch = ActionBatchModel::findOrFail($id);
-        return Inertia::render('action/batches/ActionBatchEditDetail', ['batch'=> $batch]);
+{
+    $user = Auth::user();
+
+    if (!in_array($user->permissions, [1, 2, 3])) {
+        return redirect()
+            ->route('dashboard')
+            ->with('error', 'Access denied: You are not authorized to view this page.');
     }
+    
+    $batch = ActionBatchModel::findOrFail($id);
+    $createdByUser = \App\Models\User::find($batch->created_by);
+    $updatedByUser = \App\Models\User::find($batch->updated_by);
+    $batch->created_by_name = $createdByUser ? $createdByUser->first_name . ' ' . $createdByUser->last_name : 'Unknown';
+    $batch->updated_by_name = $updatedByUser ? $updatedByUser->first_name . ' ' . $updatedByUser->last_name : 'Unknown';
+    
+    return Inertia::render('action/batches/ActionBatchDetail', [
+        'batch' => $batch,
+        'user_permissions' => $user->permissions, 
+    ]);
+}
 
-
+   
+//Link from Register to Detail
 public function detail($id)
 {
+    $user = Auth::user();
+
+    if (!in_array($user->permissions, [1, 2, 3])) {
+        return redirect()
+            ->route('dashboard')
+            ->with('error', 'Access denied: You are not authorized to view this page.');
+    }
     $batch = ActionBatchModel::findOrFail($id);
-    return Inertia::render('action/batches/ActionBatchDetail', ['batch' => $batch]);
+    $createdByUser = \App\Models\User::find($batch->created_by);
+    $updatedByUser = \App\Models\User::find($batch->updated_by);
+    $batch->created_by_name = $createdByUser ? $createdByUser->first_name . ' ' . $createdByUser->last_name : 'Unknown';
+    $batch->updated_by_name = $updatedByUser ? $updatedByUser->first_name . ' ' . $updatedByUser->last_name : 'Unknown';
+
+    return Inertia::render('action/batches/ActionBatchDetail', ['batch' => $batch, 'user_permissions' => $user->permissions]);
 }
 }
