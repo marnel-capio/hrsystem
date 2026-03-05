@@ -28,6 +28,9 @@ class UserController extends Controller
         try {
             $user = User::register($request->validated());
 
+            // TEMPORARY: force an exception to test the catch block
+            // throw new \Exception('');
+
             Log::createLog(
                 'Users',
                 "User with {$user->email_address} email address is registered successfully.",
