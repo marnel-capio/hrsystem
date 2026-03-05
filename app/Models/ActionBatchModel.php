@@ -8,7 +8,7 @@ class ActionBatchModel extends Model
 {
     protected $table = 'action_batches';
  
-    public $timestamps = false;
+    public $timestamps = true;
  
     protected $fillable = [
         'action_batch',
