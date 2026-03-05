@@ -1,7 +1,7 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 import schedules from './schedules'
 /**
-* @see routes/web.php:43
+* @see routes/web.php:84
 * @route '/action'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,7 +15,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:43
+* @see routes/web.php:84
 * @route '/action'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -27,7 +27,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:43
+* @see routes/web.php:84
 * @route '/action'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:43
+* @see routes/web.php:84
 * @route '/action'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:43
+* @see routes/web.php:84
 * @route '/action'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:43
+* @see routes/web.php:84
 * @route '/action'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:43
+* @see routes/web.php:84
 * @route '/action'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
-* @see routes/web.php:44
+* @see routes/web.php:87
 * @route '/action/applications'
 */
 export const applications = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -93,7 +93,7 @@ applications.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:44
+* @see routes/web.php:87
 * @route '/action/applications'
 */
 applications.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ applications.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:44
+* @see routes/web.php:87
 * @route '/action/applications'
 */
 applications.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -114,7 +114,7 @@ applications.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:44
+* @see routes/web.php:87
 * @route '/action/applications'
 */
 applications.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -123,7 +123,7 @@ applications.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:44
+* @see routes/web.php:87
 * @route '/action/applications'
 */
 const applicationsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ const applicationsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get
 })
 
 /**
-* @see routes/web.php:44
+* @see routes/web.php:87
 * @route '/action/applications'
 */
 applicationsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ applicationsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 })
 
 /**
-* @see routes/web.php:44
+* @see routes/web.php:87
 * @route '/action/applications'
 */
 applicationsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -326,12 +326,114 @@ createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 create.form = createForm
 
+/**
+* @see \App\Http\Controllers\ActionBatchController::show
+* @see app/Http/Controllers/ActionBatchController.php:43
+* @route '/action/batches/{id}'
+*/
+export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
+    method: 'get',
+})
+
+show.definition = {
+    methods: ["get","head"],
+    url: '/action/batches/{id}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\ActionBatchController::show
+* @see app/Http/Controllers/ActionBatchController.php:43
+* @route '/action/batches/{id}'
+*/
+show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+
+    if (Array.isArray(args)) {
+        args = {
+            id: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+
+    const parsedArgs = {
+        id: args.id,
+    }
+
+    return show.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionBatchController::show
+* @see app/Http/Controllers/ActionBatchController.php:43
+* @route '/action/batches/{id}'
+*/
+show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ActionBatchController::show
+* @see app/Http/Controllers/ActionBatchController.php:43
+* @route '/action/batches/{id}'
+*/
+show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: show.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\ActionBatchController::show
+* @see app/Http/Controllers/ActionBatchController.php:43
+* @route '/action/batches/{id}'
+*/
+const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ActionBatchController::show
+* @see app/Http/Controllers/ActionBatchController.php:43
+* @route '/action/batches/{id}'
+*/
+showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ActionBatchController::show
+* @see app/Http/Controllers/ActionBatchController.php:43
+* @route '/action/batches/{id}'
+*/
+showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+show.form = showForm
+
 const action = {
-    index: Object.assign(index, index),
+    schedules: Object.assign(schedules, schedules),
+index: Object.assign(index, index),
 applications: Object.assign(applications, applications),
 list: Object.assign(list, list),
 create: Object.assign(create, create),
-schedules: Object.assign(schedules, schedules),
+show: Object.assign(show, show),
 }
 
 export default action

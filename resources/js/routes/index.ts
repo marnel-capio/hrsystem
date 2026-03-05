@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../wayfinder'
 /**
-* @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
 * @route '/login'
 */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ login.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
 * @route '/login'
 */
 login.url = (options?: RouteQueryOptions) => {
@@ -28,8 +28,8 @@ login.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
 * @route '/login'
 */
 login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -38,8 +38,8 @@ login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
 * @route '/login'
 */
 login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -48,8 +48,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
 * @route '/login'
 */
 const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,8 +58,8 @@ const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
 * @route '/login'
 */
 loginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -68,8 +68,8 @@ loginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AuthController::login
-* @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
 * @route '/login'
 */
 loginForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -232,7 +232,7 @@ register.form = registerForm
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
 * @see app/Http/Controllers/DashboardController.php:13
-* @route '/'
+* @route '/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dashboard.url(options),
@@ -241,13 +241,13 @@ export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> =
 
 dashboard.definition = {
     methods: ["get","head"],
-    url: '/',
+    url: '/dashboard',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
 * @see app/Http/Controllers/DashboardController.php:13
-* @route '/'
+* @route '/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
 
@@ -260,7 +260,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
 * @see app/Http/Controllers/DashboardController.php:13
-* @route '/'
+* @route '/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dashboard.url(options),
@@ -270,7 +270,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
 * @see app/Http/Controllers/DashboardController.php:13
-* @route '/'
+* @route '/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dashboard.url(options),
@@ -280,7 +280,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
 * @see app/Http/Controllers/DashboardController.php:13
-* @route '/'
+* @route '/dashboard'
 */
 const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: dashboard.url(options),
@@ -290,7 +290,7 @@ const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
 * @see app/Http/Controllers/DashboardController.php:13
-* @route '/'
+* @route '/dashboard'
 */
 dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: dashboard.url(options),
@@ -300,7 +300,7 @@ dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
 * @see app/Http/Controllers/DashboardController.php:13
-* @route '/'
+* @route '/dashboard'
 */
 dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: dashboard.url({
