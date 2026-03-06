@@ -112,6 +112,9 @@ class UserController extends Controller
                 unset($newData['password']);
             }
 
+            // TEMPORARY: force an exception to test the catch block
+            // throw new \Exception('');
+
             // Step 5: create log
             Log::createUserUpdateLog($oldData, $newData);
 
