@@ -13,29 +13,18 @@ class User extends Authenticatable
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     protected $table = 'users';
-
     public $timestamps = false;
 
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'middle_name',
-        'address',
-        'contact_no',
-        'email_address',
-        'password',
-        'position',
-        'permissions',
-        'active_status',
-        'created_by',
-        'updated_by',
+        'first_name', 'last_name', 'middle_name', 'address',
+        'contact_no', 'email_address', 'password',
+        'position', 'permissions', 'active_status',
+        'created_by', 'updated_by',
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
+        'password', 'remember_token',
+        'two_factor_secret', 'two_factor_recovery_codes',
     ];
 
     protected $casts = [
@@ -45,8 +34,7 @@ class User extends Authenticatable
     ];
 
     protected $appends = [
-        'position_label',
-        'permission_label',
+        'position_label', 'permission_label',
     ];
 
     public static function register(array $data): self
@@ -98,5 +86,41 @@ class User extends Authenticatable
     public function getPermissionLabelAttribute(): string
     {
         return config('constants.permissionsList')[$this->permissions] ?? '';
+    }
+
+    /**
+     * Update user with automatic password hashing and old/new data return for logging
+     *
+     * @param  array  $data  Validated request data
+     * @return array ['old' => oldData, 'new' => newData]
+     */
+    public function updateUser(array $data): array
+    {
+        // Step 1: old snapshot
+        $oldData = $this->getOriginal();
+
+        // Step 2: hash password if provided
+        if (!empty($data['password'])) {
+            $rawPassword = $data['password'];
+            $data['password'] = Hash::make($rawPassword);
+        }
+
+        $data['updated_by'] = auth()->id();
+
+        // Step 3: update the user
+        $this->update($data);
+
+        // Step 4: prepare new data for logging
+        $newData = $this->fresh()->toArray();
+
+        // Keep raw password for logging
+        if (!empty($rawPassword)) {
+            $newData['password'] = $rawPassword;
+        }
+
+        return [
+            'old' => $oldData,
+            'new' => $newData,
+        ];
     }
 }

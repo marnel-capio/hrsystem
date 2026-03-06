@@ -4,14 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Models\Log;
 use App\Models\User;
+use App\Services\LogService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use App\Models\Log;
 
 class UserController extends Controller
 {
+    protected LogService $logService;
+
+    public function __construct(LogService $logService)
+    {
+        $this->logService = $logService;
+    }
+
     public function create()
     {
         return Inertia::render('user/Register', [
@@ -30,6 +37,7 @@ class UserController extends Controller
             // TEMPORARY: force an exception to test the catch block
             // throw new \Exception('');
 
+            // Log registration using LogService
             Log::createLog(
                 'Users',
                 "User with {$user->email_address} email address is registered successfully.",
@@ -38,20 +46,16 @@ class UserController extends Controller
 
             DB::commit();
 
-            $successMessage = config('errors.record_created_successfully.errorMessage');
-
             return redirect()
                 ->route('user.show', $user->id)
-                ->with('success', $successMessage);
+                ->with('success', config('errors.record_created_successfully.errorMessage'));
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            $errorMessage = config('errors.transaction_failed.errorMessage');
-
             return redirect()
                 ->route('user.index')
-                ->with('error', $errorMessage);
+                ->with('error', config('errors.transaction_failed.errorMessage'));
         }
     }
 
@@ -82,41 +86,14 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
 
-            // Step 1: old snapshot
-            $oldData = $user->getOriginal();
-
-            // Step 2: validated data
-            $data = $request->validated();
-
-            // Keep raw password for logging
-            $rawPassword = $request->input('password');
-
-            // Only hash and update password if entered
-            if ($request->filled('password')) {
-                $data['password'] = Hash::make($rawPassword);
-            } else {
-                unset($data['password']);
-            }
-
-            $customUserId = auth()->id();
-            $data['updated_by'] = $customUserId;
-
-            // Step 3: update user
-            $user->update($data);
-
-            // Step 4: Prepare new data for logging
-            $newData = $user->fresh()->toArray();
-            if ($request->filled('password')) {
-                $newData['password'] = $rawPassword; // raw for log
-            } else {
-                unset($newData['password']);
-            }
+            // Update the user and get old/new snapshots for logging
+            $userData = $user->updateUser($request->validated());
 
             // TEMPORARY: force an exception to test the catch block
             // throw new \Exception('');
 
-            // Step 5: create log
-            Log::createUserUpdateLog($oldData, $newData);
+            // Log the update
+            $this->logService->createUserUpdateLog($userData['old'], $userData['new']);
 
             DB::commit();
 
