@@ -1,31 +1,52 @@
-<!-- To add if login coding is finished:
-        -User permission validation -->
 <script setup lang="ts">
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, useForm, usePage, Link } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
+import { watch } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
-// Define props to receive centralized error messages from the backend
+// Props from backend
 const props = defineProps<{
   errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
+  newBatches: { id: number; action_batch: string; target_trainees: number; target_date: string; }[];
+  prevBatches: { id: number; action_batch: string }[];
 }>();
 
-// Access Inertia page props for flash messages
+// Inertia page
 const page = usePage();
 
-// Initialize Inertia form with default values
+// Error notification
+const errorMessage = computed(() => (page.props.flash as any)?.error || '');
+const showError = ref(false);
+
+// Initialize form with all  fields
 const form = useForm({
-  batchName: "",
-  location: "",
-  targetTrainees: "",
-  deploymentDate: "",
-  wbs: {},
+  action_batch_id: "",
+  prev_batch_id: "",
+  target_location: "",
+  target_trainees: "",
+  deployment_date: "",
+  contact_schools_startdate: "",
+  contact_schools_enddate: "",
+  source_testing_startdate: "",
+  source_testing_enddate: "",
+  initial_interviews_startdate: "",
+  initial_interviews_enddate: "",
+  final_interviews_startdate: "",
+  final_interviews_enddate: "",
+  contract_offers_startdate: "",
+  contract_offers_enddate: "",
+  requirements_startdate: "",
+  requirements_enddate: "",
+  training_startdate: "",
+  training_enddate: "",
+  remarks: "",
 });
 
-// Define the list of WBS activities
+
+// Gantt activity keys
 const ganttActivities = [
   "contact_schools",
-  "sourcing_testing",
+  "source_testing",
   "initial_interviews",
   "final_interviews",
   "contract_offers",
@@ -33,11 +54,11 @@ const ganttActivities = [
   "training"
 ];
 
-// Format activity keys into readable names
+// UI labels
 function formatActivityName(key: string) {
   const names: Record<string, string> = {
     contact_schools: "Contact Schools",
-    sourcing_testing: "Sourcing & Testing",
+    source_testing: "Sourcing & Testing",
     initial_interviews: "Initial Interviews",
     final_interviews: "Final Interviews",
     contract_offers: "Contract Offers",
@@ -47,21 +68,20 @@ function formatActivityName(key: string) {
   return names[key] || key;
 }
 
-// Initialize reactive state for WBS form with default week ranges
+// Reactive Gantt inputs
 const ganttForm = ref(
   Object.fromEntries(
-    ganttActivities.map(a => [a, { start: "2026-W05", end: "2026-W06", error: "" }])
+    ganttActivities.map(a => [a, { start: "", end: "", error: "" }])
   )
 );
 
-// Helper to convert week string to a numerical key for comparison
+// Week helper functions
 function weekToKey(weekStr: string) {
   if (!weekStr) return null;
   const [year, wk] = weekStr.split("-W").map(Number);
   return year * 100 + wk;
 }
 
-// Format week string into a display label (e.g., "Jan W1")
 function formatWeekLabel(weekStr: string) {
   const [year, weekNum] = weekStr.split("-W").map(Number);
   const jan4 = new Date(year, 0, 4);
@@ -70,7 +90,7 @@ function formatWeekLabel(weekStr: string) {
   return `${month} W${weekNum}`;
 }
 
-// Compute the list of unique weeks for the Gantt chart based on WBS ranges
+// Compute unique weeks for Gantt preview
 const ganttWeeks = computed(() => {
   const keys: number[] = [];
   ganttActivities.forEach(act => {
@@ -93,7 +113,7 @@ const ganttWeeks = computed(() => {
   });
 });
 
-// Compute month spans for the Gantt chart header
+// Month spans
 const monthSpans = computed(() => {
   const spans: any[] = [];
   let current: any = null;
@@ -110,7 +130,7 @@ const monthSpans = computed(() => {
   return spans;
 });
 
-// Compute rows for the Gantt chart bars
+// Gantt rows
 const ganttRows = computed(() => {
   return ganttActivities.map(act => {
     const { start, end } = ganttForm.value[act];
@@ -122,77 +142,100 @@ const ganttRows = computed(() => {
   });
 });
 
-// Compute success message from flash data
+// Success message
 const successMessage = computed(() => (page.props.flash as any)?.success || '');
-
-// Auto-clear success message after 5 seconds on component mount
+const showSuccess = ref(successMessage.value);
 onMounted(() => {
-  if (successMessage.value) {
-    setTimeout(() => {
-      (page.props.flash as any).success = '';
-    }, 5000);
+  if (showSuccess.value) setTimeout(() => showSuccess.value = false, 5000);
+  if (errorMessage.value) {
+    showError.value = true;
+    setTimeout(() => showError.value = false, 5000);
   }
 });
 
-// Gantt preview colors
+function closeError() {
+  showError.value = false;
+}
+
+// Gantt colors
 const wbsColors: Record<string, string> = {
-  contact_schools: '#166534',   // dark green
-  sourcing_testing: '#dc2626',  // red 
-  initial_interviews: '#f97316', // orange
-  final_interviews: '#2563eb',  // blue
-  contract_offers: '#7c3aed',   // purple
-  requirements: '#ec4899',      // pink
-  training: '#84cc16',          // light green
+  contact_schools: '#166534',
+  source_testing: '#dc2626',
+  initial_interviews: '#f97316',
+  final_interviews: '#2563eb',
+  contract_offers: '#7c3aed',
+  requirements: '#ec4899',
+  training: '#84cc16',
 };
 
-// Validate WBS ranges and display errors using centralized messages
-function validateWBS() {
-  let hasErrors = false;
-  let firstErrorAct: string | null = null;
-  ganttActivities.forEach(act => {
-    const row = ganttForm.value[act];
-    row.error = "";
-    if (weekToKey(row.start)! > weekToKey(row.end)!) {
-      const errorMsg = props.errorMessages.wbs_end_before_start.errorMessage;
-      row.error = errorMsg.replace(':activity', formatActivityName(act));
-      hasErrors = true;
-      if (!firstErrorAct) firstErrorAct = act;
-    }
-  });
-  if (hasErrors && firstErrorAct) {
-    const errorElement = document.getElementById('error-' + firstErrorAct);
-    if (errorElement) {
-      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
-  return hasErrors;
-}
+// Validate WBS ranges
+// function validateWBS() {
+//   let hasErrors = false;
+//   let firstErrorAct: string | null = null;
+//   ganttActivities.forEach(act => {
+//     const row = ganttForm.value[act];
+//     row.error = "";
+//     if (weekToKey(row.start)! > weekToKey(row.end)!) {
+//       const errorMsg = props.errorMessages.wbs_end_before_start.errorMessage;
+//       row.error = errorMsg.replace(':activity', formatActivityName(act));
+//       hasErrors = true;
+//       if (!firstErrorAct) firstErrorAct = act;
+//     }
+//   });
+//   if (hasErrors && firstErrorAct) {
+//     const errorElement = document.getElementById('error-' + firstErrorAct);
+//     if (errorElement) errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//   }
+//   return hasErrors;
+// }
 
-// Handle form submission with WBS validation and API call
+// Submit form
 function createResourceSchedule() {
-  if (validateWBS()) {
-    return;
-  }
 
-  const wbsPayload: Record<string, { start: string; end: string }> = {};
-  ganttActivities.forEach(a => {
-    wbsPayload[a] = {
-      start: ganttForm.value[a].start,
-      end: ganttForm.value[a].end
-    };
+  // Map ganttForm to form fields
+  ganttActivities.forEach(act => {
+    (form as any)[`${act}_startdate`] = ganttForm.value[act].start;
+    (form as any)[`${act}_enddate`] = ganttForm.value[act].end;
   });
 
-  form.wbs = wbsPayload;
-
-  form.post('/action/schedules', {
-    onSuccess: (page) => {
-      console.log('Inertia onSuccess: Page props:', page.props);
-    },
-    onError: (errors) => {
-      console.log('Inertia onError: Errors:', errors);
-    },
-  });
+form.post('/action/schedules', {
+  onSuccess: () => { showSuccess.value = true },
+  onError: (errors) => {
+    ganttActivities.forEach(act => {
+      ganttForm.value[act].error = errors[`${act}_startdate`] || errors[`${act}_enddate`] || "";
+    });
+  },
+});
 }
+
+watch(errorMessage, (val) => {
+  if (val) {
+    showError.value = true;
+    setTimeout(() => showError.value = false, 5000);
+  }
+});
+
+// When user selects a batch, auto-fill target_trainees and deployment date
+watch(() => form.action_batch_id, (newId) => {
+  const batch = props.newBatches.find(b => b.id === Number(newId));
+
+  if (batch) {
+    form.target_trainees = batch.target_trainees;
+
+    // If target_date has day, strip it for input type="month"
+    if (batch.target_date) {
+      form.deployment_date = batch.target_date.length > 7
+        ? batch.target_date.substring(0, 7)
+        : batch.target_date;
+    } else {
+      form.deployment_date = '';
+    }
+  } else {
+    form.target_trainees = '';
+    form.deployment_date = '';
+  }
+});
+
 </script>
 
 <template>
@@ -202,61 +245,100 @@ function createResourceSchedule() {
     <div class="max-w-5xl mx-auto w-full space-y-10 p-8">
       <h1 class="text-3xl font-bold mb-6">Create Resource Schedule</h1>
 
-      <!-- Display success message if present -->
-      <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-        {{ successMessage }}
-      </div>
+      <!-- Error Notification -->
+<div 
+    v-if="showError"
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
+>
+  <div 
+        class="relative bg-red-500 border-red-200 rounded-lg shadow-md p-4 flex items-center gap-4 animate-slide-down"
+  >
+    <div class="flex-1 flex justify-start items-center gap-3">
+      <p class="text-white text-m font-medium text-left">
+        {{ errorMessage }}
+      </p>
+    </div>
+    <button 
+      style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
+      @click="closeError"
+    >
+      X
+    </button>
+  </div>
+</div>
+
 
       <div class="bg-white dark:bg-zinc-900 p-10 rounded-2xl border shadow-xl space-y-10">
         <form @submit.prevent="createResourceSchedule">
-          <!-- Basic Information Section -->
+
+          <!-- Basic Info -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Batch Name -->
             <div>
               <label class="text-sm font-semibold">Batch Name</label>
-              <select v-model="form.batchName" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
+              <select v-model="form.action_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5" >
                 <option value="">Select</option>
-                <option value="ACTION 39">ACTION 39</option>
-                <option value="ACTION 40">ACTION 40</option>
-                <option value="ACTION 41">ACTION 41</option>
+                <option v-for="batch in props.newBatches" :key="batch.id" :value="batch.id">
+                  {{ batch.action_batch }}
+                </option>
               </select>
-              <p v-if="form.errors.batchName" class="text-red-600 text-xs mt-1">
-                {{ form.errors.batchName }}
+              <p v-if="form.errors.action_batch_id" class="text-red-600 text-xs mt-1">
+                {{ form.errors.action_batch_id }}
               </p>
             </div>
 
+            <!-- Target Location -->
             <div>
               <label class="text-sm font-semibold">Target Location</label>
-              <select v-model="form.location" class="w-full bg-zinc-50 border rounded-lg p-2.5" required>
+              <select v-model="form.target_location" class="w-full bg-zinc-50 border rounded-lg p-2.5" >
                 <option value="">Select</option>
-                <option value="Cebu">Cebu</option>
-                <option value="Manila">Manila</option>
+                <option value="1">Manila</option>
+                <option value="2">Cebu</option>
               </select>
-              <p v-if="form.errors.location" class="text-red-600 text-xs mt-1">
-                {{ form.errors.location }}
+              <p v-if="form.errors.target_location" class="text-red-600 text-xs mt-1">
+                {{ form.errors.target_location }}
               </p>
             </div>
 
+            <!-- Target Trainees -->
             <div>
               <label class="text-sm font-semibold">Target Trainees</label>
-              <input v-model="form.targetTrainees" type="number" class="w-full bg-zinc-50 border rounded-lg p-2.5" required />
-              <p v-if="form.errors.targetTrainees" class="text-red-600 text-xs mt-1">
-                {{ form.errors.targetTrainees }}
+              <input v-model="form.target_trainees" type="number" placeholder="Selected Batch Name will fill this field" class="w-full bg-zinc-50 border rounded-lg p-2.5"  disabled/>
+              <p v-if="form.errors.target_trainees" class="text-red-600 text-xs mt-1">
+                {{ form.errors.target_trainees }}
               </p>
             </div>
 
+            <!-- Date of Deployment -->
             <div>
               <label class="text-sm font-semibold">Date of Deployment</label>
-              <input v-model="form.deploymentDate" type="month" class="w-full bg-zinc-50 border rounded-lg p-2.5" required />
-              <p v-if="form.errors.deploymentDate" class="text-red-600 text-xs mt-1">
-                {{ form.errors.deploymentDate }}
+              <input v-model="form.deployment_date" readonly placeholder="Selected Batch Name will fill this field" class="w-full bg-zinc-50 border rounded-lg p-2.5"  />
+              <p v-if="form.errors.deployment_date" class="text-red-600 text-xs mt-1">
+                {{ form.errors.deployment_date }}
               </p>
             </div>
+
+            
+            <!-- Previous Batch -->
+            <div>
+              <label class="text-sm font-semibold">Compare with Previous Batch</label>
+              <select v-model="form.prev_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5">
+                <option value="">Select</option>
+                <option v-for="batch in props.prevBatches" :key="batch.id" :value="batch.id">
+                  {{ batch.action_batch }}
+                </option>
+              </select>
+              <p v-if="form.errors.prev_batch_id" class="text-red-600 text-xs mt-1">
+                {{ form.errors.prev_batch_id }}
+              </p>
+            </div>
+
           </div>
 
-          <!-- Work Breakdown Schedule Section -->
-<h2 class="text-xl font-bold mb-4 mt-10">Work Breakdown Schedule (WBS)</h2>
+          
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <!-- Gantt Section -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mt-10">
             <template v-for="act in ganttActivities" :key="act">
               <div>
                 <label class="font-semibold">{{ formatActivityName(act) }}</label>
@@ -264,12 +346,22 @@ function createResourceSchedule() {
                 <div class="grid grid-cols-2 gap-3 mt-1 mb-1">
                   <div>
                     <label class="text-xs text-zinc-500 block mb-1">Start</label>
-                    <input type="week" v-model="ganttForm[act].start" class="w-full bg-zinc-50 border rounded-lg p-2" required />
+                    <input
+                      type="week"
+                      v-model="ganttForm[act].start"
+                      class="w-full bg-zinc-50 border rounded-lg p-2"
+                      
+                    />
                   </div>
 
                   <div>
                     <label class="text-xs text-zinc-500 block mb-1">End</label>
-                    <input type="week" v-model="ganttForm[act].end" class="w-full bg-zinc-50 border rounded-lg p-2" required />
+                    <input
+                      type="week"
+                      v-model="ganttForm[act].end"
+                      class="w-full bg-zinc-50 border rounded-lg p-2"
+                      
+                    />
                   </div>
                 </div>
 
@@ -286,37 +378,42 @@ function createResourceSchedule() {
 
             <div v-if="ganttWeeks.length" class="overflow-x-auto border p-6 rounded-xl shadow-sm">
               <div class="grid gap-0.5" :style="`grid-template-columns: 220px repeat(${ganttWeeks.length}, 1fr)`">
+                <!-- Header: Activity -->
                 <div class="p-2 bg-zinc-50 font-bold border-b">Activity</div>
 
+                <!-- Header: Month spans -->
                 <template v-for="m in monthSpans" :key="m.month">
-                  <div :style="`grid-column: span ${m.count}`" class="text-center font-bold text-base p-2 bg-blue-50 border-b">
+                  <div
+                    :style="`grid-column: span ${m.count}`"
+                    class="text-center font-bold text-base p-2 bg-blue-50 border-b"
+                  >
                     {{ m.month }}
                   </div>
                 </template>
 
                 <div></div>
 
+                <!-- Header: Week labels -->
                 <template v-for="w in ganttWeeks" :key="w">
                   <div class="text-[11px] text-center p-1 bg-blue-50 border-b">
                     {{ formatWeekLabel(w) }}
                   </div>
                 </template>
 
-                <!-- Activity Bars -->
+                <!-- Activity Rows -->
                 <template v-for="row in ganttRows" :key="row.activity">
                   <div class="font-semibold py-2 border-r pr-2">
                     {{ formatActivityName(row.activity) }}
                   </div>
 
                   <template v-for="(_, i) in ganttWeeks" :key="i">
-<div class="border h-7 relative">
-  <div
-    v-if="i >= row.startIndex && i <= row.endIndex && row.startIndex !== -1"
-    class="absolute inset-0 rounded-sm"
-    :style="`background-color: ${wbsColors[row.activity] || '#000'}; opacity: 0.8;`"
-  ></div>
-</div>
-
+                    <div class="border h-7 relative">
+                      <div
+                        v-if="i >= row.startIndex && i <= row.endIndex && row.startIndex !== -1"
+                        class="absolute inset-0 rounded-sm"
+                        :style="`background-color: ${wbsColors[row.activity] || '#000'}; opacity: 0.8;`"
+                      ></div>
+                    </div>
                   </template>
                 </template>
               </div>
@@ -325,13 +422,107 @@ function createResourceSchedule() {
             <div v-else class="text-sm text-zinc-500">Select weeks to generate preview.</div>
           </div>
 
-          <div class="flex justify-end mt-6">
-            <button type="submit" :disabled="form.processing" class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-bold shadow-lg">
-              Create
-            </button>
-          </div>
+          
+                    <!-- Remarks Field -->
+<div class="mt-10">
+  <label class="text-sm font-semibold">Remarks</label>
+  <textarea
+    v-model="form.remarks"
+    class="w-full bg-zinc-50 border rounded-lg p-2.5 mt-1"
+    rows="4"
+    placeholder="Enter any remarks here..."
+  ></textarea>
+  <p v-if="form.errors.remarks" class="text-red-600 text-xs mt-1">
+    {{ form.errors.remarks }}
+  </p>
+</div>
+
+          <!-- Buttons -->
+<div class="form-actions">
+  <Link href="/action/schedules" class="btn btn-secondary">
+    Cancel
+  </Link>
+
+  <button
+    type="submit"
+    :disabled="form.processing"
+    class="btn btn-primary"
+  >
+    {{ form.processing ? 'Creating…' : 'Create' }}
+  </button>
+</div>
         </form>
       </div>
     </div>
   </AppLayout>
 </template>
+
+<style scoped>
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+/* Form actions */
+.form-actions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-actions button,
+.form-actions a {
+    flex: 0 0 auto;
+    width: auto;
+}
+
+/* Buttons */
+button[type="submit"],
+.btn-secondary {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    border-radius: 5px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+}
+
+button[type="submit"] {
+    border: none;
+    background: var(--ats-primary);
+    color: #fff;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+    background: var(--ats-accent);
+}
+
+button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    border: 1px solid #d1d5db;
+    background: #f3f4f6;
+    color: #374151;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+</style>

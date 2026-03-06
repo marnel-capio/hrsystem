@@ -36,7 +36,7 @@ class CheckUserPermission
         | Only permission 1 & 2 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['user.index', 'user.register', 'user.store'])) {
+        if (in_array($routeName, ['user.index', 'user.register', 'user.store', 'action.schedules.index', 'action.schedules.register', 'action.schedules.store', 'action.schedules.show', 'action.schedules.edit', 'action.schedules.update'])) {
 
             if (in_array($permission, [1, 2])) {
                 return $next($request);

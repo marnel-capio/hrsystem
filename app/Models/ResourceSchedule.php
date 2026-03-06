@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class ResourceSchedule extends Model
 {
@@ -11,9 +11,24 @@ class ResourceSchedule extends Model
 
     protected $fillable = [
         'action_batch_id',
+        'prev_batch_id',
         'target_location',
         'target_trainees',
         'deployment_date',
+        'contact_schools_startdate',
+        'contact_schools_enddate',
+        'source_testing_startdate',
+        'source_testing_enddate',
+        'initial_interviews_startdate',
+        'initial_interviews_enddate',
+        'final_interviews_startdate',
+        'final_interviews_enddate',
+        'contract_offers_startdate',
+        'contract_offers_enddate',
+        'requirements_startdate',
+        'requirements_enddate',
+        'training_startdate',
+        'training_enddate',
         'remarks',
         'created_by',
         'created_time',
@@ -21,22 +36,16 @@ class ResourceSchedule extends Model
         'updated_time',
     ];
 
-    protected $casts = [
-        'created_time'    => 'datetime',
-        'updated_time'    => 'datetime',
-        'deployment_date' => 'date',
-    ];
-
     /**
-     * Relationship to action_batches
+     * Relationships
      */
     public function actionBatch()
     {
-        return $this->belongsTo(ActionBatch::class, 'action_batch_id', 'id');
+        return $this->belongsTo(ActionBatchModel::class, 'action_batch_id');
     }
 
     /**
-     * Get list page data with search functionality
+     * Helper methods
      */
     public static function listPageData(?string $search = null)
     {
@@ -52,5 +61,28 @@ class ResourceSchedule extends Model
             })
             ->orderBy('resource_schedules.created_time', 'desc')
             ->get();
+    }
+
+    public static function getActionBatches($excludeScheduled = true)
+    {
+        $scheduledBatchIds = self::pluck('action_batch_id')->toArray();
+
+        $query = DB::table('action_batches')->select('id', 'action_batch', 'target_trainees', 'target_date');
+
+        if ($excludeScheduled) {
+            $query->whereNotIn('id', $scheduledBatchIds);
+        } else {
+            $query->whereIn('id', $scheduledBatchIds);
+        }
+
+        return $query->get();
+    }
+
+    public static function getWithActionBatch($id)
+    {
+        return self::select('resource_schedules.*', 'action_batches.action_batch')
+            ->join('action_batches', 'resource_schedules.action_batch_id', '=', 'action_batches.id')
+            ->where('resource_schedules.id', $id)
+            ->firstOrFail();
     }
 }

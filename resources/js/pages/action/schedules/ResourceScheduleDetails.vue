@@ -17,7 +17,16 @@ const props = defineProps<{
     target_location: string;
     target_trainees: number;
     deployment_date: string;
-    wbs: Record<string, { start: string; end: string }>;
+
+    contact_schools?: string;
+    screening?: string;
+    initial_interview?: string;
+    final_interview?: string;
+    job_offer?: string;
+    job_acceptance?: string;
+
+    remarks?: string;
+
     created_by?: string;
     created_time?: string;
     updated_by?: string;
@@ -72,11 +81,11 @@ function formatActivityName(key: string) {
 const ganttForm = ref(
   Object.fromEntries(
     ganttActivities.map(a => [
-      a,
-      {
-        start: props.schedule.wbs?.[a]?.start ?? "",
-        end: props.schedule.wbs?.[a]?.end ?? "",
-        error: ""
+      a, 
+      { 
+        start: props.schedule.wbs?.[a]?.start || "2026-W05", 
+        end: props.schedule.wbs?.[a]?.end || "2026-W06",
+        error: "" 
       }
     ])
   )
@@ -246,19 +255,35 @@ function saveAllEdits() {
           Resource Schedule Details
         </h1>
         <div class="flex gap-3">
-          <a 
+          <!-- <a 
             href="/action/schedules" 
             class="px-4 py-2 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           >
             ← Back to List
-          </a>
-          <button 
-            @click="showEditModal = true"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-            style="background-color: #1C7BA5;"
-          >
-            Edit Resource Schedule
-          </button>
+          </a> -->
+          
+<a
+          v-if="props.userPermissions != 3"
+          href="/action/schedules/register"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+          style="background-color: #16A84E;"
+        >
+          Send Notification
+        </a>
+<a :href="`/action/schedules/${props.schedule.id}/edit`"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+          style="background-color: #1C7BA5;"
+        >
+          Edit
+        </a>
+<a
+          v-if="props.userPermissions != 3"
+          href="/action/schedules/register"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+          style="background-color: #A81616;"
+        >
+          Delete
+        </a>
         </div>
       </div>
 
@@ -495,6 +520,16 @@ function saveAllEdits() {
       </div>
 
       
+<!-- Remarks Field (Details Page) -->
+<div class="space-y-2 mt-6">
+  <label class="text-sm font-semibold">Remarks</label>
+  <textarea
+    class="w-full bg-zinc-50 border rounded-lg p-2.5 resize-none"
+    rows="4"
+    readonly
+  >{{ schedule.remarks || '' }}</textarea>
+</div>
+      
 
     </div>
 
@@ -583,10 +618,30 @@ function saveAllEdits() {
         </p>
       </div>
 
-    </div> <!-- END BASIC FORM -->
+      <!-- Previous Batch -->
+<div class="space-y-2">
+  <label class="text-sm font-semibold">Compare with Previous Batch</label>
+  <select 
+    v-model="editForm.prev_batch_id" 
+    class="w-full bg-zinc-50 border rounded-lg p-2.5"
+  >
+    <option value="">Select</option>
+    <option 
+      v-for="batch in props.prevBatches" 
+      :key="batch.id" 
+      :value="batch.id"
+    >
+      {{ batch.action_batch }}
+    </option>
+  </select>
+  <p v-if="editForm.errors.prev_batch_id" class="text-red-600 text-xs mt-1">
+    {{ editForm.errors.prev_batch_id }}
+  </p>
+</div>
 
-    <!-- WBS TITLE -->
-    <h2 class="text-xl font-bold mb-4 mt-10">Work Breakdown Schedule (WBS)</h2>
+      
+
+    </div> <!-- END BASIC FORM -->
 
     <!-- WBS FORM GRID -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -661,14 +716,30 @@ function saveAllEdits() {
               </div>
             </template>
           </template>
+          
 
         </div>
+        
       </div>
 
       <div v-else class="text-sm text-zinc-500">
         Select weeks to generate preview.
       </div>
     </div>
+
+    <!-- Remarks Field -->
+<div class="space-y-2 mt-5">
+  <label class="text-sm font-semibold">Remarks</label>
+  <textarea
+    v-model="editForm.remarks"
+    class="w-full bg-zinc-50 border rounded-lg p-2.5"
+    rows="4"
+    placeholder="Enter any remarks here..."
+  ></textarea>
+  <p v-if="editForm.errors.remarks" class="text-red-600 text-xs mt-1">
+    {{ editForm.errors.remarks }}
+  </p>
+</div>  
 
     <!-- BUTTONS -->
     <div class="flex justify-end gap-3 mt-6">
