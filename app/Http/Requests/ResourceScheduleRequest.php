@@ -33,9 +33,10 @@ class ResourceScheduleRequest extends FormRequest
             'remarks'         => 'nullable|string|max:1024',
         ];
 
+        // ✅ Remove 'required' from WBS fields - handled in validateWbsRanges()
         foreach ($wbsFields as $field) {
-            $rules["{$field}_startdate"] = ['required', new IsoWeekFormat()];
-            $rules["{$field}_enddate"]   = ['required', new IsoWeekFormat()];
+            $rules["{$field}_startdate"] = ['nullable', new IsoWeekFormat()];
+            $rules["{$field}_enddate"]   = ['nullable', new IsoWeekFormat()];
         }
 
         return $rules;
@@ -77,17 +78,30 @@ class ResourceScheduleRequest extends FormRequest
             $start = $this->input("{$act}_startdate");
             $end   = $this->input("{$act}_enddate");
 
-            // Skip if either start or end is missing (required validator will catch it)
-            if (!$start) {
-                $validator->errors()->add("{$act}_startdate", $errors['wbs_start_required']['errorMessage']);
-                continue;
-            }
-            if (!$end) {
-                $validator->errors()->add("{$act}_enddate", $errors['wbs_end_required']['errorMessage']);
+            // Treat null or empty string as empty
+            $startEmpty = $start === null || trim($start) === '';
+            $endEmpty   = $end === null || trim($end) === '';
+
+            // Scenario 1: Both Start & End are empty
+            if ($startEmpty && $endEmpty) {
+                $validator->errors()->add("{$act}_startdate", $errors['field_required']['errorMessage']);
+                $validator->errors()->add("{$act}_enddate", $errors['field_required']['errorMessage']);
                 continue;
             }
 
-            // Check ISO week format (YYYY-W##)
+            // Scenario 2: End is empty only (Start is filled)
+            if (!$startEmpty && $endEmpty) {
+                $validator->errors()->add("{$act}_enddate", $errors['field_required']['errorMessage']);
+                continue;
+            }
+
+            // Scenario 3: Start is empty only (End is filled)
+            if ($startEmpty && !$endEmpty) {
+                $validator->errors()->add("{$act}_startdate", $errors['wbs_end_before_start']['errorMessage']);
+                continue;
+            }
+
+            // Scenario 4: Both are filled - Check Format
             if (!preg_match('/^\d{4}-W\d{2}$/', $start)) {
                 $validator->errors()->add("{$act}_startdate", $errors['wbs_invalid_format']['errorMessage']);
                 continue;
@@ -97,14 +111,13 @@ class ResourceScheduleRequest extends FormRequest
                 continue;
             }
 
-            // Convert to DateTime for comparison
+            // Scenario 5: Both are filled - Check Date Range
             [$startYear, $startWeek] = explode('-W', $start);
             [$endYear, $endWeek]     = explode('-W', $end);
 
             $startDate = (new \DateTime())->setISODate((int)$startYear, (int)$startWeek);
             $endDate   = (new \DateTime())->setISODate((int)$endYear, (int)$endWeek);
 
-            // Ensure end week is not before start week
             if ($endDate < $startDate) {
                 $validator->errors()->add("{$act}_enddate", $errors['wbs_end_before_start']['errorMessage']);
             }
