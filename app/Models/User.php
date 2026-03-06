@@ -28,6 +28,7 @@ class User extends Authenticatable
         'permissions',
         'active_status',
         'created_by',
+        'updated_by',
     ];
 
     protected $hidden = [
@@ -41,6 +42,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
         'active_status' => 'boolean',
+    ];
+
+    protected $appends = [
+        'position_label',
+        'permission_label',
     ];
 
     public static function register(array $data): self
@@ -64,19 +70,18 @@ class User extends Authenticatable
         $this->attributes['password'] = Hash::needsRehash($value) ? Hash::make($value) : $value;
     }
 
-    // ✅ Automatically handle create/update timestamps and by-user
     protected static function booted()
     {
         static::creating(function ($user) {
             $user->create_time = now();
             $user->update_time = now();
-            $user->created_by = auth()->id() ?? null;
-            $user->updated_by = auth()->id() ?? null;
+            $user->created_by = $user->created_by ?? auth()->id();
+            $user->updated_by = $user->updated_by ?? auth()->id();
         });
 
         static::updating(function ($user) {
             $user->update_time = now();
-            $user->updated_by = auth()->id() ?? null;
+            $user->updated_by = $user->updated_by ?? auth()->id();
         });
     }
 

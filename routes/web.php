@@ -42,6 +42,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
+    // Update user
+        Route::put('/user/{id}/update', [UserController::class, 'update'])
+            ->name('user.update');    
+            
     // ------------------------
     // User Management (Permissions 1 & 2 Only)
     // ------------------------
@@ -62,8 +66,15 @@ Route::middleware(['auth'])->group(function () {
         // Show user detail
         Route::get('/user/{id}', [UserController::class, 'show'])
             ->name('user.show');
+
+        // Show Edit User Details
+        Route::get('/user/{id}/edit', [UserController::class, 'edit'])
+            ->name('user.edit');
+
+        
     });
 
+    
     // ------------------------
     // Action Schedules
     // ------------------------
