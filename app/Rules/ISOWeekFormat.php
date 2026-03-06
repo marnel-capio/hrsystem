@@ -14,6 +14,7 @@ class IsoWeekFormat implements Rule
 
     public function message(): string
     {
-        return 'The :attribute must be in the format YYYY-WW.';
+        $errors = config('errors');
+        return $errors['DEPLOYMENT_DATE_FORMAT']['errorMessage'];
     }
 }
