@@ -2,13 +2,12 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\AWSEmailAddress;
 use App\Rules\AccountStatus;
+use App\Rules\AWSEmailAddress;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LoginRequest extends FormRequest
 {
-
     // protected $redirect = route('login');
     /**
      * Determine if the user is authorized to make this request.
@@ -28,7 +27,7 @@ class LoginRequest extends FormRequest
     public function messages()
     {
         return [
-            'email_address.exists' => "The :attribute does not exist.",
+            'email_address.exists' => 'The email address is not registered.',
         ];
     }
 
@@ -40,11 +39,13 @@ class LoginRequest extends FormRequest
     public function attributes()
     {
         $customAttributes = [];
-        if(strpos($this->header('referer'), route('login')) !== FALSE){
+        if (strpos($this->header('referer'), route('login')) !== false) {
             $customAttributes['email_address'] = 'email';
         }
+
         return $customAttributes;
     }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -52,13 +53,21 @@ class LoginRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = [];
-        if($this->isMethod('POST')){
-            $rules = ['email_address' => ['bail', 'required', 'email', 'max:80', 'min:15', new AWSEmailAddress(), 'exists:users,email_address', new AccountStatus()]];
-            if(strpos($this->header('referer'), route('login')) !== FALSE){
-                $rules['password'] = 'required|max:80|min:8';
-            }
-        }
-        return $rules;
+        return [
+            'email_address' => [
+                'bail',
+                'required',
+                'email',
+                'max:80',
+                new AWSEmailAddress,
+                'exists:users,email_address',
+                new AccountStatus,
+            ],
+            'password' => [
+                'required',
+                'max:64',
+                'min:8',
+            ],
+        ];
     }
 }

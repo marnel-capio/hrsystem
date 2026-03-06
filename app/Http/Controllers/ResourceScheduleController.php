@@ -1,43 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\ResourceSchedule;
+use Inertia\Inertia; // Make sure this is imported
 
 class ResourceScheduleController extends Controller
 {
-
-    /**
-     * Show schedule details
-     */
-    public function show($id)
+    public function index()
     {
-        return inertia('action/schedules/ResourceScheduleDetails', [
-            'schedule' => ResourceSchedule::findById($id),
+        $search = request('search', '');
+        $schedules = ResourceSchedule::listPageData($search);
+
+        // 1. Get the flash data from the session
+        $flash = session()->get('flash', []);
+
+        return Inertia::render('action/schedules/ResourceScheduleList', [
+            'schedules'       => $schedules,
+            'filters'         => ['search' => $search],
+            'userPermissions' => auth()->user()->permissions,
+            // 2. Explicitly pass the flash data to Inertia props
+            'flash'           => $flash, 
         ]);
-    }
-
-    /**
-     * Show edit page
-     */
-    public function edit($id)
-    {
-        return inertia('action/schedules/ResourceScheduleEdit', [
-            'schedule' => ResourceSchedule::findById($id),
-        ]);
-    }
-
-    /**
-     * Update schedule
-     */
-    public function update(Request $request, $id)
-    {
-        $schedule = ResourceSchedule::findById($id);
-        $schedule->updateFromRequest($request);
-
-        return redirect()->route('action.schedules.show', $id)
-                         ->with('success', ResourceSchedule::successMessage());
     }
 }

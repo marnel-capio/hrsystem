@@ -1,63 +1,103 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
-
+import { Head, router } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
+// Breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Resource Schedule', href: '#' },
 ];
 
-// Define props to receive schedules from the backend
+// Props from backend
 const props = defineProps<{
   schedules: Array<{
     id: number;
-    batch_name: string;
+    action_batch: string;
     target_trainees: number;
     deployment_date: string;
-    target_location: string;
+    target_location: number;
   }>;
+  filters: {
+    search: string;
+  };
+  userPermissions: number;
 }>();
 
-// Search input
-const searchQuery = ref("");
+// Map location number to string
+function formatLocation(loc: number) {
+  return loc === 1 ? 'Manila' : loc === 2 ? 'Cebu' : 'Unknown';
+}
 
-// Use the passed schedules data
-const resourceSchedules = computed(() => props.schedules);
+// Search input bound to backend
+const searchQuery = ref(props.filters.search || '');
+watch(searchQuery, () => {
+  currentPage.value = 1; // reset page
+});
+
+// Format deployment date
+function formatDeploymentDate(dateStr: string) {
+  if (!dateStr) return '';
+  
+  const date = new Date(dateStr); // Use the string directly
+  if (isNaN(date.getTime())) return dateStr; // fallback if invalid
+  
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+}
+
+// ---------------- Pagination Setup ----------------
+const currentPage = ref(1);
+const perPage = 20; // items per page
+const blockSize = 5; // number of page buttons
 
 // Filtered schedules based on search
 const filteredSchedules = computed(() => {
   const q = searchQuery.value.toLowerCase();
-  if (!q) return resourceSchedules.value;
+  if (!q) return props.schedules;
+return props.schedules.filter((rs) => {
+  const batch = rs.action_batch.toLowerCase();
+  const locLabel = formatLocation(rs.target_location).toLowerCase();
+  const locNumber = String(rs.target_location); // allow search "1" or "2"
+  const deployment = formatDeploymentDate(rs.deployment_date).toLowerCase();
 
-  return resourceSchedules.value.filter(rs => {
-    const batch = rs.batch_name.toLowerCase();
-    const loc = rs.target_location.toLowerCase();
-
-    // format the date exactly how it's displayed
-    const formattedDeployment = formatDeploymentDate(rs.deployment_date).toLowerCase();
-
-    return (
-      batch.includes(q) ||
-      loc.includes(q) ||
-      formattedDeployment.includes(q)
-    );
-  });
+  return (
+    batch.includes(q) ||
+    locLabel.includes(q) ||    // match Manila, Cebu
+    locNumber.includes(q) ||   // match 1, 2
+    deployment.includes(q)
+  );
+});
 });
 
+// Total pages
+const totalPages = computed(() =>
+  Math.ceil(filteredSchedules.value.length / perPage)
+);
 
+// Paginated schedules
+const paginatedSchedules = computed(() => {
+  const start = (currentPage.value - 1) * perPage;
+  return filteredSchedules.value.slice(start, start + perPage);
+});
 
-// Method to format deployment date (e.g., "2026-02" -> "February 2026")
-function formatDeploymentDate(dateStr: string) {
-  if (!dateStr) return '';
-  try {
-    // Append "-01" to make it a valid date (e.g., "2026-02-01")
-    const date = new Date(dateStr + '-01');
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }); // "February 2026"
-  } catch {
-    return dateStr; // Fallback to original if parsing fails
-  }
+// Block pagination
+const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize));
+const startPage = computed(() => (currentBlock.value - 1) * blockSize + 1);
+const endPage = computed(() => Math.min(startPage.value + blockSize - 1, totalPages.value));
+const pageNumbers = computed(() => {
+  const pages = [];
+  for (let i = startPage.value; i <= endPage.value; i++) pages.push(i);
+  return pages;
+});
+
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages.value) currentPage.value = page;
+}
+function prevBlock() {
+  if (startPage.value > 1) goToPage(startPage.value - 1);
+}
+function nextBlock() {
+  if (endPage.value < totalPages.value) goToPage(endPage.value + 1);
 }
 </script>
 
@@ -69,10 +109,11 @@ function formatDeploymentDate(dateStr: string) {
 
       <!-- Header with Create Button -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">Resource Schedules</h1>
+        <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">Resource Schedule List</h1>
 
         <a
-          href="/action/schedules/create"
+          v-if="props.userPermissions != 3"
+          href="/action/schedules/register"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
           style="background-color: #1C7BA5;"
         >
@@ -80,10 +121,12 @@ function formatDeploymentDate(dateStr: string) {
         </a>
       </div>
 
+      <!-- Search Input -->
       <div class="flex gap-4 mb-4">
         <div class="relative w-full">
           <span class="absolute inset-y-0 left-3 flex items-center text-zinc-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
             </svg>
@@ -109,22 +152,54 @@ function formatDeploymentDate(dateStr: string) {
           </tr>
         </thead>
         <tbody class="bg-white dark:bg-zinc-900">
-          <tr v-for="rs in filteredSchedules" :key="rs.id">
+          <tr v-for="rs in paginatedSchedules" :key="rs.id">
             <td class="border px-3 py-2">
               <a :href="`/action/schedules/${rs.id}`" class="text-blue-600 hover:underline">
-                {{ rs.batch_name }}
+                {{ rs.action_batch }}
               </a>
             </td>
             <td class="border px-3 py-2">{{ rs.target_trainees }}</td>
-            <td class="border px-3 py-2">{{ formatDeploymentDate(rs.deployment_date) }}</td>  <!-- FORMATTED DATE -->
-            <td class="border px-3 py-2">{{ rs.target_location }}</td>
+            <td class="border px-3 py-2">{{ formatDeploymentDate(rs.deployment_date) }}</td>
+            <td class="border px-3 py-2">{{ formatLocation(rs.target_location) }}</td>
+          </tr>
+          <tr v-if="paginatedSchedules.length === 0">
+            <td colspan="4" class="text-center p-6 text-zinc-500">
+              No resource schedules found.
+            </td>
           </tr>
         </tbody>
       </table>
 
-      <!-- Optional: Show message if no schedules -->
-      <div v-if="filteredSchedules.length === 0" class="text-center text-zinc-500 mt-4">
-        No resource schedules found.
+      <!-- Block Pagination -->
+      <div
+        class="flex justify-center mt-3 gap-2 text-xs"
+        v-if="filteredSchedules.length > perPage"
+      >
+        <span
+          @click="prevBlock"
+          class="px-3 py-2 border rounded cursor-pointer"
+          :class="{ 'opacity-50 cursor-not-allowed': startPage === 1 }"
+        >
+          Prev
+        </span>
+
+        <span
+          v-for="pageNumber in pageNumbers"
+          :key="pageNumber"
+          @click="goToPage(pageNumber)"
+          class="px-3 py-2 border rounded cursor-pointer"
+          :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''"
+        >
+          {{ pageNumber }}
+        </span>
+
+        <span
+          @click="nextBlock"
+          class="px-3 py-2 border rounded cursor-pointer"
+          :class="{ 'opacity-50 cursor-not-allowed': endPage === totalPages }"
+        >
+          Next
+        </span>
       </div>
 
     </div>
@@ -132,7 +207,6 @@ function formatDeploymentDate(dateStr: string) {
 </template>
 
 <style scoped>
-/* Optional fade-in effect */
 .fade-in { animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>

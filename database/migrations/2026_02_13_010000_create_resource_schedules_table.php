@@ -10,34 +10,31 @@ return new class extends Migration
     {
         Schema::create('resource_schedules', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('action_batch_id')->unsigned()->nullable(); //nullable for now since wala pang action batches na coded
-            $table->string('batch_name', 10); //added, originally not in bd and db tables. will add to those excel files.
+            $table->bigInteger('action_batch_id')->unsigned();
             $table->tinyInteger('target_location'); // 1-Manila, 2-Cebu
             $table->tinyInteger('target_trainees');
             $table->string('deployment_date', 10);
-            $table->json('wbs')->nullable();
-            $table->string('contact_schools_startdate', 10)->nullable();
-            $table->string('contact_schools_enddate', 10)->nullable();
-            $table->string('source_testing_startdate', 10)->nullable();
-            $table->string('source_testing_enddate', 10)->nullable();
-            $table->string('initial_interviews_startdate', 10)->nullable();
-            $table->string('initial_interviews_enddate', 10)->nullable();
-            $table->string('final_interviews_startdate', 10)->nullable();
-            $table->string('final_interviews_enddate', 10)->nullable();
-            $table->string('contract_offers_startdate', 10)->nullable();
-            $table->string('contract_offers_enddate', 10)->nullable();
-            $table->string('requirements_startdate', 10)->nullable();
-            $table->string('requirements_enddate', 10)->nullable();
-            $table->string('training_startdate', 10)->nullable();
-            $table->string('training_enddate', 10)->nullable();
-            $table->string('remarks', 1024)->nullable();
+            $table->string('contact_schools_startdate', 10);
+            $table->string('contact_schools_enddate', 10);
+            $table->string('source_testing_startdate', 10);
+            $table->string('source_testing_enddate', 10);
+            $table->string('initial_interviews_startdate', 10);
+            $table->string('initial_interviews_enddate', 10);
+            $table->string('final_interviews_startdate', 10);
+            $table->string('final_interviews_enddate', 10);
+            $table->string('contract_offers_startdate', 10);
+            $table->string('contract_offers_enddate', 10);
+            $table->string('requirements_startdate', 10);
+            $table->string('requirements_enddate', 10);
+            $table->string('training_startdate', 10);
+            $table->string('training_enddate', 10);
+            $table->string('remarks', 1024);
+            $table->bigInteger('created_by')->unsigned();
+            $table->dateTime('created_time');
+            $table->bigInteger('updated_by')->unsigned();
+            $table->dateTime('updated_time');
 
-            $table->bigInteger('created_by')->unsigned()->nullable();
-            $table->dateTime('created_time')->nullable();
-            $table->bigInteger('updated_by')->unsigned()->nullable();
-            $table->dateTime('updated_time')->nullable();           
-            
-            // foreign key references for users and action_batch tables in the future
+            // Optional: foreign key references if you have users and action_batch tables
             // $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
             // $table->foreign('updated_by')->references('id')->on('users')->onDelete('cascade');
             // $table->foreign('action_batch_id')->references('id')->on('action_batches')->onDelete('cascade');

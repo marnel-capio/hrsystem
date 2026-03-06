@@ -2,46 +2,34 @@
 
 namespace App\Rules;
 
-use App\Models\User;
 use Illuminate\Contracts\Validation\Rule;
+use App\Models\User;
+use App\Models\Log;
 
 class AccountStatus implements Rule
 {
-    private $message;
-    /**
-     * Create a new rule instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    private string $message;
+    private string $action;
+    private string $module;
+
+    public function __construct(string $action = 'log in', string $module = 'Users')
     {
-        //
+        $this->action = $action;
+        $this->module = $module;
     }
 
-    /**
-     * Determine if the validation rule passes.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
-     */
     public function passes($attribute, $value)
     {
-        $user = User::where('email_address', $value)->where('active_status', 1)->first();
+        $user = User::findByEmail($value);
 
-        if(!$user['active_status']){
-            // $this->message = <input message>
+        if ($user && $user->active_status == 0) {
+            $this->message = config('errors.account_inactive.errorMessage');
             return false;
-        }else{
-            return true;
         }
-    }  
 
-    /**
-     * Get the validation error message.
-     *
-     * @return string
-     */
+        return true;
+    }
+
     public function message()
     {
         return $this->message;
