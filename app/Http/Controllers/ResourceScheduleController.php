@@ -135,10 +135,19 @@ class ResourceScheduleController extends Controller
     // Map action batch name
     $batchName = optional($schedule->actionBatch)->action_batch ?? 'Unknown';
 
+    $prevBatchName = null;
+
+    if ($schedule->prev_batch_id) {
+        $prevBatchName = DB::table('action_batches')
+            ->where('id', $schedule->prev_batch_id)
+            ->value('action_batch');
+    }
+
     return inertia('action/schedules/ResourceScheduleDetails', [
         'schedule' => [
             'id' => $schedule->id,
             'batch_name' => $batchName,
+            'prev_batch_name' => $prevBatchName,
             'target_location' => $schedule->target_location == 1 ? 'Manila' : 'Cebu',
             'target_trainees' => $schedule->target_trainees,
             'deployment_date' => $schedule->deployment_date,

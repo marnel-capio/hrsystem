@@ -14,6 +14,7 @@ const props = defineProps<{
   schedule: {
     id: number;
     batch_name: string;
+    prev_batch_name?: string;
     target_location: string;
     target_trainees: number;
     deployment_date: string;
@@ -365,7 +366,6 @@ function saveAllEdits() {
       </div>
 
 <!-- ROW 2: RECRUITMENT PROJECTION -->
-<!-- TODO: Connect to Action Batches data when feature is implemented -->
 <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
     <h2 class="text-lg font-bold mb-4">Recruitment Projection</h2>
 
@@ -376,7 +376,7 @@ function saveAllEdits() {
                 <tr class="bg-zinc-100 dark:bg-zinc-800 text-center font-bold">
                     <th rowspan="2" class="border px-3 py-2">Stage</th>
                     <th colspan="2" class="border px-3 py-2">{{ schedule.batch_name }} (Actual)</th>
-                    <th colspan="2" class="border px-3 py-2">Next Batch (Plan)</th>
+                    <th colspan="2" class="border px-3 py-2">{{ schedule.prev_batch_name || 'No Previous Batch' }} (Plan)</th>
                 </tr>
                 <!-- Second row: sub-columns -->
                 <tr class="bg-zinc-50 dark:bg-zinc-700 text-center font-semibold">
@@ -457,7 +457,7 @@ function saveAllEdits() {
     
     <!-- Placeholder note -->
     <p class="text-xs text-zinc-500 mt-4 text-center">
-        <em>Recruitment data will be populated from Action Batches when available.</em>
+        <em>Recruitment data will be populated from Action Applications when available.</em>
     </p>
 </div>
 
