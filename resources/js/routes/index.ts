@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../wayfinder'
 /**
-* @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+ * @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
  * @route '/login'
  */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ login.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+ * @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
  * @route '/login'
  */
 login.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ login.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+ * @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
  * @route '/login'
  */
 login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -33,8 +33,8 @@ login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+ * @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
  * @route '/login'
  */
 login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -43,8 +43,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
-* @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+ * @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
  * @route '/login'
  */
     const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -53,8 +53,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+ * @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
  * @route '/login'
  */
         loginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -62,8 +62,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
+ * @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
  * @route '/login'
  */
         loginForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

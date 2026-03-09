@@ -70,6 +70,18 @@ class CheckUserPermission
             }
         }
 
+
+        //ACTION BATCH
+        if (in_array($routeName, ['action.batches.index', 'action.batches.register', 'action.batches.store', 'action.batches.show'])) {
+
+            // Only permission 1, 2, or 3 are allowed for these routes
+            if (in_array($permission, [1, 2])) {
+                return $next($request);  // Allow the request to proceed
+            }
+
+            return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Fallback

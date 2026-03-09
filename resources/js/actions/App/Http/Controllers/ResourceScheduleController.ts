@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:22
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::index
+ * @see app/Http/Controllers/ResourceScheduleController.php:11
+ * @route '/action/schedules'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -11,31 +11,31 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/action/batches',
+    url: '/action/schedules',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:22
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::index
+ * @see app/Http/Controllers/ResourceScheduleController.php:11
+ * @route '/action/schedules'
  */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:22
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::index
+ * @see app/Http/Controllers/ResourceScheduleController.php:11
+ * @route '/action/schedules'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:22
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::index
+ * @see app/Http/Controllers/ResourceScheduleController.php:11
+ * @route '/action/schedules'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
@@ -43,9 +43,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:22
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::index
+ * @see app/Http/Controllers/ResourceScheduleController.php:11
+ * @route '/action/schedules'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: index.url(options),
@@ -53,18 +53,18 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:22
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::index
+ * @see app/Http/Controllers/ResourceScheduleController.php:11
+ * @route '/action/schedules'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\ActionBatchController::index
- * @see app/Http/Controllers/ActionBatchController.php:22
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::index
+ * @see app/Http/Controllers/ResourceScheduleController.php:11
+ * @route '/action/schedules'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url({
@@ -78,9 +78,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     index.form = indexForm
 /**
-* @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:38
- * @route '/action/batches/register'
+* @see \App\Http\Controllers\ResourceScheduleController::create
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/register'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
@@ -89,31 +89,31 @@ export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 create.definition = {
     methods: ["get","head"],
-    url: '/action/batches/register',
+    url: '/action/schedules/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:38
- * @route '/action/batches/register'
+* @see \App\Http\Controllers\ResourceScheduleController::create
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/register'
  */
 create.url = (options?: RouteQueryOptions) => {
     return create.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:38
- * @route '/action/batches/register'
+* @see \App\Http\Controllers\ResourceScheduleController::create
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/register'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:38
- * @route '/action/batches/register'
+* @see \App\Http\Controllers\ResourceScheduleController::create
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/register'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(options),
@@ -121,9 +121,9 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
-* @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:38
- * @route '/action/batches/register'
+* @see \App\Http\Controllers\ResourceScheduleController::create
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/register'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: create.url(options),
@@ -131,18 +131,18 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:38
- * @route '/action/batches/register'
+* @see \App\Http\Controllers\ResourceScheduleController::create
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/register'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: create.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\ActionBatchController::create
- * @see app/Http/Controllers/ActionBatchController.php:38
- * @route '/action/batches/register'
+* @see \App\Http\Controllers\ResourceScheduleController::create
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/register'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: create.url({
@@ -156,9 +156,9 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     create.form = createForm
 /**
-* @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:43
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::store
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
@@ -167,22 +167,22 @@ export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 store.definition = {
     methods: ["post"],
-    url: '/action/batches',
+    url: '/action/schedules',
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:43
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::store
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules'
  */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:43
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::store
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
@@ -190,9 +190,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
     /**
-* @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:43
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::store
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: store.url(options),
@@ -200,9 +200,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\ActionBatchController::store
- * @see app/Http/Controllers/ActionBatchController.php:43
- * @route '/action/batches'
+* @see \App\Http\Controllers\ResourceScheduleController::store
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: store.url(options),
@@ -211,9 +211,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     
     store.form = storeForm
 /**
-* @see \App\Http\Controllers\ActionBatchController::show
- * @see app/Http/Controllers/ActionBatchController.php:72
- * @route '/action/batches/{id}'
+* @see \App\Http\Controllers\ResourceScheduleController::show
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/{id}'
  */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
@@ -222,13 +222,13 @@ export const show = (args: { id: string | number } | [id: string | number ] | st
 
 show.definition = {
     methods: ["get","head"],
-    url: '/action/batches/{id}',
+    url: '/action/schedules/{id}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::show
- * @see app/Http/Controllers/ActionBatchController.php:72
- * @route '/action/batches/{id}'
+* @see \App\Http\Controllers\ResourceScheduleController::show
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/{id}'
  */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -254,18 +254,18 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 }
 
 /**
-* @see \App\Http\Controllers\ActionBatchController::show
- * @see app/Http/Controllers/ActionBatchController.php:72
- * @route '/action/batches/{id}'
+* @see \App\Http\Controllers\ResourceScheduleController::show
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/{id}'
  */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\ActionBatchController::show
- * @see app/Http/Controllers/ActionBatchController.php:72
- * @route '/action/batches/{id}'
+* @see \App\Http\Controllers\ResourceScheduleController::show
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/{id}'
  */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
@@ -273,9 +273,9 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 })
 
     /**
-* @see \App\Http\Controllers\ActionBatchController::show
- * @see app/Http/Controllers/ActionBatchController.php:72
- * @route '/action/batches/{id}'
+* @see \App\Http\Controllers\ResourceScheduleController::show
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/{id}'
  */
     const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: show.url(args, options),
@@ -283,18 +283,18 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     })
 
             /**
-* @see \App\Http\Controllers\ActionBatchController::show
- * @see app/Http/Controllers/ActionBatchController.php:72
- * @route '/action/batches/{id}'
+* @see \App\Http\Controllers\ResourceScheduleController::show
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/{id}'
  */
         showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\ActionBatchController::show
- * @see app/Http/Controllers/ActionBatchController.php:72
- * @route '/action/batches/{id}'
+* @see \App\Http\Controllers\ResourceScheduleController::show
+ * @see app/Http/Controllers/ResourceScheduleController.php:0
+ * @route '/action/schedules/{id}'
  */
         showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, {
@@ -307,6 +307,6 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
     
     show.form = showForm
-const ActionBatchController = { index, create, store, show }
+const ResourceScheduleController = { index, create, store, show }
 
-export default ActionBatchController
+export default ResourceScheduleController

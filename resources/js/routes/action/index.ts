@@ -1,6 +1,8 @@
+import schedules from './schedules'
 import batches from './batches'
 const action = {
-    batches: Object.assign(batches, batches),
+    schedules: Object.assign(schedules, schedules),
+batches: Object.assign(batches, batches),
 }
 
 export default action
