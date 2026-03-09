@@ -105,4 +105,56 @@ return [
         'errorMessage' => 'The contact number must be exactly 11 digits.',
     ],
 
+
+
+    //ACTION BATCH
+    'action_batch_required' => [
+        'errorCode' => 'ACTION_BATCH_REQUIRED',
+        'errorMessage' => 'This field is required.',
+    ],
+
+    'action_batch_max' => [
+        'errorCode' => 'ACTION_BATCH_MAX',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
+    ],
+
+    'action_batch_unique' => [
+        'errorCode' => 'ACTION_BATCH_UNIQUE',
+        'errorMessage' => 'Action Batch already exists.',
+    ],
+
+    'target_trainees_required' => [
+        'errorCode' => 'TARGET_TRAINEES_REQUIRED',
+        'errorMessage' => 'This field is required.',
+    ],
+
+    'target_trainees_max' => [
+        'errorCode' => 'TARGET_TRAINEES_MAX',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
+    ],
+
+    'target_date_required' => [
+        'errorCode' => 'TARGET_DATE_REQUIRED',
+        'errorMessage' => 'This field is required.',
+    ],
+
+    'target_date_after_or_equal' => [
+        'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
+        'errorMessage' => 'The selected date must be in the future.',
+    ],
+
+    'remarks_max' => [
+        'errorCode' => 'REMARKS_MAX',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
+    ],
+
+    'action_batch_create_success' => [
+    'messageCode' => 'ACTION_BATCH_CREATE_SUCCESS',
+    'message' => 'Record created successfully.',
+    ],
+    
+    'action_batch_create_error' => [
+        'errorCode' => 'ACTION_BATCH_CREATE_ERROR',
+        'errorMessage' => 'An error occurred while creating the record. Please try again.',
+    ],
 ];

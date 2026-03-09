@@ -79,25 +79,12 @@ Route::middleware(['auth'])->group(function () {
     // ------------------------
     // Actions
     // ------------------------
-    Route::prefix('action')->group(function () {
-
-        Route::get('/', fn () => Inertia::render('action/Action'))
-            ->name('action.index');
-
-        Route::get('/applications', fn () => Inertia::render('action/Applications'))
-            ->name('action.applications');
-
-        // Batches
-        Route::get('/batches', [ActionBatchController::class, 'index'])
-            ->name('action.list');
-
-        Route::get('/batches/register', [ActionBatchController::class, 'create'])
-            ->name('action.create');
-
-        Route::get('/batches/{id}', [ActionBatchController::class, 'show'])
-            ->name('action.show');
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list');
+        Route::get('/action/batches/register', [ActionBatchController::class, 'create'])->name('action.batches.register');
+        Route::post('/action/batches', [ActionBatchController::class, 'store'])->name('action.batches.store');
+        Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])->name('action.batches.show');
     });
-
 
 // ------------------------
 // Include additional routes
