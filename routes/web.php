@@ -74,7 +74,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/schedules/register', [ResourceScheduleController::class, 'create'])->name('action.schedules.register');
         Route::post('/action/schedules', [ResourceScheduleController::class, 'store'])->name('action.schedules.store');
         Route::get('/action/schedules/{id}', [ResourceScheduleController::class, 'show'])->name('action.schedules.show');
-
+    });
 
     // ------------------------
     // Actions
@@ -97,7 +97,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/batches/{id}', [ActionBatchController::class, 'show'])
             ->name('action.show');
     });
-});
+
 
 // ------------------------
 // Include additional routes

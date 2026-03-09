@@ -4,6 +4,12 @@
 
 return [
 
+    // Universal message for field max length exceeded
+        'max_length_exceeded' => [
+        'errorCode' => 'MAX_LENGTH_EXCEEDED',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
+    ],
+
     // Universal message for all transaction failed
     'transaction_failed' => [
         'errorCode' => 'TRANSACTION_FAILED',
@@ -73,10 +79,6 @@ return [
     ],
 
     // FOR USER REGISTRATION
-    'max_length_exceeded' => [
-        'errorCode' => 'MAX_LENGTH_EXCEEDED',
-        'errorMessage' => 'This field exceeds the maximum allowed length.',
-    ],
 
     'password_complexity_failed' => [
         'errorCode' => 'PASSWORD_COMPLEXITY_FAILED',
