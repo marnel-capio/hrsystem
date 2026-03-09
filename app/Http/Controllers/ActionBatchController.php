@@ -26,12 +26,14 @@ class ActionBatchController extends Controller
         $batches = ActionBatchModel::getPaginated($search, perPage: 20);
         $batchesTotal = ActionBatchModel::count();
 
+        $userPermissions = auth()->user()->permissions;  
         return Inertia::render('action/batches/ActionBatchList', [
             'batches' => $batches,
             'filters' => [
                 'search' => $search,
             ],
             'batches_total' => $batchesTotal,
+            'user_permissions' => $userPermissions, 
         ]);
     }
  
@@ -41,31 +43,31 @@ class ActionBatchController extends Controller
     }
   
     public function store(ActionBatchRequest $request)
-{
-    try {
- 
-        DB::beginTransaction();
- 
-        // SIMULATE ERROR
-        //throw new \Exception("Test error");
- 
-        $batch = $this->actionBatchService->create($request->validated(), $request);
- 
-        DB::commit();
- 
-        return redirect()
-            ->route('action.batches.show', ['id' => $batch->id])
-            ->with('success', config('errors.action_batch_create_success.message'));
- 
-    } catch (\Exception $e) {
- 
-        DB::rollBack();
- 
-        return back()->withErrors([
-            'error' => config('errors.action_batch_create_error.errorMessage')
-        ]);
+    {
+        try {
+    
+            DB::beginTransaction();
+    
+            // SIMULATE ERROR
+            //throw new \Exception("Test error");
+    
+            $batch = $this->actionBatchService->create($request->validated(), $request);
+    
+            DB::commit();
+    
+            return redirect()
+                ->route('action.batches.show', ['id' => $batch->id])
+                ->with('success', config('errors.action_batch_create_success.message'));
+    
+        } catch (\Exception $e) {
+    
+            DB::rollBack();
+    
+            return back()->withErrors([
+                'error' => config('errors.action_batch_create_error.errorMessage')
+            ]);
+        }
     }
-}
  
  
  
