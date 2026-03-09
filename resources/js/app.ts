@@ -6,6 +6,7 @@ import '../css/app.css';
 import { initializeTheme } from './composables/useAppearance';
 import '../css/auth.css'
 import '../css/ats.css'
+import '../css/notifs.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 

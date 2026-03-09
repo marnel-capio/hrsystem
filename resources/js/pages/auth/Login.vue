@@ -57,12 +57,7 @@ const submit = () => {
       <form @submit.prevent="submit">
         <div class="form-group">
           <label>Email</label>
-          <input
-            v-model="form.email_address"
-            type="text"
-            placeholder="Enter your email"
-            autofocus
-          />
+          <input v-model="form.email_address" type="text" placeholder="Enter your email" autofocus />
           <span v-if="form.errors.email_address" class="error">
             {{ form.errors.email_address }}
           </span>
@@ -70,11 +65,7 @@ const submit = () => {
 
         <div class="form-group">
           <label>Password</label>
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="Enter your password"
-          />
+          <input v-model="form.password" type="password" placeholder="Enter your password" />
           <span v-if="form.errors.password" class="error">
             {{ form.errors.password }}
           </span>
@@ -89,81 +80,14 @@ const submit = () => {
     </div>
 
     <!-- Toast / Alert full-width at top -->
-<div v-if="showSuccess" class="full-width-alert">
-  <div class="alert-success-banner">
-    <div class="alert-body">{{ successMessage }}</div>
-    <button type="button" class="close-btn" @click="showSuccess = false">×</button>
-  </div>
-</div>
+    <div v-if="showSuccess" class="full-width-alert">
+            <div class="alert-banner alert-success-banner">
+                <div class="alert-body">{{ successMessage }}</div>
+                <button type="button" class="close-btn" @click="showSuccess = false">×</button>
+            </div>
+        </div>
   </div>
 </template>
 
 <style scoped>
-/* Full-width top alert */
-.full-width-alert {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  z-index: 1055;
-  display: flex;
-  justify-content: center;
-  pointer-events: none; /* doesn’t block page clicks */
-}
-
-/* Banner styling – slimmer version */
-.alert-success-banner {
-  background-color: #28a745; /* green success */
-  color: #fff;
-  padding: 0.4rem 1rem; /* slimmer vertical padding */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 100%;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  pointer-events: auto; /* allow button click */
-  animation: slideDown 0.4s ease-out;
-  font-size: 0.95rem; /* slightly smaller text */
-}
-
-/* Text */
-.alert-body {
-  flex: 1;
-  font-weight: 500;
-  text-align: center;
-}
-
-/* Close button styling */
-.close-btn {
-  background-color: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: #fff;
-  font-size: 1rem; /* slightly smaller */
-  width: 28px;
-  height: 28px; /* smaller than before */
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.close-btn:hover {
-  background-color: rgba(255, 255, 255, 0.35);
-  transform: scale(1.1);
-}
-
-/* Slide-down animation */
-@keyframes slideDown {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
 </style>

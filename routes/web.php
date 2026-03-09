@@ -1,63 +1,109 @@
 <?php
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+
+use App\Http\Controllers\ActionBatchController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
-use Laravel\Fortify\Features;
-use App\Http\Controllers\ActionBatchController;
+use App\Http\Controllers\ResourceScheduleController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-// Login page
-Route::get('/login', [AuthController::class, 'showLogin'])
-    ->name('login')
-    ->middleware('guest');
+/**
+ * Web Routes
+ */
+
+// ------------------------
+// Guest Routes
+// ------------------------
 
 // Login POST
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('guest');
 
-Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
-Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
+// Forgot Password
+Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])
+    ->name('password.request');
+
+Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
+    ->name('password.email');
 
 // ------------------------
 // Authenticated Routes
 // ------------------------
-Route::middleware(['web', 'auth'])->group(function() {
-    Route::get('/', [DashboardController::class, 'index']);
+Route::middleware(['auth'])->group(function () {
 
-    // HR Dashboard
+    // Dashboard
+    Route::get('/', [DashboardController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
-        ->name('logout')
-        ->middleware('auth');
-   
-    // Action Batches Routes
-    Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list')
-        ->middleware(['auth'])
-        ->name('action.batches.list');;    
+        ->name('logout');
 
-    // For creating action batch
-    Route::get('/action/batches/register', [ActionBatchController::class, 'create'])
-        ->middleware(['auth'])
-        ->name('action.batches.create');
-    
-    // Store action batch
-    Route::post('/action/batches/store', [ActionBatchController::class, 'store'])->name('action.batches.store');
+    // ------------------------
+    // User Management (Permissions 1 & 2 Only)
+    // ------------------------
+    Route::middleware(['check.permission'])->group(function () {
 
-    Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])
-        ->middleware(['auth'])
-        ->name('action.batches.show');
+        // Users list
+        Route::get('/user', fn () => Inertia::render('user/Index'))
+            ->name('user.index');
 
-    Route::get('/action/batches/{id}/edit', [ActionBatchController::class, 'edit'])
-        ->middleware(['auth'])
-        ->name('action.batches.edit');
+        // Register new user page
+        Route::get('/user/register', [UserController::class, 'create'])
+            ->name('user.register');
 
-    Route::post('/action/batches/{id}/update', [ActionBatchController::class, 'update'])
-        ->middleware(['auth'])
-        ->name('action.batches.update');
+        // Store new user
+        Route::post('/user', [UserController::class, 'store'])
+            ->name('user.store');
+
+        // Show user detail
+        Route::get('/user/{id}', [UserController::class, 'show'])
+            ->name('user.show');
+    });
+
+    // ------------------------
+    // Action Schedules
+    // ------------------------
+    Route::prefix('action/schedules')->group(function () {
+        Route::get('/', function () {
+            $user = auth()->user();
+
+            if (! in_array((int) $user->permissions, [1, 2, 3])) {
+                return redirect()->route('dashboard')
+                    ->with('error', 'Access denied: You are not authorized to view this page.');
+            }
+
+            return app(ResourceScheduleController::class)->index();
+        })->name('action.schedules.index');
+    });
+
+    // ------------------------
+    // Actions
+    // ------------------------
+    Route::prefix('action')->group(function () {
+
+        Route::get('/', fn () => Inertia::render('action/Action'))
+            ->name('action.index');
+
+        Route::get('/applications', fn () => Inertia::render('action/Applications'))
+            ->name('action.applications');
+
+        // Batches
+        Route::get('/batches', [ActionBatchController::class, 'index'])
+            ->name('action.list');
+
+        Route::get('/batches/register', [ActionBatchController::class, 'create'])
+            ->name('action.create');
+
+        Route::get('/batches/{id}', [ActionBatchController::class, 'show'])
+            ->name('action.show');
+    });
 });
 
+// ------------------------
+// Include additional routes
+// ------------------------
 require __DIR__.'/settings.php';

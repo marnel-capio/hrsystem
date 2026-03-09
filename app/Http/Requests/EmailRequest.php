@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\AWSEmailAddress;
 use App\Rules\AccountStatus;
+use App\Rules\AWSEmailAddress;
+use Illuminate\Foundation\Http\FormRequest;
 
 class EmailRequest extends FormRequest
 {
@@ -20,7 +20,8 @@ class EmailRequest extends FormRequest
                 'required',
                 'email',
                 'max:80',
-                new AWSEmailAddress('Users'),
+                new AWSEmailAddress,
+                'exists:users,email_address',
                 new AccountStatus('send reset password link'),
             ],
         ];
@@ -32,6 +33,7 @@ class EmailRequest extends FormRequest
             'email_address.required' => 'This field is required.',
             'email_address.email' => 'The email address must be a valid email address.',
             'email_address.max' => 'The email address must not be greater than 80 characters.',
+            'email_address.exists' => 'The email address is not registered.',
         ];
     }
 }

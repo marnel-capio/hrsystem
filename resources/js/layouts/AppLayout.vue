@@ -47,8 +47,4 @@ const flash = computed(() => page.props.flash)
   overflow-x: hidden;
 }
 </style>
-<<<<<<< HEAD
  
-=======
- 
->>>>>>> feature/action/action-batch/register
