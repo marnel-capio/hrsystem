@@ -80,14 +80,12 @@ Route::middleware(['auth'])->group(function () {
     // ------------------------
     // Actions
     // ------------------------
-    Route::get('/action/batches', action: [ActionBatchController::class, 'index'])->name('action.batches.index');
-
-    Route::middleware(['check.permission'])->group(function () {
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list');
         Route::get('/action/batches/register', [ActionBatchController::class, 'create'])->name('action.batches.register');
         Route::post('/action/batches', [ActionBatchController::class, 'store'])->name('action.batches.store');
         Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])->name('action.batches.show');
-
-});
+    });
 
 // ------------------------
 // Include additional routes

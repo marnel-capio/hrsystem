@@ -8,7 +8,7 @@ use Inertia\Inertia;
 use App\Services\ActionBatchService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 
 class ActionBatchController extends Controller
 {
@@ -21,19 +21,22 @@ class ActionBatchController extends Controller
 
     public function index(Request $request)
     {
+        $user = Auth::user();
+
+        // Remove the permission check from here
+
         $search = $request->input('search');
 
         $batches = ActionBatchModel::getPaginated($search, perPage: 20);
         $batchesTotal = ActionBatchModel::count();
 
-        $userPermissions = auth()->user()->permissions;  
         return Inertia::render('action/batches/ActionBatchList', [
             'batches' => $batches,
             'filters' => [
                 'search' => $search,
             ],
             'batches_total' => $batchesTotal,
-            'user_permissions' => $userPermissions, 
+            'user_permissions' => $user->permissions,
         ]);
     }
  
