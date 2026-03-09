@@ -66,13 +66,13 @@ class UpdateUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'required' => 'This field is required.',
-            'first_name.max' => 'This field exceeds the maximum allowed length.',
-            'last_name.max' => 'This field exceeds the maximum allowed length.',
-            'middle_name.max' => 'This field exceeds the maximum allowed length.',
-            'address.max' => 'This field exceeds the maximum allowed length.',
-            'email_address.unique' => 'This email address is already registered.',  
-            'password.confirmed' => 'Passwords do not match.',
+            'required' => config('errors.field_required.errorMessage'),
+            'first_name.max' => config('errors.max_length_exceeded.errorMessage'),
+            'last_name.max' => config('errors.max_length_exceeded.errorMessage'),
+            'middle_name.max' => config('errors.max_length_exceeded.errorMessage'),
+            'address.max' => config('errors.max_length_exceeded.errorMessage'),
+            'email_address.unique' => config('errors.email_taken.errorMessage'),
+            'password.confirmed' => config('errors.password_mismatch.errorMessage'),
         ];
     }
 }

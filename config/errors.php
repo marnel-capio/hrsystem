@@ -10,6 +10,16 @@ return [
         'errorMessage' => 'An error occurred while creating the record. Please try again.',
     ],
 
+    'email_taken' => [
+    'errorCode' => 'EMAIL_TAKEN',
+    'errorMessage' => 'This email address is already registered.',
+    ],
+
+    'password_mismatch' => [
+        'errorCode' => 'PASSWORD_MISMATCH',
+        'errorMessage' => 'Passwords do not match.',
+    ],
+
     // Unauthorized access
     'unauthorized' => [
         'errorCode' => 'UNAUTHORIZED',
