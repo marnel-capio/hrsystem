@@ -104,9 +104,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()
-                ->route('user.index')
-                ->with('error', config('errors.transaction_failed.errorMessage'));
+            return Inertia::back()->with('error', config('errors.update_failed.errorMessage'));
         }
     }
 }

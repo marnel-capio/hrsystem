@@ -74,7 +74,7 @@ onMounted(() => {
                     <p>{{ user.position_label }}</p>
                 </div>
 
-                <div class="detail-row">
+                <div v-if="user.permissions === 1 || user.permissions === 2" class="detail-row">
                     <label>Permissions</label>
                     <p>{{ user.permission_label }}</p>
                 </div>
@@ -147,7 +147,7 @@ onMounted(() => {
     padding: 2rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     max-width: 700px;
-    margin: 0 auto;  
+    margin: 0 auto;
 }
 
 /* =========================

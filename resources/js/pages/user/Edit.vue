@@ -1,51 +1,46 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Link, useForm, usePage } from '@inertiajs/vue3'
-import { ref, onMounted } from 'vue'
-
-// Minimal interface for logged-in user
-interface AuthUser {
-    id: number
-    permissions: number
-}
+import { ref, watch } from 'vue'
 
 // Props
 const props = defineProps<{
     user: any
-    flash?: {
-        success?: string
-        error?: string
-    }
     positions: Record<number, string>
     permissions: Record<number, string>
 }>()
 
-// Toast state
+// ----- Toasts -----
+const page = usePage()
 const showSuccess = ref(false)
 const showError = ref(false)
 const successMessage = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
 
-onMounted(() => {
-    if (props.flash?.success) {
-        successMessage.value = props.flash.success
-        showSuccess.value = true
-        setTimeout(() => (showSuccess.value = false), 5000)
-    }
-    if (props.flash?.error) {
-        errorMessage.value = props.flash.error
-        showError.value = true
-        setTimeout(() => (showError.value = false), 10000)
-    }
-})
+// Watch for flash messages and display toast
+watch(
+    () => (page.props as any).flash,
+    (flash) => {
+        if (flash?.success) {
+            successMessage.value = flash.success
+            showSuccess.value = true
+            setTimeout(() => (showSuccess.value = false), 5000)
+        }
+        if (flash?.error) {
+            errorMessage.value = flash.error
+            showError.value = true
+            setTimeout(() => (showError.value = false), 10000)
+        }
+    },
+    { immediate: true }
+)
 
 // ----- Logged-in user -----
-const page = usePage()
 const loggedInUser = (page.props as any).auth.user
 const isOwnAccount = loggedInUser.id === props.user.id
 const loggedInPermissions = Number(loggedInUser.permissions)
 
-// Permission logic using constants from backend
+// ----- Permissions logic -----
 const canEditAll = (page.props as any).full_edit_permissions.includes(loggedInPermissions)
 const limitedEdit = (page.props as any).limited_edit_permissions.includes(loggedInPermissions)
 
@@ -65,32 +60,18 @@ const form = useForm({
 })
 
 const submit = () => {
-    form.put(`/user/${props.user.id}/update`, {
-        preserveScroll: true,
-    })
+    form.put(`/user/${props.user.id}/update`, { preserveScroll: true })
 }
 
 // ----- Field readonly helpers -----
+const passwordReadonly = () => !isOwnAccount
 
-// Password readonly only for other users
-const passwordReadonly = () => {
-    return !isOwnAccount
-}
-
-// Email, Position, Permissions, Status readonly logic
 const fieldReadonly = (field: 'email' | 'position' | 'permissions' | 'status') => {
-    if (canEditAll) {
-        // Admins (1,2) can edit all except password of others
-        return false
-    }
-    if (limitedEdit) {
-        // Limited users cannot edit these fields at all
-        return true
-    }
+    if (canEditAll) return false
+    if (limitedEdit) return true
     return false
 }
 
-// Personal fields readonly for limited users when editing others
 const personalFieldReadonly = () => {
     if (canEditAll) return false
     if (limitedEdit) return !isOwnAccount
@@ -114,17 +95,14 @@ const personalFieldReadonly = () => {
             </div>
         </div>
 
+        <!-- EDIT FORM -->
         <div class="page-content">
-            <!-- PAGE HEADER -->
             <div class="page-header">
-                <h2 class="page-title">Edit User</h2>
+                <h2 class="page-title">Edit User Details</h2>
             </div>
 
-            <!-- EDIT FORM CARD -->
             <div class="detail-card">
                 <form @submit.prevent="submit">
-
-                    <!-- Existing fields -->
                     <!-- First Name -->
                     <div class="detail-row">
                         <label>First Name</label>
@@ -154,12 +132,10 @@ const personalFieldReadonly = () => {
                         <label>Email Address</label>
                         <input type="text" v-model="form.email_address" class="input-field"
                             :readonly="fieldReadonly('email')" />
-                        <span v-if="form.errors.email_address" class="text-red-600 text-sm">
-                            {{ form.errors.email_address }}
-                        </span>
+                        <span v-if="form.errors.email_address" class="error">{{ form.errors.email_address }}</span>
                     </div>
 
-                    <!-- Contact Number -->
+                    <!-- Contact & Address -->
                     <div class="detail-row">
                         <label>Contact Number</label>
                         <input type="text" v-model="form.contact_no" class="input-field"
@@ -167,15 +143,14 @@ const personalFieldReadonly = () => {
                         <span v-if="form.errors.contact_no" class="error">{{ form.errors.contact_no }}</span>
                     </div>
 
-                    <!-- Address -->
                     <div class="detail-row">
                         <label>Address</label>
                         <input type="text" v-model="form.address" class="input-field"
                             :readonly="personalFieldReadonly()" />
-                        <span v-if="form.errors.contact_no" class="error">{{ form.errors.address }}</span>
+                        <span v-if="form.errors.address" class="error">{{ form.errors.address }}</span>
                     </div>
 
-                    <!-- Position -->
+                    <!-- Position & Permissions -->
                     <div class="detail-row">
                         <label>Position</label>
                         <select v-model="form.position" class="input-field" :disabled="fieldReadonly('position')">
@@ -183,8 +158,7 @@ const personalFieldReadonly = () => {
                         </select>
                     </div>
 
-                    <!-- Permissions -->
-                    <div class="detail-row">
+                    <div v-if="user.permissions === 1 || user.permissions === 2" class="detail-row">
                         <label>Permissions</label>
                         <select v-model="form.permissions" class="input-field" :disabled="fieldReadonly('permissions')">
                             <option v-for="(label, key) in props.permissions" :key="key" :value="key">{{ label }}
@@ -202,27 +176,24 @@ const personalFieldReadonly = () => {
                     </div>
 
                     <!-- Password -->
-                    <div class="detail-row">
+                    <div v-if="isOwnAccount" class="detail-row">
                         <label>Password <span class="text-muted">(Leave blank to keep current)</span></label>
-                        <input type="password" v-model="form.password" class="input-field"
-                            :readonly="passwordReadonly()" />
+                        <input type="password" v-model="form.password" class="input-field" />
                         <span v-if="form.errors.password" class="error">{{ form.errors.password }}</span>
                     </div>
 
-                    <div class="detail-row">
+                    <div v-if="isOwnAccount" class="detail-row">
                         <label>Confirm Password</label>
-                        <input type="password" v-model="form.password_confirmation" class="input-field"
-                            :readonly="passwordReadonly()" />
-                        <span v-if="form.errors.password_confirmation" class="error">
-                            {{ form.errors.password_confirmation }}
-                        </span>
+                        <input type="password" v-model="form.password_confirmation" class="input-field" />
+                        <span v-if="form.errors.password_confirmation" class="error">{{
+                            form.errors.password_confirmation }}</span>
                     </div>
 
+                    <!-- Actions -->
                     <div class="form-actions">
                         <Link :href="`/user/${props.user.id}`" class="btn-secondary">Cancel</Link>
                         <button type="submit" :disabled="form.processing" class="btn btn-primary">Save</button>
                     </div>
-
                 </form>
             </div>
         </div>

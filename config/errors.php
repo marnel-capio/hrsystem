@@ -10,6 +10,11 @@ return [
         'errorMessage' => 'An error occurred while creating the record. Please try again.',
     ],
 
+    'update_failed' => [
+        'errorCode' => 'UPDATE_FAILED',
+        'errorMessage' => 'An error occurred while saving the record. Please try again.',
+    ],
+
     'email_taken' => [
     'errorCode' => 'EMAIL_TAKEN',
     'errorMessage' => 'This email address is already registered.',
