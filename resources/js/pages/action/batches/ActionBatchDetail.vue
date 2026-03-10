@@ -67,7 +67,7 @@ const redirectToEditPage = () => {
  
     <!-- Header -->
     <div class="flex justify-between mx-5 mb-3">
-      <h2 class="text-xl font-bold">Action Batch Detail</h2>
+      <h2 class="text-xl font-bold">ACTION Batch Detail</h2>
  
       <span
         v-if="userPermissions === 1 || userPermissions === 2"
@@ -86,7 +86,7 @@ const redirectToEditPage = () => {
  
         <div class="bg-[#2F359E] text-white rounded-xl p-6 shadow">
           <h3 class="text-lg font-bold text-center">{{ batch.action_batch }}</h3>
-          <p class="text-xs opacity-80 text-center">Action Batch Detail</p>
+          <p class="text-xs opacity-80 text-center">ACTION Batch Detail</p>
         </div>
 
          <div class="bg-white rounded-xl p-4 shadow border">

@@ -29,21 +29,21 @@ const submit = () => {
 </script>
 
 <template>
-  <Head title="Action Batch Register" />
+  <Head title="ACTION Batch Register" />
   <AppLayout :errors="page.props.errors">
     <div class="flex justify-between items-center mx-5 mb-3">
-      <h2 class="text-xl font-bold">Create Action Batch</h2>
+      <h2 class="text-xl font-bold">Create ACTION Batch</h2>
     </div>
 
     <!-- Form Fields -->
     <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
       <div class="grid grid-cols-2 gap-4">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Action Batch</label>
+          <label class="text-xs font-semibold mb-1">ACTION Batch</label>
           <input
             v-model="form.action_batch"
             @input="formatToUppercase"
-            placeholder="Action batch"
+            placeholder="ACTION batch"
             class="border p-2 rounded w-full"
           />
           <span v-if="page.props.errors?.action_batch" class="text-red-600 text-xs mt-1">

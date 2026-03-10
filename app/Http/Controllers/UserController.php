@@ -10,9 +10,36 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Config; 
 
 class UserController extends Controller
 {
+
+    public function index()
+    {
+        $users = User::select(
+            'id',
+            'first_name',
+            'middle_name',
+            'last_name',
+            'address',
+            'contact_no',
+            'email_address',
+            'position',
+            'active_status',
+            'create_time'
+        )
+            ->orderBy('create_time', 'desc')
+            ->get();
+
+        $positions = Config::get('constants.positions');
+
+        return Inertia::render('user/Index', [
+            'users' => $users,
+            'positions' => $positions,  
+        ]);
+    }
+
     public function create()
     {
         return Inertia::render('user/Register', [
@@ -64,4 +91,5 @@ class UserController extends Controller
             'user' => $user,
         ]);
     }
+    
 }
