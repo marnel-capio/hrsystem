@@ -85,4 +85,11 @@ class ResourceSchedule extends Model
             ->where('resource_schedules.id', $id)
             ->firstOrFail();
     }
+
+    public static function getRecruitmentProjection($batchId)
+{
+    return DB::table('action_applicant_applications')
+        ->where('action_batch_id', $batchId)
+        ->get();
+}
 }

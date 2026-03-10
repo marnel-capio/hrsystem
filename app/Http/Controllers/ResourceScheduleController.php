@@ -8,6 +8,11 @@ use App\Models\ResourceSchedule;
 use App\Models\Log;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Mail\ResourceScheduleNotificationMail;
+use App\Models\User;
+use App\Models\EmailHistory;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 
 class ResourceScheduleController extends Controller
 {
@@ -143,6 +148,67 @@ class ResourceScheduleController extends Controller
             ->value('action_batch');
     }
 
+    // -------------------------------
+    // RECRUITMENT PROJECTION LOGIC
+    // -------------------------------
+
+    $actualApps = ResourceSchedule::getRecruitmentProjection($schedule->action_batch_id);
+    $planApps   = $schedule->prev_batch_id
+                    ? ResourceSchedule::getRecruitmentProjection($schedule->prev_batch_id)
+                    : collect([]);
+
+    // Helper for counting
+    $counter = function($apps, $stage) {
+        return match ($stage) {
+            'examinees' => $apps->whereNotNull('exam_actual_date')->count(),
+
+            'initial_interview' => $apps->where('initial_interview_result', '!=', null)
+                                        ->where('initial_interview_result', '!=', 1)->count(),
+
+            'final_interview' => $apps->where('final_interview_result', '!=', null)
+                                      ->where('final_interview_result', '!=', 1)->count(),
+
+            'accepted' => $apps->where('job_offer_status', 3)->count(),
+
+            'declined' => $apps->where('job_offer_status', 4)->count(),
+
+            'trainees_manila' => $apps->where('trainees_from', 1)->count(),
+
+            'trainees_cebu' => $apps->where('trainees_from', 2)->count(),
+
+            default => 0,
+        };
+    };
+
+    $stages = [
+        'examinees',
+        'initial_interview',
+        'final_interview',
+        'accepted',
+        'declined',
+        'trainees_manila',
+        'trainees_cebu',
+    ];
+
+    $projection = [];
+
+    foreach ($stages as $stage) {
+        $actualNo = $counter($actualApps, $stage);
+        $planNo   = $counter($planApps, $stage);
+
+        $projection[$stage] = [
+            'actual_no' => $actualNo,
+            'actual_pct' => $schedule->target_trainees > 0
+                ? round(($actualNo / $schedule->target_trainees) * 100, 2)
+                : 0,
+
+            'plan_no' => $planNo,
+            'plan_pct' => $schedule->target_trainees > 0
+                ? round(($planNo / $schedule->target_trainees) * 100, 2)
+                : 0,
+        ];
+    }
+
     return inertia('action/schedules/ResourceScheduleDetails', [
         'schedule' => [
             'id' => $schedule->id,
@@ -163,52 +229,137 @@ class ResourceScheduleController extends Controller
             'created_time' => $schedule->created_time,
             'updated_by' => $schedule->updated_by,
             'updated_time' => $schedule->updated_time,
-        ]
+        ],
+        'projection' => $projection
     ]);
 }
 
-public function edit($id)
-{
-    $schedule = ResourceSchedule::getWithActionBatch($id); // your existing method
+    public function edit($id)
+    {
+        $schedule = ResourceSchedule::getWithActionBatch($id);
 
-    $newBatches = ResourceSchedule::getActionBatches(true);   // exclude scheduled batches
-    $prevBatches = ResourceSchedule::getActionBatches(false); // only scheduled batches
+        $newBatches = ResourceSchedule::getActionBatches(true);   // exclude scheduled batches
+        $prevBatches = ResourceSchedule::getActionBatches(false); // only scheduled batches
 
-    return inertia('action/schedules/ResourceScheduleEdit', [
-        'schedule' => $schedule,
-        'newBatches' => $newBatches,
-        'prevBatches' => $prevBatches,
-        'errorMessages' => config('errors', []),
-    ]);
-}
+        // Format data to match what the Vue component expects
+        $formattedSchedule = [
+            'id' => $schedule->id,
+            'action_batch_id' => $schedule->action_batch_id,
+            'prev_batch_id' => $schedule->prev_batch_id,
+            'target_location' => $schedule->target_location == 1 ? 'Manila' : 'Cebu', // Convert int to string for select
+            'target_trainees' => $schedule->target_trainees,
+            'deployment_date' => $schedule->deployment_date,
+            'remarks' => $schedule->remarks,
+            // Format WBS dates for the Gantt inputs
+            'contact_schools_startdate' => $schedule->contact_schools_startdate,
+            'contact_schools_enddate' => $schedule->contact_schools_enddate,
+            'source_testing_startdate' => $schedule->source_testing_startdate,
+            'source_testing_enddate' => $schedule->source_testing_enddate,
+            'initial_interviews_startdate' => $schedule->initial_interviews_startdate,
+            'initial_interviews_enddate' => $schedule->initial_interviews_enddate,
+            'final_interviews_startdate' => $schedule->final_interviews_startdate,
+            'final_interviews_enddate' => $schedule->final_interviews_enddate,
+            'contract_offers_startdate' => $schedule->contract_offers_startdate,
+            'contract_offers_enddate' => $schedule->contract_offers_enddate,
+            'requirements_startdate' => $schedule->requirements_startdate,
+            'requirements_enddate' => $schedule->requirements_enddate,
+            'training_startdate' => $schedule->training_startdate,
+            'training_enddate' => $schedule->training_enddate,
+        ];
 
-public function update(ResourceScheduleRequest $request, $id)
+        return inertia('action/schedules/ResourceScheduleEdit', [
+            'schedule' => $formattedSchedule,
+            'newBatches' => $newBatches,
+            'prevBatches' => $prevBatches,
+            'errorMessages' => config('errors', []),
+        ]);
+    }
+
+    public function update(ResourceScheduleRequest $request, $id)
+    {
+        $schedule = ResourceSchedule::findOrFail($id);
+        $validated = $request->validated();
+
+        // Convert location string back to integer for database
+        $validated['target_location'] = $validated['target_location'] === 'Manila' ? 1 : 2;
+
+        $validated['updated_by'] = auth()->id();
+        $validated['updated_time'] = now();
+
+        try {
+            DB::beginTransaction();
+
+            $schedule->update($validated);
+
+            // Log the update
+            $actionBatchName = $schedule->actionBatch->action_batch ?? '';
+            Log::createLog('ResourceSchedules', "Updated resource schedule for {$actionBatchName}", $schedule->id);
+
+            DB::commit();
+
+            return redirect()->route('action.schedules.show', $schedule->id)
+                             ->with('success', config('errors.record_updated_successfully.errorMessage'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with([
+                'error' => config('errors.transaction_failed.errorMessage'),
+                'flash_time' => microtime(true),
+            ])->withInput();
+        }
+    }
+
+public function sendResourceScheduleNotification($id)
 {
     $schedule = ResourceSchedule::findOrFail($id);
-    $validated = $request->validated();
 
-    $validated['updated_by'] = auth()->id();
-    $validated['updated_time'] = now();
+    $batchName = DB::table('action_batches')
+        ->where('id', $schedule->action_batch_id)
+        ->value('action_batch');
+
+    $hrRecruiters = User::where('permissions', 3)
+                        ->where('active_status', 1)
+                        ->get(['email_address', 'first_name', 'id']);
+
+    // Collect all email addresses into an array
+    $emailAddresses = $hrRecruiters->pluck('email_address')->toArray();
+
+    // Only proceed if we have recipients
+    if (empty($emailAddresses)) {
+        return back()->with('error', 'No HR managers found to send notification.');
+    }
+
+    $link = url("/action/schedules/{$id}");
 
     try {
-        DB::beginTransaction();
+        // Send ONE email to ALL recipients
+        Mail::to($emailAddresses)
+            ->send(new ResourceScheduleNotificationMail(
+                0, // userId (not used for multiple recipients)
+                "HR Team", // Generic recipient name
+                $batchName,
+                $link
+            ));
 
-        $schedule->update($validated);
+        // Optional: Log the email history
+        // foreach ($emailAddresses as $email) {
+        //     EmailHistory::create([
+        //         'status' => 1,
+        //         'subject' => "【HR System】New Resource Schedule Created",
+        //         'from' => config('mail.from.name'),
+        //         'email_from' => config('mail.from.address'),
+        //         'email_to' => $email,
+        //         'email_body' => "Hi HR Team,\n\nA new resource schedule has been created.\nBatch: {$batchName} \nLink: {$link}\n\nThank you,\nAWS HR Manager",
+        //         'created_by' => Auth::id(),
+        //         'updated_by' => Auth::id(),
+        //         'create_time' => now(),
+        //         'update_time' => now(),
+        //     ]);
+        // }
 
-        // Log the update
-        $actionBatchName = $schedule->actionBatch->action_batch ?? '';
-        Log::createLog('ResourceSchedules', "Updated resource schedule for {$actionBatchName}", $schedule->id);
-
-        DB::commit();
-
-        return redirect()->route('action.schedules.show', $schedule->id)
-                         ->with('success', config('errors.record_updated_successfully.errorMessage'));
+        return back()->with('success', 'Notification emails sent to all HR recruiters.');
     } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with([
-            'error' => config('errors.transaction_failed.errorMessage'),
-            'flash_time' => microtime(true),
-        ])->withInput();
+        return back()->with('error', 'Failed to send notification emails.');
     }
 }
+
 }

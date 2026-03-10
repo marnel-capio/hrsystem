@@ -76,7 +76,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/schedules/{id}', [ResourceScheduleController::class, 'show'])->name('action.schedules.show');
         Route::get('/action/schedules/{id}/edit', [ResourceScheduleController::class, 'edit'])->name('action.schedules.edit');
         Route::put('/action/schedules/{id}', [ResourceScheduleController::class, 'update'])->name('action.schedules.update');
-    });            
+        //email
+        Route::post('/action/schedules/{id}/send-notification', 
+            [ResourceScheduleController::class, 'sendResourceScheduleNotification']
+        )->name('action.schedules.notify');
+        });            
 
     // ------------------------
     // Actions

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm, usePage} from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { Users } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -8,9 +8,28 @@ import { type BreadcrumbItem } from '@/types';
 const page = usePage();
 const flashMessage = computed(() => (page.props as any).flash?.success || '');
 
+const notificationSent = ref(false);
+const sendingNotification = ref(false);
+const notificationForm = useForm({});
+
+function sendNotification() {
+  sendingNotification.value = true;  // <-- mark as sending
+  notificationForm.post(`/action/schedules/${props.schedule.id}/send-notification`, {
+    onSuccess: () => {
+      notificationSent.value = true;       // mark as sent
+      sendingNotification.value = false;   // stop sending state
+    },
+    onError: () => {
+      sendingNotification.value = false;   // stop sending even if error
+    },
+  });
+}
 
 // Define props to receive schedule data from the backend
 const props = defineProps<{
+
+  projection: Record<string, any>
+
   schedule: {
     id: number;
     batch_name: string;
@@ -263,14 +282,15 @@ function saveAllEdits() {
             ← Back to List
           </a> -->
           
-<a
-          v-if="props.userPermissions != 3"
-          href="/action/schedules/register"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-          style="background-color: #16A84E;"
-        >
-          Send Notification
-        </a>
+<button
+  @click.prevent="sendNotification"
+  :disabled="sendingNotification || notificationSent"
+  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+>
+  <span v-if="!sendingNotification && !notificationSent">Send Notification</span>
+  <span v-else-if="sendingNotification">Sending...</span>
+  <span v-else>Sent</span>
+</button>
 <a :href="`/action/schedules/${props.schedule.id}/edit`"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
           style="background-color: #1C7BA5;"
@@ -325,43 +345,48 @@ function saveAllEdits() {
 
         </div>
 
-        <!-- RIGHT COLUMN: Master Schedule -->
-        <div class="md:col-span-2 bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow h-full">
-          <h2 class="text-lg font-bold mb-4">Master Schedule</h2>
-          <table class="w-full text-sm border">
-           <tbody>
-  <tr>
-    <td class="font-semibold px-3 py-2 border">Deployment Date</td>
-    <td class="font-semibold px-3 py-2 border">{{ formatDeploymentDate(schedule.deployment_date) }}</td>
-  </tr>
-  <tr>
-    <td class="font-semibold px-3 py-2 border">Job Acceptance</td>
-    <!-- fields from job_acceptance til contact_schools are still not used. waiting for action batches code. -->
-    <td class="px-3 py-2 border">{{ schedule.job_acceptance || '-' }}</td> 
-  </tr>
-  <tr>
-    <td class="font-semibold px-3 py-2 border">Job Offer</td>
-    <td class="px-3 py-2 border">{{ schedule.job_offer || '-' }}</td> 
-  </tr>
-  <tr>
-    <td class="font-semibold px-3 py-2 border">Final Interview</td>
-    <td class="px-3 py-2 border">{{ schedule.final_interview || '-' }}</td>
-  </tr>
-  <tr>
-    <td class="font-semibold px-3 py-2 border">Initial Interview</td>
-    <td class="px-3 py-2 border">{{ schedule.initial_interview || '-' }}</td>
-  </tr>
-  <tr>
-    <td class="font-semibold px-3 py-2 border">Screening</td>
-    <td class="px-3 py-2 border">{{ schedule.screening || '-' }}</td>
-  </tr>
-  <tr>
-    <td class="font-semibold px-3 py-2 border">Contact Schools</td>
-    <td class="px-3 py-2 border">{{ schedule.contact_schools || '-' }}</td>
-  </tr>
-</tbody>
-          </table>
-        </div>
+<!-- RIGHT COLUMN: Master Schedule -->
+<div class="md:col-span-2 bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow h-full">
+  <h2 class="text-lg font-bold mb-4">Master Schedule</h2>
+  <table class="w-full text-sm border">
+    <tbody>
+      <tr>
+        <td class="font-semibold px-3 py-2 border">Deployment Date</td>
+        <td class="font-semibold px-3 py-2 border">{{ formatDeploymentDate(schedule.deployment_date) }}</td>
+      </tr>
+
+      <tr>
+        <td class="font-semibold px-3 py-2 border">Job Acceptance</td>
+        <td class="px-3 py-2 border">{{ projection.accepted.plan_no || '-' }}</td>
+      </tr>
+
+      <tr>
+        <td class="font-semibold px-3 py-2 border">Job Offer</td>
+        <td class="px-3 py-2 border">{{ projection.accepted.plan_no + projection.declined.plan_no || '-' }}</td>
+      </tr>
+
+      <tr>
+        <td class="font-semibold px-3 py-2 border">Final Interview</td>
+        <td class="px-3 py-2 border">{{ projection.final_interview.plan_no || '-' }}</td>
+      </tr>
+
+      <tr>
+        <td class="font-semibold px-3 py-2 border">Initial Interview</td>
+        <td class="px-3 py-2 border">{{ projection.initial_interview.plan_no || '-' }}</td>
+      </tr>
+
+      <tr>
+        <td class="font-semibold px-3 py-2 border">Screening</td>
+        <td class="px-3 py-2 border">{{ projection.examinees.plan_no || '-' }}</td>
+      </tr>
+
+      <!-- <tr>
+        <td class="font-semibold px-3 py-2 border">Contact Schools</td>
+        <td class="px-3 py-2 border">{{ schedule.contact_schools || '-' }}</td>
+      </tr> -->
+    </tbody>
+  </table>
+</div>
 
       </div>
 
@@ -388,68 +413,81 @@ function saveAllEdits() {
             </thead>
 
             <tbody>
+                    <!-- EXAMINEES -->
                 <tr>
-                    <td class="border px-3 py-2 font-semibold">Examinees</td>
-                    <td class="border px-3 py-2 font-semibold text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 font-semibold text-blue-600 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
+                  <td class="border px-3 py-2 font-semibold">Examinees</td>
+
+                  <td class="border px-3 py-2 text-center">{{ projection.examinees.actual_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.examinees.actual_pct }}%</td>
+
+                  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.examinees.plan_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.examinees.plan_pct }}%</td>
                 </tr>
 
+                <!-- INITIAL INTERVIEW -->
                 <tr>
-                    <td class="border px-3 py-2 font-semibold">Undergone Initial Interview</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 font-semibold text-blue-600 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
+                  <td class="border px-3 py-2 font-semibold">Undergone Initial Interview</td>
+
+                  <td class="border px-3 py-2 text-center">{{ projection.initial_interview.actual_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.initial_interview.actual_pct }}%</td>
+
+                  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.initial_interview.plan_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.initial_interview.plan_pct }}%</td>
                 </tr>
 
+                <!-- FINAL INTERVIEW -->
                 <tr>
-                    <td class="border px-3 py-2 font-semibold">Undergone Final Interview</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 font-semibold text-blue-600 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
+                  <td class="border px-3 py-2 font-semibold">Undergone Final Interview</td>
+
+                  <td class="border px-3 py-2 text-center">{{ projection.final_interview.actual_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.final_interview.actual_pct }}%</td>
+
+                  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.final_interview.plan_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.final_interview.plan_pct }}%</td>
                 </tr>
 
+                <!-- ACCEPTED -->
                 <tr>
-                    <td class="border px-3 py-2 font-semibold">Job Offer</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 font-semibold text-blue-600 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
+                  <td class="border px-3 py-2 font-semibold">Accepted Job Offer</td>
+
+                  <td class="border px-3 py-2 text-center">{{ projection.accepted.actual_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.accepted.actual_pct }}%</td>
+
+                  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.accepted.plan_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.accepted.plan_pct }}%</td>
                 </tr>
 
+                <!-- DECLINED -->
                 <tr>
-                    <td class="border px-3 py-2 pl-6">Accepted</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 font-semibold text-blue-600 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
+                  <td class="border px-3 py-2 font-semibold">Declined Job Offer</td>
+
+                  <td class="border px-3 py-2 text-center">{{ projection.declined.actual_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.declined.actual_pct }}%</td>
+
+                  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.declined.plan_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.declined.plan_pct }}%</td>
                 </tr>
 
+                <!-- TRAINEES FROM MANILA -->
                 <tr>
-                    <td class="border px-3 py-2 pl-6">Declined</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 font-semibold text-blue-600 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
+                  <td class="border px-3 py-2 font-semibold">Trainees from Manila</td>
+
+                  <td class="border px-3 py-2 text-center">{{ projection.trainees_manila.actual_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.trainees_manila.actual_pct }}%</td>
+
+                  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.trainees_manila.plan_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.trainees_manila.plan_pct }}%</td>
                 </tr>
 
+                <!-- TRAINEES FROM CEBU -->
                 <tr>
-                    <td class="border px-3 py-2 font-semibold">Trainees from Manila</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 font-semibold text-blue-600 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                </tr>
+                  <td class="border px-3 py-2 font-semibold">Trainees from Cebu</td>
 
-                <tr>
-                    <td class="border px-3 py-2 font-semibold">Trainees from Cebu</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
-                    <td class="border px-3 py-2 font-bold text-blue-600 text-center">-</td>
-                    <td class="border px-3 py-2 text-center">-</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.trainees_cebu.actual_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.trainees_cebu.actual_pct }}%</td>
+
+                  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.trainees_cebu.plan_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.trainees_cebu.plan_pct }}%</td>
                 </tr>
             </tbody>
         </table>
@@ -533,232 +571,5 @@ function saveAllEdits() {
 
     </div>
 
-    <!-- Edit Modal -->
-<!-- Edit Modal -->
-<div
-  v-if="showEditModal"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
->
-  <div
-    class="bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-5xl p-6 overflow-y-auto max-h-[90vh] relative"
-  >
-    <!-- Close Button -->
-    <button
-      class="absolute top-3 right-3 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-      @click="closeModal"
-    >
-      ✕
-    </button>
-
-    <h2 class="text-2xl font-bold mb-6">Edit Resource Schedule</h2>
-
-    <!-- BASIC FORM -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-
-      <!-- Batch Name -->
-      <div class="space-y-2">
-        <label class="text-sm font-semibold">Batch Name</label>
-        <select 
-          v-model="editForm.batchName" 
-          class="w-full bg-zinc-50 border rounded-lg p-2.5"
-          required
-        >
-          <option value="">Select</option>
-          <option value="ACTION 39">ACTION 39</option>
-          <option value="ACTION 40">ACTION 40</option>
-          <option value="ACTION 41">ACTION 41</option>
-        </select>
-        <p v-if="editForm.errors.batchName" class="text-red-600 text-xs mt-1">
-          {{ editForm.errors.batchName }}
-        </p>
-      </div>
-
-      <!-- Location -->
-      <div class="space-y-2">
-        <label class="text-sm font-semibold">Target Location</label>
-        <select 
-          v-model="editForm.location" 
-          class="w-full bg-zinc-50 border rounded-lg p-2.5"
-          required
-        >
-          <option value="">Select</option>
-          <option value="Cebu">Cebu</option>
-          <option value="Manila">Manila</option>
-        </select>
-        <p v-if="editForm.errors.location" class="text-red-600 text-xs mt-1">
-          {{ editForm.errors.location }}
-        </p>
-      </div>
-
-      <!-- Target Trainees -->
-      <div class="space-y-2">
-        <label class="text-sm font-semibold">Target Trainees</label>
-        <input 
-          v-model="editForm.targetTrainees" 
-          type="number"
-          class="w-full bg-zinc-50 border rounded-lg p-2.5"
-          required
-        />
-        <p v-if="editForm.errors.targetTrainees" class="text-red-600 text-xs mt-1">
-          {{ editForm.errors.targetTrainees }}
-        </p>
-      </div>
-
-      <!-- Deployment Date -->
-      <div class="space-y-2">
-        <label class="text-sm font-semibold">Date of Deployment</label>
-        <input 
-          v-model="editForm.deploymentDate" 
-          type="month"
-          class="w-full bg-zinc-50 border rounded-lg p-2.5"
-          required
-        />
-        <p v-if="editForm.errors.deploymentDate" class="text-red-600 text-xs mt-1">
-          {{ editForm.errors.deploymentDate }}
-        </p>
-      </div>
-
-      <!-- Previous Batch -->
-<div class="space-y-2">
-  <label class="text-sm font-semibold">Compare with Previous Batch</label>
-  <select 
-    v-model="editForm.prev_batch_id" 
-    class="w-full bg-zinc-50 border rounded-lg p-2.5"
-  >
-    <option value="">Select</option>
-    <option 
-      v-for="batch in props.prevBatches" 
-      :key="batch.id" 
-      :value="batch.id"
-    >
-      {{ batch.action_batch }}
-    </option>
-  </select>
-  <p v-if="editForm.errors.prev_batch_id" class="text-red-600 text-xs mt-1">
-    {{ editForm.errors.prev_batch_id }}
-  </p>
-</div>
-
-      
-
-    </div> <!-- END BASIC FORM -->
-
-    <!-- WBS FORM GRID -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-      <template v-for="act in ganttActivities" :key="act">
-        <div>
-          <label class="font-semibold">{{ formatActivityName(act) }}</label>
-
-          <div class="grid grid-cols-2 gap-3 mt-1 mb-1">
-            <div>
-              <label class="text-xs text-zinc-500 block mb-1">Start</label>
-              <input type="week" v-model="ganttForm[act].start" class="w-full bg-zinc-50 border rounded-lg p-2" required>
-            </div>
-
-            <div>
-              <label class="text-xs text-zinc-500 block mb-1">End</label>
-              <input type="week" v-model="ganttForm[act].end" class="w-full bg-zinc-50 border rounded-lg p-2" required>
-            </div>
-          </div>
-
-          <p
-            v-if="ganttForm[act].error"
-            :id="'error-edit-' + act"
-            class="text-red-600 text-xs"
-          >
-            {{ ganttForm[act].error }}
-          </p>
-        </div>
-      </template>
-    </div>
-
-    <!-- GANTT PREVIEW -->
-    <div class="mt-12">
-      <h2 class="font-bold text-xl mb-4">WBS Preview</h2>
-
-      <div v-if="ganttWeeks.length" class="overflow-x-auto border p-6 rounded-xl shadow-sm">
-        <div class="grid gap-0.5" :style="`grid-template-columns: 220px repeat(${ganttWeeks.length}, 1fr)`">
-
-          <!-- Header Left -->
-          <div class="p-2 bg-zinc-50 font-bold border-b">Activity</div>
-
-          <!-- Months -->
-          <template v-for="m in monthSpans" :key="m.month">
-            <div
-              :style="`grid-column: span ${m.count}`"
-              class="text-center font-bold text-base p-2 bg-blue-50 border-b"
-            >
-              {{ m.month }}
-            </div>
-          </template>
-
-          <div></div>
-
-          <!-- Weeks -->
-          <template v-for="w in ganttWeeks" :key="w">
-            <div class="text-[11px] text-center p-1 bg-blue-50 border-b">
-              {{ formatWeekLabel(w) }}
-            </div>
-          </template>
-
-          <!-- Bars -->
-          <template v-for="row in ganttRows" :key="row.activity">
-            <div class="font-semibold py-2 border-r pr-2">{{ formatActivityName(row.activity) }}</div>
-
-            <template v-for="(_, i) in ganttWeeks" :key="i">
-              <div class="border h-7 relative">
-<div 
-  v-if="i >= row.startIndex && i <= row.endIndex && row.startIndex !== -1"
-  class="absolute inset-0 rounded-sm"
-  :style="`background-color: ${wbsColors[row.activity] || '#000'}; opacity: 0.8;`"
-></div>
-
-              </div>
-            </template>
-          </template>
-          
-
-        </div>
-        
-      </div>
-
-      <div v-else class="text-sm text-zinc-500">
-        Select weeks to generate preview.
-      </div>
-    </div>
-
-    <!-- Remarks Field -->
-<div class="space-y-2 mt-5">
-  <label class="text-sm font-semibold">Remarks</label>
-  <textarea
-    v-model="editForm.remarks"
-    class="w-full bg-zinc-50 border rounded-lg p-2.5"
-    rows="4"
-    placeholder="Enter any remarks here..."
-  ></textarea>
-  <p v-if="editForm.errors.remarks" class="text-red-600 text-xs mt-1">
-    {{ editForm.errors.remarks }}
-  </p>
-</div>  
-
-    <!-- BUTTONS -->
-    <div class="flex justify-end gap-3 mt-6">
-      <button 
-        @click="closeModal"
-        class="px-6 py-2.5 text-sm font-medium text-zinc-600 hover:text-zinc-900"
-      >
-        Cancel
-      </button>
-      <button 
-        @click="saveAllEdits"
-        :disabled="editForm.processing"
-        class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-bold shadow-lg"
-      >
-        Update
-      </button>
-    </div>
-
-  </div>
-</div>
 
 </AppLayout> </template>
