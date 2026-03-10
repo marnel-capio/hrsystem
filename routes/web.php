@@ -41,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
+});
 
     // ------------------------
     // User Management (Permissions 1 & 2 Only)
@@ -65,43 +66,26 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ------------------------
-    // Action Schedules
+    // Resource Schedules
     // ------------------------
-    Route::prefix('action/schedules')->group(function () {
-        Route::get('/', function () {
-            $user = auth()->user();
+    
+    Route::middleware(['check.permission'])->group(function () {
+        Route::get('/action/schedules', [ResourceScheduleController::class, 'index'])->name('action.schedules.index');
+        Route::get('/action/schedules/register', [ResourceScheduleController::class, 'create'])->name('action.schedules.register');
+        Route::post('/action/schedules', [ResourceScheduleController::class, 'store'])->name('action.schedules.store');
+        Route::get('/action/schedules/{id}', [ResourceScheduleController::class, 'show'])->name('action.schedules.show');
 
-            if (! in_array((int) $user->permissions, [1, 2, 3])) {
-                return redirect()->route('dashboard')
-                    ->with('error', 'Access denied: You are not authorized to view this page.');
-            }
-
-            return app(ResourceScheduleController::class)->index();
-        })->name('action.schedules.index');
-    });
+});
 
     // ------------------------
     // Actions
     // ------------------------
-    Route::prefix('action')->group(function () {
-
-        Route::get('/', fn () => Inertia::render('action/Action'))
-            ->name('action.index');
-
-        Route::get('/applications', fn () => Inertia::render('action/Applications'))
-            ->name('action.applications');
-
-        // Batches
-        Route::get('/batches', [ActionBatchController::class, 'index'])
-            ->name('action.list');
-
-        Route::get('/batches/register', [ActionBatchController::class, 'create'])
-            ->name('action.create');
-
-        Route::get('/batches/{id}', [ActionBatchController::class, 'show'])
-            ->name('action.show');
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list');
+        Route::get('/action/batches/register', [ActionBatchController::class, 'create'])->name('action.batches.register');
+        Route::post('/action/batches', [ActionBatchController::class, 'store'])->name('action.batches.store');
+        Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])->name('action.batches.show');
     });
-});
 
 // ------------------------
 // Include additional routes
