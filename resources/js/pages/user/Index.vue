@@ -144,7 +144,7 @@ const showingTo = computed(() => {
                                 d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
                         </svg>
                     </span>
-                    <input v-model="searchQuery" type="text" placeholder="Search by name, email, address, status"
+                    <input v-model="searchQuery" type="text" placeholder="Search by name, email, address, contact_no, position, status"
                         class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
                 </div>
             </div>
