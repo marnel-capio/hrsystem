@@ -13,6 +13,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     protected $table = 'users';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -100,9 +101,13 @@ class User extends Authenticatable
         $oldData = $this->getOriginal();
 
         // Step 2: hash password if provided
-        if (!empty($data['password'])) {
+        $rawPassword = null;
+        if (! empty($data['password'])) {
             $rawPassword = $data['password'];
             $data['password'] = Hash::make($rawPassword);
+        } else {
+            // Remove password from $data so it doesn't overwrite old password
+            unset($data['password']);
         }
 
         $data['updated_by'] = auth()->id();
@@ -113,8 +118,8 @@ class User extends Authenticatable
         // Step 4: prepare new data for logging
         $newData = $this->fresh()->toArray();
 
-        // Keep raw password for logging
-        if (!empty($rawPassword)) {
+        // Keep raw password for logging only if provided
+        if ($rawPassword) {
             $newData['password'] = $rawPassword;
         }
 
