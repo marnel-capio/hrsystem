@@ -59,13 +59,23 @@ const blockSize = 5
 const filteredUsers = computed(() => {
     const q = searchQuery.value.toLowerCase()
     if (!q) return users.value
+
     return users.value.filter(u => {
         const fullName = `${u.first_name} ${u.middle_name} ${u.last_name}`.toLowerCase()
+        const email = u.email_address.toLowerCase()
+        const contact = u.contact_no.toLowerCase()
+        const address = u.address.toLowerCase()
+
+        const positionLabel = (props.positions[u.position] ?? '').toLowerCase()
+        const statusLabel = getStatusLabel(u.active_status).toLowerCase()
+
         return (
             fullName.includes(q) ||
-            u.email_address.toLowerCase().includes(q) ||
-            u.contact_no.toLowerCase().includes(q) ||
-            u.address.toLowerCase().includes(q)
+            email.includes(q) ||
+            contact.includes(q) ||
+            address.includes(q) ||
+            positionLabel.includes(q) ||
+            statusLabel.includes(q)
         )
     })
 })
