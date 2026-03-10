@@ -234,80 +234,84 @@ class ResourceScheduleController extends Controller
     ]);
 }
 
-    public function edit($id)
-    {
-        $schedule = ResourceSchedule::getWithActionBatch($id);
+public function edit($id)
+{
+    $schedule = ResourceSchedule::getWithActionBatch($id);
 
-        $newBatches = ResourceSchedule::getActionBatches(true);   // exclude scheduled batches
-        $prevBatches = ResourceSchedule::getActionBatches(false); // only scheduled batches
+    $newBatches = ResourceSchedule::getActionBatches(true);
+    $prevBatches = ResourceSchedule::getActionBatches(false);
 
-        // Format data to match what the Vue component expects
-        $formattedSchedule = [
-            'id' => $schedule->id,
-            'action_batch_id' => $schedule->action_batch_id,
-            'prev_batch_id' => $schedule->prev_batch_id,
-            'target_location' => $schedule->target_location == 1 ? 'Manila' : 'Cebu', // Convert int to string for select
-            'target_trainees' => $schedule->target_trainees,
-            'deployment_date' => $schedule->deployment_date,
-            'remarks' => $schedule->remarks,
-            // Format WBS dates for the Gantt inputs
-            'contact_schools_startdate' => $schedule->contact_schools_startdate,
-            'contact_schools_enddate' => $schedule->contact_schools_enddate,
-            'source_testing_startdate' => $schedule->source_testing_startdate,
-            'source_testing_enddate' => $schedule->source_testing_enddate,
-            'initial_interviews_startdate' => $schedule->initial_interviews_startdate,
-            'initial_interviews_enddate' => $schedule->initial_interviews_enddate,
-            'final_interviews_startdate' => $schedule->final_interviews_startdate,
-            'final_interviews_enddate' => $schedule->final_interviews_enddate,
-            'contract_offers_startdate' => $schedule->contract_offers_startdate,
-            'contract_offers_enddate' => $schedule->contract_offers_enddate,
-            'requirements_startdate' => $schedule->requirements_startdate,
-            'requirements_enddate' => $schedule->requirements_enddate,
-            'training_startdate' => $schedule->training_startdate,
-            'training_enddate' => $schedule->training_enddate,
-        ];
+    // Get the current batch info
+    $currentBatch = DB::table('action_batches')
+        ->where('id', $schedule->action_batch_id)
+        ->first();
 
-        return inertia('action/schedules/ResourceScheduleEdit', [
-            'schedule' => $formattedSchedule,
-            'newBatches' => $newBatches,
-            'prevBatches' => $prevBatches,
-            'errorMessages' => config('errors', []),
-        ]);
+    // Format data - convert target_location to string
+    $formattedSchedule = [
+        'id' => $schedule->id,
+        'action_batch_id' => (int) $schedule->action_batch_id,
+        'prev_batch_id' => (int) $schedule->prev_batch_id,
+        'target_location' => (string) $schedule->target_location, // Convert to string!
+        'target_trainees' => (int) $schedule->target_trainees,
+        'deployment_date' => $schedule->deployment_date,
+        'remarks' => $schedule->remarks,
+        // WBS dates
+        'contact_schools_startdate' => $schedule->contact_schools_startdate,
+        'contact_schools_enddate' => $schedule->contact_schools_enddate,
+        'source_testing_startdate' => $schedule->source_testing_startdate,
+        'source_testing_enddate' => $schedule->source_testing_enddate,
+        'initial_interviews_startdate' => $schedule->initial_interviews_startdate,
+        'initial_interviews_enddate' => $schedule->initial_interviews_enddate,
+        'final_interviews_startdate' => $schedule->final_interviews_startdate,
+        'final_interviews_enddate' => $schedule->final_interviews_enddate,
+        'contract_offers_startdate' => $schedule->contract_offers_startdate,
+        'contract_offers_enddate' => $schedule->contract_offers_enddate,
+        'requirements_startdate' => $schedule->requirements_startdate,
+        'requirements_enddate' => $schedule->requirements_enddate,
+        'training_startdate' => $schedule->training_startdate,
+        'training_enddate' => $schedule->training_enddate,
+    ];
+
+    return inertia('action/schedules/ResourceScheduleEdit', [
+        'schedule' => $formattedSchedule,
+        'newBatches' => $newBatches,
+        'prevBatches' => $prevBatches,
+        'currentBatch' => $currentBatch,
+        'errorMessages' => config('errors', []),
+    ]);
+}
+
+public function update(ResourceScheduleRequest $request, $id)
+{
+    $schedule = ResourceSchedule::findOrFail($id);
+    $validated = $request->validated();
+
+    // Convert location string back to integer for database
+    $validated['target_location'] = $validated['target_location'] === '1' ? 1 : 2;
+
+    $validated['updated_by'] = auth()->id();
+    $validated['updated_time'] = now();
+
+    try {
+        DB::beginTransaction();
+
+        $schedule->update($validated);
+
+        $actionBatchName = $schedule->actionBatch->action_batch ?? '';
+        Log::createLog('ResourceSchedules', "Updated resource schedule for {$actionBatchName}", $schedule->id);
+
+        DB::commit();
+
+        return redirect()->route('action.schedules.show', $schedule->id)
+                         ->with('success', config('errors.record_updated_successfully.errorMessage'));
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with([
+            'error' => config('errors.transaction_failed.errorMessage'),
+            'flash_time' => microtime(true),
+        ])->withInput();
     }
-
-    public function update(ResourceScheduleRequest $request, $id)
-    {
-        $schedule = ResourceSchedule::findOrFail($id);
-        $validated = $request->validated();
-
-        // Convert location string back to integer for database
-        $validated['target_location'] = $validated['target_location'] === 'Manila' ? 1 : 2;
-
-        $validated['updated_by'] = auth()->id();
-        $validated['updated_time'] = now();
-
-        try {
-            DB::beginTransaction();
-
-            $schedule->update($validated);
-
-            // Log the update
-            $actionBatchName = $schedule->actionBatch->action_batch ?? '';
-            Log::createLog('ResourceSchedules', "Updated resource schedule for {$actionBatchName}", $schedule->id);
-
-            DB::commit();
-
-            return redirect()->route('action.schedules.show', $schedule->id)
-                             ->with('success', config('errors.record_updated_successfully.errorMessage'));
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with([
-                'error' => config('errors.transaction_failed.errorMessage'),
-                'flash_time' => microtime(true),
-            ])->withInput();
-        }
-    }
-
+}
 public function sendResourceScheduleNotification($id)
 {
     $schedule = ResourceSchedule::findOrFail($id);
@@ -359,6 +363,28 @@ public function sendResourceScheduleNotification($id)
         return back()->with('success', 'Notification emails sent to all HR recruiters.');
     } catch (\Exception $e) {
         return back()->with('error', 'Failed to send notification emails.');
+    }
+}
+
+public function destroy($id)
+{
+    $schedule = ResourceSchedule::findOrFail($id);
+    
+    try {
+        DB::beginTransaction();
+        
+        $actionBatchName = $schedule->actionBatch->action_batch ?? '';
+        Log::createLog('ResourceSchedules', "Deleted resource schedule for {$actionBatchName}", $schedule->id);
+        
+        $schedule->delete();
+        
+        DB::commit();
+        
+        return redirect()->route('action.schedules.index')
+                         ->with('success', config('errors.record_deleted_successfully.errorMessage'));
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Failed to delete resource schedule.');
     }
 }
 

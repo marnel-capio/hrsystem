@@ -8,6 +8,30 @@ import { type BreadcrumbItem } from '@/types';
 const page = usePage();
 const flashMessage = computed(() => (page.props as any).flash?.success || '');
 
+// Delete form and modal state
+const deleteForm = useForm({});
+const showDeleteModal = ref(false);
+const deleting = ref(false);
+
+function confirmDelete() {
+  showDeleteModal.value = true;
+}
+
+function deleteSchedule() {
+  deleting.value = true;
+  deleteForm.delete(`/action/schedules/${props.schedule.id}`, {
+    onSuccess: () => {
+      // Redirect to schedules list after successful delete
+      window.location.href = '/action/schedules';
+    },
+    onError: (errors) => {
+      console.log('Delete errors:', errors);
+      deleting.value = false;
+    },
+  });
+}
+
+
 const notificationSent = ref(false);
 const sendingNotification = ref(false);
 const notificationForm = useForm({});
@@ -51,7 +75,9 @@ const props = defineProps<{
     created_time?: string;
     updated_by?: string;
     updated_time?: string;
-  };
+  }
+  
+  userPermissions: number;
 }>();
 
 // Breadcrumbs
@@ -282,31 +308,86 @@ function saveAllEdits() {
             ← Back to List
           </a> -->
           
+<!-- Send Notification Button -->
 <button
   @click.prevent="sendNotification"
   :disabled="sendingNotification || notificationSent"
-  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+  class="!px-4 !py-2 !bg-green-600 !text-white !rounded-lg !hover:bg-green-700 !font-semibold !disabled:opacity-50 !disabled:cursor-not-allowed !transition-colors !bg-green-600 !text-white !hover:bg-green-700"
 >
   <span v-if="!sendingNotification && !notificationSent">Send Notification</span>
   <span v-else-if="sendingNotification">Sending...</span>
   <span v-else>Sent</span>
 </button>
-<a :href="`/action/schedules/${props.schedule.id}/edit`"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-          style="background-color: #1C7BA5;"
-        >
-          Edit
-        </a>
-<a
-          v-if="props.userPermissions != 3"
-          href="/action/schedules/register"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-          style="background-color: #A81616;"
-        >
-          Delete
-        </a>
+
+<!-- Edit Button -->
+<a 
+  :href="`/action/schedules/${props.schedule.id}/edit`"
+  class="!px-4 !py-2 !text-white !rounded-lg !font-semibold !flex !items-center !gap-2 !transition-colors !text-white"
+  style="background-color: #1C7BA5;"
+>
+  Edit
+</a>
+
+<!-- Delete Button -->
+<button
+  v-if="props.userPermissions != 3"
+  @click="confirmDelete"
+  class="!px-4 !py-2 !bg-red-600 !text-white !rounded-lg !font-semibold !flex !items-center !gap-2 !transition-colors !bg-red-600 !text-white !hover:bg-red-700"
+>
+  <Trash2 class="w-4 h-4" />
+  Delete
+</button>
         </div>
       </div>
+
+      <!-- DELETE CONFIRMATION MODAL -->
+<div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center">
+  <!-- Backdrop -->
+  <div 
+    class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+    @click="showDeleteModal = false"
+  ></div>
+  
+  <!-- Modal Content -->
+  <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+    <!-- Title -->
+    <h3 class="text-xl font-bold text-center text-zinc-900 dark:text-zinc-100 mb-2">
+      Delete Resource Schedule?
+    </h3>
+    
+    <!-- Description -->
+    <p class="text-zinc-600 dark:text-zinc-400 text-center mb-6">
+      Are you sure you want to delete <strong>"{{ schedule.batch_name }}"</strong>?<br>
+      This action cannot be undone.
+    </p>
+    
+    <!-- Warning -->
+    <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+      <p class="text-sm text-red-700 dark:text-red-400 text-center">
+        All associated data will be permanently removed.
+      </p>
+    </div>
+    
+    <!-- Buttons -->
+    <div class="flex gap-3">
+      <button
+        @click="showDeleteModal = false"
+        :disabled="deleting"
+        class="flex-1 px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-600 font-semibold transition-colors"
+      >
+        Cancel
+      </button>
+      <button
+        @click="deleteSchedule"
+        :disabled="deleting"
+        class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors flex items-center justify-center gap-2"
+      >
+        <span v-if="!deleting">Delete</span>
+        <span v-else>Deleting...</span>
+      </button>
+    </div>
+  </div>
+</div>
 
       <!-- ROW 1: BATCH TITLE + TARGET TRAINEES + MASTER SCHEDULE -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

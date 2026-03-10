@@ -168,27 +168,6 @@ const wbsColors: Record<string, string> = {
   training: '#84cc16',
 };
 
-// Validate WBS ranges
-// function validateWBS() {
-//   let hasErrors = false;
-//   let firstErrorAct: string | null = null;
-//   ganttActivities.forEach(act => {
-//     const row = ganttForm.value[act];
-//     row.error = "";
-//     if (weekToKey(row.start)! > weekToKey(row.end)!) {
-//       const errorMsg = props.errorMessages.wbs_end_before_start.errorMessage;
-//       row.error = errorMsg.replace(':activity', formatActivityName(act));
-//       hasErrors = true;
-//       if (!firstErrorAct) firstErrorAct = act;
-//     }
-//   });
-//   if (hasErrors && firstErrorAct) {
-//     const errorElement = document.getElementById('error-' + firstErrorAct);
-//     if (errorElement) errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-//   }
-//   return hasErrors;
-// }
-
 // Submit form
 function createResourceSchedule() {
 

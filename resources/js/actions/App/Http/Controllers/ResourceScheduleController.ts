@@ -406,7 +406,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::update
- * @see app/Http/Controllers/ResourceScheduleController.php:278
+ * @see app/Http/Controllers/ResourceScheduleController.php:284
  * @route '/action/schedules/{id}'
  */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -421,7 +421,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::update
- * @see app/Http/Controllers/ResourceScheduleController.php:278
+ * @see app/Http/Controllers/ResourceScheduleController.php:284
  * @route '/action/schedules/{id}'
  */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -449,7 +449,7 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::update
- * @see app/Http/Controllers/ResourceScheduleController.php:278
+ * @see app/Http/Controllers/ResourceScheduleController.php:284
  * @route '/action/schedules/{id}'
  */
 update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -459,7 +459,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
     /**
 * @see \App\Http\Controllers\ResourceScheduleController::update
- * @see app/Http/Controllers/ResourceScheduleController.php:278
+ * @see app/Http/Controllers/ResourceScheduleController.php:284
  * @route '/action/schedules/{id}'
  */
     const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -474,7 +474,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
             /**
 * @see \App\Http\Controllers\ResourceScheduleController::update
- * @see app/Http/Controllers/ResourceScheduleController.php:278
+ * @see app/Http/Controllers/ResourceScheduleController.php:284
  * @route '/action/schedules/{id}'
  */
         updateForm.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -490,7 +490,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
- * @see app/Http/Controllers/ResourceScheduleController.php:311
+ * @see app/Http/Controllers/ResourceScheduleController.php:315
  * @route '/action/schedules/{id}/send-notification'
  */
 export const sendResourceScheduleNotification = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -505,7 +505,7 @@ sendResourceScheduleNotification.definition = {
 
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
- * @see app/Http/Controllers/ResourceScheduleController.php:311
+ * @see app/Http/Controllers/ResourceScheduleController.php:315
  * @route '/action/schedules/{id}/send-notification'
  */
 sendResourceScheduleNotification.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -533,7 +533,7 @@ sendResourceScheduleNotification.url = (args: { id: string | number } | [id: str
 
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
- * @see app/Http/Controllers/ResourceScheduleController.php:311
+ * @see app/Http/Controllers/ResourceScheduleController.php:315
  * @route '/action/schedules/{id}/send-notification'
  */
 sendResourceScheduleNotification.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -543,7 +543,7 @@ sendResourceScheduleNotification.post = (args: { id: string | number } | [id: st
 
     /**
 * @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
- * @see app/Http/Controllers/ResourceScheduleController.php:311
+ * @see app/Http/Controllers/ResourceScheduleController.php:315
  * @route '/action/schedules/{id}/send-notification'
  */
     const sendResourceScheduleNotificationForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -553,7 +553,7 @@ sendResourceScheduleNotification.post = (args: { id: string | number } | [id: st
 
             /**
 * @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
- * @see app/Http/Controllers/ResourceScheduleController.php:311
+ * @see app/Http/Controllers/ResourceScheduleController.php:315
  * @route '/action/schedules/{id}/send-notification'
  */
         sendResourceScheduleNotificationForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -562,6 +562,90 @@ sendResourceScheduleNotification.post = (args: { id: string | number } | [id: st
         })
     
     sendResourceScheduleNotification.form = sendResourceScheduleNotificationForm
-const ResourceScheduleController = { index, create, store, show, edit, update, sendResourceScheduleNotification }
+/**
+* @see \App\Http\Controllers\ResourceScheduleController::destroy
+ * @see app/Http/Controllers/ResourceScheduleController.php:369
+ * @route '/action/schedules/{id}'
+ */
+export const destroy = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy.url(args, options),
+    method: 'delete',
+})
+
+destroy.definition = {
+    methods: ["delete"],
+    url: '/action/schedules/{id}',
+} satisfies RouteDefinition<["delete"]>
+
+/**
+* @see \App\Http\Controllers\ResourceScheduleController::destroy
+ * @see app/Http/Controllers/ResourceScheduleController.php:369
+ * @route '/action/schedules/{id}'
+ */
+destroy.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return destroy.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ResourceScheduleController::destroy
+ * @see app/Http/Controllers/ResourceScheduleController.php:369
+ * @route '/action/schedules/{id}'
+ */
+destroy.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy.url(args, options),
+    method: 'delete',
+})
+
+    /**
+* @see \App\Http\Controllers\ResourceScheduleController::destroy
+ * @see app/Http/Controllers/ResourceScheduleController.php:369
+ * @route '/action/schedules/{id}'
+ */
+    const destroyForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ResourceScheduleController::destroy
+ * @see app/Http/Controllers/ResourceScheduleController.php:369
+ * @route '/action/schedules/{id}'
+ */
+        destroyForm.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
+const ResourceScheduleController = { index, create, store, show, edit, update, sendResourceScheduleNotification, destroy }
 
 export default ResourceScheduleController

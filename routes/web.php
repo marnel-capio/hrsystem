@@ -80,6 +80,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/action/schedules/{id}/send-notification', 
             [ResourceScheduleController::class, 'sendResourceScheduleNotification']
         )->name('action.schedules.notify');
+        //delete
+        Route::delete('/action/schedules/{id}', [ResourceScheduleController::class, 'destroy'])
+        ->name('action.schedules.destroy');
         });            
 
     // ------------------------
