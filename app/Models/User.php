@@ -95,3 +95,4 @@ class User extends Authenticatable
         return config('constants.permissionsList')[$this->permissions] ?? '';
     }
 }
+

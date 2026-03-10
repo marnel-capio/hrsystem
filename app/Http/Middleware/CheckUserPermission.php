@@ -32,11 +32,11 @@ class CheckUserPermission
 
         /*
         |--------------------------------------------------------------------------
-        | Routes: /user & /user/register
+        | Routes: /user & /user/register, /action/schedules/create
         | Only permission 1 & 2 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['user.index', 'user.register', 'user.store', 'action.schedules.index', 'action.schedules.register', 'action.schedules.store', 'action.schedules.show', 'action.schedules.edit', 'action.schedules.update'])) {
+        if (in_array($routeName, ['user.index', 'user.register', 'user.store', 'action.schedules.index', 'action.schedules.register', 'action.schedules.store', 'action.schedules.show', 'action.schedules.edit', 'action.schedules.update', 'action.create', 'action.show'])) {
 
             if (in_array($permission, [1, 2])) {
                 return $next($request);
@@ -45,6 +45,24 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', 'Access denied: You are not authorized to view this page.');
         }
+
+                /*
+        |--------------------------------------------------------------------------
+        | Route: /action/schedules/ and /action/batches
+        | Only permission 1, 2, and 3 allowed
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($routeName, ['action.schedules.index', 'action.list'])) {
+
+            if (in_array($permission, [1, 2, 3])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', 'Access denied: You are not authorized to view this page.');
+        }
+
+        
 
         /*
         |--------------------------------------------------------------------------
@@ -69,6 +87,29 @@ class CheckUserPermission
                     ->with('error', 'Access denied: You are not authorized to view this page.');
             }
         }
+
+
+        //ACTION BATCH
+        if (in_array($routeName, ['action.batches.list', 'action.batches.show'])) {
+
+            // Only permission 1, 2, and 3 are allowed for these routes
+            if (in_array($permission, [1, 2, 3])) {
+                return $next($request);  // Allow the request to proceed
+            }
+
+            return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');
+        }
+
+        if (in_array($routeName, ['action.batches.register', 'action.batches.store'])) {
+
+            // Only permission 1, or 2 are allowed for these routes
+            if (in_array($permission, [1,2])) {
+                return $next($request);  // Allow the request to proceed
+            }
+
+            return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');
+        }
+        
 
         /*
         |--------------------------------------------------------------------------
