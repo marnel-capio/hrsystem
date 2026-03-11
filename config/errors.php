@@ -120,7 +120,7 @@ return [
 
     'user_updated_successfully' => [
     'errorCode' => 'USER_UPDATED_SUCCESSFULLY',
-    'errorMessage' => 'User updated successfully.',
+    'errorMessage' => 'Record updated successfully.',
 ],
 
 ];
