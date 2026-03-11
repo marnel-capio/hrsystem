@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { Users } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
 const page = usePage();
-const flashMessage = computed(() => (page.props as any).flash?.success || '');
+const successMessage = ref((page.props.flash as any)?.success || '');
+const showSuccess = ref(!!successMessage.value);
+
+// 2️⃣ Error handling
+const errorMessage = ref((page.props.flash as any)?.error || '');
+const showError = ref(!!errorMessage.value);
 
 // Delete form and modal state
 const deleteForm = useForm({});
@@ -20,13 +25,10 @@ function confirmDelete() {
 function deleteSchedule() {
   deleting.value = true;
   deleteForm.delete(`/action/schedules/${props.schedule.id}`, {
-    onSuccess: () => {
-      // Redirect to schedules list after successful delete
-      window.location.href = '/action/schedules';
-    },
-    onError: (errors) => {
-      console.log('Delete errors:', errors);
-      deleting.value = false;
+    onError: () => {
+      errorMessage.value = "Failed to delete the record.";
+      showError.value = true;
+      setTimeout(() => (showError.value = false), 5000);
     },
   });
 }
@@ -37,20 +39,35 @@ const sendingNotification = ref(false);
 const notificationForm = useForm({});
 
 function sendNotification() {
-  sendingNotification.value = true;  // <-- mark as sending
+  sendingNotification.value = true;
   notificationForm.post(`/action/schedules/${props.schedule.id}/send-notification`, {
-    onSuccess: () => {
-      notificationSent.value = true;       // mark as sent
-      sendingNotification.value = false;   // stop sending state
+    onSuccess: (page) => {
+      sendingNotification.value = false;
+      notificationSent.value = true;
+
+      // Dynamic success message
+      successMessage.value = page.props.flash?.success || 
+        "Notification emails sent to all active HR recruiters successfully.";
+      showSuccess.value = true;
+
+      setTimeout(() => (showSuccess.value = false), 5000);
     },
     onError: () => {
-      sendingNotification.value = false;   // stop sending even if error
+      sendingNotification.value = false;
+      errorMessage.value = "An error occurred while sending the email/s. Please try again.";
+      showError.value = true;
+      setTimeout(() => (showError.value = false), 5000);
     },
   });
 }
 
 // Define props to receive schedule data from the backend
 const props = defineProps<{
+
+    flash?: {
+    success?: string
+    error?: string
+  }
 
   projection: Record<string, any>
 
@@ -228,9 +245,8 @@ function formatDeploymentDate(dateStr: string) {
   }
 }
 
-// Close modal function
-function closeModal() {
-  showEditModal.value = false;
+function closeSuccess() {
+  showSuccess.value = false;
 }
 
 // Validate WBS ranges
@@ -255,11 +271,30 @@ function validateWBS() {
   return hasErrors;
 }
 
-// Save function
-function saveAllEdits() {
-  if (validateWBS()) {
-    return;
+onMounted(() => {
+  const flash = (page.props as any).schedule?.flash || {};
+
+  if (successMessage.value) {
+    showSuccess.value = true;
+    setTimeout(() => showSuccess.value = false, 5000);
   }
+
+    if (showSuccess.value) {
+    setTimeout(() => showSuccess.value = false, 5000);
+  }
+
+  if (flash.success) {
+    successMessage.value = flash.success
+    showSuccess.value = true
+    setTimeout(() => (showSuccess.value = false), 5000)
+  }
+  if (flash.error) {
+    errorMessage.value = flash.error
+    showError.value = true
+    setTimeout(() => (showError.value = false), 5000)
+  }
+})
+
 
   // Build WBS payload
   const wbsPayload: Record<string, { start: string; end: string }> = {};
@@ -272,27 +307,40 @@ function saveAllEdits() {
 
   editForm.wbs = wbsPayload;
 
-  // Submit using Inertia
-  editForm.put(`/action/schedules/${props.schedule.id}`, {
-    onSuccess: () => {
-      closeModal();
-    },
-    onError: (errors) => {
-      console.log('Update errors:', errors);
-    },
-  });
-}
+
 </script>
 
 <template>
   <Head :title="`${schedule.batch_name} - Resource Schedule`" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
-    
-      <div v-if="flashMessage" class="p-4 mb-4 bg-green-100 text-green-800 rounded">
-    {{ flashMessage }}
-  </div>
 
+
+
+    <!-- SUCCESS ALERT -->
+<div v-if="showSuccess" class="full-width-alert">
+  <div class="alert-banner alert-success-banner">
+    <div class="alert-body">{{ successMessage }}</div>
+    <button type="button" class="close-btn" @click="showSuccess = false">×</button>
+  </div>
+</div>
+
+<!-- DEBUG DIV - Remove after testing -->
+<!-- <div v-if="successMessage" class="fixed bottom-4 left-4 bg-yellow-500 text-white p-4 rounded z-50">
+  DEBUG: successMessage = "{{ successMessage }}"
+</div>
+<div v-if="showSuccess" class="fixed bottom-20 left-4 bg-blue-500 text-white p-4 rounded z-50">
+  DEBUG: showSuccess = true
+</div> -->
+
+<!-- ERROR ALERT -->
+<div v-if="showError" class="full-width-alert">
+  <div class="alert-banner alert-error-banner">
+    <div class="alert-body">{{ errorMessage }}</div>
+    <button type="button" class="close-btn" @click="showError = false">×</button>
+  </div>
+</div>
+    
     <div class="flex flex-1 flex-col gap-6 p-8 bg-zinc-50/50 dark:bg-zinc-950 min-h-screen">
       
       <!-- Header -->
@@ -308,33 +356,28 @@ function saveAllEdits() {
             ← Back to List
           </a> -->
           
-<!-- Send Notification Button -->
 <button
   @click.prevent="sendNotification"
   :disabled="sendingNotification || notificationSent"
-  class="!px-4 !py-2 !bg-green-600 !text-white !rounded-lg !hover:bg-green-700 !font-semibold !disabled:opacity-50 !disabled:cursor-not-allowed !transition-colors !bg-green-600 !text-white !hover:bg-green-700"
+  class="btn-send"
 >
   <span v-if="!sendingNotification && !notificationSent">Send Notification</span>
   <span v-else-if="sendingNotification">Sending...</span>
   <span v-else>Sent</span>
 </button>
 
-<!-- Edit Button -->
 <a 
   :href="`/action/schedules/${props.schedule.id}/edit`"
-  class="!px-4 !py-2 !text-white !rounded-lg !font-semibold !flex !items-center !gap-2 !transition-colors !text-white"
-  style="background-color: #1C7BA5;"
+  class="btn-edit"
 >
   Edit
 </a>
 
-<!-- Delete Button -->
 <button
   v-if="props.userPermissions != 3"
   @click="confirmDelete"
-  class="!px-4 !py-2 !bg-red-600 !text-white !rounded-lg !font-semibold !flex !items-center !gap-2 !transition-colors !bg-red-600 !text-white !hover:bg-red-700"
+  class="btn-delete"
 >
-  <Trash2 class="w-4 h-4" />
   Delete
 </button>
         </div>
@@ -373,14 +416,14 @@ function saveAllEdits() {
       <button
         @click="showDeleteModal = false"
         :disabled="deleting"
-        class="flex-1 px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-600 font-semibold transition-colors"
+        class="btn-primary"
       >
         Cancel
       </button>
       <button
         @click="deleteSchedule"
         :disabled="deleting"
-        class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors flex items-center justify-center gap-2"
+        class="btn-primary"
       >
         <span v-if="!deleting">Delete</span>
         <span v-else>Deleting...</span>

@@ -35,10 +35,11 @@ const props = defineProps<{
 
 // Inertia page
 const page = usePage();
-
 // Error notification
 const errorMessage = computed(() => (page.props.flash as any)?.error || '');
 const showError = ref(false);
+const successMessage = computed(() => (page.props.flash as any)?.error || '');
+const showSuccess = ref(!!successMessage.value);
 
 // Initialize form with existing schedule data
 const form = useForm({
@@ -163,9 +164,6 @@ const ganttRows = computed(() => {
   });
 });
 
-// Success message
-const successMessage = computed(() => (page.props.flash as any)?.success || '');
-const showSuccess = ref(successMessage.value);
 
 onMounted(() => {
   // Initialize ganttForm with existing data
@@ -174,8 +172,11 @@ onMounted(() => {
     ganttForm.value[act].end = props.schedule[`${act}_enddate`] || "";
   });
 
-  if (showSuccess.value) setTimeout(() => showSuccess.value = false, 5000);
-  if (errorMessage.value) {
+   if (showSuccess.value) setTimeout(() => showSuccess.value = false, 5000);
+
+  const flashError = (page.props.flash as any)?.error;
+  if (flashError) {
+    errorMessage.value = flashError;
     showError.value = true;
     setTimeout(() => showError.value = false, 5000);
   }
@@ -196,33 +197,27 @@ const wbsColors: Record<string, string> = {
   training: '#84cc16',
 };
 
-// Submit form (UPDATE instead of CREATE)
+// Submit form 
 function updateResourceSchedule() {
-  // Map ganttForm to form fields
   ganttActivities.forEach(act => {
     (form as any)[`${act}_startdate`] = ganttForm.value[act].start;
     (form as any)[`${act}_enddate`] = ganttForm.value[act].end;
   });
 
-  form.put(`/action/schedules/${props.schedule.id}`, {
-    preserveScroll: true,
-    onSuccess: () => { showSuccess.value = true },
-    onError: (errors) => {
-      ganttActivities.forEach(act => {
-        ganttForm.value[act].error = errors[`${act}_startdate`] || errors[`${act}_enddate`] || "";
-      });
-    },
-  });
+form.put(`/action/schedules/${props.schedule.id}/update`, {
+  preserveScroll: true,
+  onSuccess: () => {
+  },
+});
 }
 
-watch(errorMessage, (val) => {
-  if (val) {
-    showError.value = true;
-    setTimeout(() => showError.value = false, 5000);
+watch(successMessage, (newVal) => {
+  if (newVal) {
+    showSuccess.value = true;
+    setTimeout(() => showSuccess.value = false, 5000);
   }
-});
+}, { immediate: true });
 
-// When user selects a batch, auto-fill target_trainees and deployment date
 // When user selects a batch, auto-fill target_trainees and deployment date
 watch(() => form.action_batch_id, (newId) => {
   // Only run if the value actually changed (not on initial mount)
@@ -246,18 +241,7 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
   }
 }, { immediate: false });
 
-// 1. Check if action_batch_id is being passed
-console.log('action_batch_id:', props.schedule.action_batch_id);
 
-// 2. Check if it matches any batch in newBatches
-const matches = props.newBatches.some(b => b.id === props.schedule.action_batch_id);
-console.log('Matches any batch:', matches);
-
-// 3. Check form value
-console.log('Form value:', form.action_batch_id);
-
-// 4. Check if they're the same type
-console.log('Types:', typeof props.schedule.action_batch_id, typeof form.action_batch_id);
 </script>
 
 <template>
@@ -310,6 +294,14 @@ console.log('Types:', typeof props.schedule.action_batch_id, typeof form.action_
     </button>
   </div>
 </div>
+
+<!-- DEBUG DIV - Remove after testing -->
+<!-- <div v-if="successMessage" class="fixed bottom-4 left-4 bg-yellow-500 text-white p-4 rounded z-50">
+  DEBUG: successMessage = "{{ successMessage }}"
+</div>
+<div v-if="showSuccess" class="fixed bottom-20 left-4 bg-blue-500 text-white p-4 rounded z-50">
+  DEBUG: showSuccess = true
+</div> -->
       <div class="bg-white dark:bg-zinc-900 p-10 rounded-2xl border shadow-xl space-y-10">
         <form @submit.prevent="updateResourceSchedule">
 
@@ -340,7 +332,25 @@ console.log('Types:', typeof props.schedule.action_batch_id, typeof form.action_
               </p>
             </div>
 
-            <!-- Previous Batch -->
+            <!-- Target Trainees -->
+            <div>
+              <label class="text-sm font-semibold">Target Trainees</label>
+              <input v-model="form.target_trainees" type="number" readonly 
+              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
+              style="background-color: #e5e7eb; color: #9ca3af;" />
+              <!-- No validation error for disabled field -->
+            </div>
+
+            <!-- Date of Deployment -->
+            <div>
+              <label class="text-sm font-semibold">Date of Deployment</label>
+              <input v-model="form.deployment_date" readonly 
+              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
+              style="background-color: #e5e7eb; color: #9ca3af;" />
+              <!-- No validation error for readonly field -->
+            </div>
+
+                        <!-- Previous Batch -->
             <div>
               <label class="text-sm font-semibold">Compare with Previous Batch</label>
               <select v-model="form.prev_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5">
@@ -352,20 +362,6 @@ console.log('Types:', typeof props.schedule.action_batch_id, typeof form.action_
               <p v-if="form.errors.prev_batch_id" class="text-red-600 text-xs mt-1">
                 {{ form.errors.prev_batch_id }}
               </p>
-            </div>
-
-            <!-- Target Trainees -->
-            <div>
-              <label class="text-sm font-semibold">Target Trainees</label>
-              <input v-model="form.target_trainees" type="number" disabled class="w-full bg-zinc-50 border rounded-lg p-2.5" />
-              <!-- No validation error for disabled field -->
-            </div>
-
-            <!-- Date of Deployment -->
-            <div>
-              <label class="text-sm font-semibold">Date of Deployment</label>
-              <input v-model="form.deployment_date" readonly class="w-full bg-zinc-50 border rounded-lg p-2.5" />
-              <!-- No validation error for readonly field -->
             </div>
           </div>
 

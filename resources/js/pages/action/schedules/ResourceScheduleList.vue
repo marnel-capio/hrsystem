@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
-import { ref, watch, computed } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { ref, watch, computed, onMounted } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
@@ -8,6 +8,24 @@ import { type BreadcrumbItem } from '@/types';
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Resource Schedule', href: '#' },
 ];
+
+const page = usePage();
+
+// Flash messages
+const successMessage = computed(() => (page.props.flash as any)?.success || '');
+const errorMessage = computed(() => (page.props.flash as any)?.error || '');
+
+const showSuccess = ref(successMessage.value);
+const showError = ref(false);
+
+onMounted(() => {
+  if (successMessage.value) {
+    showSuccess.value = true;
+  }
+  if (errorMessage.value) {
+    showError.value = true;
+  }
+});
 
 // Props from backend
 const props = defineProps<{
@@ -44,6 +62,7 @@ function formatDeploymentDate(dateStr: string) {
   
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
 }
+
 
 // ---------------- Pagination Setup ----------------
 const currentPage = ref(1);
@@ -105,6 +124,45 @@ function nextBlock() {
   <Head title="Resource Schedule List" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
+
+<!-- Success Notification -->
+<div 
+  v-if="showSuccess"
+  class="full-width-alert"
+>
+  <div 
+    class="alert-banner alert-success-banner"
+  >
+      <p class="text-white text-m font-medium text-left">{{ successMessage }}</p>
+    <button 
+      @click="showSuccess = false"
+      style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0,0,0,0.3); color:white; font-weight:bold; font-size:1rem;"
+    >
+      X
+    </button>
+  </div>
+</div>
+
+<!-- Error Notification -->
+<div 
+  v-if="showError"
+  class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
+>
+  <div 
+    class="relative bg-red-500 border-red-200 rounded-lg shadow-md p-4 flex items-center gap-4 animate-slide-down"
+  >
+    <div class="flex-1 flex justify-start items-center gap-3">
+      <p class="text-white text-m font-medium text-left">{{ errorMessage }}</p>
+    </div>
+    <button 
+      @click="showError = false"
+      style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0,0,0,0.3); color:white; font-weight:bold; font-size:1rem;"
+    >
+      X
+    </button>
+  </div>
+</div>
+
     <div class="flex flex-col gap-6 p-8 bg-zinc-50/50 dark:bg-zinc-950 min-h-screen">
 
       <!-- Header with Create Button -->

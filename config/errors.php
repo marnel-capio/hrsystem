@@ -1,7 +1,5 @@
 <?php
 
-// unsure if gagamitin pa ito or if the error validations will be hardcoded inline in web.php like it is now
-
 return [
 
     // Universal message for field max length exceeded
@@ -28,17 +26,37 @@ return [
         'errorMessage' => 'Record created successfully.',
     ],
 
+    // Universal message for all record deleted succesfully
+    'record_deleted_successfully' => [
+        'errorCode' => 'RECORD_DELETED_SUCCESSFULLY',
+        'errorMessage' => 'Record deleted successfully.',
+    ],
+
+    // Universal message for all record deleted failed
+    'record_deleted_failed' => [
+        'errorCode' => 'RECORD_DELETED_FAILED',
+        'errorMessage' => 'An error occurred while deleting the record. Please try again.												
+',
+    ],
+
     // Universal message for all required fields
     'field_required' => [
-        'errorCode' => 'ErrMsg00013',
+        'errorCode' => 'ErrMsg00015',
         'errorMessage' => 'This is a required field.',
     ],
 
     
-     // Universal message for all record created succesfully
-    'record_created_successfully' => [
-        'errorCode' => 'SucMsg00001',
-        'errorMessage' => 'Record created successfully!',
+    // Universal message for all email sent success
+    'email_sent_success' => [
+        'errorCode' => 'EMAIL_SUCCESS',
+        'errorMessage' => 'Email/s sent successfully',
+    ],
+
+    
+     // Universal message for email sent failed
+    'email_sent_failed' => [
+        'errorCode' => 'EMAIL_FAILED',
+        'errorMessage' => 'An error occurred while sending the email/s. Please try again.',										
     ],
 
     // ACCOUNT IS INACTIVE
