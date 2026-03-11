@@ -93,9 +93,6 @@ Route::middleware(['auth'])->group(function () {
     // ------------------------
     Route::middleware(['auth', 'check.permission'])->group(function () {
         Route::get('/intermediate/projects', [IntermediateProjectController::class, 'index'])->name('intermediate.projects.list');
-        // Route::get('/intermediate/projects/register', [IntermediateProjectController::class, 'create'])->name('intermediate.projects.register');
-        // Route::post('/intermediate/projects', [IntermediateProjectController::class, 'store'])->name('intermediate.projects.store');
-        // Route::get('/intermediate/projects/{id}', [IntermediateProjectController::class, 'show'])->name('intermediate.projects.show');
     });
 
 // ------------------------
