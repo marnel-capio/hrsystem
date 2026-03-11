@@ -103,4 +103,46 @@ return [
         'errorMessage' => 'The contact number must be exactly 11 digits.',
     ],
 
+ 
+   // ACTION BATCH VALIDATION
+    'action_batch_required' => [
+        'errorCode' => 'ACTION_BATCH_REQUIRED',
+        'errorMessage' => 'This field is required.',
+    ],
+
+    'action_batch_unique' => [
+        'errorCode' => 'ACTION_BATCH_UNIQUE',
+        'errorMessage' => 'Action Batch already exists.',
+    ],
+
+    // TARGET DATE
+    'target_date_after_or_equal' => [
+        'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
+        'errorMessage' => 'The selected date must be in the future.',
+    ],
+
+    // SUCCESS MESSAGE - CREATE
+    'action_batch_create_success' => [
+        'messageCode' => 'ACTION_BATCH_CREATE_SUCCESS',
+        'message' => 'Record created successfully.',
+    ],
+
+    // SYSTEM ERROR - CREATE
+    'action_batch_create_error' => [
+        'errorCode' => 'ACTION_BATCH_CREATE_ERROR',
+        'errorMessage' => 'An error occurred while creating the record.',
+    ],
+
+    // SUCCESS MESSAGE - UPDATE
+    'action_batch_update_success' => [
+        'messageCode' => 'ACTION_BATCH_UPDATE_SUCCESS',
+        'message' => 'Record updated successfully.',
+    ],
+
+    // SYSTEM ERROR - UPDATE
+    'action_batch_update_error' => [
+        'errorCode' => 'ACTION_BATCH_UPDATE_ERROR',
+        'errorMessage' => 'An error occurred while updating the record.',
+    ]
+ 
 ];

@@ -23,8 +23,6 @@ class ActionBatchController extends Controller
     {
         $user = Auth::user();
 
-        // Remove the permission check from here
-
         $search = $request->input('search');
 
         $batches = ActionBatchModel::getPaginated($search, perPage: 20);
@@ -72,8 +70,6 @@ class ActionBatchController extends Controller
         }
     }
  
- 
- 
     public function show($id)
     {
         $batch = ActionBatchModel::findOrFail($id);
@@ -85,64 +81,50 @@ class ActionBatchController extends Controller
         $batch->updated_by_name = $updatedByUser ? $updatedByUser->first_name . ' ' . $updatedByUser->last_name : 'Unknown';
  
         return Inertia::render('action/batches/ActionBatchDetail', [
-            'batch' => $batch
+            'batch' => $batch,
+            'user_permissions' => auth()->user()->permissions,
         ]);
     }
+
+
+    
+    //EDIT/DETAIL
+    public function edit($id)
+    {
+        $batch = ActionBatchModel::findOrFail($id);
+    
+        return Inertia::render('action/batches/ActionBatchEdit', [
+            'batch' => $batch,
+            'user_permissions' => auth()->user()->permissions,
+        ]);
+    }
+
+    public function update(ActionBatchRequest $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+    
+            // TEST ERROR
+            //throw new \Exception("Test error");
+    
+            $data = $request->validated();
+            $data['id'] = $id;
+    
+            $batch = $this->actionBatchService->update($data, $request);
+    
+            DB::commit();
+    
+            return redirect()
+                ->route('action.batches.show', $batch->id)
+                ->with('success', config('errors.action_batch_update_success.message'));
+    
+        } catch (\Exception $e) {
+    
+            DB::rollBack();
+    
+            return back()->withErrors([
+                'error' => config('errors.action_batch_update_error.errorMessage')
+            ]);
+        }
+    }
 }
-
-// public function edit($id)
-// {
-//     $user = Auth::user();
-
-//     if (!in_array($user->permissions, [1, 2])) {
-//         return redirect()
-//             ->route('dashboard')
-//             ->with('error', 'Access denied: You are not authorized to view this page.');
-//     }
-
-//     $batch = ActionBatchModel::findOrFail($id);
-//     return Inertia::render('action/batches/ActionBatchEdit', [
-//         'batch' => $batch,
-//         'user_permissions' => $user->permissions,
-//     ]);
-// }
-
-// public function update(Request $request, $id)
-// {
-//     $user = Auth::user();
-
-//     if (!in_array($user->permissions, [1, 2])) {
-//         return redirect()
-//             ->route('dashboard')
-//             ->with('error', 'Access denied: You are not authorized to edit this batch.');
-//     }
-
-//     $validated = $request->validate([
-//         'action_batch' => 'required|string|max:20',
-//         'target_trainees' => 'required|integer|max:99',
-//         'target_date' => 'required|date',
-//         'remarks' => 'nullable|string|max:1024',
-//     ]);
-
-//     $batch = ActionBatchModel::findOrFail($id);
-//     $batch->action_batch = strtoupper($validated['action_batch']);
-//     $batch->target_trainees = $validated['target_trainees'];
-//     $batch->target_date = $validated['target_date'];
-//     $batch->remarks = $validated['remarks'];
-//     $batch->updated_by = $user->id;
-//     $batch->updated_time = now();
-//     $batch->save();
-
-//     DB::table('logs')->insert([
-//         'module' => 'Action',
-//         'activity' => 'Updated Action Batch ' . $batch->action_batch,
-//         'ip_address' => $request->ip(),
-//         'created_by' => $user->id,
-//         'updated_by' => $user->id,
-//         'create_time' => now(),
-//         'update_time' => now(),
-//     ]);
-
-//     return redirect()->route('action.batches.show', ['id' => $batch->id])
-//         ->with('success', 'Action batch updated successfully.');
-// }

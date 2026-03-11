@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3'
+import { Head, router, usePage, Link } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
  
 const page = usePage<any>()
-const batch = computed(() => page.props.batch)
+const batch = computed(() => page.props.batch);
 const userPermissions = computed(() => Number(page.props.user_permissions))
 const showSuccess = ref(false)
 
@@ -35,14 +35,14 @@ const successMessage = computed(() => page.props.flash?.success)
 const closeModal = () => { showSuccess.value = false }
 watch(successMessage, (val) => { if (val) { showSuccess.value = true } }, { immediate: true })
 
-const redirectToEditPage = () => {
-  const batchId = batch.value.id; 
-  router.get(`/action/batches/${batchId}/edit`);
-};
+const goToEdit = () => {
+router.get(`/action/batches/${batch.value.id}/edit`)
+}
 </script>
+
 <template>
   <Head title="Action Batch Detail"/>
- 
+
   <AppLayout>
     <div v-if="showSuccess" 
          class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4">
@@ -61,35 +61,33 @@ const redirectToEditPage = () => {
           @click="closeModal">
           X
         </button>
-
       </div>  
     </div>
- 
+
     <!-- Header -->
     <div class="flex justify-between mx-5 mb-3">
-      <h2 class="text-xl font-bold">Action Batch Detail</h2>
- 
+      <h2 class="text-xl font-bold">ACTION Batch Detail</h2>
+
       <span
         v-if="userPermissions === 1 || userPermissions === 2"
-        class="bg-[#1C7BA5] text-white px-4 py-2 rounded shadow text-xs cursor-pointer"
-        @click="redirectToEditPage"
-      >
-        Edit
-      </span>
-    </div>
- 
+        @click="goToEdit"
+        class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded cursor-pointer"
+      > Edit 
+    </span>
+    </div> 
+
     <!-- Main Content -->
     <div class="mx-5 mt-6 grid grid-cols-3 gap-6">
- 
+
       <!-- LEFT -->
       <div class="col-span-1 space-y-4">
- 
+
         <div class="bg-[#2F359E] text-white rounded-xl p-6 shadow">
           <h3 class="text-lg font-bold text-center">{{ batch.action_batch }}</h3>
           <p class="text-xs opacity-80 text-center">Action Batch Detail</p>
         </div>
 
-         <div class="bg-white rounded-xl p-4 shadow border">
+        <div class="bg-white rounded-xl p-4 shadow border">
           <table class="min-w-full table-auto">
             <tbody>
               <tr>
@@ -107,7 +105,7 @@ const redirectToEditPage = () => {
             </tbody>
           </table>
         </div>
- 
+
         <div class="bg-white rounded-xl p-4 shadow border">
           <table class="min-w-full table-auto">
             <tbody>
@@ -138,16 +136,16 @@ const redirectToEditPage = () => {
             </tbody>
           </table>
         </div>
- 
+
       </div>
- 
+
       <!-- RIGHT -->
       <div class="col-span-2 bg-white rounded-xl shadow border p-6">
- 
+
         <h4 class="text-xs font-bold mb-3 text-center">REMARKS</h4>
         <p class="text-xs">{{ batch.remarks }}</p>
- 
+
       </div>
     </div>
   </AppLayout>
-</template> 
+</template>

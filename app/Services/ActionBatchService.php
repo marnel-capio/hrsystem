@@ -35,5 +35,33 @@ class ActionBatchService
  
         return $batch;
     }
+
+    public function update($data, $request)
+    {
+        $batch = ActionBatchModel::findOrFail($data['id']);
+
+        $batch->action_batch = strtoupper($data['action_batch']);
+        $batch->target_trainees = $data['target_trainees'];
+        $batch->target_date = $data['target_date'];
+        $batch->remarks = $data['remarks'] ?? null;
+
+        $batch->updated_by = auth()->user()->id;
+        $batch->updated_time = now();
+
+        $batch->save();
+
+        DB::table('logs')->insert([
+            'module' => 'Action',
+            'activity' => 'Updated ACTION batch ' . $batch->action_batch,
+            'ip_address' => $request->ip(),
+            'created_by' => auth()->user()->id,
+            'updated_by' => auth()->user()->id,
+            'create_time' => now(),
+            'update_time' => now(),
+        ]);
+
+        return $batch;
+    }
+ 
 }
  
