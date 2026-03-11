@@ -34,7 +34,7 @@ const submit = () => {
   <Head title="Action Batch Register" />
   <AppLayout :errors="page.props.errors">
     <div class="flex justify-between items-center mx-5 mb-3">
-      <h2 class="text-xl font-bold">Update Action Batch</h2>
+      <h2 class="text-xl font-bold">Edit Action Batch</h2>
     </div>
 
     <!-- Form Fields -->
