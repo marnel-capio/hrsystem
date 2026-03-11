@@ -23,9 +23,9 @@ class CheckUserPermission
         /*
         |----------------------------------------------------------------------
         | Permission 7 → NEVER allowed anywhere
-        |---------------------------------------------------------------------- 
+        |----------------------------------------------------------------------
         */
-        if ($permission === 7) {
+        if ($permission === config('constants.WALKIN.value')) {
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
@@ -37,7 +37,10 @@ class CheckUserPermission
         |----------------------------------------------------------------------
         */
         if (in_array($routeName, ['user.index', 'user.register', 'user.store'])) {
-            if (in_array($permission, [1, 2])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN.value'), 
+                config('constants.HR_MANAGER.value')
+            ])) {
                 return $next($request);
             }
             return redirect('/dashboard')
@@ -52,12 +55,20 @@ class CheckUserPermission
         if ($routeName === 'user.show') {
 
             // Permission 1 & 2 → Full access
-            if (in_array($permission, [1, 2])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN.value'), 
+                config('constants.HR_MANAGER.value')
+            ])) {
                 return $next($request);
             }
 
             // Permission 3–6 → Only own profile
-            if (in_array($permission, [3, 4, 5, 6])) {
+            if (in_array($permission, [
+                config('constants.HR_RECRUITER.value'),
+                config('constants.HR.value'),
+                config('constants.BU_MANAGER_P.value'),
+                config('constants.INTERVIEWER.value')
+            ])) {
                 if ((int) $routeId === (int) $user->id) {
                     return $next($request);
                 }
@@ -74,12 +85,20 @@ class CheckUserPermission
         if ($routeName === 'user.edit') {
 
             // Permission 1 & 2 → Full access
-            if (in_array($permission, [1, 2])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN.value'), 
+                config('constants.HR_MANAGER.value')
+            ])) {
                 return $next($request);
             }
 
             // Permission 3–6 → Only own profile
-            if (in_array($permission, [3, 4, 5, 6])) {
+            if (in_array($permission, [
+                config('constants.HR_RECRUITER.value'),
+                config('constants.HR.value'),
+                config('constants.BU_MANAGER_P.value'),
+                config('constants.INTERVIEWER.value')
+            ])) {
                 if ((int) $routeId === (int) $user->id) {
                     return $next($request);
                 }
