@@ -16,6 +16,7 @@ const showSuccess = ref(false)
 const showError = ref(false)
 const successMessage = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
+const passwordError = ref<string | null>(null)
 
 // Watch for flash messages and display toast
 watch(
@@ -58,6 +59,45 @@ const form = useForm({
     password: '',
     password_confirmation: ''
 })
+
+watch(
+  () => [form.password, form.password_confirmation],
+  ([password, confirm]) => {
+
+    if (!password) {
+      passwordError.value = null
+      return
+    }
+
+    // Password complexity checks
+    if (password.length < 8) {
+      passwordError.value = "Password must be at least 8 characters."
+    }
+    else if (password.length > 64) {
+      passwordError.value = "Password must be at most 64 characters."
+    }
+    else if (!/[A-Z]/.test(password)) {
+      passwordError.value = "Password must contain at least one uppercase letter."
+    }
+    else if (!/[a-z]/.test(password)) {
+      passwordError.value = "Password must contain at least one lowercase letter."
+    }
+    else if (!/[0-9]/.test(password)) {
+      passwordError.value = "Password must contain at least one number."
+    }
+    else if (!/[!@#$%&*_]/.test(password)) {
+      passwordError.value = "Password must contain at least one special character (!@#$%&*_)."
+    }
+    else if (password !== confirm) {
+      passwordError.value = "Passwords do not match."
+    }
+    else {
+      passwordError.value = null
+    }
+
+  },
+  { immediate: true }
+)
 
 const submit = () => {
     form.put(`/user/${props.user.id}/update`, { preserveScroll: true })
@@ -179,14 +219,14 @@ const personalFieldReadonly = () => {
                     <div v-if="isOwnAccount" class="detail-row">
                         <label>Password <span class="text-muted">(Leave blank to keep current)</span></label>
                         <input type="password" v-model="form.password" class="input-field" />
-                        <span v-if="form.errors.password" class="error">{{ form.errors.password }}</span>
+                        <span v-if="passwordError || form.errors.password" class="error">
+                            {{ passwordError ?? form.errors.password }}
+                        </span>
                     </div>
 
                     <div v-if="isOwnAccount" class="detail-row">
                         <label>Confirm Password</label>
                         <input type="password" v-model="form.password_confirmation" class="input-field" />
-                        <span v-if="form.errors.password_confirmation" class="error">{{
-                            form.errors.password_confirmation }}</span>
                     </div>
 
                     <!-- Actions -->

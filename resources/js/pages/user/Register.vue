@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { useForm, Link } from '@inertiajs/vue3'
+import { ref, watch } from 'vue'
 
 // Props coming from controller
 const props = defineProps<{
@@ -15,6 +16,8 @@ const positionOptions = Object.entries(props.positions).map(
         label
     })
 )
+
+const passwordError = ref<string | null>(null)
 
 const permissionLevels = Object.entries(props.permissions).map(
     ([value, label]) => ({
@@ -37,6 +40,47 @@ const form = useForm({
     permissions: '',
     active_status: 1,
 })
+
+watch(
+  () => [form.password, form.password_confirmation],
+  ([password, confirm]) => {
+
+    if (!password) {
+      passwordError.value = null
+      return
+    }
+
+    // Password complexity checks
+    if (password.length < 8) {
+      passwordError.value = "Password must be at least 8 characters."
+    }
+    else if (password.length > 64) {
+      passwordError.value = "Password must be at most 64 characters."
+    }
+    else if (!/[A-Z]/.test(password)) {
+      passwordError.value = "Password must contain at least one uppercase letter."
+    }
+    else if (!/[a-z]/.test(password)) {
+      passwordError.value = "Password must contain at least one lowercase letter."
+    }
+    else if (!/[0-9]/.test(password)) {
+      passwordError.value = "Password must contain at least one number."
+    }
+    else if (!/[!@#$%&*_]/.test(password)) {
+      passwordError.value = "Password must contain at least one special character (!@#$%&*_)."
+    }
+    // Confirm password mismatch always triggers if password != confirm
+    else if (password !== confirm) {
+      passwordError.value = "Passwords do not match."
+    }
+    else {
+      passwordError.value = null
+    }
+
+  },
+  { immediate: true }
+)
+
 
 // Submit handler
 function submit() {
@@ -96,15 +140,14 @@ function submit() {
                     <div class="form-group">
                         <label>Password</label>
                         <input v-model="form.password" type="password" placeholder="Enter password" />
-                        <span v-if="form.errors.password" class="error">{{ form.errors.password }}</span>
+                         <span v-if="passwordError || form.errors.password" class="error">
+                            {{ passwordError ?? form.errors.password }}
+                        </span>
                     </div>
 
                     <div class="form-group">
                         <label>Confirm Password</label>
                         <input v-model="form.password_confirmation" type="password" placeholder="Confirm password" />
-                        <span v-if="form.errors.password_confirmation" class="error">
-                            {{ form.errors.password_confirmation }}
-                        </span>
                     </div>
 
                     <!-- Position -->
@@ -112,11 +155,7 @@ function submit() {
                         <label>Position</label>
                         <select v-model="form.position">
                             <option disabled value="">Select Position</option>
-                            <option
-                                v-for="pos in positionOptions"
-                                :key="pos.value"
-                                :value="pos.value"
-                            >
+                            <option v-for="pos in positionOptions" :key="pos.value" :value="pos.value">
                                 {{ pos.label }}
                             </option>
                         </select>
@@ -130,11 +169,7 @@ function submit() {
                         <label>Permissions</label>
                         <select v-model="form.permissions">
                             <option disabled value="">Select Role</option>
-                            <option
-                                v-for="perm in permissionLevels"
-                                :key="perm.value"
-                                :value="perm.value"
-                            >
+                            <option v-for="perm in permissionLevels" :key="perm.value" :value="perm.value">
                                 {{ perm.label }}
                             </option>
                         </select>
@@ -146,12 +181,7 @@ function submit() {
                     <!-- Active -->
                     <div class="form-group">
                         <label>
-                            <input
-                                type="checkbox"
-                                v-model="form.active_status"
-                                :true-value="1"
-                                :false-value="0"
-                            />
+                            <input type="checkbox" v-model="form.active_status" :true-value="1" :false-value="0" />
                             Active User
                         </label>
                     </div>
@@ -162,11 +192,7 @@ function submit() {
                             Cancel
                         </Link>
 
-                        <button
-                            type="submit"
-                            :disabled="form.processing"
-                            class="btn btn-primary"
-                        >
+                        <button type="submit" :disabled="form.processing" class="btn btn-primary">
                             {{ form.processing ? 'Creating…' : 'Register' }}
                         </button>
                     </div>

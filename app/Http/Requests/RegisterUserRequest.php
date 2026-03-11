@@ -48,7 +48,7 @@ class RegisterUserRequest extends FormRequest
                 'max:64',
                 'confirmed',
                 new RequiredField,
-                new PasswordRules, // enforces uppercase, lowercase, number, special char
+                new PasswordRules, 
             ],
             'position' => ['required', 'numeric', new RequiredField],
             'permissions' => ['required', 'numeric', new RequiredField],
