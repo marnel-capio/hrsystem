@@ -4,6 +4,7 @@ use App\Http\Controllers\ActionBatchController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -77,13 +78,24 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ------------------------
-    // Actions
+    // Actions Batches
     // ------------------------
     Route::middleware(['auth', 'check.permission'])->group(function () {
         Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list');
         Route::get('/action/batches/register', [ActionBatchController::class, 'create'])->name('action.batches.register');
         Route::post('/action/batches', [ActionBatchController::class, 'store'])->name('action.batches.store');
         Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])->name('action.batches.show');
+    });
+
+
+    // ------------------------
+    // Intermediate Projects
+    // ------------------------
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        Route::get('/intermediate/projects', [IntermediateProjectController::class, 'index'])->name('intermediate.projects.list');
+        // Route::get('/intermediate/projects/register', [IntermediateProjectController::class, 'create'])->name('intermediate.projects.register');
+        // Route::post('/intermediate/projects', [IntermediateProjectController::class, 'store'])->name('intermediate.projects.store');
+        // Route::get('/intermediate/projects/{id}', [IntermediateProjectController::class, 'show'])->name('intermediate.projects.show');
     });
 
 // ------------------------
