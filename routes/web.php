@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ActionApplicantController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -41,6 +42,14 @@ Route::middleware(['auth'])->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
+
+    //action-applicants list
+    Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
+            ->name('action.applicants.index');
+    
+    //action-applicants register       
+    Route::get('/action/applicants/register', [ActionApplicantController::class, 'create'])
+            ->name('action.applicants.register');
 });
 
     // ------------------------
