@@ -32,28 +32,28 @@ return [
     // -------------------------
     // Position Constants
     // -------------------------
-    'HR_STAFF'                => ['value' => 1,  'name' => 'HR Staff'],
-    'TECHNICAL_RECRUITER'     => ['value' => 2,  'name' => 'Technical Recruiter'],
-    'HR_ASSISTANT'            => ['value' => 3,  'name' => 'HR Assistant'],
-    'HR_SENIOR_ASSISTANT'     => ['value' => 4,  'name' => 'HR Senior Assistant'],
-    'HR_ASSOCIATE'            => ['value' => 5,  'name' => 'HR Associate'],
-    'HR_SENIOR_ASSOCIATE'     => ['value' => 6,  'name' => 'HR Senior Associate'],
-    'HR_SUPERVISOR'           => ['value' => 7,  'name' => 'HR Supervisor'],
-    'HR_ASSISTANT_MANAGER'    => ['value' => 8,  'name' => 'HR Assistant Manager'],
-    'HR_MANAGER'              => ['value' => 9,  'name' => 'HR Manager'],
-    'BU_MANAGER'              => ['value' => 10, 'name' => 'BU Manager'],
-    'OTHERS'                  => ['value' => 11, 'name' => 'Others'],
+    'HR_STAFF_POSITION'                => ['value' => 1,  'name' => 'HR Staff'],
+    'TECHNICAL_RECRUITER_POSITION'     => ['value' => 2,  'name' => 'Technical Recruiter'],
+    'HR_ASSISTANT_POSITION'            => ['value' => 3,  'name' => 'HR Assistant'],
+    'HR_SENIOR_ASSISTANT_POSITION'     => ['value' => 4,  'name' => 'HR Senior Assistant'],
+    'HR_ASSOCIATE_POSITION'            => ['value' => 5,  'name' => 'HR Associate'],
+    'HR_SENIOR_ASSOCIATE_POSITION'     => ['value' => 6,  'name' => 'HR Senior Associate'],
+    'HR_SUPERVISOR_POSITION'           => ['value' => 7,  'name' => 'HR Supervisor'],
+    'HR_ASSISTANT_MANAGER_POSITION'    => ['value' => 8,  'name' => 'HR Assistant Manager'],
+    'HR_MANAGER_POSITION'              => ['value' => 9,  'name' => 'HR Manager'],
+    'BU_MANAGER_POSITION'              => ['value' => 10, 'name' => 'BU Manager'],
+    'OTHERS_POSITION'                  => ['value' => 11, 'name' => 'Others'],
 
     // -------------------------
     // Permission Constants
     // -------------------------
-    'HR_ADMIN'     => ['value' => 1, 'name' => 'HR Admin'],
-    'HR_MANAGER'   => ['value' => 2, 'name' => 'HR Manager'],
-    'HR_RECRUITER' => ['value' => 3, 'name' => 'HR Recruiter'],
-    'HR'           => ['value' => 4, 'name' => 'HR'],
-    'BU_MANAGER_P' => ['value' => 5, 'name' => 'BU Manager'],
-    'INTERVIEWER'  => ['value' => 6, 'name' => 'Interviewer'],
-    'WALKIN'       => ['value' => 7, 'name' => 'Walk-in'],
+    'HR_ADMIN_PERMISSION'     => ['value' => 1, 'name' => 'HR Admin'],
+    'HR_MANAGER_PERMISSION'   => ['value' => 2, 'name' => 'HR Manager'],
+    'HR_RECRUITER_PERMISSION' => ['value' => 3, 'name' => 'HR Recruiter'],
+    'HR_PERMISSION'           => ['value' => 4, 'name' => 'HR'],
+    'BU_MANAGER_PERMISSION' => ['value' => 5, 'name' => 'BU Manager'],
+    'INTERVIEWER_PERMISSION'  => ['value' => 6, 'name' => 'Interviewer'],
+    'WALKIN_PERMISSION'       => ['value' => 7, 'name' => 'Walk-in'],
 
     // -------------------------
     // Menu & Permissions

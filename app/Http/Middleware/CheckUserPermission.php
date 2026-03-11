@@ -12,7 +12,7 @@ class CheckUserPermission
     {
         $user = auth()->user();
 
-        if (! $user) {
+        if (!$user) {
             return redirect('/');
         }
 
@@ -22,10 +22,10 @@ class CheckUserPermission
 
         /*
         |----------------------------------------------------------------------
-        | Permission 7 → NEVER allowed anywhere
+        | Permission WALK-IN → NEVER allowed anywhere
         |----------------------------------------------------------------------
         */
-        if ($permission === config('constants.WALKIN.value')) {
+        if ($permission === config('constants.WALKIN_PERMISSION.value')) {
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
@@ -33,16 +33,17 @@ class CheckUserPermission
         /*
         |----------------------------------------------------------------------
         | Routes: /user & /user/register
-        | Only permission 1 & 2 allowed
+        | Only HR Admin & HR Manager allowed
         |----------------------------------------------------------------------
         */
         if (in_array($routeName, ['user.index', 'user.register', 'user.store'])) {
             if (in_array($permission, [
-                config('constants.HR_ADMIN.value'), 
-                config('constants.HR_MANAGER.value')
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
             ])) {
                 return $next($request);
             }
+
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
@@ -54,24 +55,26 @@ class CheckUserPermission
         */
         if ($routeName === 'user.show') {
 
-            // Permission 1 & 2 → Full access
+            // Full access
             if (in_array($permission, [
-                config('constants.HR_ADMIN.value'), 
-                config('constants.HR_MANAGER.value')
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
             ])) {
                 return $next($request);
             }
 
-            // Permission 3–6 → Only own profile
+            // Limited access (own profile only)
             if (in_array($permission, [
-                config('constants.HR_RECRUITER.value'),
-                config('constants.HR.value'),
-                config('constants.BU_MANAGER_P.value'),
-                config('constants.INTERVIEWER.value')
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.HR_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
             ])) {
+
                 if ((int) $routeId === (int) $user->id) {
                     return $next($request);
                 }
+
                 return redirect('/dashboard')
                     ->with('error', config('errors.unauthorized.errorMessage'));
             }
@@ -84,24 +87,26 @@ class CheckUserPermission
         */
         if ($routeName === 'user.edit') {
 
-            // Permission 1 & 2 → Full access
+            // Full access
             if (in_array($permission, [
-                config('constants.HR_ADMIN.value'), 
-                config('constants.HR_MANAGER.value')
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
             ])) {
                 return $next($request);
             }
 
-            // Permission 3–6 → Only own profile
+            // Limited access (own profile only)
             if (in_array($permission, [
-                config('constants.HR_RECRUITER.value'),
-                config('constants.HR.value'),
-                config('constants.BU_MANAGER_P.value'),
-                config('constants.INTERVIEWER.value')
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.HR_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
             ])) {
+
                 if ((int) $routeId === (int) $user->id) {
                     return $next($request);
                 }
+
                 return redirect('/dashboard')
                     ->with('error', config('errors.unauthorized.errorMessage'));
             }
