@@ -130,7 +130,7 @@ const showingTo = computed(() => {
         <!-- PAGE HEADER -->
         <div class="page-content">
             <div class="page-header">
-                <h2 class="page-title">Users</h2>
+                <h2 class="page-title">User List</h2>
                 <Link href="/user/register" class="!bg-[#1C7BA5] btn-primary">Register User</Link>
             </div>
 
