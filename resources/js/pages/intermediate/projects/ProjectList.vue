@@ -66,9 +66,9 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
       <div class="page-header flex justify-between items-center mb-6">
           <h2 class="text-lg font-semibold">Project List</h2>
           <Link
-            v-if="userPermissions === 1 || userPermissions === 2"
+            v-if="userPermissions === 1 || userPermissions === 5"
             :href="`/intermediate/projects/register`"
-            class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded">
+            class="text-xs bg-[#1C7BA5] text-white px-4 py-2 rounded">
             Create Project
           </Link>
       </div>
