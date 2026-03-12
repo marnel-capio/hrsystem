@@ -17,26 +17,13 @@ class UserController extends Controller
 
     public function index()
     {
-        $users = User::select(
-            'id',
-            'first_name',
-            'middle_name',
-            'last_name',
-            'address',
-            'contact_no',
-            'email_address',
-            'position',
-            'active_status',
-            'create_time'
-        )
-            ->orderBy('create_time', 'desc')
-            ->get();
+        $users = User::getUsersForIndex();
 
         $positions = Config::get('constants.positions');
 
         return Inertia::render('user/Index', [
             'users' => $users,
-            'positions' => $positions,  
+            'positions' => $positions,
         ]);
     }
 
