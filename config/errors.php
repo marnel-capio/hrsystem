@@ -115,6 +115,11 @@ return [
         'errorMessage' => 'Action Batch already exists.',
     ],
 
+    'input_max' => [
+        'errorCode' => 'INPUT_MAX',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
+    ],
+
     // TARGET DATE
     'target_date_after_or_equal' => [
         'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',

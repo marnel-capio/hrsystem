@@ -76,7 +76,7 @@ class CheckUserPermission
 
             // Only permission 1, 2, and 3 are allowed for these routes
             if (in_array($permission, [1, 2, 3])) {
-                return $next($request);  // Allow the request to proceed
+                return $next($request); 
             }
 
             return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');
@@ -86,7 +86,7 @@ class CheckUserPermission
 
             // Only permission 1, or 2 are allowed for these routes
             if (in_array($permission, [1,2])) {
-                return $next($request);  // Allow the request to proceed
+                return $next($request);  
             }
 
             return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');

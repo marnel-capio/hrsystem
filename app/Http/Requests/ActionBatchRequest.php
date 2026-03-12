@@ -35,16 +35,16 @@ class ActionBatchRequest extends FormRequest
     {
         return [
             'action_batch.required' => config('errors.action_batch_required.errorMessage'),
-            'action_batch.max' => 'This field exceeds the maximum allowed length',
+            'action_batch.max' => config('errors.input_max.errorMessage'),
             'action_batch.unique' => config('errors.action_batch_unique.errorMessage'),
 
             'target_trainees.required' => config('errors.target_trainees_required.errorMessage'),
-            'target_trainees.max' => 'This field exceeds the maximum allowed length',
+            'target_trainees.max' => config('errors.input_max.errorMessage'),
 
             'target_date.required' => config('errors.target_date_required.errorMessage'),
             'target_date.after_or_equal' => config('errors.target_date_after_or_equal.errorMessage'),
 
-            'remarks.max' => 'This field exceeds the maximum allowed length',
+            'remarks.max' => config('errors.input_max.errorMessage'),
         ];
     }
 }

@@ -33,8 +33,14 @@ const formatDateTime = (dateString: string | null) => {
 }
 const successMessage = computed(() => page.props.flash?.success) 
 const closeModal = () => { showSuccess.value = false }
-watch(successMessage, (val) => { if (val) { showSuccess.value = true } }, { immediate: true })
-
+watch(successMessage, (val) => {
+  if (val) {
+    showSuccess.value = true;
+    setTimeout(() => {
+      showSuccess.value = false;
+    }, 5000);
+  }
+}, { immediate: true });
 const goToEdit = () => {
 router.get(`/action/batches/${batch.value.id}/edit`)
 }
@@ -110,22 +116,10 @@ router.get(`/action/batches/${batch.value.id}/edit`)
           <table class="min-w-full table-auto">
             <tbody>
               <tr class="mt-5">
-                  <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600 w-40">
-                    Created by
-                  </th>
-                  <td class="text-xs px-2">{{ batch.created_by_name }}</td> 
-              </tr>
-              <tr class="mt-5">
                   <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
                     Updated by
                   </th>
                   <td class="text-xs px-2">{{ batch.updated_by_name }}</td>
-              </tr>
-              <tr class="mt-5">
-                <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600">
-                  Created Time
-                </th>
-                <td class="text-xs px-2">{{ formatDateTime(batch.created_time) }}</td>  
               </tr>
               <tr class="mt-5">
                 <th class="px-2 py-2 text-left font-semibold text-xs text-gray-600 mt-5">
