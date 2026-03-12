@@ -80,12 +80,16 @@ class ResourceSchedule extends Model
         //actionBatch relationship
         $actionBatch = $this->actionBatch;
 
-        $actualApps = $actionBatch ? $actionBatch->getRecruitmentProjection() : collect([]);
-        
-        $planApps = collect([]);
-        if ($prevSchedule && $prevSchedule->actionBatch) {
-            $planApps = $prevSchedule->actionBatch->getRecruitmentProjection();
-        }
+         $actualApps = DB::table('action_applicant_applications')
+        ->where('action_batch_id', $this->action_batch_id)
+        ->get();
+    
+    $planApps = collect([]);
+    if ($prevSchedule) {
+        $planApps = DB::table('action_applicant_applications')
+            ->where('action_batch_id', $prevSchedule->action_batch_id)
+            ->get();
+    }
 
         $stages = [
             'examinees',
@@ -116,21 +120,34 @@ class ResourceSchedule extends Model
 
         $projection = [];
 
-        foreach ($stages as $stage) {
-            $actualNo = $counter($actualApps, $stage);
-            $planNo   = $counter($planApps, $stage);
+        $actualExaminees = $counter($actualApps, 'examinees');
+        $planExaminees   = $counter($planApps, 'examinees');
 
-            $projection[$stage] = [
-                'actual_no'  => $actualNo,
-                'actual_pct' => $this->target_trainees > 0
-                    ? round(($actualNo / $this->target_trainees) * 100, 2)
-                    : 0,
-                'plan_no'    => $planNo,
-                'plan_pct'   => $this->target_trainees > 0
-                    ? round(($planNo / $this->target_trainees) * 100, 2)
-                    : 0,
-            ];
-        }
+        foreach ($stages as $stage) {
+    $actualNo = $counter($actualApps, $stage);
+    $planNo   = $counter($planApps, $stage);
+
+    if ($stage === 'examinees') {
+        // Examinees row has no percentage
+        $projection[$stage] = [
+            'actual_no'  => $actualNo,
+            'actual_pct' => null,
+            'plan_no'    => $planNo,
+            'plan_pct'   => null,
+        ];
+    } else {
+        $projection[$stage] = [
+            'actual_no'  => $actualNo,
+            'actual_pct' => $actualExaminees > 0
+                ? round(($actualNo / $actualExaminees) * 100, 2)
+                : 0,
+            'plan_no'    => $planNo,
+            'plan_pct'   => $planExaminees > 0
+                ? round(($planNo / $planExaminees) * 100, 2)
+                : 0,
+        ];
+    }
+}
 
         return $projection;
     }

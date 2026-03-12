@@ -14,6 +14,7 @@ const showSuccess = ref(!!successMessage.value);
 const errorMessage = ref((page.props.flash as any)?.error || '');
 const showError = ref(!!errorMessage.value);
 
+
 // Delete form and modal state
 const deleteForm = useForm({});
 const showDeleteModal = ref(false);
@@ -90,6 +91,12 @@ const props = defineProps<{
     }
     userPermissions: number;
 }>();
+
+const projection = ref(props.projection);
+
+watch(() => props.projection, (newVal) => {
+  projection.value = newVal;
+});
 
 // Breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
@@ -531,15 +538,15 @@ editForm.wbs = wbsPayload;
 
             <tbody>
                     <!-- EXAMINEES -->
-                <tr>
-                  <td class="border px-3 py-2 font-semibold">Examinees</td>
+<tr>
+  <td class="border px-3 py-2 font-semibold">Examinees</td>
 
-                  <td class="border px-3 py-2 text-center">{{ projection.examinees.actual_no }}</td>
-                  <td class="border px-3 py-2 text-center">{{ projection.examinees.actual_pct }}%</td>
+  <td class="border px-3 py-2 text-center">{{ projection.examinees.actual_no }}</td>
+  <td class="border px-3 py-2 text-center">-</td> <!-- No percent for examinees -->
 
-                  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.examinees.plan_no }}</td>
-                  <td class="border px-3 py-2 text-center">{{ projection.examinees.plan_pct }}%</td>
-                </tr>
+  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.examinees.plan_no }}</td>
+  <td class="border px-3 py-2 text-center">-</td> <!-- No percent for examinees -->
+</tr>
 
                 <!-- INITIAL INTERVIEW -->
                 <tr>
