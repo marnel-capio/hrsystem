@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { Users } from 'lucide-vue-next';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
 const page = usePage();
+
 const successMessage = ref((page.props.flash as any)?.success || '');
 const showSuccess = ref(!!successMessage.value);
 
@@ -32,7 +33,6 @@ function deleteSchedule() {
     },
   });
 }
-
 
 const notificationSent = ref(false);
 const sendingNotification = ref(false);
@@ -63,38 +63,32 @@ function sendNotification() {
 
 // Define props to receive schedule data from the backend
 const props = defineProps<{
-
     flash?: {
-    success?: string
-    error?: string
-  }
-
-  projection: Record<string, any>
-
-  schedule: {
-    id: number;
-    batch_name: string;
-    prev_batch_name?: string;
-    target_location: string;
-    target_trainees: number;
-    deployment_date: string;
-
-    contact_schools?: string;
-    screening?: string;
-    initial_interview?: string;
-    final_interview?: string;
-    job_offer?: string;
-    job_acceptance?: string;
-
-    remarks?: string;
-
-    created_by?: string;
-    created_time?: string;
-    updated_by?: string;
-    updated_time?: string;
-  }
-  
-  userPermissions: number;
+        success?: string
+        error?: string
+    }
+    projection: Record<string, any>
+    schedule: {
+        id: number;
+        batch_name: string;
+        prev_batch_name?: string;
+        target_location: string;
+        target_trainees: number;
+        deployment_date: string;
+        contact_schools?: string;
+        screening?: string;
+        initial_interview?: string;
+        final_interview?: string;
+        job_offer?: string;
+        job_acceptance?: string;
+        remarks?: string;
+        created_by?: string;
+        created_time?: string;
+        updated_by?: string;
+        updated_by_name?: string;
+        updated_time?: string;
+    }
+    userPermissions: number;
 }>();
 
 // Breadcrumbs
@@ -146,8 +140,8 @@ const ganttForm = ref(
     ganttActivities.map(a => [
       a, 
       { 
-        start: props.schedule.wbs?.[a]?.start || "2026-W05", 
-        end: props.schedule.wbs?.[a]?.end || "2026-W06",
+        start: props.schedule.wbs?.[a]?.start || "", 
+        end: props.schedule.wbs?.[a]?.end || "",
         error: "" 
       }
     ])
@@ -163,11 +157,22 @@ function weekToKey(weekStr: string) {
 
 // Format week string into a display label (e.g., "Jan W1")
 function formatWeekLabel(weekStr: string) {
-  const [year, weekNum] = weekStr.split("-W").map(Number);
+  if (!weekStr) return '';
+  const [year, isoWeek] = weekStr.split('-W').map(Number);
+
+  // Compute the Monday of this ISO week
   const jan4 = new Date(year, 0, 4);
-  const weekStart = new Date(jan4.getTime() + (weekNum - 1) * 7 * 86400000);
-  const month = weekStart.toLocaleString("en-US", { month: "short" });
-  return `${month} W${weekNum}`;
+  const dayOffset = (isoWeek - 1) * 7;
+  const weekStart = new Date(jan4.getTime() + dayOffset * 86400000);
+
+  const month = weekStart.toLocaleString('en-US', { month: 'short' });
+
+  // week-in-month calculation where week starts wih 1 for every new month
+  const firstDayOfMonth = new Date(weekStart.getFullYear(), weekStart.getMonth(), 1);
+  const firstDayWeekday = firstDayOfMonth.getDay() === 0 ? 7 : firstDayOfMonth.getDay(); // Sunday=7
+  const weekInMonth = Math.ceil((weekStart.getDate() + firstDayWeekday - 1) / 7);
+
+  return `${month} W${weekInMonth}`;
 }
 
 // Compute the list of unique weeks for the Gantt chart based on WBS ranges
@@ -233,7 +238,6 @@ const wbsColors: Record<string, string> = {
   training: '#84cc16',          // light green
 };
 
-
 // Format deployment date
 function formatDeploymentDate(dateStr: string) {
   if (!dateStr) return '';
@@ -243,10 +247,6 @@ function formatDeploymentDate(dateStr: string) {
   } catch {
     return dateStr;
   }
-}
-
-function closeSuccess() {
-  showSuccess.value = false;
 }
 
 // Validate WBS ranges
@@ -271,45 +271,38 @@ function validateWBS() {
   return hasErrors;
 }
 
-onMounted(() => {
-  const flash = (page.props as any).schedule?.flash || {};
-
-  if (successMessage.value) {
+watch(successMessage, (newVal) => {
+  if (newVal) {
     showSuccess.value = true;
-    setTimeout(() => showSuccess.value = false, 5000);
+    setTimeout(() => {
+      showSuccess.value = false;
+      successMessage.value = '';
+    }, 5000);
   }
+}, { immediate: true });
 
-    if (showSuccess.value) {
-    setTimeout(() => showSuccess.value = false, 5000);
+watch(errorMessage, (newVal) => {
+  if (newVal) {
+    showError.value = true;
+    setTimeout(() => {
+      showError.value = false;
+      errorMessage.value = '';
+    }, 5000);
   }
+}, { immediate: true });
 
-  if (flash.success) {
-    successMessage.value = flash.success
-    showSuccess.value = true
-    setTimeout(() => (showSuccess.value = false), 5000)
-  }
-  if (flash.error) {
-    errorMessage.value = flash.error
-    showError.value = true
-    setTimeout(() => (showError.value = false), 5000)
-  }
-})
+// Build WBS payload
+const wbsPayload: Record<string, { start: string; end: string }> = {};
+ganttActivities.forEach(a => {
+  wbsPayload[a] = {
+    start: ganttForm.value[a].start,
+    end: ganttForm.value[a].end
+  };
+});
 
-
-  // Build WBS payload
-  const wbsPayload: Record<string, { start: string; end: string }> = {};
-  ganttActivities.forEach(a => {
-    wbsPayload[a] = {
-      start: ganttForm.value[a].start,
-      end: ganttForm.value[a].end
-    };
-  });
-
-  editForm.wbs = wbsPayload;
-
+editForm.wbs = wbsPayload;
 
 </script>
-
 <template>
   <Head :title="`${schedule.batch_name} - Resource Schedule`" />
 
@@ -570,9 +563,20 @@ onMounted(() => {
                   <td class="border px-3 py-2 text-center">{{ projection.final_interview.plan_pct }}%</td>
                 </tr>
 
+                <!-- JOB OFFER -->
+                <tr>
+                  <td class="border px-3 py-2 font-semibold">Job Offer</td>
+
+                  <td class="border px-3 py-2 text-center">{{ projection.job_offer.actual_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.job_offer.actual_pct }}%</td>
+
+                  <td class="border px-3 py-2 text-blue-600 text-center">{{ projection.job_offer.plan_no }}</td>
+                  <td class="border px-3 py-2 text-center">{{ projection.job_offer.plan_pct }}%</td>
+                </tr>
+
                 <!-- ACCEPTED -->
                 <tr>
-                  <td class="border px-3 py-2 font-semibold">Accepted Job Offer</td>
+                  <td class="border px-3 py-2 pl-8">Accepted Job Offer</td>
 
                   <td class="border px-3 py-2 text-center">{{ projection.accepted.actual_no }}</td>
                   <td class="border px-3 py-2 text-center">{{ projection.accepted.actual_pct }}%</td>
@@ -583,7 +587,7 @@ onMounted(() => {
 
                 <!-- DECLINED -->
                 <tr>
-                  <td class="border px-3 py-2 font-semibold">Declined Job Offer</td>
+                  <td class="border px-3 py-2 pl-8">Declined Job Offer</td>
 
                   <td class="border px-3 py-2 text-center">{{ projection.declined.actual_no }}</td>
                   <td class="border px-3 py-2 text-center">{{ projection.declined.actual_pct }}%</td>
@@ -691,6 +695,12 @@ onMounted(() => {
     readonly
   >{{ schedule.remarks || '' }}</textarea>
 </div>
+
+<!-- Updated Info -->
+  <div class="text-xs text-zinc-500 mt-1">
+    <span>Updated by: {{ schedule.updated_by_name }}</span>
+    <span class="ml-8">Updated at: {{ schedule.updated_time }}</span>
+  </div>
       
 
     </div>

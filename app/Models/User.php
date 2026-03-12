@@ -94,5 +94,13 @@ class User extends Authenticatable
     {
         return config('constants.permissionsList')[$this->permissions] ?? '';
     }
+
+    //function used in resource schedule
+    public static function hrRecruiters()
+    {
+    return self::where('permissions', 3)
+               ->where('active_status', 1)
+               ->get(['email_address', 'first_name', 'id']);
+    }
 }
 

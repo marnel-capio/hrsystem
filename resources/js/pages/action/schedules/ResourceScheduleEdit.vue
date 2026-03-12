@@ -105,11 +105,22 @@ function weekToKey(weekStr: string) {
 }
 
 function formatWeekLabel(weekStr: string) {
-  const [year, weekNum] = weekStr.split("-W").map(Number);
+  if (!weekStr) return '';
+  const [year, isoWeek] = weekStr.split('-W').map(Number);
+
+  // Compute the Monday of this ISO week
   const jan4 = new Date(year, 0, 4);
-  const weekStart = new Date(jan4.getTime() + (weekNum - 1) * 7 * 86400000);
-  const month = weekStart.toLocaleString("en-US", { month: "short" });
-  return `${month} W${weekNum}`;
+  const dayOffset = (isoWeek - 1) * 7;
+  const weekStart = new Date(jan4.getTime() + dayOffset * 86400000);
+
+  const month = weekStart.toLocaleString('en-US', { month: 'short' });
+
+  // week-in-month calculation where week starts wih 1 for every new month
+  const firstDayOfMonth = new Date(weekStart.getFullYear(), weekStart.getMonth(), 1);
+  const firstDayWeekday = firstDayOfMonth.getDay() === 0 ? 7 : firstDayOfMonth.getDay(); // Sunday=7
+  const weekInMonth = Math.ceil((weekStart.getDate() + firstDayWeekday - 1) / 7);
+
+  return `${month} W${weekInMonth}`;
 }
 
 // Compute unique weeks for Gantt preview
@@ -207,6 +218,13 @@ function updateResourceSchedule() {
 form.put(`/action/schedules/${props.schedule.id}/update`, {
   preserveScroll: true,
   onSuccess: () => {
+    showSuccess.value = true;
+    setTimeout(() => showSuccess.value = false, 5000);
+  },
+  onError: (errors) => {
+    ganttActivities.forEach(act => {
+      ganttForm.value[act].error = errors[`${act}_startdate`] || errors[`${act}_enddate`] || "";
+    });
   },
 });
 }
@@ -295,19 +313,12 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
   </div>
 </div>
 
-<!-- DEBUG DIV - Remove after testing -->
-<!-- <div v-if="successMessage" class="fixed bottom-4 left-4 bg-yellow-500 text-white p-4 rounded z-50">
-  DEBUG: successMessage = "{{ successMessage }}"
-</div>
-<div v-if="showSuccess" class="fixed bottom-20 left-4 bg-blue-500 text-white p-4 rounded z-50">
-  DEBUG: showSuccess = true
-</div> -->
       <div class="bg-white dark:bg-zinc-900 p-10 rounded-2xl border shadow-xl space-y-10">
         <form @submit.prevent="updateResourceSchedule">
 
           <!-- Basic Info -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <!-- Batch Name (READ-ONLY - DARKER GRAY) -->
+          <!-- Batch Name -->
           <div>
             <label class="text-sm font-semibold">Batch Name</label>
             <input 
@@ -317,6 +328,8 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
               class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
               style="background-color: #e5e7eb; color: #9ca3af;"
             />
+            <!-- No validation error for disabled field -->
+
           </div>
 
             <!-- Target Location -->
@@ -347,7 +360,7 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
               <input v-model="form.deployment_date" readonly 
               class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
               style="background-color: #e5e7eb; color: #9ca3af;" />
-              <!-- No validation error for readonly field -->
+              <!-- No validation error for disabled field -->
             </div>
 
                         <!-- Previous Batch -->
@@ -464,9 +477,9 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
 
           <!-- Buttons -->
           <div class="form-actions">
-            <Link href="/action/schedules" class="btn btn-secondary">
-              Cancel
-            </Link>
+          <Link :href="`/action/schedules/${props.schedule.id}`" class="btn btn-secondary">
+            Cancel
+          </Link>
 
             <button
               type="submit"

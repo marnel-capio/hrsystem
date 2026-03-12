@@ -83,11 +83,22 @@ function weekToKey(weekStr: string) {
 }
 
 function formatWeekLabel(weekStr: string) {
-  const [year, weekNum] = weekStr.split("-W").map(Number);
+  if (!weekStr) return '';
+  const [year, isoWeek] = weekStr.split('-W').map(Number);
+
+  // Compute the Monday of this ISO week
   const jan4 = new Date(year, 0, 4);
-  const weekStart = new Date(jan4.getTime() + (weekNum - 1) * 7 * 86400000);
-  const month = weekStart.toLocaleString("en-US", { month: "short" });
-  return `${month} W${weekNum}`;
+  const dayOffset = (isoWeek - 1) * 7;
+  const weekStart = new Date(jan4.getTime() + dayOffset * 86400000);
+
+  const month = weekStart.toLocaleString('en-US', { month: 'short' });
+
+  // week-in-month calculation where week starts wih 1 for every new month
+  const firstDayOfMonth = new Date(weekStart.getFullYear(), weekStart.getMonth(), 1);
+  const firstDayWeekday = firstDayOfMonth.getDay() === 0 ? 7 : firstDayOfMonth.getDay(); // Sunday=7
+  const weekInMonth = Math.ceil((weekStart.getDate() + firstDayWeekday - 1) / 7);
+
+  return `${month} W${weekInMonth}`;
 }
 
 // Compute unique weeks for Gantt preview

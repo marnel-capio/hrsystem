@@ -16,10 +16,8 @@ class ResourceScheduleNotificationMail extends Mailable
 
     public string|int $userId;
 
-    public function __construct(int $userId, string $recipientName, string $batchName, string $link)
+    public function __construct(string $batchName, string $link)
     {
-        $this->userId = $userId;
-        $this->recipientName = $recipientName;
         $this->batchName = $batchName;
         $this->link = $link;
     }
@@ -29,10 +27,8 @@ class ResourceScheduleNotificationMail extends Mailable
         return $this->subject("【HR System】New Resource Schedule Created")
                     ->view('emails.ats-0002')
                     ->with([
-                        'name' => $this->recipientName,
                         'batchName' => $this->batchName,
                         'link' => $this->link,
-                        'userId' => $this->userId,
                     ]);
     }
 }

@@ -1043,6 +1043,7 @@ namespace App\Models {
      * @property mixed $action_batch_id
      * @property int $id
      * @property-read \App\Models\ActionBatchModel $actionBatch
+     * @property-read \App\Models\User $updater
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereActionBatchId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule wherePrevBatchId($value)

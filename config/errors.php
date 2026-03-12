@@ -29,7 +29,7 @@ return [
     // Universal message for all record deleted succesfully
     'record_deleted_successfully' => [
         'errorCode' => 'RECORD_DELETED_SUCCESSFULLY',
-        'errorMessage' => 'Record deleted successfully.',
+        'errorMessage' => 'Record successfully deleted.',
     ],
 
     // Universal message for all record deleted failed
@@ -39,9 +39,23 @@ return [
 ',
     ],
 
+    // Universal message for all record updated failed
+    'record_updated_failed' => [
+        'errorCode' => 'RECORD_UPDATED_FAILED',
+        'errorMessage' => 'An error occurred while updating the record. Please try again.												
+',
+    ],
+
+        // Universal message for all record updated success
+    'record_updated_successfully' => [
+        'errorCode' => 'RECORD_UPDATED_SUCCESSFULLY',
+        'errorMessage' => 'Record updated successfully.												
+',
+    ],
+
     // Universal message for all required fields
     'field_required' => [
-        'errorCode' => 'ErrMsg00015',
+        'errorCode' => 'FIELD_REQUIRED',
         'errorMessage' => 'This is a required field.',
     ],
 
@@ -66,18 +80,8 @@ return [
     ],
 
     // RESOURCE SCHED REGISTER ERROR MSGS
-    'batch_name_taken' => [
-        'errorCode' => 'ErrMsg00018',
-        'errorMessage' => 'The batch name has already been taken.',
-    ],
-
-    'target_trainees_min' => [
-        'errorCode' => 'ErrMsg00019',
-        'errorMessage' => 'Target trainees must be at least 1.',
-    ],
-
     'wbs_end_before_start' => [
-        'errorCode' => 'ErrMsg00014',
+        'errorCode' => 'WBS_END_BEFORE_START',
         'errorMessage' => 'Start week cannot be after end week.',
     ],
 

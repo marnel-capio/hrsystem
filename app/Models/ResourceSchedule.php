@@ -62,21 +62,6 @@ class ResourceSchedule extends Model
             ->get();
     }
 
-    public static function getActionBatches($excludeScheduled = true)
-    {
-        $scheduledBatchIds = self::pluck('action_batch_id')->toArray();
-
-        $query = DB::table('action_batches')->select('id', 'action_batch', 'target_trainees', 'target_date');
-
-        if ($excludeScheduled) {
-            $query->whereNotIn('id', $scheduledBatchIds);
-        } else {
-            $query->whereIn('id', $scheduledBatchIds);
-        }
-
-        return $query->get();
-    }
-
     public static function getWithActionBatch($id)
     {
         return self::select('resource_schedules.*', 'action_batches.action_batch')
@@ -88,24 +73,25 @@ class ResourceSchedule extends Model
     // ---------------------------------------
     // RECRUITMENT PROJECTION 
     // ---------------------------------------
-    public function getRecruitmentProjection($batchId = null)
-    {
-        $batchId = $batchId ?? $this->action_batch_id;
-
-        return DB::table('action_applicant_applications')
-            ->where('action_batch_id', $batchId)
-            ->get();
-    }
+    
 
     public function getProjection($prevSchedule = null)
     {
-        $actualApps = $this->getRecruitmentProjection($this->action_batch_id);
-        $planApps   = $prevSchedule ? $this->getRecruitmentProjection($prevSchedule->action_batch_id) : collect([]);
+        //actionBatch relationship
+        $actionBatch = $this->actionBatch;
+
+        $actualApps = $actionBatch ? $actionBatch->getRecruitmentProjection() : collect([]);
+        
+        $planApps = collect([]);
+        if ($prevSchedule && $prevSchedule->actionBatch) {
+            $planApps = $prevSchedule->actionBatch->getRecruitmentProjection();
+        }
 
         $stages = [
             'examinees',
             'initial_interview',
             'final_interview',
+            'job_offer',
             'accepted',
             'declined',
             'trainees_manila',
@@ -118,7 +104,8 @@ class ResourceSchedule extends Model
                 'initial_interview' => $apps->whereNotNull('initial_interview_result')
                                             ->where('initial_interview_result', '!=', 1)->count(),
                 'final_interview' => $apps->whereNotNull('final_interview_result')
-                                          ->where('final_interview_result', '!=', 1)->count(),
+                                        ->where('final_interview_result', '!=', 1)->count(),
+                'job_offer' => $apps->whereIn('job_offer_status', [2,3,4])->count(),
                 'accepted' => $apps->where('job_offer_status', 3)->count(),
                 'declined' => $apps->where('job_offer_status', 4)->count(),
                 'trainees_manila' => $apps->where('trainees_from', 1)->count(),
@@ -162,15 +149,7 @@ public function formatWBS(): array
     ];
 }
 
-// Get previous batch name
-public function prevBatchName(): ?string
-{
-    if (!$this->prev_batch_id) return null;
 
-    return DB::table('action_batches')
-             ->where('id', $this->prev_batch_id)
-             ->value('action_batch');
-}
 
 // Format target location as string
 public function targetLocationName(): string
@@ -184,7 +163,9 @@ public function formattedForShow(): array
     return [
         'id' => $this->id,
         'batch_name' => optional($this->actionBatch)->action_batch ?? 'Unknown',
-        'prev_batch_name' => $this->prevBatchName(),
+        'prev_batch_name' => $this->prev_batch_id 
+            ? ActionBatchModel::prevBatchName($this->prev_batch_id) 
+            : null,
         'target_location' => $this->targetLocationName(),
         'target_trainees' => $this->target_trainees,
         'deployment_date' => $this->deployment_date,
@@ -198,7 +179,9 @@ public function formattedForShow(): array
         'remarks' => $this->remarks,
         'created_by' => $this->created_by,
         'created_time' => $this->created_time,
-        'updated_by' => $this->updated_by,
+        'updated_by_name' => $this->updater
+            ? $this->updater->first_name . ' ' . $this->updater->last_name
+            : null,
         'updated_time' => $this->updated_time,
     ];
 }
@@ -266,5 +249,36 @@ public function getOriginalValuesForUpdate(): array
         'remarks',
     ]);
 }
+
+public function updater()
+{
+    return $this->belongsTo(User::class, 'updated_by');
+}
+
+//for logging labels after updating
+public static function fieldLabels(): array
+{
+    return [
+        'target_location' => 'Target Location',
+        'prev_batch_id' => 'Previous Batch',
+        'contact_schools_startdate' => 'Contact Schools Start',
+        'contact_schools_enddate' => 'Contact Schools End',
+        'source_testing_startdate' => 'Sourcing and Testing Start',
+        'source_testing_enddate' => 'Sourcing and Testing End',
+        'initial_interviews_startdate' => 'Initial Interview Start',
+        'initial_interviews_enddate' => 'Initial Interview End',
+        'final_interviews_startdate' => 'Final Interview Start',
+        'final_interviews_enddate' => 'Final Interview End',
+        'contract_offers_startdate' => 'Contract Offers Start',
+        'contract_offers_enddate' => 'Contract Offers End',
+        'requirements_startdate' => 'Requirements Start',
+        'requirements_enddate' => 'Requirements End',
+        'training_startdate' => 'Training Start',
+        'training_enddate' => 'Training End',
+        'remarks' => 'Remarks',
+    ];
+}
+
+
 
 }

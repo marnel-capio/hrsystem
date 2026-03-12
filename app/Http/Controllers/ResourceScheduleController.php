@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ResourceScheduleRequest;
 use App\Models\ResourceSchedule;
+use App\Models\ActionBatchModel;
 use App\Models\Log;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -30,8 +31,8 @@ class ResourceScheduleController extends Controller
 
     public function create()
     {
-        $newBatches = ResourceSchedule::getActionBatches(true);
-        $prevBatches = ResourceSchedule::getActionBatches(false);
+        $newBatches = ActionBatchModel::getActionBatches(true);
+        $prevBatches = ActionBatchModel::getActionBatches(false);
 
         return inertia('action/schedules/ResourceScheduleRegister', [
             'errorMessages' => config('errors', []),
@@ -45,7 +46,10 @@ class ResourceScheduleController extends Controller
         $user = auth()->user();
         $validated = $request->validated();
 
-        $validated['target_location'] = $validated['target_location'] === 'Manila' ? 1 : 2;
+        $locations = config('constants.trainingLocation');
+        $validated['target_location'] = $validated['target_location'] === 'Manila' 
+        ? $locations['LOCATION_MANILA_VALUE'] 
+        : $locations['LOCATION_CEBU_VALUE'];
         $validated['created_by'] = $user->id;
         $validated['created_time'] = now();
         $validated['updated_by'] = $user->id;
@@ -81,7 +85,7 @@ class ResourceScheduleController extends Controller
 
     public function show($id)
     {
-        $schedule = ResourceSchedule::with('actionBatch')->findOrFail($id);
+        $schedule = ResourceSchedule::with(['actionBatch', 'updater'])->findOrFail($id);
         $projection = $schedule->getProjection($schedule->prev_batch_id ? ResourceSchedule::find($schedule->prev_batch_id) : null);
         return inertia('action/schedules/ResourceScheduleDetails', [
             'schedule' => $schedule->formattedForShow(),
@@ -89,14 +93,14 @@ class ResourceScheduleController extends Controller
             ])->with('success', session('success'))
             ->with('error', session('error'));
     }
-
+    
     public function edit($id)
     {
         $schedule = ResourceSchedule::getWithActionBatch($id);
         return inertia('action/schedules/ResourceScheduleEdit', [
         'schedule' => $schedule->formattedForEdit(),
-        'newBatches' => ResourceSchedule::getActionBatches(true),
-        'prevBatches' => ResourceSchedule::getActionBatches(false),
+        'newBatches' => ActionBatchModel::getActionBatches(true),
+        'prevBatches' => ActionBatchModel::getActionBatches(false),
         'currentBatch' => $schedule->currentBatch(),
         'errorMessages' => config('errors', []),
             ])->with('success', session('success'))
@@ -121,13 +125,16 @@ class ResourceScheduleController extends Controller
 
             $schedule->update($validated);
 
+            $fieldLabels = ResourceSchedule::fieldLabels();
+
             // Build log message with changed fields
             $logDetails = "Updated resource schedule for {$schedule->actionBatch->action_batch}.";
 
             foreach ($validated as $field => $newValue) {
                 $oldValue = $original[$field] ?? null;
                 if ($oldValue != $newValue) {
-                    $logDetails .= "{$oldValue} -> {$newValue}\n";
+                    $label = $fieldLabels[$field] ?? $field;
+                    $logDetails .= "{$label}: {$oldValue} -> {$newValue}\n";
                 }
             }
 
@@ -152,10 +159,8 @@ class ResourceScheduleController extends Controller
 
         $batchName = optional($schedule->actionBatch)->action_batch ?? 'Unknown';
 
-        $hrRecruiters = User::where('permissions', 3)
-                            ->where('active_status', 1)
-                            ->get(['email_address', 'first_name', 'id']);
-
+        $hrRecruiters = User::hrRecruiters();        
+        
         $emails = $hrRecruiters->pluck('email_address')->toArray();
 
         //if no hr recruiters found
@@ -167,8 +172,6 @@ class ResourceScheduleController extends Controller
 
         try {
             Mail::to($emails)->send(new ResourceScheduleNotificationMail(
-                0,
-                "HR Team",
                 $batchName,
                 $link
             ));

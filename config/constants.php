@@ -50,4 +50,11 @@ return [
         '/account/settings' => [7],
         
     ],
+
+    'trainingLocation' => [
+        'LOCATION_MANILA_VALUE' => 1,
+        'LOCATION_CEBU_VALUE' => 2,
+        'LOCATION_1_NAME' => 'Manila',
+        'LOCATION_2_NAME' => 'Cebu',
+    ],
 ];
