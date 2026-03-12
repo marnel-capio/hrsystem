@@ -105,6 +105,12 @@ return [
 
  
    // ACTION BATCH VALIDATION
+
+   'unauthorized_user' => [
+        'errorCode' => 'UNAUTHORIZED_USER',
+        'errorMessage' => 'Access denied: You are not authorized to view this page.',
+    ],
+    
     'action_batch_required' => [
         'errorCode' => 'ACTION_BATCH_REQUIRED',
         'errorMessage' => 'This field is required.',
