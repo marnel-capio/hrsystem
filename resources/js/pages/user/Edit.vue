@@ -232,7 +232,7 @@ const personalFieldReadonly = () => {
                     <!-- Actions -->
                     <div class="form-actions">
                         <Link :href="`/user/${props.user.id}`" class="btn-secondary">Cancel</Link>
-                        <button type="submit" :disabled="form.processing" class="btn btn-primary">Save</button>
+                        <button type="submit" :disabled="form.processing" class="btn btn-primary">Update</button>
                     </div>
                 </form>
             </div>
