@@ -100,7 +100,7 @@ class ResourceScheduleController extends Controller
         return inertia('action/schedules/ResourceScheduleEdit', [
         'schedule' => $schedule->formattedForEdit(),
         'newBatches' => ActionBatchModel::getActionBatches(true),
-        'prevBatches' => ActionBatchModel::getActionBatches(false),
+        'prevBatches' => ResourceSchedule::getAllBatchFromExistingResourceSchedule($id),
         'currentBatch' => $schedule->currentBatch(),
         'errorMessages' => config('errors', []),
             ])->with('success', session('success'))
