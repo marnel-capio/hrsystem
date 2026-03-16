@@ -74,12 +74,13 @@ router.get(`/action/batches/${batch.value.id}/edit`)
     <div class="flex justify-between mx-5 mb-3">
       <h2 class="text-xl font-bold">ACTION Batch Detail</h2>
 
-      <span
+      <Link
         v-if="userPermissions === 1 || userPermissions === 2"
-        @click="goToEdit"
+        :href="`/action/batches/${batch.id}/edit`"
         class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded cursor-pointer"
-      > Edit 
-    </span>
+      >
+        Edit
+      </Link>
     </div> 
 
     <!-- Main Content -->
