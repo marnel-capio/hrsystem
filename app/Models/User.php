@@ -17,30 +17,25 @@ class User extends Authenticatable
     public $timestamps = false;
 
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'middle_name',
-        'address',
-        'contact_no',
-        'email_address',
-        'password',
-        'position',
-        'permissions',
-        'active_status',
-        'created_by',
+        'first_name', 'last_name', 'middle_name', 'address',
+        'contact_no', 'email_address', 'password',
+        'position', 'permissions', 'active_status',
+        'created_by', 'updated_by',
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
+        'password', 'remember_token',
+        'two_factor_secret', 'two_factor_recovery_codes',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
         'active_status' => 'boolean',
+    ];
+
+    protected $appends = [
+        'position_label', 'permission_label',
     ];
 
     public static function register(array $data): self
@@ -88,13 +83,13 @@ class User extends Authenticatable
         static::creating(function ($user) {
             $user->create_time = now();
             $user->update_time = now();
-            $user->created_by = auth()->id() ?? null;
-            $user->updated_by = auth()->id() ?? null;
+            $user->created_by = $user->created_by ?? auth()->id();
+            $user->updated_by = $user->updated_by ?? auth()->id();
         });
 
         static::updating(function ($user) {
             $user->update_time = now();
-            $user->updated_by = auth()->id() ?? null;
+            $user->updated_by = $user->updated_by ?? auth()->id();
         });
     }
 
@@ -111,6 +106,46 @@ class User extends Authenticatable
     public function getPermissionLabelAttribute(): string
     {
         return config('constants.permissionsList')[$this->permissions] ?? '';
+    }
+
+    /**
+     * Update user with automatic password hashing and old/new data return for logging
+     *
+     * @param  array  $data  Validated request data
+     * @return array ['old' => oldData, 'new' => newData]
+     */
+    public function updateUser(array $data): array
+    {
+        // Step 1: old snapshot
+        $oldData = $this->getOriginal();
+
+        // Step 2: hash password if provided
+        $rawPassword = null;
+        if (! empty($data['password'])) {
+            $rawPassword = $data['password'];
+            $data['password'] = Hash::make($rawPassword);
+        } else {
+            // Remove password from $data so it doesn't overwrite old password
+            unset($data['password']);
+        }
+
+        $data['updated_by'] = auth()->id();
+
+        // Step 3: update the user
+        $this->update($data);
+
+        // Step 4: prepare new data for logging
+        $newData = $this->fresh()->toArray();
+
+        // Keep raw password for logging only if provided
+        if ($rawPassword) {
+            $newData['password'] = $rawPassword;
+        }
+
+        return [
+            'old' => $oldData,
+            'new' => $newData,
+        ];
     }
 }
 
