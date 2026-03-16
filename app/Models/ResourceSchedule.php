@@ -163,6 +163,13 @@ public static function getAllBatchFromExistingResourceSchedule($resourceId) {
             ->get();
 }
 
+public static function getAllBatchFromExistingResourceSchedule($resourceId) {
+    return static::query()
+            ->select('action_batch_id')
+            ->whereNot('resource_schedules.id', $resourceId)
+            ->get();
+}
+
 // Format WBS for frontend
 public function formatWBS(): array
 {

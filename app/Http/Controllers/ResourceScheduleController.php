@@ -119,6 +119,7 @@ class ResourceScheduleController extends Controller
         $prevBatches = ResourceSchedule::getAllBatchFromExistingResourceSchedule($id);
         
         return inertia('action/schedules/ResourceScheduleEdit', [
+<<<<<<< HEAD
             'schedule' => $schedule->formattedForEdit(),
             'newBatches' => ActionBatchModel::getActionBatches(true),
             'prevBatches' => $prevBatches, // This now has action_batch names
@@ -126,6 +127,15 @@ class ResourceScheduleController extends Controller
             'errorMessages' => config('errors', []),
         ])->with('success', session('success'))
           ->with('error', session('error'));
+=======
+        'schedule' => $schedule->formattedForEdit(),
+        'newBatches' => ActionBatchModel::getActionBatches(true),
+        'prevBatches' => ResourceSchedule::getAllBatchFromExistingResourceSchedule($id),
+        'currentBatch' => $schedule->currentBatch(),
+        'errorMessages' => config('errors', []),
+            ])->with('success', session('success'))
+            ->with('error', session('error'));
+>>>>>>> 82c38c5402d584f203b16065bfa4ee1e31294b2f
     }
     
     public function update(ResourceScheduleRequest $request, $id)
