@@ -35,5 +35,66 @@ class ActionBatchService
  
         return $batch;
     }
+<<<<<<< HEAD
+    
+
+    //UPDATE
+    public function update($data, $request)
+    {
+        $batch = ActionBatchModel::findOrFail($data['id']);
+        
+        // Store old values for comparison
+        $oldData = [
+            'action_batch' => $batch->action_batch,
+            'target_trainees' => $batch->target_trainees,
+            'target_date' => $batch->target_date,
+            'remarks' => $batch->remarks,
+        ];
+
+        // Update fields
+        $batch->action_batch = strtoupper($data['action_batch']);
+        $batch->target_trainees = $data['target_trainees'];
+        $batch->target_date = $data['target_date'];
+        $batch->remarks = $data['remarks'] ?? null;
+
+        $batch->updated_by = auth()->user()->id;
+        $batch->updated_time = now();
+
+        $batch->save();
+
+        // Log creation
+        $activityLines = [];
+        $activityLines[] = "Updated ACTION batch for {$batch->action_batch}.";
+        $activityLines[] = 'Details:';
+
+        $fields = ['action_batch', 'target_trainees', 'target_date', 'remarks'];
+
+        foreach ($fields as $field) {
+            $oldValue = $oldData[$field] ?? null;
+            $newValue = $batch->$field ?? null;
+
+            $oldValueStr = is_bool($oldValue) ? (int) $oldValue : (string) $oldValue;
+            $newValueStr = is_bool($newValue) ? (int) $newValue : (string) $newValue;
+
+            if ($oldValueStr !== $newValueStr) {
+                $activityLines[] = "{$field}: {$oldValueStr} -> {$newValueStr}";
+            }
+        }
+
+        $activity = implode("\n", $activityLines);
+
+        DB::table('logs')->insert([
+            'module' => 'Action',
+            'activity' => $activity,
+            'ip_address' => $request->ip(),
+            'updated_by' => auth()->user()->id,
+            'update_time' => now(),
+        ]);
+
+        return $batch;
+    }
+ 
+=======
+>>>>>>> develop
 }
  

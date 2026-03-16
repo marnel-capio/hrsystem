@@ -61,7 +61,7 @@ class CheckUserPermission
             }
 
             return redirect('/dashboard')
-                ->with('error', 'Access denied: You are not authorized to view this page.');
+                ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
         

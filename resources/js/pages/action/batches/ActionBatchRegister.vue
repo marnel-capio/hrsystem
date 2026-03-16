@@ -8,23 +8,23 @@ const page = usePage<any>()
 const loading = ref(false)
 
 const form = ref({
-    action_batch: '',
-    target_trainees: '',
-    target_date: '',
-    remarks: ''
+  action_batch: '',
+  target_trainees: '',
+  target_date: '',
+  remarks: ''
 })
 
 const formatToUppercase = () => {
-    form.value.action_batch = form.value.action_batch.toUpperCase()
+  form.value.action_batch = form.value.action_batch.toUpperCase()
 }
 
 const submit = () => {
-    loading.value = true
-    router.post('/action/batches', form.value, {
-        onFinish: () => {
-            loading.value = false
-        }
-    })
+  loading.value = true
+  router.post('/action/batches', form.value, {
+      onFinish: () => {
+          loading.value = false
+      }
+  })
 }
 </script>
 
@@ -35,6 +35,7 @@ const submit = () => {
         <div class="flex justify-between items-center mx-5 mb-3">
             <h2 class="text-xl font-bold">Create ACTION Batch</h2>
         </div>
+      </div>
 
         <!-- Form Fields -->
         <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
