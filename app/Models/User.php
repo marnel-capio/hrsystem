@@ -59,6 +59,25 @@ class User extends Authenticatable
         $this->attributes['password'] = Hash::needsRehash($value) ? Hash::make($value) : $value;
     }
 
+    public static function getUsersForIndex()
+    {
+        return self::select(
+            'id',
+            'first_name',
+            'middle_name',
+            'last_name',
+            'address',
+            'contact_no',
+            'email_address',
+            'position',
+            'active_status',
+            'create_time'
+        )
+        ->orderBy('create_time', 'desc')
+        ->get();
+    }
+
+    // ✅ Automatically handle create/update timestamps and by-user
     protected static function booted()
     {
         static::creating(function ($user) {
@@ -129,3 +148,4 @@ class User extends Authenticatable
         ];
     }
 }
+

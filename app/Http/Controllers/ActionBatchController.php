@@ -1,48 +1,91 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use App\Models\ActionBatchModel;
-use Illuminate\Http\Request;
+use App\Http\Requests\ActionBatchRequest;
 use Inertia\Inertia;
+use App\Services\ActionBatchService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
- 
+
 class ActionBatchController extends Controller
 {
-    public function index(Request $request)
-{
-    $user = Auth::user();
-
-    // Permission Check
-    if (!in_array($user->permissions, [1, 2, 3])) {
-        return redirect()
-            ->route('dashboard')
-            ->with('error', 'Access denied: You are not authorized to view this page.');
+    protected $actionBatchService;
+ 
+    public function __construct(ActionBatchService $actionBatchService)
+    {
+        $this->actionBatchService = $actionBatchService;
     }
 
-    $search = $request->input('search');
+    public function index(Request $request)
+    {
+        $user = Auth::user();
 
-    $batches = ActionBatchModel::getPaginated($search, perPage: 20);
-    $batchesTotal = ActionBatchModel::count();
+        // Remove the permission check from here
 
-    return Inertia::render('action/batches/ActionBatchList', [
-        'batches' => $batches,
-        'filters' => [
-            'search' => $search,
-        ],
-        'batches_total' => $batchesTotal,
-        'user_permissions' => $user->permissions,
-    ]);
-}
+        $search = $request->input('search');
 
-//For testing purposes:
-   public function create()
-{
-    return Inertia::render('action/batches/ActionBatchRegister');
-}
-public function show($id)
+        $batches = ActionBatchModel::getPaginated($search, perPage: 20);
+        $batchesTotal = ActionBatchModel::count();
+
+        return Inertia::render('action/batches/ActionBatchList', [
+            'batches' => $batches,
+            'filters' => [
+                'search' => $search,
+            ],
+            'batches_total' => $batchesTotal,
+            'user_permissions' => $user->permissions,
+        ]);
+    }
+ 
+    public function create()
+    {
+        return Inertia::render('action/batches/ActionBatchRegister');
+    }
+  
+    public function store(ActionBatchRequest $request)
+    {
+        try {
+    
+            DB::beginTransaction();
+    
+            // SIMULATE ERROR
+            //throw new \Exception("Test error");
+    
+            $batch = $this->actionBatchService->create($request->validated(), $request);
+    
+            DB::commit();
+    
+            return redirect()
+                ->route('action.batches.show', ['id' => $batch->id])
+                ->with('success', config('errors.action_batch_create_success.message'));
+    
+        } catch (\Exception $e) {
+    
+            DB::rollBack();
+    
+            return back()->withErrors([
+                'error' => config('errors.action_batch_create_error.errorMessage')
+            ]);
+        }
+    }
+ 
+ 
+ 
+    public function show($id)
     {
         $batch = ActionBatchModel::findOrFail($id);
-        return Inertia::render('action/batches/ActionBatchDetail', ['batch'=> $batch]);
+ 
+        $createdByUser = \App\Models\User::find($batch->created_by);
+        $updatedByUser = \App\Models\User::find($batch->updated_by);
+ 
+        $batch->created_by_name = $createdByUser ? $createdByUser->first_name . ' ' . $createdByUser->last_name : 'Unknown';
+        $batch->updated_by_name = $updatedByUser ? $updatedByUser->first_name . ' ' . $updatedByUser->last_name : 'Unknown';
+ 
+        return Inertia::render('action/batches/ActionBatchDetail', [
+            'batch' => $batch
+        ]);
     }
 }

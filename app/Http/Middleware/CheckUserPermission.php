@@ -48,6 +48,24 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
+                /*
+        |--------------------------------------------------------------------------
+        | Route: /action/schedules/ and /action/batches
+        | Only permission 1, 2, and 3 allowed
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($routeName, ['action.schedules.index', 'action.list'])) {
+
+            if (in_array($permission, [1, 2, 3])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', 'Access denied: You are not authorized to view this page.');
+        }
+
+        
+
         /*
         |----------------------------------------------------------------------
         | Route: /user/{id} → show user profile
@@ -79,6 +97,29 @@ class CheckUserPermission
                     ->with('error', config('errors.unauthorized.errorMessage'));
             }
         }
+
+
+        //ACTION BATCH
+        if (in_array($routeName, ['action.batches.list', 'action.batches.show'])) {
+
+            // Only permission 1, 2, and 3 are allowed for these routes
+            if (in_array($permission, [1, 2, 3])) {
+                return $next($request);  // Allow the request to proceed
+            }
+
+            return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');
+        }
+
+        if (in_array($routeName, ['action.batches.register', 'action.batches.store'])) {
+
+            // Only permission 1, or 2 are allowed for these routes
+            if (in_array($permission, [1,2])) {
+                return $next($request);  // Allow the request to proceed
+            }
+
+            return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');
+        }
+        
 
         /*
         |----------------------------------------------------------------------

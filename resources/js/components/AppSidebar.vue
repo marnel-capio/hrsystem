@@ -87,13 +87,13 @@ function isActiveStartsWith(path: string) { return current.startsWith(path) }
                 <div v-if="canAccess('/action') && !isHidden('/action')" class="sidebar-group"
                     :class="{ active: isActiveStartsWith('/action') }">
                     <FileChartColumnIncreasing :size="16" />
-                    <span>Action</span>
+                    <span>ACTION</span>
                 </div>
 
                 <Link v-if="canAccess('/action/batches')" href="/action/batches" class="sidebar-sublink level-1"
                     :class="{ active: isActiveStartsWith('/action/batches') }">
                     <FileText :size="14" />
-                    <span>Action Batches</span>
+                    <span>ACTION Batches</span>
                 </Link>
 
                 <Link v-if="canAccess('/action/schedules')" href="/action/schedules" class="sidebar-sublink level-1"
@@ -105,13 +105,13 @@ function isActiveStartsWith(path: string) { return current.startsWith(path) }
                 <Link v-if="canAccess('/action/applicants')" href="/action/applicants" class="sidebar-sublink level-1"
                     :class="{ active: isActiveStartsWith('/action/applicants') }">
                     <CircleUser :size="14" />
-                    <span>Action Applicants</span>
+                    <span>ACTION Applicants</span>
                 </Link>
 
                 <Link v-if="canAccess('/action/applications')" href="/action/applications"
                     class="sidebar-sublink level-1" :class="{ active: isActiveStartsWith('/action/applications') }">
                     <FileText :size="14" />
-                    <span>Action Application</span>
+                    <span>ACTION Application</span>
                 </Link>
 
                 <!-- INTERMEDIATE -->

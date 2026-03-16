@@ -9,6 +9,7 @@ use App\Services\LogService;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Models\Log;
+use Illuminate\Support\Facades\Config; 
 
 class UserController extends Controller
 {
@@ -17,6 +18,18 @@ class UserController extends Controller
     public function __construct(LogService $logService)
     {
         $this->logService = $logService;
+    }
+
+    public function index()
+    {
+        $users = User::getUsersForIndex();
+
+        $positions = Config::get('constants.positions');
+
+        return Inertia::render('user/Index', [
+            'users' => $users,
+            'positions' => $positions,
+        ]);
     }
 
     public function create()
