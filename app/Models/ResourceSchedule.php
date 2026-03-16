@@ -75,12 +75,15 @@ class ResourceSchedule extends Model
     // ---------------------------------------
     
 
-    public function getProjection($prevSchedule = null)
-    {
-        //actionBatch relationship
-        $actionBatch = $this->actionBatch;
+// ---------------------------------------
+// RECRUITMENT PROJECTION 
+// ---------------------------------------
+public function getProjection($prevSchedule = null)
+{
+    //actionBatch relationship
+    $actionBatch = $this->actionBatch;
 
-         $actualApps = DB::table('action_applicant_applications')
+    $actualApps = DB::table('action_applicant_applications')
         ->where('action_batch_id', $this->action_batch_id)
         ->get();
     
@@ -91,66 +94,74 @@ class ResourceSchedule extends Model
             ->get();
     }
 
-        $stages = [
-            'examinees',
-            'initial_interview',
-            'final_interview',
-            'job_offer',
-            'accepted',
-            'declined',
-            'trainees_manila',
-            'trainees_cebu',
-        ];
+    $stages = [
+        'examinees',
+        'initial_interview',
+        'final_interview',
+        'job_offer',
+        'accepted',
+        'declined',
+        'trainees_manila',
+        'trainees_cebu',
+    ];
 
-        $counter = function($apps, $stage) {
-            return match ($stage) {
-                'examinees' => $apps->whereNotNull('exam_actual_date')->count(),
-                'initial_interview' => $apps->whereNotNull('initial_interview_result')
-                                            ->where('initial_interview_result', '!=', 1)->count(),
-                'final_interview' => $apps->whereNotNull('final_interview_result')
-                                        ->where('final_interview_result', '!=', 1)->count(),
-                'job_offer' => $apps->whereIn('job_offer_status', [2,3,4])->count(),
-                'accepted' => $apps->where('job_offer_status', 3)->count(),
-                'declined' => $apps->where('job_offer_status', 4)->count(),
-                'trainees_manila' => $apps->where('trainees_from', 1)->count(),
-                'trainees_cebu' => $apps->where('trainees_from', 2)->count(),
-                default => 0,
-            };
+    $counter = function($apps, $stage) {
+        return match ($stage) {
+            'examinees' => $apps->whereNotNull('exam_actual_date')->count(),
+            'initial_interview' => $apps->whereNotNull('initial_interview_result')
+                                        ->where('initial_interview_result', '!=', 1)->count(),
+            'final_interview' => $apps->whereNotNull('final_interview_result')
+                                    ->where('final_interview_result', '!=', 1)->count(),
+            'job_offer' => $apps->whereIn('job_offer_status', [2,3,4])->count(),
+            'accepted' => $apps->where('job_offer_status', 3)->count(),
+            'declined' => $apps->where('job_offer_status', 4)->count(),
+            'trainees_manila' => $apps->where('trainees_from', 1)->count(),
+            'trainees_cebu' => $apps->where('trainees_from', 2)->count(),
+            default => 0,
         };
+    };
 
-        $projection = [];
+    $projection = [];
 
-        $actualExaminees = $counter($actualApps, 'examinees');
-        $planExaminees   = $counter($planApps, 'examinees');
+    $actualExaminees = $counter($actualApps, 'examinees');
+    $planExaminees   = $counter($planApps, 'examinees');
 
-        foreach ($stages as $stage) {
-    $actualNo = $counter($actualApps, $stage);
-    $planNo   = $counter($planApps, $stage);
+    foreach ($stages as $stage) {
+        $actualNo = $counter($actualApps, $stage);
+        $planNo   = $counter($planApps, $stage);
 
-    if ($stage === 'examinees') {
-        // Examinees row has no percentage
-        $projection[$stage] = [
-            'actual_no'  => $actualNo,
-            'actual_pct' => null,
-            'plan_no'    => $planNo,
-            'plan_pct'   => null,
-        ];
-    } else {
-        $projection[$stage] = [
-            'actual_no'  => $actualNo,
-            'actual_pct' => $actualExaminees > 0
-                ? round(($actualNo / $actualExaminees) * 100, 2)
-                : 0,
-            'plan_no'    => $planNo,
-            'plan_pct'   => $planExaminees > 0
-                ? round(($planNo / $planExaminees) * 100, 2)
-                : 0,
-        ];
+        if ($stage === 'examinees') {
+            // Examinees row has no percentage
+            $projection[$stage] = [
+                'actual_no'  => $actualNo,
+                'actual_pct' => null,
+                'plan_no'    => $planNo,
+                'plan_pct'   => null,
+            ];
+        } else {
+            $projection[$stage] = [
+                'actual_no'  => $actualNo,
+                'actual_pct' => $actualExaminees > 0
+                    ? round(($actualNo / $actualExaminees) * 100, 2)
+                    : 0,
+                'plan_no'    => $planNo,
+                'plan_pct'   => $planExaminees > 0
+                    ? round(($planNo / $planExaminees) * 100, 2)
+                    : 0,
+            ];
+        }
     }
+
+    return $projection;
 }
 
-        return $projection;
-    }
+public static function getAllBatchFromExistingResourceSchedule($resourceId) {
+    return static::query()
+            ->select('resource_schedules.id', 'action_batches.action_batch', 'action_batches.id as action_batch_id')
+            ->join('action_batches', 'resource_schedules.action_batch_id', '=', 'action_batches.id')
+            ->whereNot('resource_schedules.id', $resourceId)
+            ->get();
+}
 
 // Format WBS for frontend
 public function formatWBS(): array
@@ -277,7 +288,7 @@ public static function fieldLabels(): array
 {
     return [
         'target_location' => 'Target Location',
-        'prev_batch_id' => 'Previous Batch',
+        'prev_batch_id' => 'Previous Batch ID',
         'contact_schools_startdate' => 'Contact Schools Start',
         'contact_schools_enddate' => 'Contact Schools End',
         'source_testing_startdate' => 'Sourcing and Testing Start',

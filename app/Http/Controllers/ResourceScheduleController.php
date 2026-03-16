@@ -58,6 +58,9 @@ class ResourceScheduleController extends Controller
         try {
             DB::beginTransaction();
 
+            // error test
+            // throw new \Exception('');
+
             $schedule = ResourceSchedule::create($validated);
 
             $actionBatchName = DB::table('action_batches')
@@ -85,28 +88,46 @@ class ResourceScheduleController extends Controller
 
     public function show($id)
     {
+        // Load schedule with relationships
         $schedule = ResourceSchedule::with(['actionBatch', 'updater'])->findOrFail($id);
-        $projection = $schedule->getProjection($schedule->prev_batch_id ? ResourceSchedule::find($schedule->prev_batch_id) : null);
+        
+        // Get previous schedule by finding resource schedule with the action_batch_id equal to prev_batch_id
+        $prevSchedule = null;
+        if ($schedule->prev_batch_id) {
+            $prevSchedule = ResourceSchedule::where('action_batch_id', $schedule->prev_batch_id)->first();
+        }
+        
+        // Get projection data
+        $projection = $schedule->getProjection($prevSchedule);
+        
+        // Format schedule for show
+        $formattedSchedule = $schedule->formattedForShow();
+        
         return inertia('action/schedules/ResourceScheduleDetails', [
-            'schedule' => $schedule->formattedForShow(),
-            'projection' => $projection
-            ])->with('success', session('success'))
-            ->with('error', session('error'));
+            'schedule' => $formattedSchedule,
+            'projection' => $projection,
+            'userPermissions' => auth()->user()->permissions
+        ])->with('success', session('success'))
+          ->with('error', session('error'));
     }
     
     public function edit($id)
     {
         $schedule = ResourceSchedule::getWithActionBatch($id);
+        
+        // Get previous batches with their names
+        $prevBatches = ResourceSchedule::getAllBatchFromExistingResourceSchedule($id);
+        
         return inertia('action/schedules/ResourceScheduleEdit', [
-        'schedule' => $schedule->formattedForEdit(),
-        'newBatches' => ActionBatchModel::getActionBatches(true),
-        'prevBatches' => ActionBatchModel::getActionBatches(false),
-        'currentBatch' => $schedule->currentBatch(),
-        'errorMessages' => config('errors', []),
-            ])->with('success', session('success'))
-            ->with('error', session('error'));
+            'schedule' => $schedule->formattedForEdit(),
+            'newBatches' => ActionBatchModel::getActionBatches(true),
+            'prevBatches' => $prevBatches, // This now has action_batch names
+            'currentBatch' => $schedule->currentBatch(),
+            'errorMessages' => config('errors', []),
+        ])->with('success', session('success'))
+          ->with('error', session('error'));
     }
-
+    
     public function update(ResourceScheduleRequest $request, $id)
     {
         $schedule = ResourceSchedule::findOrFail($id);
@@ -119,6 +140,9 @@ class ResourceScheduleController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // error test
+            // throw new \Exception('');
 
             // Keep old values for comparison in logs
             $original = $schedule->getOriginalValuesForUpdate();
@@ -147,7 +171,7 @@ class ResourceScheduleController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with([
-                'error' => config('errors.transaction_failed.errorMessage'),
+                'error' => config('errors.record_updated_failed.errorMessage'),
                 'flash_time' => microtime(true),
             ])->withInput();
         }
@@ -165,7 +189,7 @@ class ResourceScheduleController extends Controller
 
         //if no hr recruiters found
         if (empty($emails)) {
-            return back()->with('error', 'errors.email_sent_failed.errorMessage');
+            return back()->with('error', config('errors.email_sent_failed.errorMessage'));
         }
 
         $link = url("/action/schedules/{$schedule->id}");
@@ -176,9 +200,9 @@ class ResourceScheduleController extends Controller
                 $link
             ));
 
-            return back()->with('success', 'errors.email_sent_success.errorMessage');
+            return back()->with('success', config('errors.email_sent_success.errorMessage'));
         } catch (\Exception $e) {
-            return back()->with('error', 'errors.email_sent_failed.errorMessage');
+            return back()->with('error', config('errors.email_sent_failed.errorMessage'));
         }
     }
 
@@ -190,6 +214,7 @@ class ResourceScheduleController extends Controller
             DB::beginTransaction();
 
             $actionBatchName = $schedule->actionBatch->action_batch ?? '';
+
             Log::createLog('ResourceSchedules', "Deleted resource schedule for {$actionBatchName}", $schedule->id);
 
             $schedule->delete();
@@ -203,4 +228,4 @@ class ResourceScheduleController extends Controller
             return back()->with('error', config('errors.record_deleted_failed.errorMessage'));
         }
     }
-}
+}   

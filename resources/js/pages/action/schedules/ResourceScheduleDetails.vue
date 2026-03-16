@@ -325,14 +325,6 @@ editForm.wbs = wbsPayload;
   </div>
 </div>
 
-<!-- DEBUG DIV - Remove after testing -->
-<!-- <div v-if="successMessage" class="fixed bottom-4 left-4 bg-yellow-500 text-white p-4 rounded z-50">
-  DEBUG: successMessage = "{{ successMessage }}"
-</div>
-<div v-if="showSuccess" class="fixed bottom-20 left-4 bg-blue-500 text-white p-4 rounded z-50">
-  DEBUG: showSuccess = true
-</div> -->
-
 <!-- ERROR ALERT -->
 <div v-if="showError" class="full-width-alert">
   <div class="alert-banner alert-error-banner">
@@ -349,37 +341,35 @@ editForm.wbs = wbsPayload;
           Resource Schedule Details
         </h1>
         <div class="flex gap-3">
-          <!-- <a 
-            href="/action/schedules" 
-            class="px-4 py-2 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-          >
-            ← Back to List
-          </a> -->
+
+
           
 <button
-  @click.prevent="sendNotification"
-  :disabled="sendingNotification || notificationSent"
-  class="btn-send"
->
-  <span v-if="!sendingNotification && !notificationSent">Send Notification</span>
-  <span v-else-if="sendingNotification">Sending...</span>
-  <span v-else>Sent</span>
-</button>
+    v-if="props.userPermissions !== 3"
+    @click.prevent="sendNotification"
+    :disabled="sendingNotification || notificationSent"
+    class="btn-send"
+  >
+    <span v-if="!sendingNotification && !notificationSent">Send Notification</span>
+    <span v-else-if="sendingNotification">Sending...</span>
+    <span v-else>Sent</span>
+  </button>
 
-<a 
-  :href="`/action/schedules/${props.schedule.id}/edit`"
-  class="btn-edit"
->
-  Edit
-</a>
+  <a 
+    v-if="props.userPermissions !== 3"
+    :href="`/action/schedules/${props.schedule.id}/edit`"
+    class="btn-edit"
+  >
+    Edit
+  </a>
 
-<button
-  v-if="props.userPermissions != 3"
-  @click="confirmDelete"
-  class="btn-delete"
->
-  Delete
-</button>
+  <button
+    v-if="props.userPermissions !== 3"
+    @click="confirmDelete"
+    class="btn-delete"
+  >
+    Delete
+  </button>
         </div>
       </div>
 
@@ -394,22 +384,15 @@ editForm.wbs = wbsPayload;
   <!-- Modal Content -->
   <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
     <!-- Title -->
-    <h3 class="text-xl font-bold text-center text-zinc-900 dark:text-zinc-100 mb-2">
-      Delete Resource Schedule?
+    <h3 class="text-xl font-bold text-center text-red-600 mb-2">
+    Delete Resource Schedule?
     </h3>
     
     <!-- Description -->
-    <p class="text-zinc-600 dark:text-zinc-400 text-center mb-6">
+    <p class="text-zinc-700 dark:text-zinc-700 text-center mb-6">
       Are you sure you want to delete <strong>"{{ schedule.batch_name }}"</strong>?<br>
       This action cannot be undone.
     </p>
-    
-    <!-- Warning -->
-    <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-      <p class="text-sm text-red-700 dark:text-red-400 text-center">
-        All associated data will be permanently removed.
-      </p>
-    </div>
     
     <!-- Buttons -->
     <div class="flex gap-3">
@@ -486,7 +469,7 @@ editForm.wbs = wbsPayload;
 
       <tr>
         <td class="font-semibold px-3 py-2 border">Job Offer</td>
-        <td class="px-3 py-2 border">{{ projection.accepted.plan_no + projection.declined.plan_no || '-' }}</td>
+        <td class="px-3 py-2 border">{{ projection.job_offer.plan_no || '-' }}</td>
       </tr>
 
       <tr>
@@ -705,8 +688,8 @@ editForm.wbs = wbsPayload;
 
 <!-- Updated Info -->
   <div class="text-xs text-zinc-500 mt-1">
-    <span>Updated by: {{ schedule.updated_by_name }}</span>
-    <span class="ml-8">Updated at: {{ schedule.updated_time }}</span>
+    <span>Last updated by: {{ schedule.updated_by_name }}</span>
+    <span class="ml-8">Last updated at: {{ schedule.updated_time }}</span>
   </div>
       
 

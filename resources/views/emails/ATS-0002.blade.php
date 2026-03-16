@@ -26,12 +26,12 @@
                                 A resource schedule has been created/updated.
                             </p>
 
-                            <p style="font-size: 16px; line-height: 1.6;">
-                                Please review in the HR System for further details.
+                            <p style="font-size: 16px; line-height: 1.6; font-weight: bold;">
+                                Batch: <a href="{{ $link }}" style="color: #0d6efd; text-decoration: underline;">{{ $batchName }}</a>
                             </p>
 
-                            <p style="font-size: 16px; line-height: 1.6; font-weight: bold; color: #0d6efd;">
-                                Batch: <a href="{{ $link }}" style="color: #0d6efd; text-decoration: none;">{{ $batchName }}</a>
+                            <p style="font-size: 16px; line-height: 1.6;">
+                                Please review in the HR System for further details.
                             </p>
 
                             <p style="font-size: 16px; line-height: 1.6;">

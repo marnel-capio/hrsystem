@@ -134,9 +134,4 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 const RegisteredUserController = { create, store }
 
-export default RegisteredUserController   })
-    
-    store.form = storeForm
-const RegisteredUserController = { create, store }
-
 export default RegisteredUserController

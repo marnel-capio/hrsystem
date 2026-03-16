@@ -272,15 +272,13 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
       <!-- Error Notification -->
       <div 
         v-if="showError"
-        class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
+        class="full-width-alert"
       >
         <div 
-          class="relative bg-red-500 border-red-200 rounded-lg shadow-md p-4 flex items-center gap-4 animate-slide-down"
+          class="alert-banner alert-error-banner"
         >
-          <div class="flex-1 flex justify-start items-center gap-3">
-            <p class="text-white text-m font-medium text-left">
+          <div class="alert-body">
               {{ errorMessage }}
-            </p>
           </div>
           <button 
             style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
@@ -291,27 +289,25 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
         </div>
       </div>
 
-<!-- Success Notification -->
-<div 
-  v-if="showSuccess"
-  class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
->
-  <div 
-    class="relative bg-green-500 border-green-200 rounded-lg shadow-md p-4 flex items-center gap-4 animate-slide-down"
-  >
-    <div class="flex-1 flex justify-start items-center gap-3">
-      <p class="text-white text-m font-medium text-left">
-        {{ successMessage }}
-      </p>
-    </div>
-    <button 
-      style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
-      @click="showSuccess = false"
-    >
-      X
-    </button>
-  </div>
-</div>
+      <!-- Success Notification -->
+      <div 
+        v-if="showSuccess"
+        class="full-width-alert"
+      >
+        <div 
+          class="alert-banner alert-error-banner"
+        >
+          <div class="alert-body">
+              {{ successMessage }}
+          </div>
+          <button 
+            style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
+            @click="showSuccess = false"
+          >
+            X
+          </button>
+        </div>
+      </div>
 
       <div class="bg-white dark:bg-zinc-900 p-10 rounded-2xl border shadow-xl space-y-10">
         <form @submit.prevent="updateResourceSchedule">
@@ -362,13 +358,13 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
               style="background-color: #e5e7eb; color: #9ca3af;" />
               <!-- No validation error for disabled field -->
             </div>
-
-                        <!-- Previous Batch -->
+            
+            <!-- Previous Batch -->
             <div>
               <label class="text-sm font-semibold">Compare with Previous Batch</label>
               <select v-model="form.prev_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5">
                 <option value="">Select</option>
-                <option v-for="batch in prevBatches" :key="batch.id" :value="batch.id">
+                <option v-for="batch in prevBatches" :key="batch.id" :value="batch.action_batch_id">
                   {{ batch.action_batch }}
                 </option>
               </select>

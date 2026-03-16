@@ -153,10 +153,4 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 const NewPasswordController = { create, store }
 
-export default NewPasswordController   method: 'post',
-        })
-    
-    store.form = storeForm
-const NewPasswordController = { create, store }
-
 export default NewPasswordController
