@@ -28,18 +28,13 @@ class Log extends Model
         'update_time' => 'datetime',
     ];
 
-    /**
-     * Static function to create logs easily
-     */
     public static function createLog(
         string $module,
         string $activity,
         ?int $userId = null,
         ?string $ipAddress = null
     ): void {
-
-        $userId = $userId ?? Auth::id(); 
-
+        $userId = $userId ?? Auth::id();
         $ipAddress = $ipAddress ?? request()->ip();
 
         self::create([
@@ -53,6 +48,7 @@ class Log extends Model
         ]);
     }
 
+    // Relationships
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -12,7 +12,7 @@ class CheckUserPermission
     {
         $user = auth()->user();
 
-        if (! $user) {
+        if (!$user) {
             return redirect('/');
         }
 
@@ -21,29 +21,31 @@ class CheckUserPermission
         $routeId = $request->route('id');
 
         /*
-        |--------------------------------------------------------------------------
-        | Permission 7 → NEVER allowed anywhere
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
+        | Permission WALK-IN → NEVER allowed anywhere
+        |----------------------------------------------------------------------
         */
-        if ($permission === 7) {
+        if ($permission === config('constants.WALKIN_PERMISSION.value')) {
             return redirect('/dashboard')
-                ->with('error', 'Access denied: You are not authorized to view this page.');
+                ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
         /*
-        |--------------------------------------------------------------------------
-        | Routes: /user & /user/register, /action/schedules/create
-        | Only permission 1 & 2 allowed
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
+        | Routes: /user & /user/register
+        | Only HR Admin & HR Manager allowed
+        |----------------------------------------------------------------------
         */
         if (in_array($routeName, ['user.index', 'user.register', 'user.store', 'action.schedules.register', 'action.schedules.store', 'action.schedules.edit', 'action.schedules.update', 'action.create', 'action.show', 'action.schedules.notify', 'action.schedules.destroy'])) {
-
-            if (in_array($permission, [1, 2])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+            ])) {
                 return $next($request);
             }
 
             return redirect('/dashboard')
-                ->with('error', 'Access denied: You are not authorized to view this page.');
+                ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
                 /*
@@ -59,32 +61,40 @@ class CheckUserPermission
             }
 
             return redirect('/dashboard')
-                ->with('error', 'Access denied: You are not authorized to view this page.');
+                ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
         
 
         /*
-        |--------------------------------------------------------------------------
-        | Route: /user/{id}
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
+        | Route: /user/{id} → show user profile
+        |----------------------------------------------------------------------
         */
         if ($routeName === 'user.show') {
 
-            // Permission 1 & 2 → Full access
-            if (in_array($permission, [1, 2])) {
+            // Full access
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+            ])) {
                 return $next($request);
             }
 
-            // Permission 3–6 → Only own profile
-            if (in_array($permission, [1, 2, 3, 4, 5, 6])) {
+            // Limited access (own profile only)
+            if (in_array($permission, [
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.HR_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
 
                 if ((int) $routeId === (int) $user->id) {
                     return $next($request);
                 }
 
                 return redirect('/dashboard')
-                    ->with('error', 'Access denied: You are not authorized to view this page.');
+                    ->with('error', config('errors.unauthorized.errorMessage'));
             }
         }
 
@@ -112,11 +122,43 @@ class CheckUserPermission
         
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
+        | Route: /user/{id}/edit → edit user profile
+        |----------------------------------------------------------------------
+        */
+        if ($routeName === 'user.edit') {
+
+            // Full access
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            // Limited access (own profile only)
+            if (in_array($permission, [
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.HR_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
+
+                if ((int) $routeId === (int) $user->id) {
+                    return $next($request);
+                }
+
+                return redirect('/dashboard')
+                    ->with('error', config('errors.unauthorized.errorMessage'));
+            }
+        }
+
+        /*
+        |----------------------------------------------------------------------
         | Fallback
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
         return redirect('/dashboard')
-            ->with('error', 'Access denied: You are not authorized to view this page.');
+            ->with('error', config('errors.unauthorized.errorMessage'));
     }
 }

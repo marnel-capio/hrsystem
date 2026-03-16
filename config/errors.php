@@ -14,6 +14,21 @@ return [
         'errorMessage' => 'An error occurred while creating the record. Please try again.',
     ],
 
+    'update_failed' => [
+        'errorCode' => 'UPDATE_FAILED',
+        'errorMessage' => 'An error occurred while saving the record. Please try again.',
+    ],
+
+    'email_taken' => [
+    'errorCode' => 'EMAIL_TAKEN',
+    'errorMessage' => 'This email address is already registered.',
+    ],
+
+    'password_mismatch' => [
+        'errorCode' => 'PASSWORD_MISMATCH',
+        'errorMessage' => 'Passwords do not match.',
+    ],
+
     // Unauthorized access
     'unauthorized' => [
         'errorCode' => 'UNAUTHORIZED',
@@ -111,6 +126,11 @@ return [
         'errorCode' => 'CONTACT_NUMBER_LENGTH',
         'errorMessage' => 'The contact number must be exactly 11 digits.',
     ],
+
+    'user_updated_successfully' => [
+    'errorCode' => 'USER_UPDATED_SUCCESSFULLY',
+    'errorMessage' => 'Record updated successfully.',
+],
 
 
 

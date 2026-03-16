@@ -17,30 +17,25 @@ class User extends Authenticatable
     public $timestamps = false;
 
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'middle_name',
-        'address',
-        'contact_no',
-        'email_address',
-        'password',
-        'position',
-        'permissions',
-        'active_status',
-        'created_by',
+        'first_name', 'last_name', 'middle_name', 'address',
+        'contact_no', 'email_address', 'password',
+        'position', 'permissions', 'active_status',
+        'created_by', 'updated_by',
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
+        'password', 'remember_token',
+        'two_factor_secret', 'two_factor_recovery_codes',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
         'active_status' => 'boolean',
+    ];
+
+    protected $appends = [
+        'position_label', 'permission_label',
     ];
 
     public static function register(array $data): self
@@ -64,19 +59,37 @@ class User extends Authenticatable
         $this->attributes['password'] = Hash::needsRehash($value) ? Hash::make($value) : $value;
     }
 
+    public static function getUsersForIndex()
+    {
+        return self::select(
+            'id',
+            'first_name',
+            'middle_name',
+            'last_name',
+            'address',
+            'contact_no',
+            'email_address',
+            'position',
+            'active_status',
+            'create_time'
+        )
+        ->orderBy('create_time', 'desc')
+        ->get();
+    }
+
     // ✅ Automatically handle create/update timestamps and by-user
     protected static function booted()
     {
         static::creating(function ($user) {
             $user->create_time = now();
             $user->update_time = now();
-            $user->created_by = auth()->id() ?? null;
-            $user->updated_by = auth()->id() ?? null;
+            $user->created_by = $user->created_by ?? auth()->id();
+            $user->updated_by = $user->updated_by ?? auth()->id();
         });
 
         static::updating(function ($user) {
             $user->update_time = now();
-            $user->updated_by = auth()->id() ?? null;
+            $user->updated_by = $user->updated_by ?? auth()->id();
         });
     }
 
