@@ -20,19 +20,16 @@ watch(search, (value: string) => {
 
 const currentPage = computed(() => batches.value.current_page)
 const lastPage = computed(() => batches.value.last_page)
+const batchesTotal = computed(() => page.props.batches_total)
 
 const blockSize = 5
 const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize))
 const startPage = computed(() => (currentBlock.value - 1) * blockSize + 1)
 const endPage = computed(() => Math.min(startPage.value + blockSize - 1, lastPage.value))
 
-const batchesTotal = computed(() => page.props.batches_total)
-
 const pageNumbers = computed(() => {
   const pages = []
-  for (let i = startPage.value; i <= endPage.value; i++) {
-    pages.push(i)
-  }
+  for (let i = startPage.value; i <= endPage.value; i++) pages.push(i)
   return pages
 })
 
@@ -45,125 +42,165 @@ function goToPage(pageNumber: number) {
 }
 
 function prevBlock() {
-  if (startPage.value > 1) {
-    goToPage(startPage.value - 1)
-  }
+  if (startPage.value > 1) goToPage(startPage.value - 1)
 }
 
 function nextBlock() {
-  if (endPage.value < lastPage.value) {
-    goToPage(endPage.value + 1)
-  }
+  if (endPage.value < lastPage.value) goToPage(endPage.value + 1)
 }
 
 const shouldShowPagination = computed(() => batchesTotal.value > 20)
 </script>
- 
+
 <template>
   <AppLayout>
     <div class="page-content">
- 
-      <div class="page-header flex justify-between items-center mb-6">
-          <h2 class="text-lg font-semibold">Action Batch List</h2>
-          <Link
-            v-if="userPermissions === 1 || userPermissions === 2"
-            :href="`/action/batches/register`"
-            class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded">
-            Create Action Batch
-          </Link>
+
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <h2 class="page-title">ACTION Batch List</h2>
+        <Link v-if="userPermissions === 1 || userPermissions === 2" :href="`/action/batches/register`"
+          class="!bg-[#1C7BA5] btn-primary">
+          Create ACTION Batch
+        </Link>
       </div>
- 
-      <div class="card bg-white p-6 rounded shadow">
- 
-        <!-- SEARCH -->
-        <div class="mb-4 text-xs">
-          <input
-            v-model="search"
-            placeholder="Search Action Batch"
-            class="p-2 border rounded w-full"
-          />
+
+      <!-- SEARCH -->
+      <div class="flex gap-4 mb-4">
+        <div class="relative w-full">
+          <span class="absolute inset-y-0 left-3 flex items-center text-zinc-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
+            </svg>
+          </span>
+          <input v-model="search" type="text" placeholder="Search by action batch"
+            class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
         </div>
- 
+      </div>
+
+      <!-- CARD WRAPPER -->
+      <div class="card">
         <!-- COUNT -->
         <div class="mb-2 text-xs text-gray-600">
-          Showing {{ batches.data.length > 0 ? batches.to : 0 }}
+          Showing {{ batches.data.length > 0 ? batches.from : 0 }}–{{ batches.data.length > 0 ? batches.to : 0 }}
           out of {{ batchesTotal }} items
         </div>
- 
+
         <!-- TABLE -->
-        <div class="overflow-x-auto">
-          <table class="min-w-full border text-xs">
-            <thead class="bg-gray-100">
+        <div class="table-wrapper">
+          <table class="ats-table w-full table-auto border-collapse border text-sm">
+            <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
-                <th class="p-3 border text-left w-1/4">Action Batch</th>
-                <th class="p-3 border text-left w-1/5">Target Trainees</th>
-                <th class="p-3 border text-left w-1/5">Target Start Date</th>
-                <th class="p-3 border text-left w-2/3">Remarks</th>
+                <th class="border px-3 py-2">ACTION Batch</th>
+                <th class="border px-3 py-2">Target Trainees</th>
+                <th class="border px-3 py-2">Target Start Date</th>
+                <th class="border px-3 py-2">Remarks</th>
               </tr>
             </thead>
- 
-            <tbody>
-              <tr
-                v-for="batch in batches.data"
-                :key="batch.id"
-                class="hover:bg-gray-50"
-              >
-                <td class="p-3 border-b  text-blue-600 hover:underline cursor-pointer">
-                  <Link
-                  :href="`/action/batches/${batch.id}`">
-                  {{ batch.action_batch }}
-                </Link>
+            <tbody class="bg-white dark:bg-zinc-900">
+              <tr v-for="batch in batches.data" :key="batch.id">
+                <td class="border px-3 py-2">
+                  <Link :href="`/action/batches/${batch.id}`" class="table-link">{{ batch.action_batch }}</Link>
                 </td>
-                <td class="p-3 border">
-                  {{ batch.target_trainees }}
-                </td>
-                <td class="p-3 border">
-                  {{ batch.target_date }}
-                </td>
-                <td class="p-3 border">
-                  {{ batch.remarks }}
-                </td>
+                <td class="border px-3 py-2">{{ batch.target_trainees }}</td>
+                <td class="border px-3 py-2">{{ batch.target_date }}</td>
+                <td class="border px-3 py-2">{{ batch.remarks }}</td>
               </tr>
- 
               <tr v-if="batches.data.length === 0">
-                <td colspan="4" class="text-center p-6 text-gray-500">
+                <td colspan="4" class="text-center p-6 text-zinc-500">
                   No records found
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
- 
+
         <!-- PAGINATION -->
         <div v-if="shouldShowPagination" class="flex justify-center mt-3 gap-2 text-xs">
-          <span
-            @click="startPage !== 1 && prevBlock()"
+          <span @click="prevBlock" class="px-3 py-2 border rounded cursor-pointer"
+            :class="{ 'opacity-50 cursor-not-allowed': startPage === 1 }">Prev</span>
+
+          <span v-for="pageNumber in pageNumbers" :key="pageNumber" @click="goToPage(pageNumber)"
             class="px-3 py-2 border rounded cursor-pointer"
-            :class="{ 'opacity-50 cursor-not-allowed': startPage === 1 }"
-          >
-            Prev
-          </span>
- 
-          <span
-            v-for="pageNumber in pageNumbers"
-            :key="pageNumber"
-            @click="goToPage(pageNumber)"
-            class="text-xs px-3 py-2 border rounded cursor-pointer"
-            :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''"
-          >
-            {{ pageNumber }}
-          </span>
- 
-          <span
-            @click="endPage !== lastPage && nextBlock()"
-            class="px-3 py-2 border rounded cursor-pointer"
-            :class="{ 'opacity-50 cursor-not-allowed': endPage === lastPage }"
-          >
-            Next
-          </span>
+            :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''">{{ pageNumber }}</span>
+
+          <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer"
+            :class="{ 'opacity-50 cursor-not-allowed': endPage === lastPage }">Next</span>
         </div>
+
       </div>
     </div>
   </AppLayout>
 </template>
- 
+
+<style scoped>
+/* CARD */
+.card {
+  background: var(--ats-card, white);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--ats-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
+}
+
+/* TABLE WRAPPER */
+.table-wrapper {
+  overflow-x: hidden;
+  /* remove horizontal scroll */
+}
+
+.ats-table th,
+.ats-table td {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* TABLE LINK */
+.table-link {
+  color: var(--ats-accent, #1C7BA5);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.table-link:hover {
+  text-decoration: underline;
+}
+
+/* PAGE HEADER */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--ats-text);
+}
+
+/* BUTTON */
+.btn-primary {
+  background: var(--ats-primary, #1C7BA5);
+  color: #fff;
+  padding: 0.55rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: var(--ats-accent, #165a80);
+}
+
+/* PAGE CONTENT */
+.page-content {
+  max-width: 1175px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+</style>

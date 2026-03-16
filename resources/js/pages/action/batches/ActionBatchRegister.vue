@@ -8,110 +8,146 @@ const page = usePage<any>()
 const loading = ref(false)
 
 const form = ref({
-  action_batch: '',
-  target_trainees: '',
-  target_date: '',
-  remarks: ''
+    action_batch: '',
+    target_trainees: '',
+    target_date: '',
+    remarks: ''
 })
 
 const formatToUppercase = () => {
-  form.value.action_batch = form.value.action_batch.toUpperCase()
+    form.value.action_batch = form.value.action_batch.toUpperCase()
 }
 
 const submit = () => {
-  loading.value = true
-  router.post('/action/batches', form.value, {
-    onFinish: () => {
-      loading.value = false
-    }
-  })
+    loading.value = true
+    router.post('/action/batches', form.value, {
+        onFinish: () => {
+            loading.value = false
+        }
+    })
 }
 </script>
 
 <template>
-  <Head title="Action Batch Register" />
-  <AppLayout :errors="page.props.errors">
-    <div class="flex justify-between items-center mx-5 mb-3">
-      <h2 class="text-xl font-bold">Create Action Batch</h2>
-    </div>
 
-    <!-- Form Fields -->
-    <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
-      <div class="grid grid-cols-2 gap-4">
-        <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Action Batch</label>
-          <input
-            v-model="form.action_batch"
-            @input="formatToUppercase"
-            placeholder="Action batch"
-            class="border p-2 rounded w-full"
-          />
-          <span v-if="page.props.errors?.action_batch" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.action_batch }}
-          </span>
+    <Head title="ACTION Batch Register" />
+    <AppLayout :errors="page.props.errors">
+        <div class="flex justify-between items-center mx-5 mb-3">
+            <h2 class="text-xl font-bold">Create ACTION Batch</h2>
         </div>
-      </div>
 
-      <div class="grid grid-cols-2 gap-4 mt-5">
-        <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Target Trainees</label>
-          <input
-            v-model="form.target_trainees"
-            placeholder="Target Trainees"
-            type="number"
-            class="border p-2 rounded w-full"
-          />
-          <span v-if="page.props.errors?.target_trainees" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.target_trainees }}
-          </span>
+        <!-- Form Fields -->
+        <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col col-span-2">
+                    <label class="text-xs font-semibold mb-1">ACTION Batch</label>
+                    <input v-model="form.action_batch" @input="formatToUppercase" placeholder="ACTION batch"
+                        class="border p-2 rounded w-full" />
+                    <span v-if="page.props.errors?.action_batch" class="text-red-600 text-xs mt-1">
+                        {{ page.props.errors.action_batch }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-5">
+                <div class="flex flex-col col-span-2">
+                    <label class="text-xs font-semibold mb-1">Target Trainees</label>
+                    <input v-model="form.target_trainees" placeholder="Target Trainees" type="number"
+                        class="border p-2 rounded w-full" />
+                    <span v-if="page.props.errors?.target_trainees" class="text-red-600 text-xs mt-1">
+                        {{ page.props.errors.target_trainees }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-5">
+                <div class="flex flex-col col-span-2">
+                    <label class="text-xs font-semibold mb-1">Target Start Date</label>
+                    <input v-model="form.target_date" type="month" placeholder="Target Start Date"
+                        class="border p-2 rounded w-full" />
+                    <span v-if="page.props.errors?.target_date" class="text-red-600 text-xs mt-1">
+                        {{ page.props.errors.target_date }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-5">
+                <div class="flex flex-col col-span-2">
+                    <label class="text-xs font-semibold mb-1">Remarks</label>
+                    <textarea v-model="form.remarks" rows="6" placeholder="Remarks" class="border p-2 rounded w-full" />
+                    <span v-if="page.props.errors?.remarks" class="text-red-600 text-xs mt-1">
+                        {{ page.props.errors.remarks }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <span class="btn btn-secondary"
+                    @click="$inertia.get('/action/batches')">
+                    Cancel
+                </span>
+
+                <span class="btn btn-primary"
+                    @click="submit">
+                    Create
+                </span>
+            </div>
         </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 mt-5">
-        <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Target Start Date</label>
-          <input
-            v-model="form.target_date"
-            type="month"
-            placeholder="Target Start Date"
-            class="border p-2 rounded w-full"
-          />
-          <span v-if="page.props.errors?.target_date" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.target_date }}
-          </span>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 mt-5">
-        <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Remarks</label>
-          <textarea
-            v-model="form.remarks"
-            rows="6"
-            placeholder="Remarks"
-            class="border p-2 rounded w-full"
-          />
-          <span v-if="page.props.errors?.remarks" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.remarks }}
-          </span>
-        </div>
-      </div>
-
-      <div class="mt-10 w-full flex justify-end space-x-2">
-        <span
-          class="px-4 text-xs cursor-pointer border py-2 rounded hover:bg-gray-200"
-          @click="$inertia.get('/action/batches')"
-        >
-          Cancel
-        </span>
-
-        <span
-          class="px-4 text-xs cursor-pointer py-2 bg-[#2176ff] text-white rounded hover:bg-blue-400"
-          @click="submit"
-        >
-          Create
-        </span>
-      </div>
-    </div>
-  </AppLayout>
+    </AppLayout>
 </template>
+
+<style lang="css" scoped>
+/* Form actions */
+.form-actions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-actions button,
+.form-actions a {
+    flex: 0 0 auto;
+    width: auto;
+}
+
+/* Buttons */
+button[type="submit"],
+.btn-secondary {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    border-radius: 5px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+}
+
+button[type="submit"] {
+    border: none;
+    background: var(--ats-primary);
+    color: #fff;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+    background: var(--ats-accent);
+}
+
+button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    border: 1px solid #d1d5db;
+    background: #f3f4f6;
+    color: #374151;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+</style>

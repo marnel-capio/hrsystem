@@ -49,7 +49,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['check.permission'])->group(function () {
 
         // Users list
-        Route::get('/user', fn () => Inertia::render('user/Index'))
+        Route::get('/user', [UserController::class, 'index'])
             ->name('user.index');
 
         // Register new user page

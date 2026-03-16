@@ -47,7 +47,7 @@ function submit() {
 <template>
     <AppLayout>
         <div class="page-header">
-            <h2 class="page-title">Register User</h2>
+            <h2 class="page-title">Create User</h2>
         </div>
 
         <div class="form-center">
@@ -112,11 +112,7 @@ function submit() {
                         <label>Position</label>
                         <select v-model="form.position">
                             <option disabled value="">Select Position</option>
-                            <option
-                                v-for="pos in positionOptions"
-                                :key="pos.value"
-                                :value="pos.value"
-                            >
+                            <option v-for="pos in positionOptions" :key="pos.value" :value="pos.value">
                                 {{ pos.label }}
                             </option>
                         </select>
@@ -130,11 +126,7 @@ function submit() {
                         <label>Permissions</label>
                         <select v-model="form.permissions">
                             <option disabled value="">Select Role</option>
-                            <option
-                                v-for="perm in permissionLevels"
-                                :key="perm.value"
-                                :value="perm.value"
-                            >
+                            <option v-for="perm in permissionLevels" :key="perm.value" :value="perm.value">
                                 {{ perm.label }}
                             </option>
                         </select>
@@ -146,12 +138,7 @@ function submit() {
                     <!-- Active -->
                     <div class="form-group">
                         <label>
-                            <input
-                                type="checkbox"
-                                v-model="form.active_status"
-                                :true-value="1"
-                                :false-value="0"
-                            />
+                            <input type="checkbox" v-model="form.active_status" :true-value="1" :false-value="0" />
                             Active User
                         </label>
                     </div>
@@ -162,12 +149,8 @@ function submit() {
                             Cancel
                         </Link>
 
-                        <button
-                            type="submit"
-                            :disabled="form.processing"
-                            class="btn btn-primary"
-                        >
-                            {{ form.processing ? 'Creating…' : 'Register' }}
+                        <button type="submit" :disabled="form.processing" class="btn btn-primary">
+                            {{ form.processing ? 'Creating…' : 'Create' }}
                         </button>
                     </div>
 
