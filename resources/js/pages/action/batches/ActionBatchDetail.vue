@@ -90,7 +90,7 @@ router.get(`/action/batches/${batch.value.id}/edit`)
 
         <div class="bg-[#2F359E] text-white rounded-xl p-6 shadow">
           <h3 class="text-lg font-bold text-center">{{ batch.action_batch }}</h3>
-          <p class="text-xs opacity-80 text-center">Action Batch Detail</p>
+          <p class="text-xs opacity-80 text-center">ACTION Batch Name</p>
         </div>
 
         <div class="bg-white rounded-xl p-4 shadow border">
