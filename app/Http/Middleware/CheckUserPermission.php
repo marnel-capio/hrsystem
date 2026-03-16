@@ -36,7 +36,7 @@ class CheckUserPermission
         | Only HR Admin & HR Manager allowed
         |----------------------------------------------------------------------
         */
-        if (in_array($routeName, ['user.index', 'user.register', 'user.store'])) {
+        if (in_array($routeName, ['user.index', 'user.register', 'user.store', 'action.schedules.register', 'action.schedules.store', 'action.schedules.edit', 'action.schedules.update', 'action.create', 'action.show', 'action.schedules.notify', 'action.schedules.destroy'])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
                 config('constants.HR_MANAGER_PERMISSION.value'),
@@ -54,7 +54,7 @@ class CheckUserPermission
         | Only permission 1, 2, and 3 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['action.schedules.index', 'action.list'])) {
+        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list'])) {
 
             if (in_array($permission, [1, 2, 3])) {
                 return $next($request);

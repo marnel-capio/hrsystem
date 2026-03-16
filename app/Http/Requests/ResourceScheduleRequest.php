@@ -48,8 +48,6 @@ class ResourceScheduleRequest extends FormRequest
 
         return [
             '*.required' => $errors['field_required']['errorMessage'],
-            'target_trainees.min' => $errors['target_trainees_min']['errorMessage'],
-            'deployment_date.date_format' => $errors['deployment_date_format']['errorMessage'],
             'remarks.max' => $errors['max_length_exceeded']['errorMessage'],
         ];
     }

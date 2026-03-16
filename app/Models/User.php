@@ -108,44 +108,12 @@ class User extends Authenticatable
         return config('constants.permissionsList')[$this->permissions] ?? '';
     }
 
-    /**
-     * Update user with automatic password hashing and old/new data return for logging
-     *
-     * @param  array  $data  Validated request data
-     * @return array ['old' => oldData, 'new' => newData]
-     */
-    public function updateUser(array $data): array
+    //function used in resource schedule
+    public static function hrRecruiters()
     {
-        // Step 1: old snapshot
-        $oldData = $this->getOriginal();
-
-        // Step 2: hash password if provided
-        $rawPassword = null;
-        if (! empty($data['password'])) {
-            $rawPassword = $data['password'];
-            $data['password'] = Hash::make($rawPassword);
-        } else {
-            // Remove password from $data so it doesn't overwrite old password
-            unset($data['password']);
-        }
-
-        $data['updated_by'] = auth()->id();
-
-        // Step 3: update the user
-        $this->update($data);
-
-        // Step 4: prepare new data for logging
-        $newData = $this->fresh()->toArray();
-
-        // Keep raw password for logging only if provided
-        if ($rawPassword) {
-            $newData['password'] = $rawPassword;
-        }
-
-        return [
-            'old' => $oldData,
-            'new' => $newData,
-        ];
+    return self::where('permissions', 3)
+               ->where('active_status', 1)
+               ->get(['email_address', 'first_name', 'id']);
     }
 }
 
