@@ -23,6 +23,8 @@ class ActionBatchController extends Controller
     {
         $user = Auth::user();
 
+        // Remove the permission check from here
+
         $search = $request->input('search');
 
         $batches = ActionBatchModel::getPaginated($search, perPage: 20);
@@ -69,6 +71,8 @@ class ActionBatchController extends Controller
             ]);
         }
     }
+ 
+ 
  
     public function show($id)
     {

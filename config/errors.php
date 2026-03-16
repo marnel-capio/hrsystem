@@ -4,10 +4,31 @@
 
 return [
 
+    // Universal message for field max length exceeded
+        'max_length_exceeded' => [
+        'errorCode' => 'MAX_LENGTH_EXCEEDED',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
+    ],
+
     // Universal message for all transaction failed
     'transaction_failed' => [
         'errorCode' => 'TRANSACTION_FAILED',
         'errorMessage' => 'An error occurred while creating the record. Please try again.',
+    ],
+
+    'update_failed' => [
+        'errorCode' => 'UPDATE_FAILED',
+        'errorMessage' => 'An error occurred while saving the record. Please try again.',
+    ],
+
+    'email_taken' => [
+    'errorCode' => 'EMAIL_TAKEN',
+    'errorMessage' => 'This email address is already registered.',
+    ],
+
+    'password_mismatch' => [
+        'errorCode' => 'PASSWORD_MISMATCH',
+        'errorMessage' => 'Passwords do not match.',
     ],
 
     // Unauthorized access
@@ -73,10 +94,6 @@ return [
     ],
 
     // FOR USER REGISTRATION
-    'max_length_exceeded' => [
-        'errorCode' => 'MAX_LENGTH_EXCEEDED',
-        'errorMessage' => 'This field exceeds the maximum allowed length.',
-    ],
 
     'password_complexity_failed' => [
         'errorCode' => 'PASSWORD_COMPLEXITY_FAILED',
@@ -103,17 +120,22 @@ return [
         'errorMessage' => 'The contact number must be exactly 11 digits.',
     ],
 
- 
-   // ACTION BATCH VALIDATION
+    'user_updated_successfully' => [
+    'errorCode' => 'USER_UPDATED_SUCCESSFULLY',
+    'errorMessage' => 'Record updated successfully.',
+],
 
-   'unauthorized_user' => [
-        'errorCode' => 'UNAUTHORIZED_USER',
-        'errorMessage' => 'Access denied: You are not authorized to view this page.',
-    ],
-    
+
+
+    //ACTION BATCH
     'action_batch_required' => [
         'errorCode' => 'ACTION_BATCH_REQUIRED',
         'errorMessage' => 'This field is required.',
+    ],
+
+    'action_batch_max' => [
+        'errorCode' => 'ACTION_BATCH_MAX',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
     ],
 
     'action_batch_unique' => [
@@ -121,39 +143,38 @@ return [
         'errorMessage' => 'Action Batch already exists.',
     ],
 
-    'input_max' => [
-        'errorCode' => 'INPUT_MAX',
+    'target_trainees_required' => [
+        'errorCode' => 'TARGET_TRAINEES_REQUIRED',
+        'errorMessage' => 'This field is required.',
+    ],
+
+    'target_trainees_max' => [
+        'errorCode' => 'TARGET_TRAINEES_MAX',
         'errorMessage' => 'This field exceeds the maximum allowed length.',
     ],
 
-    // TARGET DATE
+    'target_date_required' => [
+        'errorCode' => 'TARGET_DATE_REQUIRED',
+        'errorMessage' => 'This field is required.',
+    ],
+
     'target_date_after_or_equal' => [
         'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
         'errorMessage' => 'The selected date must be in the future.',
     ],
 
-    // SUCCESS MESSAGE - CREATE
-    'action_batch_create_success' => [
-        'messageCode' => 'ACTION_BATCH_CREATE_SUCCESS',
-        'message' => 'Record created successfully.',
+    'remarks_max' => [
+        'errorCode' => 'REMARKS_MAX',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
     ],
 
-    // SYSTEM ERROR - CREATE
+    'action_batch_create_success' => [
+    'messageCode' => 'ACTION_BATCH_CREATE_SUCCESS',
+    'message' => 'Record created successfully.',
+    ],
+    
     'action_batch_create_error' => [
         'errorCode' => 'ACTION_BATCH_CREATE_ERROR',
-        'errorMessage' => 'An error occurred while creating the record.',
+        'errorMessage' => 'An error occurred while creating the record. Please try again.',
     ],
-
-    // SUCCESS MESSAGE - UPDATE
-    'action_batch_update_success' => [
-        'messageCode' => 'ACTION_BATCH_UPDATE_SUCCESS',
-        'message' => 'Record updated successfully.',
-    ],
-
-    // SYSTEM ERROR - UPDATE
-    'action_batch_update_error' => [
-        'errorCode' => 'ACTION_BATCH_UPDATE_ERROR',
-        'errorMessage' => 'An error occurred while updating the record.',
-    ]
- 
 ];

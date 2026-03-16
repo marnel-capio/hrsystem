@@ -43,13 +43,17 @@ Route::middleware(['auth'])->group(function () {
         ->name('logout');
 });
 
+    // Update user
+        Route::put('/user/{id}/update', [UserController::class, 'update'])
+            ->name('user.update');    
+            
     // ------------------------
     // User Management (Permissions 1 & 2 Only)
     // ------------------------
     Route::middleware(['check.permission'])->group(function () {
 
         // Users list
-        Route::get('/user', fn () => Inertia::render('user/Index'))
+        Route::get('/user', [UserController::class, 'index'])
             ->name('user.index');
 
         // Register new user page
@@ -63,8 +67,15 @@ Route::middleware(['auth'])->group(function () {
         // Show user detail
         Route::get('/user/{id}', [UserController::class, 'show'])
             ->name('user.show');
+
+        // Show Edit User Details
+        Route::get('/user/{id}/edit', [UserController::class, 'edit'])
+            ->name('user.edit');
+
+        
     });
 
+    
     // ------------------------
     // Resource Schedules
     // ------------------------
@@ -74,8 +85,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/schedules/register', [ResourceScheduleController::class, 'create'])->name('action.schedules.register');
         Route::post('/action/schedules', [ResourceScheduleController::class, 'store'])->name('action.schedules.store');
         Route::get('/action/schedules/{id}', [ResourceScheduleController::class, 'show'])->name('action.schedules.show');
-
-});
+    });
 
     // ------------------------
     // Actions

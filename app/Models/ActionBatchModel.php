@@ -20,6 +20,8 @@ class ActionBatchModel extends Model
         'updated_by',
         'updated_time',
     ];
+    const CREATED_AT = 'created_time';
+    const UPDATED_AT = 'updated_time';
  
     public function scopeSearch($query, $search)
     {
@@ -38,6 +40,4 @@ class ActionBatchModel extends Model
             ->paginate($perPage)
             ->withQueryString();
     }
-    const CREATED_AT = 'created_time';
-    const UPDATED_AT = 'updated_time';
 }

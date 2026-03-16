@@ -35,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
         Inertia::share([
             'menuPermissions' => Config::get('constants.menuPermissions'),
             'hiddenLinks' => Config::get('constants.hiddenLinks'),
+            'full_edit_permissions' => config('constants.full_edit_permissions'),
+            'limited_edit_permissions' => config('constants.limited_edit_permissions'),
+            'positions' => config('constants.positions'),
+            'permissionsList' => config('constants.permissionsList'),
             'auth' => function () {
                 $user = Auth::user();
                 return $user ? [
@@ -42,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
                     'permissions' => $user->permissions,
                     'name' => $user->name,
                     // Add any other user info you need globally
-                ] : null;
+                ] : null;   
             },
         ]);
     }
