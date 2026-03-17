@@ -61,42 +61,42 @@ const form = useForm({
 })
 
 watch(
-  () => [form.password, form.password_confirmation],
-  ([password, confirm]) => {
+    () => [form.password, form.password_confirmation],
+    ([password, confirm]) => {
 
-    if (!password) {
-      passwordError.value = null
-      return
-    }
+        if (!password) {
+            passwordError.value = null
+            return
+        }
 
-    // Password complexity checks
-    if (password.length < 8) {
-      passwordError.value = "Password must be at least 8 characters."
-    }
-    else if (password.length > 64) {
-      passwordError.value = "Password must be at most 64 characters."
-    }
-    else if (!/[A-Z]/.test(password)) {
-      passwordError.value = "Password must contain at least one uppercase letter."
-    }
-    else if (!/[a-z]/.test(password)) {
-      passwordError.value = "Password must contain at least one lowercase letter."
-    }
-    else if (!/[0-9]/.test(password)) {
-      passwordError.value = "Password must contain at least one number."
-    }
-    else if (!/[!@#$%&*_]/.test(password)) {
-      passwordError.value = "Password must contain at least one special character (!@#$%&*_)."
-    }
-    else if (password !== confirm) {
-      passwordError.value = "Passwords do not match."
-    }
-    else {
-      passwordError.value = null
-    }
+        // Password complexity checks
+        if (password.length < 8) {
+            passwordError.value = "Password must be at least 8 characters."
+        }
+        else if (password.length > 64) {
+            passwordError.value = "Password must be at most 64 characters."
+        }
+        else if (!/[A-Z]/.test(password)) {
+            passwordError.value = "Password must contain at least one uppercase letter."
+        }
+        else if (!/[a-z]/.test(password)) {
+            passwordError.value = "Password must contain at least one lowercase letter."
+        }
+        else if (!/[0-9]/.test(password)) {
+            passwordError.value = "Password must contain at least one number."
+        }
+        else if (!/[!@#$%&*_]/.test(password)) {
+            passwordError.value = "Password must contain at least one special character (!@#$%&*_)."
+        }
+        else if (password !== confirm) {
+            passwordError.value = "Passwords do not match."
+        }
+        else {
+            passwordError.value = null
+        }
 
-  },
-  { immediate: true }
+    },
+    { immediate: true }
 )
 
 const submit = () => {
@@ -198,7 +198,7 @@ const personalFieldReadonly = () => {
                         </select>
                     </div>
 
-                    <div v-if="user.permissions === 1 || user.permissions === 2" class="detail-row">
+                    <div v-if="loggedInPermissions === 1 || loggedInPermissions === 2" class="detail-row">
                         <label>Permissions</label>
                         <select v-model="form.permissions" class="input-field" :disabled="fieldReadonly('permissions')">
                             <option v-for="(label, key) in props.permissions" :key="key" :value="key">{{ label }}
