@@ -120,14 +120,14 @@ class ActionBatchController extends Controller
     
             return redirect()
                 ->route('action.batches.show', $batch->id)
-                ->with('success', config('errors.action_batch_update_success.message'));
+                ->with('success', config('errors.record_updated_successfully.errorMessage'));
     
         } catch (\Exception $e) {
     
             DB::rollBack();
     
             return back()->withErrors([
-                'error' => config('errors.action_batch_update_error.errorMessage')
+                'error' => config('errors.record_updated_failed.errorMessage')
             ]);
         }
     }
