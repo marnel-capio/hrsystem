@@ -152,8 +152,8 @@ const shouldShowPagination = computed(() => batchesTotal.value > 20)
 
 .ats-table th,
 .ats-table td {
-  white-space: normal;
-  word-break: break-word;
+  padding-left: 10px;
+  padding-right: 70px;
 }
 
 /* TABLE LINK */
