@@ -99,26 +99,32 @@ class CheckUserPermission
         }
 
 
-        //ACTION BATCH
+        // ACTION BATCH 
         if (in_array($routeName, ['action.batches.list', 'action.batches.show'])) {
-
             // Only permission 1, 2, and 3 are allowed for these routes
             if (in_array($permission, [1, 2, 3])) {
-                return $next($request);  // Allow the request to proceed
+                return $next($request); 
             }
 
-            return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');
-        }
+            // Fetch the error message from errors.php using the correct key
+            $errorMessage = trans('errors.unauthorized_user.errorMessage');
 
-        if (in_array($routeName, ['action.batches.register', 'action.batches.store, action.batches.edit', 'action.batches.update'])) {
-
-            // Only permission 1, or 2 are allowed for these routes
-            if (in_array($permission, [1,2])) {
-                return $next($request);  // Allow the request to proceed
+            return redirect('/dashboard')
+                    ->with('error', config('errors.unauthorized.errorMessage'));
             }
 
-            return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');
-        }
+        if (in_array($routeName, ['action.batches.register', 'action.batches.store', 'action.batches.edit', 'action.batches.update'])) {
+            // Only permission 1 or 2 are allowed for these routes
+            if (in_array($permission, [1, 2])) {
+                return $next($request);  
+            }
+
+            // Fetch the error message from errors.php using the correct key
+            $errorMessage = trans('errors.unauthorized_user.errorMessage');
+
+            return redirect('/dashboard')
+                    ->with('error', config('errors.unauthorized.errorMessage'));
+            }
         
 
         /*
