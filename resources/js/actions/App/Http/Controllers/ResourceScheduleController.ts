@@ -648,4 +648,12 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
     destroy.form = destroyForm
 const ResourceScheduleController = { index, create, store, show, edit, update, sendResourceScheduleNotification, destroy }
 
+export default ResourceScheduleController                       }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
+const ResourceScheduleController = { index, create, store, show, edit, update, sendResourceScheduleNotification, destroy }
+
 export default ResourceScheduleController
