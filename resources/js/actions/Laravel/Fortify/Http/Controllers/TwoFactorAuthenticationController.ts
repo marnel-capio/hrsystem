@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController::store
  * @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticationController.php:21
@@ -114,6 +113,15 @@ destroy.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
+const TwoFactorAuthenticationController = { store, destroy }
+
+export default TwoFactorAuthenticationControllerons?.mergeQuery ?? {}),
                         }
                     }),
             method: 'post',

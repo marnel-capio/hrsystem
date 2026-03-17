@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \Laravel\Fortify\Http\Controllers\ConfirmedTwoFactorAuthenticationController::store
  * @see vendor/laravel/fortify/src/Http/Controllers/ConfirmedTwoFactorAuthenticationController.php:19
@@ -50,6 +49,14 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
  * @route '/user/confirmed-two-factor-authentication'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
+const ConfirmedTwoFactorAuthenticationController = { store }
+
+export default ConfirmedTwoFactorAuthenticationControllerFormDefinition<'post'> => ({
             action: store.url(options),
             method: 'post',
         })

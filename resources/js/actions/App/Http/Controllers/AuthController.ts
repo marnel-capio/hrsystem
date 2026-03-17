@@ -111,4 +111,12 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     logout.form = logoutForm
 const AuthController = { login, logout }
 
+export default AuthController = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: logout.url(options),
+            method: 'post',
+        })
+    
+    logout.form = logoutForm
+const AuthController = { login, logout }
+
 export default AuthController

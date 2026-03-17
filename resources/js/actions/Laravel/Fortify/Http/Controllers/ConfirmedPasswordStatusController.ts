@@ -79,4 +79,13 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     show.form = showForm
 const ConfirmedPasswordStatusController = { show }
 
+export default ConfirmedPasswordStatusControllerns?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
+const ConfirmedPasswordStatusController = { show }
+
 export default ConfirmedPasswordStatusController
