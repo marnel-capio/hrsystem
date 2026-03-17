@@ -110,7 +110,7 @@ class CheckUserPermission
             return redirect('/dashboard')->with('error', 'Access denied: You are not authorized to view this page.');
         }
 
-        if (in_array($routeName, ['action.batches.register', 'action.batches.store'])) {
+        if (in_array($routeName, ['action.batches.register', 'action.batches.store, action.batches.edit', 'action.batches.update'])) {
 
             // Only permission 1, or 2 are allowed for these routes
             if (in_array($permission, [1,2])) {
