@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::index
  * @see app/Http/Controllers/ResourceScheduleController.php:19
@@ -642,14 +641,6 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
                             _method: 'DELETE',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
                         }
-                    }),
-            method: 'post',
-        })
-    
-    destroy.form = destroyForm
-const ResourceScheduleController = { index, create, store, show, edit, update, sendResourceScheduleNotification, destroy }
-
-export default ResourceScheduleController                       }
                     }),
             method: 'post',
         })
