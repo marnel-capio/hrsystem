@@ -35,7 +35,6 @@ class ActionBatchService
  
         return $batch;
     }
-<<<<<<< HEAD
     
 
     //UPDATE
@@ -94,7 +93,5 @@ class ActionBatchService
         return $batch;
     }
  
-=======
->>>>>>> develop
 }
  
