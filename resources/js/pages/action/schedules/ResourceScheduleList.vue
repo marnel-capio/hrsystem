@@ -232,7 +232,6 @@ const showingTo = computed(() => {
       </div>
 
     </div>
-    </div>
   </AppLayout>
 </template>
 
