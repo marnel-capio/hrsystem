@@ -37,6 +37,7 @@ class ActionBatchService
     }
     
 
+    //UPDATE
     public function update($data, $request)
     {
         $batch = ActionBatchModel::findOrFail($data['id']);

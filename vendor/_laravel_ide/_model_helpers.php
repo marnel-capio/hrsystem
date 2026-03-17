@@ -1392,7 +1392,7 @@ namespace App\Models {
      * @property mixed $created_by
      * @property boolean $active_status
      * @property mixed $permissions
-     * @property bool $position
+     * @property string $position
      * @property string $email_address
      * @property string $contact_no
      * @property string $address

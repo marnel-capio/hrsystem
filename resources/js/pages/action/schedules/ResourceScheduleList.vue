@@ -230,7 +230,6 @@ const showingTo = computed(() => {
         <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer"
           :class="{ 'opacity-50 cursor-not-allowed': endPage === totalPages }">Next</span>
       </div>
-
     </div>
     </div>
   </AppLayout>
