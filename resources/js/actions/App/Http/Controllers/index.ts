@@ -3,6 +3,7 @@ import ForgotPasswordController from './ForgotPasswordController'
 import DashboardController from './DashboardController'
 import UserController from './UserController'
 import ResourceScheduleController from './ResourceScheduleController'
+import ActionApplicationController from './ActionApplicationController'
 import ActionBatchController from './ActionBatchController'
 import Settings from './Settings'
 const Controllers = {
@@ -11,6 +12,7 @@ ForgotPasswordController: Object.assign(ForgotPasswordController, ForgotPassword
 DashboardController: Object.assign(DashboardController, DashboardController),
 UserController: Object.assign(UserController, UserController),
 ResourceScheduleController: Object.assign(ResourceScheduleController, ResourceScheduleController),
+ActionApplicationController: Object.assign(ActionApplicationController, ActionApplicationController),
 ActionBatchController: Object.assign(ActionBatchController, ActionBatchController),
 Settings: Object.assign(Settings, Settings),
 }
