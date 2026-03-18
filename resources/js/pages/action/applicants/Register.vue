@@ -80,7 +80,7 @@ function submit() {
 <template>
     <AppLayout>
         <div class="page-header">
-            <h2 class="page-title">Register Applicant</h2>
+            <h2 class="page-title">Create Applicant</h2>
         </div>
 
         <div class="form-center">

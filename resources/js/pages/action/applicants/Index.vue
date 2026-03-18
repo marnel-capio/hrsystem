@@ -43,8 +43,8 @@ onMounted(() => {
         <!-- PAGE HEADER -->
         <div class="page-content">
             <div class="page-header">
-                <h2 class="page-title">Applicants</h2>
-                <Link href="/action/applicants/register" class="btn-primary">Register Applicant</Link>
+                <h2 class="page-title">ACTION Applicants</h2>
+                <Link href="/action/applicants/register" class="!bg-[#1C7BA5] btn-primary">Create Applicant</Link>
             </div>
         </div>
     </AppLayout>
