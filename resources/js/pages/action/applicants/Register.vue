@@ -51,15 +51,20 @@ const form = useForm({
 
 // Watch source_type to clear unrelated fields
 watch(() => form.source_type, (val) => {
-    const otherSourceTypes = [1, 2, 4, 5]
+    const otherSourceTypes = [1, 2, 4, 5];
+
     if (otherSourceTypes.includes(Number(val))) {
-        form.other_source = ''
-        form.source = ''
+        form.source = '';
+        form.clearErrors('source'); // clear any previous errors
+        form.other_source = '';
+        form.clearErrors('other_source');
     } else if (Number(val) === 3) {
-        form.source = ''
-        form.other_source = ''
+        form.source = '';
+        form.clearErrors('source');
+        form.other_source = '';
+        form.clearErrors('other_source');
     }
-})
+});
 
 // Submit handler
 function submit() {
@@ -95,7 +100,7 @@ function submit() {
                             <option disabled value="">Select Source</option>
                             <option v-for="s in sources" :key="s.value" :value="s.value">{{ s.label }}</option>
                         </select>
-                        <span v-if="form.errors.source" class="error">{{ form.errors.source }}</span>
+                        <span v-if="!isSourceDisabled && form.errors.source" class="error">{{ form.errors.source }}</span>
                     </div>
 
                     <!-- Other Source -->
@@ -103,7 +108,7 @@ function submit() {
                         <label>Other Source</label>
                         <input type="text" v-model="form.other_source" placeholder="Specify other source"
                             :disabled="isOtherSourceDisabled" />
-                        <span v-if="form.errors.other_source" class="error">{{ form.errors.other_source }}</span>
+                         <span v-if="!isOtherSourceDisabled && form.errors.other_source" class="error">{{ form.errors.other_source }}</span>
                     </div>
 
                     <!-- Name Fields -->
@@ -145,7 +150,7 @@ function submit() {
                     <!-- Age -->
                     <div class="form-group">
                         <label>Age</label>
-                        <input type="number" v-model="form.age" min="0" max="99" placeholder="Enter age" />
+                        <input type="text" v-model="form.age" min="0" max="99" placeholder="Enter age" />
                         <span v-if="form.errors.age" class="error">{{ form.errors.age }}</span>
                     </div>
 

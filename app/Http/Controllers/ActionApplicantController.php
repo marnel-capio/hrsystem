@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\ActionApplicant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\RegisterActionApplicantRequest;
 
 class ActionApplicantController extends Controller
 {
@@ -24,34 +25,8 @@ class ActionApplicantController extends Controller
         return Inertia::render('action/applicants/Index');
     }
 
-    public function store(Request $request)
+    public function store(RegisterActionApplicantRequest $request)
     {
-        // Validate the input
-        $validator = Validator::make($request->all(), [
-            'source_type' => 'required|integer|between:1,5',
-            'source' => 'nullable|integer',
-            'other_source' => 'nullable|string|max:80',
-            'last_name' => 'required|string|max:80',
-            'first_name' => 'required|string|max:80',
-            'middle_name' => 'nullable|string|max:80',
-            'email_address' => 'required|email|unique:action_applicants,email_address',
-            'gender' => 'required|integer|in:1,2',
-            'age' => 'required|integer|min:0|max:99',
-            'school' => 'required|string|max:80',
-            'degree' => 'required|string|max:80',
-            'others_degree' => 'nullable|string|max:80',
-            'expected_graduation' => 'required|string|max:20',
-            'awards_recognition' => 'nullable|string|max:1024',
-            'other_examination_certificate' => 'nullable|string|max:1024',
-            'thesis_project' => 'nullable|string|max:1024',
-            'extra_curricular' => 'nullable|string|max:1024',
-            'remarks' => 'nullable|string|max:1024',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
         $now = now(); // current timestamp
 
         ActionApplicant::create([
@@ -73,8 +48,8 @@ class ActionApplicantController extends Controller
             'thesis_project' => $request->thesis_project,
             'extra_curricular' => $request->extra_curricular,
             'remarks' => $request->remarks,
-            'created_by' => Auth::id(), // current logged-in user
-            'updated_by' => Auth::id(),
+            'created_by' => auth()->id(),
+            'updated_by' => auth()->id(),
             'created_time' => $now,
             'updated_time' => $now,
         ]);
