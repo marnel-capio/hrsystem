@@ -50,6 +50,9 @@ Route::middleware(['auth'])->group(function () {
     //action-applicants register       
     Route::get('/action/applicants/register', [ActionApplicantController::class, 'create'])
             ->name('action.applicants.register');
+
+    Route::post('/action/applicants', [ActionApplicantController::class, 'store'])
+     ->name('action.applicants.store');
 });
 
     // Update user

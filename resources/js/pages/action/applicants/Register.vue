@@ -1,13 +1,24 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { useForm } from '@inertiajs/vue3'
-import { watch } from 'vue'
+import { useForm, Link } from '@inertiajs/vue3'
+import { watch, computed } from 'vue'
 
 // Props (optional for dynamic dropdowns)
 const props = defineProps<{
     sourceTypes?: Record<number, string>,
     sources?: Record<number, string>
 }>()
+
+const isSourceDisabled = computed(() => {
+    // Source is only enabled if source_type is 3
+    return Number(form.source_type) !== 3
+})
+
+const isOtherSourceDisabled = computed(() => {
+    const val = Number(form.source_type)
+    // Other Source enabled if source_type is 1, 2, 4, 5
+    return ![1, 2, 4, 5].includes(val)
+})
 
 // Dropdowns
 const sourceTypes = props.sourceTypes
@@ -73,7 +84,7 @@ watch(() => form.source_type, (val) => {
 
 // Submit handler
 function submit() {
-    form.post('/applicants')
+    form.post('/action/applicants')
 }
 </script>
 
@@ -101,7 +112,7 @@ function submit() {
                     <!-- Source -->
                     <div class="form-group">
                         <label>Source</label>
-                        <select v-model="form.source" :disabled="[1, 2, 4, 5].includes(Number(form.source_type))">
+                        <select v-model="form.source" :disabled="isSourceDisabled">
                             <option value="">Select Source</option>
                             <option v-for="s in sources" :key="s.value" :value="s.value">{{ s.label }}</option>
                         </select>
@@ -112,7 +123,7 @@ function submit() {
                     <div class="form-group">
                         <label>Other Source</label>
                         <input type="text" v-model="form.other_source" placeholder="Specify other source"
-                            :disabled="Number(form.source_type) === 3 || ![1, 2, 4, 5, 3].includes(Number(form.source_type))" />
+                            :disabled="isOtherSourceDisabled" />
                         <span v-if="form.errors.other_source" class="error">{{ form.errors.other_source }}</span>
                     </div>
 
@@ -180,9 +191,9 @@ function submit() {
 
                     <div class="form-group">
                         <label>Expected Graduation</label>
-                        <input type="text" v-model="form.expected_graduation" placeholder="Enter expected graduation" />
+                        <input type="date" v-model="form.expected_graduation" />
                         <span v-if="form.errors.expected_graduation" class="error">{{ form.errors.expected_graduation
-                            }}</span>
+                        }}</span>
                     </div>
 
                     <!-- Achievements -->
@@ -191,7 +202,7 @@ function submit() {
                         <textarea v-model="form.awards_recognition"
                             placeholder="Enter awards or recognition"></textarea>
                         <span v-if="form.errors.awards_recognition" class="error">{{ form.errors.awards_recognition
-                            }}</span>
+                        }}</span>
                     </div>
 
                     <div class="form-group">
@@ -211,7 +222,7 @@ function submit() {
                         <label>Extra Curricular</label>
                         <textarea v-model="form.extra_curricular"></textarea>
                         <span v-if="form.errors.extra_curricular" class="error">{{ form.errors.extra_curricular
-                            }}</span>
+                        }}</span>
                     </div>
 
                     <div class="form-group">
@@ -220,18 +231,14 @@ function submit() {
                         <span v-if="form.errors.remarks" class="error">{{ form.errors.remarks }}</span>
                     </div>
 
-                     <!-- Submit -->
+                    <!-- Submit -->
                     <div class="form-actions">
-                        <Link href="/user" class="btn btn-secondary">
-                            Cancel
+                        <Link href="/action/applicants" class="btn btn-secondary">
+                        Cancel
                         </Link>
 
-                        <button
-                            type="submit"
-                            :disabled="form.processing"
-                            class="btn btn-primary"
-                        >
-                            {{ form.processing ? 'Creating…' : 'Register' }}
+                        <button type="submit" :disabled="form.processing" class="btn btn-primary">
+                            {{ form.processing ? 'Creating…' : 'Create' }}
                         </button>
                     </div>
                 </form>
@@ -309,12 +316,27 @@ textarea:disabled {
     margin-top: 0.25rem;
 }
 
+textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
 .form-actions {
     margin-top: 2rem;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem; /* spacing between buttons */
 }
 
+.form-actions button,
+.form-actions a {
+    flex: 0 0 auto;
+    width: auto;
+    white-space: nowrap;
+}
+
+/* Primary button */
 button.btn-primary {
     padding: 0.5rem 1.2rem;
     font-size: 0.85rem;
@@ -324,6 +346,7 @@ button.btn-primary {
     background: var(--ats-primary);
     color: #fff;
     cursor: pointer;
+    transition: background 0.15s ease;
 }
 
 button.btn-primary:hover:not(:disabled) {
@@ -335,9 +358,21 @@ button.btn-primary:disabled {
     cursor: not-allowed;
 }
 
-textarea {
-    resize: vertical;
-    min-height: 60px;
+/* Secondary button */
+.btn-secondary {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    border-radius: 5px;
+    font-weight: 500;
+    border: 1px solid #d1d5db;
+    background: #f3f4f6;
+    color: #374151;
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
 }
 
 
