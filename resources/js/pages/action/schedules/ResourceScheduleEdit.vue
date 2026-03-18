@@ -1,47 +1,69 @@
 <script setup lang="ts">
 import { Head, useForm, usePage, Link } from '@inertiajs/vue3';
-import { ref, computed, onMounted } from 'vue';
-import { watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 // Props from backend
 const props = defineProps<{
-  errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
+  schedule: {
+    id: number;
+    action_batch_id: number;
+    prev_batch_id: number;
+    target_location: number;
+    target_trainees: number;
+    deployment_date: string;
+    remarks: string;
+    contact_schools_startdate: string;
+    contact_schools_enddate: string;
+    source_testing_startdate: string;
+    source_testing_enddate: string;
+    initial_interviews_startdate: string;
+    initial_interviews_enddate: string;
+    final_interviews_startdate: string;
+    final_interviews_enddate: string;
+    contract_offers_startdate: string;
+    contract_offers_enddate: string;
+    requirements_startdate: string;
+    requirements_enddate: string;
+    training_startdate: string;
+    training_enddate: string;
+  };
   newBatches: { id: number; action_batch: string; target_trainees: number; target_date: string; }[];
   prevBatches: { id: number; action_batch: string }[];
+  currentBatch: { id: number; action_batch: string; target_trainees: number; target_date: string } | null;
 }>();
 
 // Inertia page
 const page = usePage();
-
 // Error notification
 const errorMessage = computed(() => (page.props.flash as any)?.error || '');
 const showError = ref(false);
+const successMessage = computed(() => (page.props.flash as any)?.error || '');
+const showSuccess = ref(!!successMessage.value);
 
-// Initialize form with all  fields
+// Initialize form with existing schedule data
 const form = useForm({
-  action_batch_id: "",
-  prev_batch_id: "",
-  target_location: "",
-  target_trainees: "",
-  deployment_date: "",
-  contact_schools_startdate: "",
-  contact_schools_enddate: "",
-  source_testing_startdate: "",
-  source_testing_enddate: "",
-  initial_interviews_startdate: "",
-  initial_interviews_enddate: "",
-  final_interviews_startdate: "",
-  final_interviews_enddate: "",
-  contract_offers_startdate: "",
-  contract_offers_enddate: "",
-  requirements_startdate: "",
-  requirements_enddate: "",
-  training_startdate: "",
-  training_enddate: "",
-  remarks: "",
+  action_batch_id: props.schedule.action_batch_id || "",
+  prev_batch_id: props.schedule.prev_batch_id || "",
+  target_location: props.schedule.target_location || "",
+  target_trainees: props.schedule.target_trainees || "",
+  deployment_date: props.schedule.deployment_date || "",
+  contact_schools_startdate: props.schedule.contact_schools_startdate || "",
+  contact_schools_enddate: props.schedule.contact_schools_enddate || "",
+  source_testing_startdate: props.schedule.source_testing_startdate || "",
+  source_testing_enddate: props.schedule.source_testing_enddate || "",
+  initial_interviews_startdate: props.schedule.initial_interviews_startdate || "",
+  initial_interviews_enddate: props.schedule.initial_interviews_enddate || "",
+  final_interviews_startdate: props.schedule.final_interviews_startdate || "",
+  final_interviews_enddate: props.schedule.final_interviews_enddate || "",
+  contract_offers_startdate: props.schedule.contract_offers_startdate || "",
+  contract_offers_enddate: props.schedule.contract_offers_enddate || "",
+  requirements_startdate: props.schedule.requirements_startdate || "",
+  requirements_enddate: props.schedule.requirements_enddate || "",
+  training_startdate: props.schedule.training_startdate || "",
+  training_enddate: props.schedule.training_enddate || "",
+  remarks: props.schedule.remarks || "",
 });
-
 
 // Gantt activity keys
 const ganttActivities = [
@@ -153,12 +175,19 @@ const ganttRows = computed(() => {
   });
 });
 
-// Success message
-const successMessage = computed(() => (page.props.flash as any)?.success || '');
-const showSuccess = ref(successMessage.value);
+
 onMounted(() => {
-  if (showSuccess.value) setTimeout(() => showSuccess.value = false, 5000);
-  if (errorMessage.value) {
+  // Initialize ganttForm with existing data
+  ganttActivities.forEach(act => {
+    ganttForm.value[act].start = props.schedule[`${act}_startdate`] || "";
+    ganttForm.value[act].end = props.schedule[`${act}_enddate`] || "";
+  });
+
+   if (showSuccess.value) setTimeout(() => showSuccess.value = false, 5000);
+
+  const flashError = (page.props.flash as any)?.error;
+  if (flashError) {
+    errorMessage.value = flashError;
     showError.value = true;
     setTimeout(() => showError.value = false, 5000);
   }
@@ -179,17 +208,19 @@ const wbsColors: Record<string, string> = {
   training: '#84cc16',
 };
 
-// Submit form
-function createResourceSchedule() {
-
-  // Map ganttForm to form fields
+// Submit form 
+function updateResourceSchedule() {
   ganttActivities.forEach(act => {
     (form as any)[`${act}_startdate`] = ganttForm.value[act].start;
     (form as any)[`${act}_enddate`] = ganttForm.value[act].end;
   });
 
-form.post('/action/schedules', {
-  onSuccess: () => { showSuccess.value = true },
+form.put(`/action/schedules/${props.schedule.id}/update`, {
+  preserveScroll: true,
+  onSuccess: () => {
+    showSuccess.value = true;
+    setTimeout(() => showSuccess.value = false, 5000);
+  },
   onError: (errors) => {
     ganttActivities.forEach(act => {
       ganttForm.value[act].error = errors[`${act}_startdate`] || errors[`${act}_enddate`] || "";
@@ -198,21 +229,23 @@ form.post('/action/schedules', {
 });
 }
 
-watch(errorMessage, (val) => {
-  if (val) {
-    showError.value = true;
-    setTimeout(() => showError.value = false, 5000);
+watch(successMessage, (newVal) => {
+  if (newVal) {
+    showSuccess.value = true;
+    setTimeout(() => showSuccess.value = false, 5000);
   }
-});
+}, { immediate: true });
 
 // When user selects a batch, auto-fill target_trainees and deployment date
 watch(() => form.action_batch_id, (newId) => {
-  const batch = props.newBatches.find(b => b.id === Number(newId));
-
+  // Only run if the value actually changed (not on initial mount)
+  if (!newId) return;
+  
+const batch = props.newBatches.find(b => b.id === Number(newId)) || 
+                (props.currentBatch && props.currentBatch.id === Number(newId) ? props.currentBatch : null);
   if (batch) {
     form.target_trainees = batch.target_trainees;
 
-    // If target_date has day, strip it for input type="month"
     if (batch.target_date) {
       form.deployment_date = batch.target_date.length > 7
         ? batch.target_date.substring(0, 7)
@@ -224,50 +257,81 @@ watch(() => form.action_batch_id, (newId) => {
     form.target_trainees = '';
     form.deployment_date = '';
   }
-});
+}, { immediate: false });
+
 
 </script>
 
 <template>
-  <Head title="Create Resource Schedule" />
+  <Head title="Edit Resource Schedule" />
 
   <AppLayout>
     <div class="max-w-5xl mx-auto w-full space-y-10 p-8">
-      <h1 class="text-3xl font-bold mb-6">Create Resource Schedule</h1>
+      <h1 class="text-3xl font-bold mb-6">Edit Resource Schedule</h1>
 
       <!-- Error Notification -->
-    <div v-if="showError" class="full-width-alert">
-      <div class="alert-banner alert-error-banner">
-        <div class="alert-body">{{ errorMessage }}</div>
-        <button type="button" class="close-btn" @click="showError = false">×</button>
+      <div 
+        v-if="showError"
+        class="full-width-alert"
+      >
+        <div 
+          class="alert-banner alert-error-banner"
+        >
+          <div class="alert-body">
+              {{ errorMessage }}
+          </div>
+          <button 
+            style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
+            @click="closeError"
+          >
+            X
+          </button>
+        </div>
       </div>
-    </div>
-        
 
+      <!-- Success Notification -->
+      <div 
+        v-if="showSuccess"
+        class="full-width-alert"
+      >
+        <div 
+          class="alert-banner alert-error-banner"
+        >
+          <div class="alert-body">
+              {{ successMessage }}
+          </div>
+          <button 
+            style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
+            @click="showSuccess = false"
+          >
+            X
+          </button>
+        </div>
+      </div>
 
       <div class="bg-white dark:bg-zinc-900 p-10 rounded-2xl border shadow-xl space-y-10">
-        <form @submit.prevent="createResourceSchedule">
+        <form @submit.prevent="updateResourceSchedule">
 
           <!-- Basic Info -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Batch Name -->
-            <div>
-              <label class="text-sm font-semibold">Batch Name</label>
-              <select v-model="form.action_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5" >
-                <option value="">Select</option>
-                <option v-for="batch in props.newBatches" :key="batch.id" :value="batch.id">
-                  {{ batch.action_batch }}
-                </option>
-              </select>
-              <p v-if="form.errors.action_batch_id" class="text-red-600 text-xs mt-1">
-                {{ form.errors.action_batch_id }}
-              </p>
-            </div>
+          <!-- Batch Name -->
+          <div>
+            <label class="text-sm font-semibold">Batch Name</label>
+            <input 
+              type="text" 
+              :value="currentBatch?.action_batch || 'N/A'" 
+              readonly 
+              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
+              style="background-color: #e5e7eb; color: #9ca3af;"
+            />
+            <!-- No validation error for disabled field -->
+
+          </div>
 
             <!-- Target Location -->
             <div>
               <label class="text-sm font-semibold">Target Location</label>
-              <select v-model="form.target_location" class="w-full bg-zinc-50 border rounded-lg p-2.5" >
+              <select v-model="form.target_location" class="w-full bg-zinc-50 border rounded-lg p-2.5">
                 <option value="">Select</option>
                 <option value="1">Manila</option>
                 <option value="2">Cebu</option>
@@ -280,28 +344,27 @@ watch(() => form.action_batch_id, (newId) => {
             <!-- Target Trainees -->
             <div>
               <label class="text-sm font-semibold">Target Trainees</label>
-              <input v-model="form.target_trainees" type="number" placeholder="Selected Batch Name will fill this field" class="w-full bg-zinc-50 border rounded-lg p-2.5"  disabled/>
-              <p v-if="form.errors.target_trainees" class="text-red-600 text-xs mt-1">
-                {{ form.errors.target_trainees }}
-              </p>
+              <input v-model="form.target_trainees" type="number" readonly 
+              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
+              style="background-color: #e5e7eb; color: #9ca3af;" />
+              <!-- No validation error for disabled field -->
             </div>
 
             <!-- Date of Deployment -->
             <div>
               <label class="text-sm font-semibold">Date of Deployment</label>
-              <input v-model="form.deployment_date" readonly placeholder="Selected Batch Name will fill this field" class="w-full bg-zinc-50 border rounded-lg p-2.5"  />
-              <p v-if="form.errors.deployment_date" class="text-red-600 text-xs mt-1">
-                {{ form.errors.deployment_date }}
-              </p>
+              <input v-model="form.deployment_date" readonly 
+              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
+              style="background-color: #e5e7eb; color: #9ca3af;" />
+              <!-- No validation error for disabled field -->
             </div>
-
             
             <!-- Previous Batch -->
             <div>
               <label class="text-sm font-semibold">Compare with Previous Batch</label>
               <select v-model="form.prev_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5">
                 <option value="">Select</option>
-                <option v-for="batch in props.prevBatches" :key="batch.id" :value="batch.id">
+                <option v-for="batch in prevBatches" :key="batch.id" :value="batch.action_batch_id">
                   {{ batch.action_batch }}
                 </option>
               </select>
@@ -309,10 +372,7 @@ watch(() => form.action_batch_id, (newId) => {
                 {{ form.errors.prev_batch_id }}
               </p>
             </div>
-
           </div>
-
-          
 
           <!-- Gantt Section -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mt-10">
@@ -327,7 +387,6 @@ watch(() => form.action_batch_id, (newId) => {
                       type="week"
                       v-model="ganttForm[act].start"
                       class="w-full bg-zinc-50 border rounded-lg p-2"
-                      
                     />
                   </div>
 
@@ -337,7 +396,6 @@ watch(() => form.action_batch_id, (newId) => {
                       type="week"
                       v-model="ganttForm[act].end"
                       class="w-full bg-zinc-50 border rounded-lg p-2"
-                      
                     />
                   </div>
                 </div>
@@ -349,7 +407,7 @@ watch(() => form.action_batch_id, (newId) => {
             </template>
           </div>
 
-          <!-- Gantt Chart Preview -->
+                    <!-- Gantt Chart Preview -->
           <div class="mt-12">
             <h2 class="font-bold text-xl mb-4">WBS Preview</h2>
 
@@ -399,35 +457,34 @@ watch(() => form.action_batch_id, (newId) => {
             <div v-else class="text-sm text-zinc-500">Select weeks to generate preview.</div>
           </div>
 
-          
-                    <!-- Remarks Field -->
-<div class="mt-10">
-  <label class="text-sm font-semibold">Remarks</label>
-  <textarea
-    v-model="form.remarks"
-    class="w-full bg-zinc-50 border rounded-lg p-2.5 mt-1"
-    rows="4"
-    placeholder="Enter any remarks here..."
-  ></textarea>
-  <p v-if="form.errors.remarks" class="text-red-600 text-xs mt-1">
-    {{ form.errors.remarks }}
-  </p>
-</div>
+          <!-- Remarks Field -->
+          <div class="mt-10">
+            <label class="text-sm font-semibold">Remarks</label>
+            <textarea
+              v-model="form.remarks"
+              class="w-full bg-zinc-50 border rounded-lg p-2.5 mt-1"
+              rows="4"
+              placeholder="Enter any remarks here..."
+            ></textarea>
+            <p v-if="form.errors.remarks" class="text-red-600 text-xs mt-1">
+              {{ form.errors.remarks }}
+            </p>
+          </div>
 
           <!-- Buttons -->
-<div class="form-actions">
-  <Link href="/action/schedules" class="btn btn-secondary">
-    Cancel
-  </Link>
+          <div class="form-actions">
+          <Link :href="`/action/schedules/${props.schedule.id}`" class="btn btn-secondary">
+            Cancel
+          </Link>
 
-  <button
-    type="submit"
-    :disabled="form.processing"
-    class="btn btn-primary"
-  >
-    {{ form.processing ? 'Creating…' : 'Create' }}
-  </button>
-</div>
+            <button
+              type="submit"
+              :disabled="form.processing"
+              class="btn btn-primary"
+            >
+              {{ form.processing ? 'Updating…' : 'Update' }}
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -452,54 +509,54 @@ watch(() => form.action_batch_id, (newId) => {
 
 /* Form actions */
 .form-actions {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.5rem;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .form-actions button,
 .form-actions a {
-    flex: 0 0 auto;
-    width: auto;
+  flex: 0 0 auto;
+  width: auto;
 }
 
 /* Buttons */
 button[type="submit"],
 .btn-secondary {
-    padding: 0.5rem 1.2rem;
-    font-size: 0.85rem;
-    border-radius: 5px;
-    font-weight: 500;
-    white-space: nowrap;
-    transition: background 0.15s ease;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.85rem;
+  border-radius: 5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s ease;
 }
 
 button[type="submit"] {
-    border: none;
-    background: var(--ats-primary);
-    color: #fff;
-    cursor: pointer;
+  border: none;
+  background: var(--ats-primary);
+  color: #fff;
+  cursor: pointer;
 }
 
 button[type="submit"]:hover:not(:disabled) {
-    background: var(--ats-accent);
+  background: var(--ats-accent);
 }
 
 button[type="submit"]:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-secondary {
-    border: 1px solid #d1d5db;
-    background: #f3f4f6;
-    color: #374151;
-    text-decoration: none;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  color: #374151;
+  text-decoration: none;
 }
 
 .btn-secondary:hover {
-    background: #e5e7eb;
+  background: #e5e7eb;
 }
 </style>
