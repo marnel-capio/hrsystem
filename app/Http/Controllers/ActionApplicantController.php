@@ -12,7 +12,11 @@ class ActionApplicantController extends Controller
 {
     public function create()
     {
-        return Inertia::render('action/applicants/Register');
+        return Inertia::render('action/applicants/Register', [
+            'sourceTypes' => config('constants.sourceTypes'),
+            'sources' => config('constants.sources'),
+            'genders' => config('constants.genders'),
+        ]);
     }
 
     public function index()

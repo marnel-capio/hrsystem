@@ -3,50 +3,29 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { useForm, Link } from '@inertiajs/vue3'
 import { watch, computed } from 'vue'
 
-// Props (optional for dynamic dropdowns)
+// Props to receive constants from backend
 const props = defineProps<{
     sourceTypes?: Record<number, string>,
-    sources?: Record<number, string>
+    sources?: Record<number, string>,
+    genders?: Record<number, string>
 }>()
 
-const isSourceDisabled = computed(() => {
-    // Source is only enabled if source_type is 3
-    return Number(form.source_type) !== 3
-})
-
-const isOtherSourceDisabled = computed(() => {
-    const val = Number(form.source_type)
-    // Other Source enabled if source_type is 1, 2, 4, 5
-    return ![1, 2, 4, 5].includes(val)
-})
-
-// Dropdowns
+// Map constants to Vue-friendly arrays
 const sourceTypes = props.sourceTypes
     ? Object.entries(props.sourceTypes).map(([value, label]) => ({ value: Number(value), label }))
-    : [
-        { value: 1, label: 'Campus Recruitment' },
-        { value: 2, label: 'Academe Partner' },
-        { value: 3, label: 'Recruitment Portals' },
-        { value: 4, label: 'Employee Referral' },
-        { value: 5, label: 'Walk-in' }
-    ]
+    : []
 
 const sources = props.sources
     ? Object.entries(props.sources).map(([value, label]) => ({ value: Number(value), label }))
-    : [
-        { value: 1, label: 'Mynimo' },
-        { value: 2, label: 'Indeed' },
-        { value: 3, label: 'Kalibrr' },
-        { value: 4, label: 'FoundIt' },
-        { value: 5, label: 'LinkedIn' },
-        { value: 6, label: 'Facebook' },
-        { value: 7, label: 'Jobstreet' }
-    ]
+    : []
 
-const genders = [
-    { value: 1, label: 'Male' },
-    { value: 2, label: 'Female' }
-]
+const genders = props.genders
+    ? Object.entries(props.genders).map(([value, label]) => ({ value: Number(value), label }))
+    : []
+
+// Computed to enable/disable source fields
+const isSourceDisabled = computed(() => Number(form.source_type) !== 3)
+const isOtherSourceDisabled = computed(() => ![1, 2, 4, 5].includes(Number(form.source_type)))
 
 // Form state using Inertia useForm
 const form = useForm({
@@ -70,7 +49,7 @@ const form = useForm({
     remarks: ''
 })
 
-// Watch source_type to enable/disable fields
+// Watch source_type to clear unrelated fields
 watch(() => form.source_type, (val) => {
     const otherSourceTypes = [1, 2, 4, 5]
     if (otherSourceTypes.includes(Number(val))) {
@@ -101,7 +80,7 @@ function submit() {
                     <div class="form-group">
                         <label>Source Type</label>
                         <select v-model="form.source_type">
-                            <option value="">Select Source Type</option>
+                            <option disabled value="">Select Source Type</option>
                             <option v-for="type in sourceTypes" :key="type.value" :value="type.value">
                                 {{ type.label }}
                             </option>
@@ -113,7 +92,7 @@ function submit() {
                     <div class="form-group">
                         <label>Source</label>
                         <select v-model="form.source" :disabled="isSourceDisabled">
-                            <option value="">Select Source</option>
+                            <option disabled value="">Select Source</option>
                             <option v-for="s in sources" :key="s.value" :value="s.value">{{ s.label }}</option>
                         </select>
                         <span v-if="form.errors.source" class="error">{{ form.errors.source }}</span>
@@ -157,7 +136,7 @@ function submit() {
                     <div class="form-group">
                         <label>Gender</label>
                         <select v-model="form.gender">
-                            <option value="">Select Gender</option>
+                            <option disabled value="">Select Gender</option>
                             <option v-for="g in genders" :key="g.value" :value="g.value">{{ g.label }}</option>
                         </select>
                         <span v-if="form.errors.gender" class="error">{{ form.errors.gender }}</span>
@@ -193,7 +172,7 @@ function submit() {
                         <label>Expected Graduation</label>
                         <input type="date" v-model="form.expected_graduation" />
                         <span v-if="form.errors.expected_graduation" class="error">{{ form.errors.expected_graduation
-                        }}</span>
+                            }}</span>
                     </div>
 
                     <!-- Achievements -->
@@ -202,7 +181,7 @@ function submit() {
                         <textarea v-model="form.awards_recognition"
                             placeholder="Enter awards or recognition"></textarea>
                         <span v-if="form.errors.awards_recognition" class="error">{{ form.errors.awards_recognition
-                        }}</span>
+                            }}</span>
                     </div>
 
                     <div class="form-group">
@@ -222,7 +201,7 @@ function submit() {
                         <label>Extra Curricular</label>
                         <textarea v-model="form.extra_curricular"></textarea>
                         <span v-if="form.errors.extra_curricular" class="error">{{ form.errors.extra_curricular
-                        }}</span>
+                            }}</span>
                     </div>
 
                     <div class="form-group">
@@ -234,7 +213,7 @@ function submit() {
                     <!-- Submit -->
                     <div class="form-actions">
                         <Link href="/action/applicants" class="btn btn-secondary">
-                        Cancel
+                            Cancel
                         </Link>
 
                         <button type="submit" :disabled="form.processing" class="btn btn-primary">
@@ -326,7 +305,8 @@ textarea {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 0.5rem; /* spacing between buttons */
+    gap: 0.5rem;
+    /* spacing between buttons */
 }
 
 .form-actions button,
@@ -375,5 +355,9 @@ button.btn-primary:disabled {
     background: #e5e7eb;
 }
 
-
+/* Make placeholder text appear grayed out */
+select option[value=""] {
+    color: #999;
+    font-style: italic;
+}
 </style>

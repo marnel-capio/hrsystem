@@ -92,4 +92,33 @@ return [
     'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
 
+    // -------------------------
+    // Source Types & Sources
+    // -------------------------
+    'sourceTypes' => [
+        1 => 'Campus Recruitment',
+        2 => 'Academe Partner',
+        3 => 'Recruitment Portals',
+        4 => 'Employee Referral',
+        5 => 'Walk-in'
+    ],
+
+    'sources' => [
+        1 => 'Mynimo',
+        2 => 'Indeed',
+        3 => 'Kalibrr',
+        4 => 'FoundIt',
+        5 => 'LinkedIn',
+        6 => 'Facebook',
+        7 => 'Jobstreet'
+    ],
+
+    // -------------------------
+    // Gender Options
+    // -------------------------
+    'genders' => [
+        1 => 'Male',
+        2 => 'Female'
+    ],
+
 ];

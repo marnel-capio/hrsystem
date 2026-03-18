@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
  * @see app/Http/Controllers/ActionApplicantController.php:22
@@ -78,74 +78,74 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     index.form = indexForm
 /**
-* @see \App\Http\Controllers\ActionApplicantController::create
+* @see \App\Http\Controllers\ActionApplicantController::register
  * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
-export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: create.url(options),
+export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: register.url(options),
     method: 'get',
 })
 
-create.definition = {
+register.definition = {
     methods: ["get","head"],
     url: '/action/applicants/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ActionApplicantController::create
+* @see \App\Http\Controllers\ActionApplicantController::register
  * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
-create.url = (options?: RouteQueryOptions) => {
-    return create.definition.url + queryParams(options)
+register.url = (options?: RouteQueryOptions) => {
+    return register.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ActionApplicantController::create
+* @see \App\Http\Controllers\ActionApplicantController::register
  * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
-create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: create.url(options),
+register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: register.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\ActionApplicantController::create
+* @see \App\Http\Controllers\ActionApplicantController::register
  * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
-create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: create.url(options),
+register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: register.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\ActionApplicantController::create
+* @see \App\Http\Controllers\ActionApplicantController::register
  * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
-    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: create.url(options),
+    const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: register.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\ActionApplicantController::create
+* @see \App\Http\Controllers\ActionApplicantController::register
  * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
-        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: create.url(options),
+        registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: register.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\ActionApplicantController::create
+* @see \App\Http\Controllers\ActionApplicantController::register
  * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
-        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: create.url({
+        registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: register.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -154,7 +154,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    create.form = createForm
+    register.form = registerForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::store
  * @see app/Http/Controllers/ActionApplicantController.php:27
@@ -210,6 +210,10 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
         })
     
     store.form = storeForm
-const ActionApplicantController = { index, create, store }
+const applicants = {
+    index: Object.assign(index, index),
+register: Object.assign(register, register),
+store: Object.assign(store, store),
+}
 
-export default ActionApplicantController
+export default applicants
