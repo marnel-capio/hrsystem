@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActionBatchController;
+use App\Http\Controllers\ActionApplicantController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
@@ -41,6 +42,10 @@ Route::middleware(['auth'])->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
+
+    Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
+            ->name('applicant.index');
+
 });
 
     // Update user

@@ -7,29 +7,18 @@ import { ref, computed, watch, onMounted } from 'vue'
 const props = defineProps<{
     applicants?: Array<{
         id: number
-        source_type: string
-        source: string
-        other_source: string
-        last_name: string
         first_name: string
         middle_name: string
+        last_name: string
         email_address: string
-        gender: string
-        age: number
         school: string
         degree: string
-        others_degree: string
         expected_graduation: string
-        awards_recognition: string
-        other_examination_certificate: string
-        thesis_project: string
-        extra_curricular: string
         remarks: string
     }>
     flash?: { error?: string }
 }>()
 
-// Safe default
 const applicants = ref(props.applicants ?? [])
 
 // ========================
@@ -51,7 +40,6 @@ onMounted(() => {
 // ========================
 const searchQuery = ref('')
 const currentPage = ref(1)
-
 watch(searchQuery, () => currentPage.value = 1)
 
 // ========================
@@ -66,28 +54,15 @@ const filteredApplicants = computed(() => {
 
     return applicants.value.filter(a => {
         return (
-            `${a.first_name} ${a.middle_name} ${a.last_name}`.toLowerCase().includes(q) ||
-            a.email_address.toLowerCase().includes(q) ||
-            a.source_type.toLowerCase().includes(q) ||
-            a.source.toLowerCase().includes(q) ||
-            (a.other_source ?? '').toLowerCase().includes(q) ||
-            a.gender.toLowerCase().includes(q) ||
-            String(a.age).includes(q) ||
-            a.school.toLowerCase().includes(q) ||
-            a.degree.toLowerCase().includes(q) ||
-            (a.others_degree ?? '').toLowerCase().includes(q) ||
-            (a.expected_graduation ?? '').toLowerCase().includes(q) ||
-            (a.awards_recognition ?? '').toLowerCase().includes(q) ||
-            (a.other_examination_certificate ?? '').toLowerCase().includes(q) ||
-            (a.thesis_project ?? '').toLowerCase().includes(q) ||
-            (a.extra_curricular ?? '').toLowerCase().includes(q) ||
-            (a.remarks ?? '').toLowerCase().includes(q)
+            `${a.first_name} ${a.middle_name} ${a.last_name}`.toLowerCase().includes(q) || 
+            a.email_address.toLowerCase().includes(q) ||                                   
+            a.school.toLowerCase().includes(q) ||                                          
+            a.degree.toLowerCase().includes(q)                                            
         )
     })
 })
 
 const totalPages = computed(() => Math.ceil(filteredApplicants.value.length / perPage))
-
 const paginatedApplicants = computed(() => {
     const start = (currentPage.value - 1) * perPage
     return filteredApplicants.value.slice(start, start + perPage)
@@ -128,104 +103,108 @@ const showingTo = computed(() => {
 </script>
 
 <template>
-    <AppLayout>
-        <!-- Error Toast -->
-        <div v-if="showError" class="full-width-alert">
-            <div class="alert-banner alert-error-banner">
-                <div class="alert-body">{{ errorMessage }}</div>
-                <button type="button" class="close-btn" @click="showError = false">×</button>
-            </div>
+<AppLayout>
+    <!-- Error Toast -->
+    <div v-if="showError" class="full-width-alert">
+        <div class="alert-banner alert-error-banner">
+            <div class="alert-body">{{ errorMessage }}</div>
+            <button type="button" class="close-btn" @click="showError = false">×</button>
+        </div>
+    </div>
+
+    <div class="page-content">
+        <!-- HEADER -->
+        <div class="page-header">
+            <h2 class="page-title">ACTION Applicants List</h2>
+            <Link href="/action/applicants/register" class="!bg-[#1C7BA5] btn-primary">
+                Create ACTION Applicant
+            </Link>
         </div>
 
-        <div class="page-content">
-            <!-- HEADER -->
-            <div class="page-header">
-                <h2 class="page-title">Applicants</h2>
-                <Link href="/action/applicants/register" class="!bg-[#1C7BA5] btn-primary">
-                    Create Applicant
-                </Link>
-            </div>
-
-            <!-- SEARCH -->
-            <div class="flex gap-4 mb-4">
-                <input v-model="searchQuery" type="text"
-                    placeholder="Search applicants..."
-                    class="w-full px-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
-            </div>
-
-            <!-- TABLE -->
-            <div class="card">
-                <div class="mb-2 text-xs text-gray-600">
-                    Showing {{ showingFrom }}–{{ showingTo }} out of {{ filteredApplicants.length }} items
-                </div>
-
-                <div class="table-wrapper">
-                    <table class="ats-table w-full table-auto border-collapse border text-sm">
-                        <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
-                            <tr>
-                                <th class="border px-3 py-2">Name</th>
-                                <th class="border px-3 py-2">Email</th>
-                                <th class="border px-3 py-2">Source</th>
-                                <th class="border px-3 py-2">Gender</th>
-                                <th class="border px-3 py-2">Age</th>
-                                <th class="border px-3 py-2">School</th>
-                                <th class="border px-3 py-2">Degree</th>
-                                <th class="border px-3 py-2">Remarks</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <tr v-for="a in paginatedApplicants" :key="a.id">
-                                <td class="border px-3 py-2">
-                                    <Link :href="`/applicants/${a.id}`" class="table-link">
-                                        {{ a.first_name }} {{ a.middle_name }} {{ a.last_name }}
-                                    </Link>
-                                </td>
-                                <td class="border px-3 py-2">{{ a.email_address }}</td>
-                                <td class="border px-3 py-2">{{ a.source }}</td>
-                                <td class="border px-3 py-2">{{ a.gender }}</td>
-                                <td class="border px-3 py-2">{{ a.age }}</td>
-                                <td class="border px-3 py-2">{{ a.school }}</td>
-                                <td class="border px-3 py-2">{{ a.degree }}</td>
-                                <td class="border px-3 py-2">{{ a.remarks }}</td>
-                            </tr>
-
-                            <tr v-if="paginatedApplicants.length === 0">
-                                <td colspan="8" class="text-center p-6 text-zinc-500">
-                                    No applicants found.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <!-- SEARCH -->
+        <div class="flex gap-4 mb-4">
+                <div class="relative w-full">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-zinc-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
+                        </svg>
+                    </span>
+                    <input v-model="searchQuery" type="text" placeholder="Search by name, email, school, degree"
+                        class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
                 </div>
             </div>
 
-            <!-- PAGINATION -->
-            <div class="flex justify-center mt-3 gap-2 text-xs"
-                v-if="filteredApplicants.length > perPage">
+        <!-- TABLE -->
+        <div class="card">
+            <div class="mb-2 text-xs text-gray-600">
+                Showing {{ showingFrom }}–{{ showingTo }} out of {{ filteredApplicants.length }} items
+            </div>
 
-                <span @click="prevBlock"
-                    class="px-3 py-2 border rounded cursor-pointer"
-                    :class="{ 'opacity-50 cursor-not-allowed': startPage === 1 }">
-                    Prev
-                </span>
+            <div class="table-wrapper">
+                <table class="ats-table w-full table-auto border-collapse border text-sm">
+                    <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
+                        <tr>
+                            <th class="border px-3 py-2">Name</th>
+                            <th class="border px-3 py-2">Email</th>
+                            <th class="border px-3 py-2">School</th>
+                            <th class="border px-3 py-2">Degree</th>
+                            <th class="border px-3 py-2">Expected Graduation</th>
+                            <th class="border px-3 py-2">Remarks</th>
+                        </tr>
+                    </thead>
 
-                <span v-for="pageNumber in pageNumbers"
-                    :key="pageNumber"
-                    @click="goToPage(pageNumber)"
-                    class="px-3 py-2 border rounded cursor-pointer"
-                    :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''">
-                    {{ pageNumber }}
-                </span>
+                    <tbody>
+                        <tr v-for="a in paginatedApplicants" :key="a.id">
+                            <td class="border px-3 py-2">
+                                <Link :href="`/applicants/${a.id}`" class="table-link">
+                                    {{ a.first_name }} {{ a.middle_name }} {{ a.last_name }}
+                                </Link>
+                            </td>
+                            <td class="border px-3 py-2">{{ a.email_address }}</td>
+                            <td class="border px-3 py-2">{{ a.school }}</td>
+                            <td class="border px-3 py-2">{{ a.degree }}</td>
+                            <td class="border px-3 py-2">{{ a.expected_graduation }}</td>
+                            <td class="border px-3 py-2">{{ a.remarks }}</td>
+                        </tr>
 
-                <span @click="nextBlock"
-                    class="px-3 py-2 border rounded cursor-pointer"
-                    :class="{ 'opacity-50 cursor-not-allowed': endPage === totalPages }">
-                    Next
-                </span>
+                        <tr v-if="paginatedApplicants.length === 0">
+                            <td colspan="6" class="text-center p-6 text-zinc-500">
+                                No applicants found.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-    </AppLayout>
+
+        <!-- PAGINATION -->
+        <div class="flex justify-center mt-3 gap-2 text-xs"
+            v-if="filteredApplicants.length > perPage">
+
+            <span @click="prevBlock"
+                class="px-3 py-2 border rounded cursor-pointer"
+                :class="{ 'opacity-50 cursor-not-allowed': startPage === 1 }">
+                Prev
+            </span>
+
+            <span v-for="pageNumber in pageNumbers"
+                :key="pageNumber"
+                @click="goToPage(pageNumber)"
+                class="px-3 py-2 border rounded cursor-pointer"
+                :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''">
+                {{ pageNumber }}
+            </span>
+
+            <span @click="nextBlock"
+                class="px-3 py-2 border rounded cursor-pointer"
+                :class="{ 'opacity-50 cursor-not-allowed': endPage === totalPages }">
+                Next
+            </span>
+        </div>
+    </div>
+</AppLayout>
 </template>
 
 <style scoped>
