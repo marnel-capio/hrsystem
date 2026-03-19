@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:23
+ * @see app/Http/Controllers/ActionApplicantController.php:22
  * @route '/action/applicants'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:23
+ * @see app/Http/Controllers/ActionApplicantController.php:22
  * @route '/action/applicants'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:23
+ * @see app/Http/Controllers/ActionApplicantController.php:22
  * @route '/action/applicants'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:23
+ * @see app/Http/Controllers/ActionApplicantController.php:22
  * @route '/action/applicants'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:23
+ * @see app/Http/Controllers/ActionApplicantController.php:22
  * @route '/action/applicants'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:23
+ * @see app/Http/Controllers/ActionApplicantController.php:22
  * @route '/action/applicants'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:23
+ * @see app/Http/Controllers/ActionApplicantController.php:22
  * @route '/action/applicants'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::create
- * @see app/Http/Controllers/ActionApplicantController.php:14
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::create
- * @see app/Http/Controllers/ActionApplicantController.php:14
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::create
- * @see app/Http/Controllers/ActionApplicantController.php:14
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantController::create
- * @see app/Http/Controllers/ActionApplicantController.php:14
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::create
- * @see app/Http/Controllers/ActionApplicantController.php:14
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::create
- * @see app/Http/Controllers/ActionApplicantController.php:14
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\ActionApplicantController::create
- * @see app/Http/Controllers/ActionApplicantController.php:14
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants/register'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::store
- * @see app/Http/Controllers/ActionApplicantController.php:28
+ * @see app/Http/Controllers/ActionApplicantController.php:27
  * @route '/action/applicants'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::store
- * @see app/Http/Controllers/ActionApplicantController.php:28
+ * @see app/Http/Controllers/ActionApplicantController.php:27
  * @route '/action/applicants'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::store
- * @see app/Http/Controllers/ActionApplicantController.php:28
+ * @see app/Http/Controllers/ActionApplicantController.php:27
  * @route '/action/applicants'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +191,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::store
- * @see app/Http/Controllers/ActionApplicantController.php:28
+ * @see app/Http/Controllers/ActionApplicantController.php:27
  * @route '/action/applicants'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -201,7 +201,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::store
- * @see app/Http/Controllers/ActionApplicantController.php:28
+ * @see app/Http/Controllers/ActionApplicantController.php:27
  * @route '/action/applicants'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

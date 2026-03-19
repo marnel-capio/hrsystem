@@ -12,10 +12,10 @@ namespace App\Models {
      * @property string|null $remarks
      * @property string|null $extra_curricular
      * @property string|null $thesis_project
-     * @property string $other_examination_certificate
-     * @property string $awards_recognition
+     * @property string|null $other_examination_certificate
+     * @property string|null $awards_recognition
      * @property string $expected_graduation
-     * @property string $others_degree
+     * @property string|null $others_degree
      * @property string $degree
      * @property string $school
      * @property integer $age
