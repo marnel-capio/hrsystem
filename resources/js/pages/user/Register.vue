@@ -193,7 +193,7 @@ function submit() {
                         </Link>
 
                         <button type="submit" :disabled="form.processing" class="btn btn-primary">
-                            {{ form.processing ? 'Creating…' : 'Register' }}
+                            {{ form.processing ? 'Creating…' : 'Create' }}
                         </button>
                     </div>
 
