@@ -65,8 +65,6 @@ class LoginRequest extends FormRequest
             ],
             'password' => [
                 'required',
-                'max:64',
-                'min:8',
             ],
         ];
     }

@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::create
  * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:44
@@ -149,12 +148,6 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: store.url(options),
             method: 'post',
-        })
-    
-    store.form = storeForm
-const NewPasswordController = { create, store }
-
-export default NewPasswordController   method: 'post',
         })
     
     store.form = storeForm
