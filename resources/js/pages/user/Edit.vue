@@ -10,6 +10,9 @@ const props = defineProps<{
     permissions: Record<number, string>
 }>()
 
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
 // ----- Toasts -----
 const page = usePage()
 const showSuccess = ref(false)
@@ -218,15 +221,36 @@ const personalFieldReadonly = () => {
                     <!-- Password -->
                     <div v-if="isOwnAccount" class="detail-row">
                         <label>Password <span class="text-muted">(Leave blank to keep current)</span></label>
-                        <input type="password" v-model="form.password" class="input-field" />
+
+                        <div class="password-wrapper">
+                            <input v-model="form.password" :type="showPassword ? 'text' : 'password'"
+                                class="input-field" placeholder="Enter new password" />
+
+                            <div class="toggle">
+                                <input type="checkbox" v-model="showPassword" id="show-password" />
+                                <label for="show-password">Show</label>
+                            </div>
+                        </div>
+
                         <span v-if="passwordError || form.errors.password" class="error">
                             {{ passwordError ?? form.errors.password }}
                         </span>
                     </div>
 
+                    <!-- Confirm Password -->
                     <div v-if="isOwnAccount" class="detail-row">
                         <label>Confirm Password</label>
-                        <input type="password" v-model="form.password_confirmation" class="input-field" />
+
+                        <div class="password-wrapper">
+                            <input v-model="form.password_confirmation"
+                                :type="showConfirmPassword ? 'text' : 'password'" class="input-field"
+                                placeholder="Confirm new password" />
+
+                            <div class="toggle">
+                                <input type="checkbox" v-model="showConfirmPassword" id="show-confirm-password" />
+                                <label for="show-confirm-password">Show</label>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Actions -->
@@ -387,5 +411,59 @@ button[type="submit"]:disabled {
     color: #ff4d4f;
     font-size: 0.8rem;
     margin-top: 0.25rem;
+}
+
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 100px;
+    /* extra space for checkbox + label */
+}
+
+/* Align checkbox and label perfectly */
+.toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    /* <-- aligns checkbox and text vertically */
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #555;
+    cursor: pointer;
+}
+
+.toggle input[type="checkbox"] {
+    margin: 0;
+    /* removes default checkbox spacing */
+}
+
+.toggle label {
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.input-field:disabled,
+.input-field[readonly] {
+    background-color: #e5e7eb; /* darker gray than before */
+    color: #6b7280;            /* muted text */
+    cursor: not-allowed;       /* indicates non-editable */
+    border-color: #d1d5db;     /* border remains the same */
+}
+
+/* Make select dropdowns match disabled style */
+select:disabled {
+    background-color: #e5e7eb;
+    color: #6b7280;
+    cursor: not-allowed;
+    border-color: #d1d5db;
 }
 </style>
