@@ -109,7 +109,7 @@ return [
 
     'aws_email_required' => [
         'errorCode' => 'AWS_EMAIL_REQUIRED',
-        'errorMessage' => 'The :attribute must be your AWS email address.',
+        'errorMessage' => 'The email address must be your AWS email address.',
     ],
 
     'alpha_space_dash' => [
