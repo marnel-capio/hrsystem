@@ -10,6 +10,9 @@ const props = defineProps<{
     permissions: Record<number, string>
 }>()
 
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
 // ----- Toasts -----
 const page = usePage()
 const showSuccess = ref(false)
@@ -117,6 +120,80 @@ const personalFieldReadonly = () => {
     if (limitedEdit) return !isOwnAccount
     return true
 }
+
+const firstNameError = ref<string | null>(null)
+const middleNameError = ref<string | null>(null)
+const lastNameError = ref<string | null>(null)
+const emailError = ref<string | null>(null)
+const contactError = ref<string | null>(null)
+const addressError = ref<string | null>(null)
+const positionError = ref<string | null>(null)
+const permissionsError = ref<string | null>(null)
+const statusError = ref<string | null>(null)
+
+// Validation helpers
+const validateAlphaSpaceDash = (value: string) => /^[A-Za-z\s-]+$/.test(value)
+const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+const validateAWSDomain = (value: string) => value.endsWith('@awsys-i.com')
+const validateContact = (value: string) => /^\d{11}$/.test(value)
+
+// Watchers for dynamic validation
+watch(() => form.first_name, (value) => {
+    if (!value) firstNameError.value = "This is a required field."
+    else if (value.length > 80) firstNameError.value = "This field exceeds the maximum allowed length."
+    else if (!validateAlphaSpaceDash(value)) firstNameError.value = "Only letters, spaces, and hyphens are allowed."
+    else firstNameError.value = null
+})
+
+watch(() => form.middle_name, (value) => {
+    if (value && value.length > 80) middleNameError.value = "This field exceeds the maximum allowed length."
+    else if (value && !validateAlphaSpaceDash(value)) middleNameError.value = "Only letters, spaces, and hyphens are allowed."
+    else middleNameError.value = null
+})
+
+watch(() => form.last_name, (value) => {
+    if (!value) lastNameError.value = "This is a required field."
+    else if (value.length > 80) lastNameError.value = "This field exceeds the maximum allowed length."
+    else if (!validateAlphaSpaceDash(value)) lastNameError.value = "Only letters, spaces, and hyphens are allowed."
+    else lastNameError.value = null
+})
+
+watch(() => form.email_address, (value) => {
+    if (!value) emailError.value = "This is a required field."
+    else if (value.length > 80) emailError.value = "This field exceeds the maximum allowed length."
+    else if (!validateEmail(value)) emailError.value = "Invalid email format."
+    else if (!validateAWSDomain(value)) emailError.value = "The email address must be your AWS email address."
+    else emailError.value = null
+})
+
+watch(() => form.contact_no, (value) => {
+    if (!value) contactError.value = "This is a required field."
+    else if (!/^\d+$/.test(value)) contactError.value = "The contact number must contain only numbers."
+    else if (!/^\d{11}$/.test(value)) contactError.value = "The contact number must be exactly 11 digits."
+    else contactError.value = null
+})
+
+watch(() => form.address, (value) => {
+    if (!value) addressError.value = "This is a required field."
+    else if (value.length > 1024) addressError.value = "This field exceeds the maximum allowed length."
+    else addressError.value = null
+})
+
+watch(() => form.position, (value) => {
+    if (value === null || value === undefined) positionError.value = "This is a required field."
+    else positionError.value = null
+})
+
+watch(() => form.permissions, (value) => {
+    if (value === null || value === undefined) permissionsError.value = "This is a required field."
+    else permissionsError.value = null
+})
+
+watch(() => form.active_status, (value) => {
+    if (value !== 0 && value !== 1) statusError.value = "This is a required field."
+    else statusError.value = null
+})
+
 </script>
 
 <template>
@@ -148,7 +225,9 @@ const personalFieldReadonly = () => {
                         <label>First Name</label>
                         <input type="text" v-model="form.first_name" class="input-field"
                             :readonly="personalFieldReadonly()" />
-                        <span v-if="form.errors.first_name" class="error">{{ form.errors.first_name }}</span>
+                        <span v-if="firstNameError || form.errors.first_name" class="error">
+                            {{ firstNameError ?? form.errors.first_name }}
+                        </span>
                     </div>
 
                     <!-- Middle Name -->
@@ -156,7 +235,8 @@ const personalFieldReadonly = () => {
                         <label>Middle Name</label>
                         <input type="text" v-model="form.middle_name" class="input-field"
                             :readonly="personalFieldReadonly()" />
-                        <span v-if="form.errors.middle_name" class="error">{{ form.errors.middle_name }}</span>
+                        <span v-if="middleNameError || form.errors.middle_name" class="error">{{ middleNameError ??
+                            form.errors.middle_name }}</span>
                     </div>
 
                     <!-- Last Name -->
@@ -164,7 +244,8 @@ const personalFieldReadonly = () => {
                         <label>Last Name</label>
                         <input type="text" v-model="form.last_name" class="input-field"
                             :readonly="personalFieldReadonly()" />
-                        <span v-if="form.errors.last_name" class="error">{{ form.errors.last_name }}</span>
+                        <span v-if="lastNameError || form.errors.last_name" class="error">{{ lastNameError ??
+                            form.errors.last_name }}</span>
                     </div>
 
                     <!-- Email -->
@@ -172,7 +253,7 @@ const personalFieldReadonly = () => {
                         <label>Email Address</label>
                         <input type="text" v-model="form.email_address" class="input-field"
                             :readonly="fieldReadonly('email')" />
-                        <span v-if="form.errors.email_address" class="error">{{ form.errors.email_address }}</span>
+                        <span v-if="emailError || form.errors.email_address" class="error">{{ emailError ?? form.errors.email_address }}</span>
                     </div>
 
                     <!-- Contact & Address -->
@@ -180,14 +261,14 @@ const personalFieldReadonly = () => {
                         <label>Contact Number</label>
                         <input type="text" v-model="form.contact_no" class="input-field"
                             :readonly="personalFieldReadonly()" />
-                        <span v-if="form.errors.contact_no" class="error">{{ form.errors.contact_no }}</span>
+                        <span v-if="contactError || form.errors.contact_no" class="error">{{ contactError ?? form.errors.contact_no }}</span>
                     </div>
 
                     <div class="detail-row">
                         <label>Address</label>
                         <input type="text" v-model="form.address" class="input-field"
                             :readonly="personalFieldReadonly()" />
-                        <span v-if="form.errors.address" class="error">{{ form.errors.address }}</span>
+                        <span v-if="addressError || form.errors.address" class="error">{{ addressError ?? form.errors.address }}</span>
                     </div>
 
                     <!-- Position & Permissions -->
@@ -218,15 +299,36 @@ const personalFieldReadonly = () => {
                     <!-- Password -->
                     <div v-if="isOwnAccount" class="detail-row">
                         <label>Password <span class="text-muted">(Leave blank to keep current)</span></label>
-                        <input type="password" v-model="form.password" class="input-field" />
+
+                        <div class="password-wrapper">
+                            <input v-model="form.password" :type="showPassword ? 'text' : 'password'"
+                                class="input-field" placeholder="Enter new password" />
+
+                            <div class="toggle">
+                                <input type="checkbox" v-model="showPassword" id="show-password" />
+                                <label for="show-password">Show</label>
+                            </div>
+                        </div>
+
                         <span v-if="passwordError || form.errors.password" class="error">
                             {{ passwordError ?? form.errors.password }}
                         </span>
                     </div>
 
+                    <!-- Confirm Password -->
                     <div v-if="isOwnAccount" class="detail-row">
                         <label>Confirm Password</label>
-                        <input type="password" v-model="form.password_confirmation" class="input-field" />
+
+                        <div class="password-wrapper">
+                            <input v-model="form.password_confirmation"
+                                :type="showConfirmPassword ? 'text' : 'password'" class="input-field"
+                                placeholder="Confirm new password" />
+
+                            <div class="toggle">
+                                <input type="checkbox" v-model="showConfirmPassword" id="show-confirm-password" />
+                                <label for="show-confirm-password">Show</label>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Actions -->
@@ -387,5 +489,63 @@ button[type="submit"]:disabled {
     color: #ff4d4f;
     font-size: 0.8rem;
     margin-top: 0.25rem;
+}
+
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 100px;
+    /* extra space for checkbox + label */
+}
+
+/* Align checkbox and label perfectly */
+.toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    /* <-- aligns checkbox and text vertically */
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #555;
+    cursor: pointer;
+}
+
+.toggle input[type="checkbox"] {
+    margin: 0;
+    /* removes default checkbox spacing */
+}
+
+.toggle label {
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.input-field:disabled,
+.input-field[readonly] {
+    background-color: #e5e7eb;
+    /* darker gray than before */
+    color: #6b7280;
+    /* muted text */
+    cursor: not-allowed;
+    /* indicates non-editable */
+    border-color: #d1d5db;
+    /* border remains the same */
+}
+
+/* Make select dropdowns match disabled style */
+select:disabled {
+    background-color: #e5e7eb;
+    color: #6b7280;
+    cursor: not-allowed;
+    border-color: #d1d5db;
 }
 </style>
