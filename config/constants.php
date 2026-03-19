@@ -89,7 +89,29 @@ return [
         'LOCATION_1_NAME' => 'Manila',
         'LOCATION_2_NAME' => 'Cebu',
     ],
+    
     'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
+
+     'sourceTypes' => [
+        1 => 'Campus Recruitment',
+        2 => 'Academe Partner',
+        3 => 'Recruitment Portals',
+        4 => 'Employee Referral',
+        5 => 'Walk-in',
+    ],
+
+    'sources' => [
+        1 => 'University Career Fair',
+        2 => 'Partner School',
+        3 => 'JobStreet',
+        4 => 'LinkedIn',
+        5 => 'Referral',
+    ],
+
+    'genders' => [
+        1 => 'Male',
+        2 => 'Female',
+    ],
 
 ];
