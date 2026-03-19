@@ -42,45 +42,47 @@ const form = useForm({
 })
 
 watch(
-  () => [form.password, form.password_confirmation],
-  ([password, confirm]) => {
+    () => [form.password, form.password_confirmation],
+    ([password, confirm]) => {
 
-    if (!password) {
-      passwordError.value = null
-      return
-    }
+        if (!password) {
+            passwordError.value = null
+            return
+        }
 
-    // Password complexity checks
-    if (password.length < 8) {
-      passwordError.value = "Password must be at least 8 characters."
-    }
-    else if (password.length > 64) {
-      passwordError.value = "Password must be at most 64 characters."
-    }
-    else if (!/[A-Z]/.test(password)) {
-      passwordError.value = "Password must contain at least one uppercase letter."
-    }
-    else if (!/[a-z]/.test(password)) {
-      passwordError.value = "Password must contain at least one lowercase letter."
-    }
-    else if (!/[0-9]/.test(password)) {
-      passwordError.value = "Password must contain at least one number."
-    }
-    else if (!/[!@#$%&*_]/.test(password)) {
-      passwordError.value = "Password must contain at least one special character (!@#$%&*_)."
-    }
-    // Confirm password mismatch always triggers if password != confirm
-    else if (password !== confirm) {
-      passwordError.value = "Passwords do not match."
-    }
-    else {
-      passwordError.value = null
-    }
+        // Password complexity checks
+        if (password.length < 8) {
+            passwordError.value = "Password must be at least 8 characters."
+        }
+        else if (password.length > 64) {
+            passwordError.value = "Password must be at most 64 characters."
+        }
+        else if (!/[A-Z]/.test(password)) {
+            passwordError.value = "Password must contain at least one uppercase letter."
+        }
+        else if (!/[a-z]/.test(password)) {
+            passwordError.value = "Password must contain at least one lowercase letter."
+        }
+        else if (!/[0-9]/.test(password)) {
+            passwordError.value = "Password must contain at least one number."
+        }
+        else if (!/[!@#$%&*_]/.test(password)) {
+            passwordError.value = "Password must contain at least one special character (!@#$%&*_)."
+        }
+        // Confirm password mismatch always triggers if password != confirm
+        else if (password !== confirm) {
+            passwordError.value = "Passwords do not match."
+        }
+        else {
+            passwordError.value = null
+        }
 
-  },
-  { immediate: true }
+    },
+    { immediate: true }
 )
 
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 
 // Submit handler
 function submit() {
@@ -139,15 +141,34 @@ function submit() {
 
                     <div class="form-group">
                         <label>Password</label>
-                        <input v-model="form.password" type="password" placeholder="Enter password" />
-                         <span v-if="passwordError || form.errors.password" class="error">
+
+                        <div class="password-wrapper">
+                            <input v-model="form.password" :type="showPassword ? 'text' : 'password'"
+                                placeholder="Enter password" />
+
+                            <label class="toggle">
+                                <input type="checkbox" v-model="showPassword" />
+                                Show
+                            </label>
+                        </div>
+
+                        <span v-if="passwordError || form.errors.password" class="error">
                             {{ passwordError ?? form.errors.password }}
                         </span>
                     </div>
 
                     <div class="form-group">
                         <label>Confirm Password</label>
-                        <input v-model="form.password_confirmation" type="password" placeholder="Confirm password" />
+
+                        <div class="password-wrapper">
+                            <input v-model="form.password_confirmation"
+                                :type="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm password" />
+
+                            <label class="toggle">
+                                <input type="checkbox" v-model="showConfirmPassword" />
+                                Show
+                            </label>
+                        </div>
                     </div>
 
                     <!-- Position -->
@@ -178,14 +199,6 @@ function submit() {
                         </span>
                     </div>
 
-                    <!-- Active -->
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" v-model="form.active_status" :true-value="1" :false-value="0" />
-                            Active User
-                        </label>
-                    </div>
-
                     <!-- Submit -->
                     <div class="form-actions">
                         <Link href="/user" class="btn btn-secondary">
@@ -193,7 +206,7 @@ function submit() {
                         </Link>
 
                         <button type="submit" :disabled="form.processing" class="btn btn-primary">
-                            {{ form.processing ? 'Creating…' : 'Register' }}
+                            {{ form.processing ? 'Creating…' : 'Create' }}
                         </button>
                     </div>
 
@@ -325,5 +338,30 @@ button[type="submit"]:disabled {
 
 .btn-secondary:hover {
     background: #e5e7eb;
+}
+
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 70px;
+    /* space for toggle */
+}
+
+.toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    font-size: 0.75rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
 }
 </style>
