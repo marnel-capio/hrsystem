@@ -7,7 +7,7 @@ use App\Models\ActionApplication;
 class ActionApplicationController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the applications.
      */
     public function index()
     {

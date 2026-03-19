@@ -54,7 +54,7 @@ class CheckUserPermission
         | Only permission 1, 2, and 3 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list', 'action.applications.index'])) {
+        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list'])) {
 
             if (in_array($permission, [1, 2, 3])) {
                 return $next($request);
@@ -63,6 +63,25 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
+
+
+                        /*
+        |--------------------------------------------------------------------------
+        | Route: ACTION Applications List
+        | Only permission 1, 2, 3, 4, 5 allowed
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($routeName, ['action.applications.index'])) {
+
+            if (in_array($permission, [1, 2, 3, 4, 5])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+
 
 
         

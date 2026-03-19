@@ -1,12 +1,37 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Link } from '@inertiajs/vue3'
+
+//UPLOAD FUNCTIONS
+const fileInput = ref<HTMLInputElement | null>(null);
+
+const handleFileUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (!target.files?.length) return;
+
+  const file = target.files[0];
+  
+  // Check file type in JS (extra safety)
+  const allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv'];
+  if (!allowedTypes.includes(file.type)) {
+    alert('Only .xlsx and .csv files are allowed');
+    target.value = ''; // clear selection
+    return;
+  }
+
+  // TODO: handle file (upload to backend)
+  console.log('File selected:', file.name);
+};
+
+//END OF UPLOAD FUNCTIONS
+
 
 // Map trainees_from to location label
 function formatLocation(loc: number) {
   return loc === 1 ? 'Manila' : loc === 2 ? 'Cebu' : 'Unknown';
 }
+
 
 // Props from backend
 const props = defineProps<{
@@ -86,20 +111,28 @@ const lastPage = computed(() => totalPages.value);
       <!-- PAGE HEADER -->
       <div class="page-header">
         <h2 class="page-title">ACTION Application List</h2>
-        <div class="flex gap-2">
-  <Link v-if="userPermissions === 1 || userPermissions === 2"
+<div class="flex gap-2 flex-nowrap">
+  <Link
     href="/action/applications/register"
-    class="!bg-[#1C7BA5] btn-primary">
+    class="!bg-[#1C7BA5] btn-primary whitespace-nowrap"
+  >
     Create ACTION Application
   </Link>
-
-  <Link v-if="userPermissions === 1 || userPermissions === 2"
-    href="/action/applications/register"
-    class="btn-primary">
+  <input
+    type="file"
+    ref="fileInput"
+    class="hidden"
+    accept=".xlsx,.csv"
+    @change="handleFileUpload"
+  />
+  <button
+    type="button"
+    @click="fileInput.click()"
+    class="btn-primary whitespace-nowrap"
+  >
     Upload Application from Google Forms
-  </Link>
-</div>
-        
+  </button>
+</div> 
       </div>
 
       <!-- SEARCH -->
@@ -124,39 +157,35 @@ const lastPage = computed(() => totalPages.value);
         </div>
 
         <div class="table-wrapper">
-<table class="ats-table w-full table-auto border-collapse border text-sm">
-  <thead>
-    <tr>
-      <th class="border px-3 py-2">Application ID</th>
-      <th class="border px-3 py-2">Applicant Name</th>
-      <th class="border px-3 py-2">Batch Name</th>
-      <th class="border px-3 py-2">Location</th>
-    </tr>
-  </thead>
-<tbody>
-  <tr v-for="app in paginatedSchedules" :key="app.id">
-    <!-- Application ID as clickable link -->
-    <td class="border px-3 py-2">
-      <Link :href="`/action/applications/${app.id}`" class="table-link">
-        {{ app.id }}
-      </Link>
-    </td>
+          <table class="ats-table w-full table-auto border-collapse border text-sm">
+            <thead>
+              <tr>
+                <th class="border px-3 py-2">Applicant Name</th>
+                <th class="border px-3 py-2">Batch Name</th>
+                <th class="border px-3 py-2">Location</th>
+              </tr>
+            </thead>
+          <tbody>
+            <tr v-for="app in paginatedSchedules" :key="app.id">
+              <!-- Application ID as clickable link -->
+<td class="border px-3 py-2">
+  <Link :href="`/applicants/${app.id}`" class="text-blue-600 hover:underline">
+    {{ app.first_name }} {{ app.last_name }}
+  </Link>
+</td>
 
-    <!-- Applicant Name -->
-    <td class="border px-3 py-2">{{ app.first_name }} {{ app.last_name }}</td>
+              <!-- Batch Name -->
+              <td class="border px-3 py-2">{{ app.action_batch }}</td>
 
-    <!-- Batch Name -->
-    <td class="border px-3 py-2">{{ app.action_batch }}</td>
+              <!-- Trainee From -->
+              <td class="border px-3 py-2">Manila</td>
+            </tr>
 
-    <!-- Trainee From -->
-    <td class="border px-3 py-2">Manila</td>
-  </tr>
-
-  <tr v-if="paginatedSchedules.length === 0">
-    <td colspan="4" class="text-center p-6 text-zinc-500">No applications found.</td>
-  </tr>
-</tbody>
-</table>
+            <tr v-if="paginatedSchedules.length === 0">
+              <td colspan="4" class="text-center p-6 text-zinc-500">No applications found.</td>
+            </tr>
+          </tbody>
+          </table>
         </div>
 
         <!-- PAGINATION -->
