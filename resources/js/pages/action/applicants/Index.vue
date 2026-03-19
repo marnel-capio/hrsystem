@@ -44,7 +44,7 @@ onMounted(() => {
         <div class="page-content">
             <div class="page-header">
                 <h2 class="page-title">ACTION Applicants</h2>
-                <Link href="/action/applicants/register" class="!bg-[#1C7BA5] btn-primary">Create Applicant</Link>
+                <Link href="/action/applicants/register" class="!bg-[#1C7BA5] btn-primary">Create ACTION Applicant</Link>
             </div>
         </div>
     </AppLayout>

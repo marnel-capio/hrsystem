@@ -3,31 +3,22 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { useForm, Link } from '@inertiajs/vue3'
 import { watch, computed } from 'vue'
 
-// Props to receive constants from backend
 const props = defineProps<{
     sourceTypes?: Record<number, string>,
     sources?: Record<number, string>,
     genders?: Record<number, string>
 }>()
 
-// Map constants to Vue-friendly arrays
 const sourceTypes = props.sourceTypes
     ? Object.entries(props.sourceTypes).map(([value, label]) => ({ value: Number(value), label }))
     : []
-
 const sources = props.sources
     ? Object.entries(props.sources).map(([value, label]) => ({ value: Number(value), label }))
     : []
-
 const genders = props.genders
     ? Object.entries(props.genders).map(([value, label]) => ({ value: Number(value), label }))
     : []
 
-// Computed to enable/disable source fields
-const isSourceDisabled = computed(() => Number(form.source_type) !== 3)
-const isOtherSourceDisabled = computed(() => ![1, 2, 4, 5].includes(Number(form.source_type)))
-
-// Form state using Inertia useForm
 const form = useForm({
     source_type: '',
     source: '',
@@ -49,24 +40,17 @@ const form = useForm({
     remarks: ''
 })
 
-// Watch source_type to clear unrelated fields
+const isSourceDisabled = computed(() => Number(form.source_type) !== 3)
+const isOtherSourceDisabled = computed(() => ![1, 2, 4, 5].includes(Number(form.source_type)))
+
 watch(() => form.source_type, (val) => {
     const otherSourceTypes = [1, 2, 4, 5];
+    form.source = ''
+    form.other_source = ''
+    form.clearErrors('source')
+    form.clearErrors('other_source')
+})
 
-    if (otherSourceTypes.includes(Number(val))) {
-        form.source = '';
-        form.clearErrors('source'); // clear any previous errors
-        form.other_source = '';
-        form.clearErrors('other_source');
-    } else if (Number(val) === 3) {
-        form.source = '';
-        form.clearErrors('source');
-        form.other_source = '';
-        form.clearErrors('other_source');
-    }
-});
-
-// Submit handler
 function submit() {
     form.post('/action/applicants')
 }
@@ -75,96 +59,99 @@ function submit() {
 <template>
     <AppLayout>
         <div class="page-header">
-            <h2 class="page-title">Create Applicant</h2>
+            <h2 class="page-title">Create ACTION Applicant</h2>
         </div>
 
         <div class="form-center">
             <div class="card create-user-card">
                 <form @submit.prevent="submit">
-                    <!-- Source Type -->
+
+                    <!-- Source Fields -->
                     <div class="form-group">
                         <label>Source Type</label>
                         <select v-model="form.source_type">
                             <option disabled value="">Select Source Type</option>
-                            <option v-for="type in sourceTypes" :key="type.value" :value="type.value">
-                                {{ type.label }}
+                            <option v-for="type in sourceTypes" :key="type.value" :value="type.value">{{ type.label }}
                             </option>
                         </select>
                         <span v-if="form.errors.source_type" class="error">{{ form.errors.source_type }}</span>
                     </div>
 
-                    <!-- Source -->
-                    <div class="form-group">
-                        <label>Source</label>
-                        <select v-model="form.source" :disabled="isSourceDisabled">
-                            <option disabled value="">Select Source</option>
-                            <option v-for="s in sources" :key="s.value" :value="s.value">{{ s.label }}</option>
-                        </select>
-                        <span v-if="!isSourceDisabled && form.errors.source" class="error">{{ form.errors.source }}</span>
-                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Source</label>
+                            <select v-model="form.source" :disabled="isSourceDisabled">
+                                <option disabled value="">Select Source</option>
+                                <option v-for="s in sources" :key="s.value" :value="s.value">{{ s.label }}</option>
+                            </select>
+                            <span v-if="!isSourceDisabled && form.errors.source" class="error">{{ form.errors.source
+                                }}</span>
+                        </div>
 
-                    <!-- Other Source -->
-                    <div class="form-group">
-                        <label>Other Source</label>
-                        <input type="text" v-model="form.other_source" placeholder="Specify other source"
-                            :disabled="isOtherSourceDisabled" />
-                         <span v-if="!isOtherSourceDisabled && form.errors.other_source" class="error">{{ form.errors.other_source }}</span>
+                        <div class="form-group half">
+                            <label>Other Source</label>
+                            <input type="text" v-model="form.other_source" placeholder="Specify other source"
+                                :disabled="isOtherSourceDisabled" />
+                            <span v-if="!isOtherSourceDisabled && form.errors.other_source" class="error">{{
+                                form.errors.other_source }}</span>
+                        </div>
                     </div>
 
                     <!-- Name Fields -->
-                    <div class="form-group">
-                        <label>Last Name</label>
-                        <input type="text" v-model="form.last_name" placeholder="Enter last name" />
-                        <span v-if="form.errors.last_name" class="error">{{ form.errors.last_name }}</span>
-                    </div>
-
-                    <div class="form-group">
-                        <label>First Name</label>
-                        <input type="text" v-model="form.first_name" placeholder="Enter first name" />
-                        <span v-if="form.errors.first_name" class="error">{{ form.errors.first_name }}</span>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Middle Name</label>
-                        <input type="text" v-model="form.middle_name" placeholder="Enter middle name (optional)" />
-                        <span v-if="form.errors.middle_name" class="error">{{ form.errors.middle_name }}</span>
+                    <div class="form-row name-fields">
+                        <div class="form-group last-first">
+                            <label>Last Name</label>
+                            <input type="text" v-model="form.last_name" placeholder="Last Name" />
+                            <span v-if="form.errors.last_name" class="error">{{ form.errors.last_name }}</span>
+                        </div>
+                        <div class="form-group last-first">
+                            <label>First Name</label>
+                            <input type="text" v-model="form.first_name" placeholder="First Name" />
+                            <span v-if="form.errors.first_name" class="error">{{ form.errors.first_name }}</span>
+                        </div>
+                        <div class="form-group middle-name">
+                            <label>Middle Initial</label>
+                            <input type="text" v-model="form.middle_name" placeholder="MI" />
+                            <span v-if="form.errors.middle_name" class="error">{{ form.errors.middle_name }}</span>
+                        </div>
                     </div>
 
                     <!-- Email -->
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" v-model="form.email_address" placeholder="Enter email address" />
+                        <input type="email" v-model="form.email_address" placeholder="Email Address" />
                         <span v-if="form.errors.email_address" class="error">{{ form.errors.email_address }}</span>
                     </div>
 
-                    <!-- Gender -->
-                    <div class="form-group">
-                        <label>Gender</label>
-                        <select v-model="form.gender">
-                            <option disabled value="">Select Gender</option>
-                            <option v-for="g in genders" :key="g.value" :value="g.value">{{ g.label }}</option>
-                        </select>
-                        <span v-if="form.errors.gender" class="error">{{ form.errors.gender }}</span>
-                    </div>
-
-                    <!-- Age -->
-                    <div class="form-group">
-                        <label>Age</label>
-                        <input type="text" v-model="form.age" min="0" max="99" placeholder="Enter age" />
-                        <span v-if="form.errors.age" class="error">{{ form.errors.age }}</span>
+                    <!-- Age & Gender -->
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Gender</label>
+                            <select v-model="form.gender">
+                                <option disabled value="">Select Gender</option>
+                                <option v-for="g in genders" :key="g.value" :value="g.value">{{ g.label }}</option>
+                            </select>
+                            <span v-if="form.errors.gender" class="error">{{ form.errors.gender }}</span>
+                        </div>
+                        <div class="form-group half">
+                            <label>Age</label>
+                            <input type="text" v-model="form.age" min="0" max="99" placeholder="Age" />
+                            <span v-if="form.errors.age" class="error">{{ form.errors.age }}</span>
+                        </div>
                     </div>
 
                     <!-- School & Degree -->
-                    <div class="form-group">
-                        <label>School</label>
-                        <input type="text" v-model="form.school" placeholder="Enter school" />
-                        <span v-if="form.errors.school" class="error">{{ form.errors.school }}</span>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Degree</label>
-                        <input type="text" v-model="form.degree" placeholder="Enter degree" />
-                        <span v-if="form.errors.degree" class="error">{{ form.errors.degree }}</span>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>School</label>
+                            <input type="text" v-model="form.school" placeholder="School" />
+                            <span v-if="form.errors.school" class="error">{{ form.errors.school }}</span>
+                        </div>
+                        <div class="form-group half">
+                            <label>Degree</label>
+                            <input type="text" v-model="form.degree" placeholder="Degree" />
+                            <span v-if="form.errors.degree" class="error">{{ form.errors.degree }}</span>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -173,6 +160,7 @@ function submit() {
                         <span v-if="form.errors.others_degree" class="error">{{ form.errors.others_degree }}</span>
                     </div>
 
+                    <!-- Expected Graduation -->
                     <div class="form-group">
                         <label>Expected Graduation</label>
                         <input type="date" v-model="form.expected_graduation" />
@@ -180,11 +168,10 @@ function submit() {
                             }}</span>
                     </div>
 
-                    <!-- Achievements -->
+                    <!-- Achievements / Remarks -->
                     <div class="form-group">
                         <label>Awards / Recognition</label>
-                        <textarea v-model="form.awards_recognition"
-                            placeholder="Enter awards or recognition"></textarea>
+                        <textarea v-model="form.awards_recognition" placeholder="Awards or recognition"></textarea>
                         <span v-if="form.errors.awards_recognition" class="error">{{ form.errors.awards_recognition
                             }}</span>
                     </div>
@@ -215,12 +202,9 @@ function submit() {
                         <span v-if="form.errors.remarks" class="error">{{ form.errors.remarks }}</span>
                     </div>
 
-                    <!-- Submit -->
+                    <!-- Actions -->
                     <div class="form-actions">
-                        <Link href="/action/applicants" class="btn btn-secondary">
-                            Cancel
-                        </Link>
-
+                        <Link href="/action/applicants" class="btn btn-secondary">Cancel</Link>
                         <button type="submit" :disabled="form.processing" class="btn btn-primary">
                             {{ form.processing ? 'Creating…' : 'Create' }}
                         </button>
@@ -233,12 +217,54 @@ function submit() {
 
 <style scoped>
 /* Reuse the same User form styles */
+.form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.form-group.half {
+    flex: 1 1 48%;
+}
+
+.form-group.third {
+    flex: 1 1 32%;
+}
+
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     max-width: 600px;
     margin: 0 auto 1.5rem;
+}
+
+/* Name Fields specific styling */
+.name-fields {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: nowrap;
+    /* force all inputs in one line */
+}
+
+.name-fields .last-first {
+    flex: 2 1 0;
+    /* takes more space, flexible */
+    min-width: 0;
+    /* allow shrinking */
+}
+
+.name-fields .middle-name {
+    flex: 1 1 0;
+    /* smaller than last/first */
+    min-width: 0;
+}
+
+/* Optional: make input take full width of flex item */
+.name-fields input {
+    width: 100%;
+    box-sizing: border-box;
+    /* ensures padding doesn't overflow */
 }
 
 .page-title {
@@ -365,4 +391,14 @@ select option[value=""] {
     color: #999;
     font-style: italic;
 }
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+    background-color: #d4d4d8; /* lighter gray */
+    color: #6b7280; /* muted text */
+    cursor: not-allowed;
+    border-color: #9ca3af; /* slightly darker border for definition */
+}
+
 </style>
