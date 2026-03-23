@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { useForm, Link } from '@inertiajs/vue3'
-import { watch, computed } from 'vue'
+import { useForm, Link, } from '@inertiajs/vue3'
+import { ref, watch, computed, onMounted } from 'vue'
+import axios from 'axios';
+
+axios.defaults.headers.common['X-CSRF-TOKEN'] =
+    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
 const props = defineProps<{
     sourceTypes?: Record<number, string>,
     sources?: Record<number, string>,
     genders?: Record<number, string>
+    users?: Array<any>;
+    flash?: {
+        error?: string
+    }
 }>()
 
 const sourceTypes = props.sourceTypes
@@ -51,15 +59,135 @@ watch(() => form.source_type, (val) => {
     form.clearErrors('other_source')
 })
 
-function submit() {
-    form.post('/action/applicants')
+const showEmailExistsModal = ref(false);
+const pendingFormData = ref<typeof form | null>(null);
+
+async function submit() {
+    // Check if email exists
+    try {
+        const { data } = await axios.post('/action/applicants/check-email', {
+            email_address: form.email_address
+        });
+
+        if (data.exists) {
+            // Email exists, show modal
+            pendingFormData.value = { ...form }; // save current form
+            showEmailExistsModal.value = true;
+        } else {
+            // Email doesn't exist, submit normally
+            form.post('/action/applicants', {
+                onFinish: () => console.log('Submitted!')
+            });
+        }
+    } catch (error) {
+        console.error('Email check failed', error);
+    }
 }
+
+function confirmUpdate() {
+    if (pendingFormData.value) {
+        Object.assign(form, pendingFormData.value); // copy back
+        form.post('/action/applicants', {
+            onFinish: () => {
+                showEmailExistsModal.value = false;
+            }
+        });
+    }
+}
+
+function cancelUpdate() {
+    showEmailExistsModal.value = false;
+}
+
+const minGraduationDate = computed(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // months are 0-indexed
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // format: YYYY-MM-DD
+});
+
+const rules = {
+    last_name: (val: string) => !!val || 'Last Name is required',
+    first_name: (val: string) => !!val || 'First Name is required',
+    email_address: (val: string) => {
+        if (!val) return 'Email is required';
+        if (typeof val !== 'string') return 'The email must be a string';
+        if (!val.includes('@') || !val.includes('.')) return "The email must contain '@' and '.'";
+        // stricter validation using regex (optional)
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(val)) return 'The email must be a valid email address';
+        return true;
+    },
+    gender: (val: string) => !!val || 'Gender is required',
+    age: (val: string) => /^\d+$/.test(val) || 'Age must be a number',
+    school: (val: string) => !!val || 'School is required',
+    degree: (val: string) => !!val || 'Degree is required',
+};
+
+function validateField(field: keyof typeof rules) {
+    const value = (form as any)[field];
+    const rule = rules[field];
+    const result = rule(value);
+    form.setError(field, result === true ? '' : result);
+}
+
+watch(() => form.last_name, () => validateField('last_name'));
+watch(() => form.first_name, () => validateField('first_name'));
+watch(() => form.email_address, () => validateField('email_address'));
+watch(() => form.gender, () => validateField('gender'));
+watch(() => form.age, () => validateField('age'));
+watch(() => form.school, () => validateField('school'));
+watch(() => form.degree, () => validateField('degree'));
+
+const showError = ref(false)
+const errorMessage = ref<string | null>(null)
+
+watch(
+    () => props.flash,
+    (flash) => {
+        if (flash?.error) {
+            errorMessage.value = flash.error
+            showError.value = true
+
+            setTimeout(() => {
+                showError.value = false
+            }, 10000)
+        }
+    },
+    { immediate: true, deep: true }
+)
+
 </script>
 
 <template>
     <AppLayout>
+        <!-- <Index :users="[]" /> -->
+
+        <div v-if="showError" class="full-width-alert">
+            <div class="alert-banner alert-error-banner">
+                <div class="alert-body">{{ errorMessage }}</div>
+                <button type="button" class="close-btn" @click="showError = false">×</button>
+            </div>
+        </div>
+
+        <head>
+            <meta name="csrf-token" content="{{ csrf_token() }}">
+        </head>
         <div class="page-header">
             <h2 class="page-title">Create ACTION Applicant</h2>
+        </div>
+
+        <div v-if="showEmailExistsModal" class="modal-overlay">
+            <div class="modal-content modal-confirm">
+                <p class="modal-text">
+                    This user already exists. Do you want to update the user's data with the current information?
+                </p>
+                <div class="modal-actions">
+                    <button @click="confirmUpdate" class="btn-primary">Confirm</button>
+                    <button @click="cancelUpdate" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
         </div>
 
         <div class="form-center">
@@ -119,7 +247,7 @@ function submit() {
                     <!-- Email -->
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" v-model="form.email_address" placeholder="Email Address" />
+                        <input type="text" v-model="form.email_address" placeholder="Email Address" />
                         <span v-if="form.errors.email_address" class="error">{{ form.errors.email_address }}</span>
                     </div>
 
@@ -163,7 +291,7 @@ function submit() {
                     <!-- Expected Graduation -->
                     <div class="form-group">
                         <label>Expected Graduation</label>
-                        <input type="date" v-model="form.expected_graduation" />
+                        <input type="date" v-model="form.expected_graduation" :min="minGraduationDate" />
                         <span v-if="form.errors.expected_graduation" class="error">{{ form.errors.expected_graduation
                             }}</span>
                     </div>
@@ -395,10 +523,115 @@ select option[value=""] {
 input:disabled,
 textarea:disabled,
 select:disabled {
-    background-color: #d4d4d8; /* lighter gray */
-    color: #6b7280; /* muted text */
+    background-color: #d4d4d8;
+    /* lighter gray */
+    color: #6b7280;
+    /* muted text */
     cursor: not-allowed;
-    border-color: #9ca3af; /* slightly darker border for definition */
+    border-color: #9ca3af;
+    /* slightly darker border for definition */
 }
 
+/* =========================
+   MODAL DESIGN (ACTION APPLICANT)
+   ========================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    /* top placement */
+    padding-top: 3rem;
+    z-index: 9999;
+    animation: slide-down 0.25s ease-out;
+}
+
+.modal-content.modal-confirm {
+    background: #fff;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: relative;
+}
+
+.modal-text {
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.modal-actions .btn-primary {
+    background-color: var(--ats-primary);
+    color: #fff;
+    padding: 0.5rem 1.2rem;
+    border-radius: 5px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.modal-actions .btn-primary:hover {
+    background-color: var(--ats-accent);
+}
+
+.modal-actions .btn-secondary {
+    background-color: #f3f4f6;
+    color: #374151;
+    padding: 0.5rem 1.2rem;
+    border-radius: 5px;
+    font-weight: 500;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.modal-actions .btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+
+@keyframes slide-down {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.full-width-alert {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+}
+
+.alert-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    font-weight: 500;
+    color: #fff;
+    background-color: #dc2626; /* error red */
+}
 </style>

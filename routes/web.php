@@ -53,6 +53,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/action/applicants', [ActionApplicantController::class, 'store'])
      ->name('action.applicants.store');
+
+    Route::post('/action/applicants/check-email', [ActionApplicantController::class, 'checkEmail']);
+
+    Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
+    ->name('action.applicants.detail');
 });
 
     // Update user

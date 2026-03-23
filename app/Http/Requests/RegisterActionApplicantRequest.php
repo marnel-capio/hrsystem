@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Rules\AlphaSpaceDash;
 use App\Rules\MaxLength;
 use App\Rules\RequiredField;
+use App\Rules\GenEmail;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -46,7 +47,7 @@ class RegisterActionApplicantRequest extends FormRequest
             'last_name' => [new RequiredField, new MaxLength(80), new AlphaSpaceDash],
             'first_name' => [new RequiredField, new MaxLength(80), new AlphaSpaceDash],
             'middle_name' => ['nullable', new MaxLength(80), new AlphaSpaceDash],
-            'email_address' => [new RequiredField, 'email', 'unique:action_applicants,email_address', new MaxLength(80)],
+            'email_address' => [new RequiredField, 'email', new MaxLength(80), new GenEmail,],
             'gender' => [new RequiredField, 'numeric', 'in:1,2'],
             'age' => [new RequiredField, 'numeric', 'min:0', 'max:99'],
             'school' => [new RequiredField, 'string', new MaxLength(80)],

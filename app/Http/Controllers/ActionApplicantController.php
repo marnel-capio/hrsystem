@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterActionApplicantRequest;
 use App\Models\ActionApplicant;
-use App\Services\Log;
+use App\Models\Log;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -29,30 +30,61 @@ class ActionApplicantController extends Controller
         DB::beginTransaction();
 
         try {
-            $applicant = ActionApplicant::createApplicant($request->validated());
-
             // TEMPORARY: force an exception to test the catch block
-            // throw new \Exception('');
+            throw new \Exception('');
+            $email = $request->input('email_address');
 
-            // Optional: log action (same as your UserController)
+            $applicant = ActionApplicant::where('email_address', $email)->first();
+
+            if ($applicant) {
+                // Update existing
+                $applicant->update($request->validated());
+            } else {
+                // Create new
+                $applicant = ActionApplicant::createApplicant($request->validated());
+            }
+
             Log::createLog(
                 'ACTION',
-                "Applicant with {$applicant->email_address} email address is registered successfully.",
+                "Applicant with {$applicant->email_address} email address registered/updated successfully.",
                 $applicant->id
             );
 
             DB::commit();
 
             return redirect()
-                ->route('action.applicants.index')
+                ->route('action.applicants.detail', ['id' => $applicant->id])
                 ->with('success', config('errors.record_created_successfully.errorMessage'));
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()
-                ->route('action.applicants.index')
-                ->with('error', config('errors.transaction_failed.errorMessage'));
+            return Inertia::render('action/applicants/Register', [
+                'sourceTypes' => config('constants.sourceTypes'),
+                'sources' => config('constants.sources'),
+                'genders' => config('constants.genders'),
+                'flash' => [
+                    'error' => config('errors.transaction_failed.errorMessage'),
+                ],
+            ]);
         }
+    }
+
+    public function checkEmail(Request $request)
+    {
+        $email = $request->input('email_address');
+
+        $exists = ActionApplicant::where('email_address', $email)->exists();
+
+        return response()->json(['exists' => $exists]);
+    }
+
+    public function show($id)
+    {
+        $applicant = ActionApplicant::findOrFail($id);
+
+        return Inertia::render('action/applicants/Detail', [
+            'applicant' => $applicant,
+        ]);
     }
 }
