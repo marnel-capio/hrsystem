@@ -108,12 +108,12 @@ return [
         'ACADEME_PARTNER_VALUE' => 2,
         'RECRUITMENT_PORTALS_VALUE' => 3,
         'EMPLOYEE_REFERRAL_VALUE' => 4,
-        "WALIK-IN_VALUE" => 5,
+        "WALK-IN_VALUE" => 5,
         'CAMPUS_RECRUITMENT_NAME' => 'Campus Recruitment',
         'ACADEME_PARTNER_NAME' => 'Academe Partner',
         'RECRUITMENT_PORTALS_NAME' => 'Recruitment Portals',
         'EMPLOYEE_REFERRAL_NAME' => 'Employee Referral',
-        "WALIK-IN_NAME" => 'Walk-in',
+        "WALK-IN_NAME" => 'Walk-in',
     ],
     
 

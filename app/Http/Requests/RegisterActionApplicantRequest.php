@@ -40,7 +40,7 @@ class RegisterActionApplicantRequest extends FormRequest
             'other_source' => [
                 'nullable',
                 'string',
-                'max:80',
+                new MaxLength(80),
                 'required_if:source_type,1,2,4,5',
             ],
 
