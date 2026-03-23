@@ -68,15 +68,21 @@ const blockSize = 5;
 // Filtered schedules
 const filteredSchedules = computed(() => {
   const q = searchQuery.value.toLowerCase();
-  if (!q) return props.schedules;
-  return props.schedules.filter((rs) => {
-    const batch = rs.action_batch.toLowerCase();
-    const locLabel = formatLocation(rs.target_location).toLowerCase();
-    const locNumber = String(rs.target_location);
-    const deployment = formatDeploymentDate(rs.deployment_date).toLowerCase();
 
-    return batch.includes(q) || locLabel.includes(q) || locNumber.includes(q) || deployment.includes(q);
-  });
+  let data = props.schedules;
+
+  if (q) {
+    data = data.filter((rs) => {
+      const batch = rs.action_batch.toLowerCase();
+      const locLabel = formatLocation(rs.target_location).toLowerCase();
+      const locNumber = String(rs.target_location);
+      const deployment = formatDeploymentDate(rs.deployment_date).toLowerCase();
+
+      return batch.includes(q) || locLabel.includes(q) || locNumber.includes(q) || deployment.includes(q);
+    });
+  }
+
+  return [...data].sort((a, b) => b.id - a.id);
 });
 
 // Total pages
@@ -230,7 +236,7 @@ const showingTo = computed(() => {
         <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer"
           :class="{ 'opacity-50 cursor-not-allowed': endPage === totalPages }">Next</span>
       </div>
-
+    </div>
     </div>
   </AppLayout>
 </template>

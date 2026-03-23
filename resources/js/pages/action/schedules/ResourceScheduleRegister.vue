@@ -236,26 +236,13 @@ watch(() => form.action_batch_id, (newId) => {
       <h1 class="text-3xl font-bold mb-6">Create Resource Schedule</h1>
 
       <!-- Error Notification -->
-<div 
-    v-if="showError"
-    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
->
-  <div 
-        class="relative bg-red-500 border-red-200 rounded-lg shadow-md p-4 flex items-center gap-4 animate-slide-down"
-  >
-    <div class="flex-1 flex justify-start items-center gap-3">
-      <p class="text-white text-m font-medium text-left">
-        {{ errorMessage }}
-      </p>
+    <div v-if="showError" class="full-width-alert">
+      <div class="alert-banner alert-error-banner">
+        <div class="alert-body">{{ errorMessage }}</div>
+        <button type="button" class="close-btn" @click="showError = false">×</button>
+      </div>
     </div>
-    <button 
-      style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
-      @click="closeError"
-    >
-      X
-    </button>
-  </div>
-</div>
+        
 
 
       <div class="bg-white dark:bg-zinc-900 p-10 rounded-2xl border shadow-xl space-y-10">
