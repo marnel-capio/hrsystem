@@ -23,8 +23,6 @@ class ActionBatchController extends Controller
     {
         $user = Auth::user();
 
-        // Remove the permission check from here
-
         $search = $request->input('search');
 
         $batches = ActionBatchModel::getPaginated($search, perPage: 20);
@@ -42,7 +40,11 @@ class ActionBatchController extends Controller
  
     public function create()
     {
-        return Inertia::render('action/batches/ActionBatchRegister');
+        $options = $this->actionBatchService->getNextBatchOptions();
+    
+        return Inertia::render('action/batches/ActionBatchRegister', [
+            'batchOptions' => $options
+        ]);
     }
   
     public function store(ActionBatchRequest $request)
@@ -83,7 +85,6 @@ class ActionBatchController extends Controller
  
         $batch->created_by_name = $createdByUser ? $createdByUser->first_name . ' ' . $createdByUser->last_name : 'Unknown';
         $batch->updated_by_name = $updatedByUser ? $updatedByUser->first_name . ' ' . $updatedByUser->last_name : 'Unknown';
- 
         return Inertia::render('action/batches/ActionBatchDetail', [
             'batch' => $batch,
             'user_permissions' => auth()->user()->permissions,
@@ -120,14 +121,14 @@ class ActionBatchController extends Controller
     
             return redirect()
                 ->route('action.batches.show', $batch->id)
-                ->with('success', config('errors.action_batch_update_success.message'));
+                ->with('success', config('errors.record_updated_successfully.errorMessage'));
     
         } catch (\Exception $e) {
     
             DB::rollBack();
     
             return back()->withErrors([
-                'error' => config('errors.action_batch_update_error.errorMessage')
+                'error' => config('errors.record_updated_failed.errorMessage')
             ]);
         }
     }
