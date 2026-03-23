@@ -7,27 +7,28 @@ import { Head } from '@inertiajs/vue3'
 const page = usePage<any>()
 const loading = ref(false)
 
-const batch = ref({
+const form = ref({
   id: page.props.batch?.id ?? 0,
   action_batch: page.props.batch?.action_batch ?? '',
   target_trainees: page.props.batch?.target_trainees ?? 0,
   target_date: page.props.batch?.target_date ?? '',
   remarks: page.props.batch?.remarks ?? '',
+  processing: false,
 })
 
-const formatToUppercase = () => {
-  batch.value.action_batch = batch.value.action_batch.toUpperCase()
-}
 
 const submit = () => {
-    loading.value = true
+  form.value.processing = true
  
-    router.post(`/action/batches/${batch.value.id}/update`, batch.value, {
-        onFinish: () => {
-            loading.value = false
-        }
-    })
+  router.post(`/action/batches/${form.value.id}/update`, form.value, {
+    onFinish: () => {
+      form.value.processing = false
+      loading.value = false
+    }
+  })
 }
+
+
 </script>
 
 <template>
@@ -43,10 +44,9 @@ const submit = () => {
         <div class="flex flex-col col-span-2">
           <label class="text-xs font-semibold mb-1">Action Batch</label>
           <input
-            v-model="batch.action_batch"
-            @input="formatToUppercase"
-            placeholder="Action batch"
-            class="border p-2 rounded w-full"
+            v-model="form.action_batch"
+            readonly
+            class="border p-2 rounded w-full bg-gray-100 cursor-not-allowed"
           />
           <span v-if="page.props.errors?.action_batch" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.action_batch }}
@@ -58,7 +58,7 @@ const submit = () => {
         <div class="flex flex-col col-span-2">
           <label class="text-xs font-semibold mb-1">Target Trainees</label>
           <input
-            v-model="batch.target_trainees"
+            v-model="form.target_trainees"
             placeholder="Target Trainees"
             type="number"
             class="border p-2 rounded w-full"
@@ -70,10 +70,10 @@ const submit = () => {
       </div>
 
       <div class="grid grid-cols-2 gap-4 mt-5">
-        <div class="flex flex-col col-span-2">
+        <div class="flex flex-col col-span-2 w-40">
           <label class="text-xs font-semibold mb-1">Target Start Date</label>
           <input
-            v-model="batch.target_date"
+            v-model="form.target_date"
             type="month"
             placeholder="Target Start Date"
             class="border p-2 rounded w-full"
@@ -88,7 +88,7 @@ const submit = () => {
         <div class="flex flex-col col-span-2">
           <label class="text-xs font-semibold mb-1">Remarks</label>
           <textarea
-            v-model="batch.remarks"
+            v-model="form.remarks"
             rows="6"
             placeholder="Remarks"
             class="border p-2 rounded w-full"
@@ -100,20 +100,42 @@ const submit = () => {
       </div>
 
       <div class="mt-10 w-full flex justify-end space-x-2">
-        <span
-          class="px-4 text-xs cursor-pointer border py-2 rounded hover:bg-gray-200"
-          @click="$inertia.get(`/action/batches/${batch.id}`)"
+        <button
+          type="button"
+          class="px-4 text-xs !border !border-gray-300 py-2 rounded 
+                !bg-secondary !hover:bg-gray-700 !text-black
+                !w-fit inline-flex items-center justify-center shrink-0"
+          @click="$inertia.get(`/action/batches/${form.id}`)"
         >
           Cancel
-        </span>
+        </button>
 
-        <span
-          class="px-4 text-xs cursor-pointer py-2 bg-[#2F359E] text-white rounded hover:bg-blue-400"
+
+        <button
+          type="button"
+          class="px-4 text-xs py-2 bg-[#2F359E] text-white rounded 
+                hover:bg-blue-400 
+                disabled:opacity-60 disabled:cursor-not-allowed
+                !w-fit inline-flex items-center justify-center"
           @click="submit"
+          :disabled="form.processing"
         >
-          Update
-        </span>
+          {{ form.processing ? 'Updating...' : 'Update' }}
+        </button>
       </div>
     </div>
   </AppLayout>
 </template>
+
+<style scoped>
+.btn-primary.disabled-btn {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-primary:not(.disabled-btn):hover {
+  background: #3b82f6;
+  width: 50px;
+}
+</style>
