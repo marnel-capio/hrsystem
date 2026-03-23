@@ -31,7 +31,7 @@ class ActionApplicantController extends Controller
 
         try {
             // TEMPORARY: force an exception to test the catch block
-            throw new \Exception('');
+            // throw new \Exception('');
             $email = $request->input('email_address');
 
             $applicant = ActionApplicant::where('email_address', $email)->first();

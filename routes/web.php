@@ -43,21 +43,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
-    //action-applicants list
-    Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
-            ->name('action.applicants.index');
     
-    //action-applicants register       
-    Route::get('/action/applicants/register', [ActionApplicantController::class, 'create'])
-            ->name('action.applicants.register');
-
-    Route::post('/action/applicants', [ActionApplicantController::class, 'store'])
-     ->name('action.applicants.store');
-
-    Route::post('/action/applicants/check-email', [ActionApplicantController::class, 'checkEmail']);
-
-    Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
-    ->name('action.applicants.detail');
 });
 
     // Update user
@@ -123,6 +109,29 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])->name('action.batches.show');       
         Route::get('/action/batches/{id}/edit', [ActionBatchController::class, 'edit'])->name('action.batches.edit');        
         Route::post('/action/batches/{id}/update', [ActionBatchController::class, 'update'])->name('action.batches.update');
+    });
+
+
+    // ------------------------
+    // ACTION Applicants
+    // ------------------------
+    Route::middleware(['check.permission'])->group(function () {
+        //action-applicants list
+        Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
+                ->name('action.applicants.index');
+        
+        //action-applicants register       
+        Route::get('/action/applicants/register', [ActionApplicantController::class, 'create'])
+                ->name('action.applicants.register');
+
+        Route::post('/action/applicants', [ActionApplicantController::class, 'store'])
+                ->name('action.applicants.store');
+
+        Route::post('/action/applicants/check-email', [ActionApplicantController::class, 'checkEmail'])
+                ->name('action.applicants.check-email');
+
+        Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
+                ->name('action.applicants.detail');
     });
 
 

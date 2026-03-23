@@ -180,8 +180,11 @@ watch(
 
         <div v-if="showEmailExistsModal" class="modal-overlay">
             <div class="modal-content modal-confirm">
-                <p class="modal-text">
-                    This user already exists. Do you want to update the user's data with the current information?
+                <p class="modal-text" style="text-align: center;">
+                    <strong>This applicant data already exists.</strong>
+                </p>
+                <p class="modal-text" style="text-align: center;">
+                    Do you want to update the applicant's data with the current information?
                 </p>
                 <div class="modal-actions">
                     <button @click="confirmUpdate" class="btn-primary">Confirm</button>
@@ -632,6 +635,7 @@ select:disabled {
     padding: 0.8rem 1rem;
     font-weight: 500;
     color: #fff;
-    background-color: #dc2626; /* error red */
+    background-color: #dc2626;
+    /* error red */
 }
 </style>

@@ -211,6 +211,61 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     
     store.form = storeForm
 /**
+* @see \App\Http\Controllers\ActionApplicantController::checkEmail
+ * @see app/Http/Controllers/ActionApplicantController.php:73
+ * @route '/action/applicants/check-email'
+ */
+export const checkEmail = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: checkEmail.url(options),
+    method: 'post',
+})
+
+checkEmail.definition = {
+    methods: ["post"],
+    url: '/action/applicants/check-email',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicantController::checkEmail
+ * @see app/Http/Controllers/ActionApplicantController.php:73
+ * @route '/action/applicants/check-email'
+ */
+checkEmail.url = (options?: RouteQueryOptions) => {
+    return checkEmail.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicantController::checkEmail
+ * @see app/Http/Controllers/ActionApplicantController.php:73
+ * @route '/action/applicants/check-email'
+ */
+checkEmail.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: checkEmail.url(options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicantController::checkEmail
+ * @see app/Http/Controllers/ActionApplicantController.php:73
+ * @route '/action/applicants/check-email'
+ */
+    const checkEmailForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: checkEmail.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicantController::checkEmail
+ * @see app/Http/Controllers/ActionApplicantController.php:73
+ * @route '/action/applicants/check-email'
+ */
+        checkEmailForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: checkEmail.url(options),
+            method: 'post',
+        })
+    
+    checkEmail.form = checkEmailForm
+/**
 * @see \App\Http\Controllers\ActionApplicantController::detail
  * @see app/Http/Controllers/ActionApplicantController.php:82
  * @route '/action/applicants/{id}'
@@ -311,6 +366,7 @@ const applicants = {
     index: Object.assign(index, index),
 register: Object.assign(register, register),
 store: Object.assign(store, store),
+checkEmail: Object.assign(checkEmail, checkEmail),
 detail: Object.assign(detail, detail),
 }
 
