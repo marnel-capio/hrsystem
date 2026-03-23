@@ -93,8 +93,8 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
       <div class="card">
         <!-- COUNT -->
         <div class="mb-2 text-xs text-gray-600">
-          Showing {{ projects.data.length > 0 ? projects.to : 0 }}–{{ projects.data.length > 0 ? projects.to : 0 }}
-          out of {{ projectsTotal }} items
+          Showing {{ projects.data.length > 0 ? projects.from : 0 }}–{{ projects.data.length > 0 ? projects.to : 0 }}
+out of {{ projectsTotal }} items
         </div>
  
         <!-- TABLE -->
