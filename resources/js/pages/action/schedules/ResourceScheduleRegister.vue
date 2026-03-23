@@ -83,11 +83,22 @@ function weekToKey(weekStr: string) {
 }
 
 function formatWeekLabel(weekStr: string) {
-  const [year, weekNum] = weekStr.split("-W").map(Number);
+  if (!weekStr) return '';
+  const [year, isoWeek] = weekStr.split('-W').map(Number);
+
+  // Compute the Monday of this ISO week
   const jan4 = new Date(year, 0, 4);
-  const weekStart = new Date(jan4.getTime() + (weekNum - 1) * 7 * 86400000);
-  const month = weekStart.toLocaleString("en-US", { month: "short" });
-  return `${month} W${weekNum}`;
+  const dayOffset = (isoWeek - 1) * 7;
+  const weekStart = new Date(jan4.getTime() + dayOffset * 86400000);
+
+  const month = weekStart.toLocaleString('en-US', { month: 'short' });
+
+  // week-in-month calculation where week starts wih 1 for every new month
+  const firstDayOfMonth = new Date(weekStart.getFullYear(), weekStart.getMonth(), 1);
+  const firstDayWeekday = firstDayOfMonth.getDay() === 0 ? 7 : firstDayOfMonth.getDay(); // Sunday=7
+  const weekInMonth = Math.ceil((weekStart.getDate() + firstDayWeekday - 1) / 7);
+
+  return `${month} W${weekInMonth}`;
 }
 
 // Compute unique weeks for Gantt preview
@@ -168,27 +179,6 @@ const wbsColors: Record<string, string> = {
   training: '#84cc16',
 };
 
-// Validate WBS ranges
-// function validateWBS() {
-//   let hasErrors = false;
-//   let firstErrorAct: string | null = null;
-//   ganttActivities.forEach(act => {
-//     const row = ganttForm.value[act];
-//     row.error = "";
-//     if (weekToKey(row.start)! > weekToKey(row.end)!) {
-//       const errorMsg = props.errorMessages.wbs_end_before_start.errorMessage;
-//       row.error = errorMsg.replace(':activity', formatActivityName(act));
-//       hasErrors = true;
-//       if (!firstErrorAct) firstErrorAct = act;
-//     }
-//   });
-//   if (hasErrors && firstErrorAct) {
-//     const errorElement = document.getElementById('error-' + firstErrorAct);
-//     if (errorElement) errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-//   }
-//   return hasErrors;
-// }
-
 // Submit form
 function createResourceSchedule() {
 
@@ -246,26 +236,13 @@ watch(() => form.action_batch_id, (newId) => {
       <h1 class="text-3xl font-bold mb-6">Create Resource Schedule</h1>
 
       <!-- Error Notification -->
-<div 
-    v-if="showError"
-    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4"
->
-  <div 
-        class="relative bg-red-500 border-red-200 rounded-lg shadow-md p-4 flex items-center gap-4 animate-slide-down"
-  >
-    <div class="flex-1 flex justify-start items-center gap-3">
-      <p class="text-white text-m font-medium text-left">
-        {{ errorMessage }}
-      </p>
+    <div v-if="showError" class="full-width-alert">
+      <div class="alert-banner alert-error-banner">
+        <div class="alert-body">{{ errorMessage }}</div>
+        <button type="button" class="close-btn" @click="showError = false">×</button>
+      </div>
     </div>
-    <button 
-      style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
-      @click="closeError"
-    >
-      X
-    </button>
-  </div>
-</div>
+        
 
 
       <div class="bg-white dark:bg-zinc-900 p-10 rounded-2xl border shadow-xl space-y-10">

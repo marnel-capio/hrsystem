@@ -48,7 +48,7 @@ class RegisterUserRequest extends FormRequest
                 'max:64',
                 'confirmed',
                 new RequiredField,
-                new PasswordRules, // enforces uppercase, lowercase, number, special char
+                new PasswordRules, 
             ],
             'position' => ['required', 'numeric', new RequiredField],
             'permissions' => ['required', 'numeric', new RequiredField],
@@ -63,7 +63,6 @@ class RegisterUserRequest extends FormRequest
     {
         return [
             'required' => 'This field is required.',
-
             'first_name.max' => 'This field exceeds the maximum allowed length.',
             'last_name.max' => 'This field exceeds the maximum allowed length.',
             'middle_name.max' => 'This field exceeds the maximum allowed length.',

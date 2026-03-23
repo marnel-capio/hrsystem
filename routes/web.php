@@ -44,13 +44,17 @@ Route::middleware(['auth'])->group(function () {
         ->name('logout');
 });
 
+    // Update user
+        Route::put('/user/{id}/update', [UserController::class, 'update'])
+            ->name('user.update');    
+            
     // ------------------------
     // User Management (Permissions 1 & 2 Only)
     // ------------------------
     Route::middleware(['check.permission'])->group(function () {
 
         // Users list
-        Route::get('/user', fn () => Inertia::render('user/Index'))
+        Route::get('/user', [UserController::class, 'index'])
             ->name('user.index');
 
         // Register new user page
@@ -64,8 +68,15 @@ Route::middleware(['auth'])->group(function () {
         // Show user detail
         Route::get('/user/{id}', [UserController::class, 'show'])
             ->name('user.show');
+
+        // Show Edit User Details
+        Route::get('/user/{id}/edit', [UserController::class, 'edit'])
+            ->name('user.edit');
+
+        
     });
 
+    
     // ------------------------
     // Resource Schedules
     // ------------------------
@@ -75,7 +86,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/schedules/register', [ResourceScheduleController::class, 'create'])->name('action.schedules.register');
         Route::post('/action/schedules', [ResourceScheduleController::class, 'store'])->name('action.schedules.store');
         Route::get('/action/schedules/{id}', [ResourceScheduleController::class, 'show'])->name('action.schedules.show');
-    });
+        Route::get('/action/schedules/{id}/edit', [ResourceScheduleController::class, 'edit'])->name('action.schedules.edit');
+        Route::put('/action/schedules/{id}/update', [ResourceScheduleController::class, 'update'])->name('action.schedules.update');
+        //email
+        Route::post('/action/schedules/{id}/send-notification', 
+            [ResourceScheduleController::class, 'sendResourceScheduleNotification']
+        )->name('action.schedules.notify');
+        //delete
+        Route::delete('/action/schedules/{id}', [ResourceScheduleController::class, 'destroy'])
+        ->name('action.schedules.destroy');
+        });            
 
     // ------------------------
     // Actions Batches
@@ -84,7 +104,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list');
         Route::get('/action/batches/register', [ActionBatchController::class, 'create'])->name('action.batches.register');
         Route::post('/action/batches', [ActionBatchController::class, 'store'])->name('action.batches.store');
-        Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])->name('action.batches.show');
+        Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])->name('action.batches.show');       
+        Route::get('/action/batches/{id}/edit', [ActionBatchController::class, 'edit'])->name('action.batches.edit');        
+        Route::post('/action/batches/{id}/update', [ActionBatchController::class, 'update'])->name('action.batches.update');
     });
 
 

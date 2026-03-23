@@ -37,6 +37,7 @@ class CheckUserPermission
         |----------------------------------------------------------------------
         */
         if (in_array($routeName, ['user.index', 'user.register', 'user.store'])) {
+        if (in_array($routeName, ['user.index', 'user.register', 'user.store', 'action.schedules.register', 'action.schedules.store', 'action.schedules.edit', 'action.schedules.update', 'action.create', 'action.show', 'action.schedules.notify', 'action.schedules.destroy'])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
                 config('constants.HR_MANAGER_PERMISSION.value'),
@@ -47,6 +48,24 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
+
+                /*
+        |--------------------------------------------------------------------------
+        | Route: /action/schedules/ and /action/batches
+        | Only permission 1, 2, and 3 allowed
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list'])) {
+
+            if (in_array($permission, [1, 2, 3])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        
 
         /*
         |----------------------------------------------------------------------
@@ -172,11 +191,44 @@ class CheckUserPermission
         
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
+        | Route: /user/{id}/edit → edit user profile
+        |----------------------------------------------------------------------
+        */
+        if ($routeName === 'user.edit') {
+
+            // Full access
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            // Limited access (own profile only)
+            if (in_array($permission, [
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.HR_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
+
+                if ((int) $routeId === (int) $user->id) {
+                    return $next($request);
+                }
+
+                return redirect('/dashboard')
+                    ->with('error', config('errors.unauthorized.errorMessage'));
+            }
+        }
+
+        /*
+        |----------------------------------------------------------------------
         | Fallback
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
         return redirect('/dashboard')
             ->with('error', config('errors.unauthorized.errorMessage'));
     }
+}
 }
