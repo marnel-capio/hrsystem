@@ -1,73 +1,73 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\ApplicationImportController::index
+* @see \App\Http\Controllers\ApplicationImportController::create
  * @see app/Http/Controllers/ApplicationImportController.php:16
  * @route '/action/applications'
  */
-export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 
-index.definition = {
+create.definition = {
     methods: ["get","head"],
     url: '/action/applications',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ApplicationImportController::index
+* @see \App\Http\Controllers\ApplicationImportController::create
  * @see app/Http/Controllers/ApplicationImportController.php:16
  * @route '/action/applications'
  */
-index.url = (options?: RouteQueryOptions) => {
-    return index.definition.url + queryParams(options)
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ApplicationImportController::index
+* @see \App\Http\Controllers\ApplicationImportController::create
  * @see app/Http/Controllers/ApplicationImportController.php:16
  * @route '/action/applications'
  */
-index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\ApplicationImportController::index
+* @see \App\Http\Controllers\ApplicationImportController::create
  * @see app/Http/Controllers/ApplicationImportController.php:16
  * @route '/action/applications'
  */
-index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index.url(options),
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\ApplicationImportController::index
+* @see \App\Http\Controllers\ApplicationImportController::create
  * @see app/Http/Controllers/ApplicationImportController.php:16
  * @route '/action/applications'
  */
-    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: index.url(options),
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\ApplicationImportController::index
+* @see \App\Http\Controllers\ApplicationImportController::create
  * @see app/Http/Controllers/ApplicationImportController.php:16
  * @route '/action/applications'
  */
-        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index.url(options),
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\ApplicationImportController::index
+* @see \App\Http\Controllers\ApplicationImportController::create
  * @see app/Http/Controllers/ApplicationImportController.php:16
  * @route '/action/applications'
  */
-        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index.url({
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -76,7 +76,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    index.form = indexForm
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
  * @see app/Http/Controllers/ApplicationImportController.php:45
@@ -132,9 +132,6 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
         })
     
     importMethod.form = importMethodForm
-const applications = {
-    index: Object.assign(index, index),
-import: Object.assign(importMethod, importMethod),
-}
+const ApplicationImportController = { create, importMethod, import: importMethod }
 
-export default applications
+export default ApplicationImportController

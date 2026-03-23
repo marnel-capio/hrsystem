@@ -92,4 +92,50 @@ return [
     'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
 
+        'source_type' => [
+        'Campus Recruitment' => 1,
+        'Academe Partner' => 2,
+        'Recruitment Portals' => 3,
+        'Employee Referral' => 4,
+        'Walk-in' => 5,
+    ],
+
+    // -------------------------
+    // Source Mapping
+    // -------------------------
+    'source' => [
+        'Mynimo' => 1,
+        'Indeed' => 2,
+        'Kalibrr' => 3,
+        'FoundIt' => 4,
+        'LinkedIn' => 5,
+        'Facebook' => 6,
+        'Jobstreet' => 7,
+    ],
+
+    // -------------------------
+    // Gender Mapping
+    // -------------------------
+    'gender' => [
+        'male' => 1, 'm' => 1,
+        'female' => 2, 'f' => 2,
+    ],
+
+    // -------------------------
+    // Exam Status Mapping
+    // -------------------------
+    'exam_status' => [
+        'pending' => 1,
+        'passed'  => 2,
+        'failed'  => 3,
+        'p2'      => 4,
+        'p3'      => 5,
+        'withdrew' => 6,
+        'no show' => 7,
+        'PASSED'  => 2,
+        'FAILED'  => 3,
+        'Withdrew'=> 6,
+        'No Show' => 7,
+    ],
+
 ];

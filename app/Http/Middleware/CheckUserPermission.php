@@ -71,7 +71,7 @@ class CheckUserPermission
         | Only permission 1, 2, 3, 4, 5 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['action.applications.index'])) {
+        if (in_array($routeName, ['action.applications.index, action.applications.import'])) {
 
             if (in_array($permission, [1, 2, 3, 4, 5])) {
                 return $next($request);

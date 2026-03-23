@@ -2,106 +2,121 @@
 
 return [
 
-    // Universal message for field max length exceeded
+    //UNIVERSAL ERROR MESSAGES
+
+    // field max length exceeded
         'max_length_exceeded' => [
         'errorCode' => 'MAX_LENGTH_EXCEEDED',
         'errorMessage' => 'This field exceeds the maximum allowed length.',
     ],
 
-    // Universal message for all transaction failed
-    'transaction_failed' => [
-        'errorCode' => 'TRANSACTION_FAILED',
-        'errorMessage' => 'An error occurred while creating the record. Please try again.',
+    // field is required
+    'field_required' => [
+        'errorCode' => 'FIELD_REQUIRED',
+        'errorMessage' => 'This is a required field.',
     ],
-
-    'update_failed' => [
-        'errorCode' => 'UPDATE_FAILED',
-        'errorMessage' => 'An error occurred while saving the record. Please try again.',
-    ],
-
-    'email_taken' => [
-    'errorCode' => 'EMAIL_TAKEN',
-    'errorMessage' => 'This email address is already registered.',
-    ],
-
-    'password_mismatch' => [
-        'errorCode' => 'PASSWORD_MISMATCH',
-        'errorMessage' => 'Passwords do not match.',
-    ],
-
-    // Unauthorized access
-    'unauthorized' => [
-        'errorCode' => 'UNAUTHORIZED',
-        'errorMessage' => 'Access denied: You are not authorized to view this page.',
-    ],
-
-    // Universal message for all record created succesfully
+    
+    // record created succesfully
     'record_created_successfully' => [
         'errorCode' => 'RECORD_CREATED_SUCCESSFULLY',
         'errorMessage' => 'Record created successfully.',
     ],
 
-    // Universal message for all record deleted succesfully
+    // record creation failed
+    'transaction_failed' => [
+        'errorCode' => 'TRANSACTION_FAILED',
+        'errorMessage' => 'An error occurred while creating the record. Please try again.',
+    ],
+
+    // record deleted succesfully
     'record_deleted_successfully' => [
         'errorCode' => 'RECORD_DELETED_SUCCESSFULLY',
         'errorMessage' => 'Record successfully deleted.',
     ],
 
-    // Universal message for all record deleted failed
+    // record delete failed
     'record_deleted_failed' => [
         'errorCode' => 'RECORD_DELETED_FAILED',
         'errorMessage' => 'An error occurred while deleting the record. Please try again.												
 ',
     ],
 
-    // Universal message for all record updated failed
-    'record_updated_failed' => [
-        'errorCode' => 'RECORD_UPDATED_FAILED',
-        'errorMessage' => 'An error occurred while updating the record. Please try again.												
-',
-    ],
-
-        // Universal message for all record updated success
+    // record update success
     'record_updated_successfully' => [
         'errorCode' => 'RECORD_UPDATED_SUCCESSFULLY',
         'errorMessage' => 'Record updated successfully.												
 ',
     ],
 
-    // Universal message for all required fields
-    'field_required' => [
-        'errorCode' => 'FIELD_REQUIRED',
-        'errorMessage' => 'This is a required field.',
+    // record update failed
+    'record_updated_failed' => [
+        'errorCode' => 'RECORD_UPDATED_FAILED',
+        'errorMessage' => 'An error occurred while updating the record. Please try again.												
+',
     ],
 
+    // unauthorized access
+    'unauthorized' => [
+        'errorCode' => 'UNAUTHORIZED',
+        'errorMessage' => 'Access denied: You are not authorized to view this page.',
+    ],
+
+    // email address registered
+    'email_taken' => [
+    'errorCode' => 'EMAIL_TAKEN',
+    'errorMessage' => 'This email address is already registered.',
+    ],
+
+    // passwords do not match
+    'password_mismatch' => [
+        'errorCode' => 'PASSWORD_MISMATCH',
+        'errorMessage' => 'Passwords do not match.',
+    ],
     
-    // Universal message for all email sent success
+    // email sent success
     'email_sent_success' => [
         'errorCode' => 'EMAIL_SUCCESS',
         'errorMessage' => 'Email/s sent successfully',
     ],
 
     
-     // Universal message for email sent failed
+     // email sent failed
     'email_sent_failed' => [
         'errorCode' => 'EMAIL_FAILED',
         'errorMessage' => 'An error occurred while sending the email/s. Please try again.',										
     ],
 
-    // ACCOUNT IS INACTIVE
+    // account is inactive
     'account_inactive' => [
     'errorCode' => 'ACCOUNT_INACTIVE',
     'errorMessage' => 'Your account is no longer active. Please check with your manager or admin.',
     ],
 
-    // RESOURCE SCHED REGISTER ERROR MSGS
+
+
+
+    // FOR RESOURCE SCHEDULE
     'wbs_end_before_start' => [
         'errorCode' => 'WBS_END_BEFORE_START',
         'errorMessage' => 'Start week cannot be after end week.',
     ],
 
-    // FOR USER REGISTRATION
+    //FOR ACTION APPLICATIONS
+        'successful_action_application_import' => [
+        'errorCode' => 'SUCCESSFUL_ACTION_APPLICATION_IMPORT',
+        'errorMessage' => 'The following applicants have been successfully uploaded:',
+    ],
 
+        'failed_action_application_import' => [
+            'errorCode' => 'FAILED_ACTION_APPLICATION_IMPORT',
+            'errorMessage' => 'An error occurred while uploading the following applicants:',
+    ],
+
+
+
+
+
+    // FOR USER REGISTRATION
     'password_complexity_failed' => [
         'errorCode' => 'PASSWORD_COMPLEXITY_FAILED',
         'errorMessage' => 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (!@#$%&*_)',
@@ -127,10 +142,6 @@ return [
         'errorMessage' => 'The contact number must be exactly 11 digits.',
     ],
 
-    'user_updated_successfully' => [
-    'errorCode' => 'USER_UPDATED_SUCCESSFULLY',
-    'errorMessage' => 'Record updated successfully.',
-],
 
 
 
@@ -144,5 +155,5 @@ return [
         'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
         'errorMessage' => 'The selected date must be in the future.',
     ],
-    
+
 ];
