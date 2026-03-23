@@ -22,14 +22,15 @@ class ApplicationImportController extends Controller
         $applications = DB::table('action_applicant_applications as app')
             ->join('action_applicants as applicant', 'app.action_applicant_id', '=', 'applicant.id')
             ->join('action_batches as batch', 'app.action_batch_id', '=', 'batch.id')
+            ->leftJoin('resource_schedules as rs', 'batch.id', '=', 'rs.action_batch_id') // <- join resource_schedules
             ->select([
                 'app.id',
                 'app.action_applicant_id', 
                 'app.action_batch_id',
-                'app.trainees_from',
                 'applicant.first_name',
                 'applicant.last_name',
                 'batch.action_batch',
+                'rs.target_location',
             ])
             ->orderBy('app.id', 'desc')
             ->get();
@@ -48,6 +49,16 @@ public function import(Request $request)
         'file' => 'required|mimes:xlsx,csv|max:10240',
         'batch_id' => 'required|integer|exists:action_batches,id',
     ]);
+
+    // Fetch the batch and its target location
+$batch = DB::table('action_batches as b')
+    ->leftJoin('resource_schedules as rs', 'b.id', '=', 'rs.action_batch_id')
+    ->where('b.id', $request->batch_id)
+    ->select('b.id', 'b.action_batch', 'rs.target_location')
+    ->first();
+
+$batchTargetLocation = $batch->target_location ?? null;
+
 
     $file = $request->file('file');
     $rows = $this->parseFile($file);
@@ -132,7 +143,7 @@ public function import(Request $request)
 
             // Insert applicant & application
             $applicant = ActionApplicant::updateOrCreateFromRow($row, $gender, $source_type, $source, $other_source, $now);
-            ActionApplication::updateOrCreateFromRow($applicant->id, $request->batch_id, $row, $exam_application_status, $exam_plan_date, $now);
+            ActionApplication::updateOrCreateFromRow($applicant->id, $request->batch_id, $row, $exam_application_status, $exam_plan_date, $now, $batchTargetLocation);
 
             DB::commit();
             $importedApplicants[] = "{$last}, {$first}";

@@ -3,12 +3,6 @@ import { Link, useForm, router, usePage } from '@inertiajs/vue3'
 import { ref, computed, watch, onMounted } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 
-interface FlashProps {
-  success?: string | null
-  error?: string | null
-  info?: string | null
-}
-
 const page = usePage<any>()
 
 // ✅ FLASH MESSAGES
@@ -121,15 +115,17 @@ const submitImport = () => {
 
 
 // Map trainees_from to location label
-function formatLocation(loc: number) {
-  return loc === 1 ? 'Manila' : loc === 2 ? 'Cebu' : 'Unknown';
+function formatLocation(loc: number | null) {
+  if (loc === 1) return 'Manila';
+  if (loc === 2) return 'Cebu';
+  return 'Unknown';
 }
 
 
 // Props from backend
 const props = defineProps<{
   applications: Array<{
-    trainees_from: number
+    target_location: number
     id: number;
     action_applicant_id: number;
     action_batch_id: number;
@@ -154,27 +150,20 @@ watch(searchQuery, () => currentPage.value = 1);
 
 const filteredApplications = computed(() => {
   const q = searchQuery.value.toLowerCase();
-  let data = props.applications;
+  return props.applications.filter((app) => {
+    const fullName = `${app.first_name} ${app.last_name}`.toLowerCase();
+    const batch = app.action_batch.toLowerCase();
 
-  if (q) {
-    data = data.filter((app) => {
-      const fullName = `${app.first_name} ${app.last_name}`.toLowerCase();
-      const batch = app.action_batch.toLowerCase();
-      
-      // 👇 SAFE LOCATION FILTERING
-      const traineesFrom = app.trainees_from || app.trainees_from === 0 ? app.trainees_from : null;
-      const locLabel = traineesFrom !== null ? formatLocation(traineesFrom).toLowerCase() : '';
-      const locNumber = traineesFrom !== null ? String(traineesFrom) : '';
+    // Map trainees_from to string for search
+    const locLabel = formatLocation(app.target_location).toLowerCase(); 
+    const locNumber = app.target_location !== null ? String(app.target_location) : '';
 
-      return fullName.includes(q)
-             || batch.includes(q)
-             || locLabel.includes(q)
-             || locNumber.includes(q)
-             || String(app.id).includes(q);
-    });
-  }
-
-  return [...data].sort((a, b) => b.id - a.id);
+    return fullName.includes(q)
+           || batch.includes(q)
+           || locLabel.includes(q)      // this allows "unknown" to match
+           || locNumber.includes(q)
+           || String(app.id).includes(q);
+  });
 });
 
 // ---------------- Pagination ----------------
@@ -213,10 +202,6 @@ console.log('Received batches:', props.actionBatches);
 
 <template>
   <AppLayout>
-
-    <div class="p-4 bg-gray-100 text-xs">
-  <pre>{{ JSON.stringify(props.applications[0], null, 2) }}</pre>
-</div>
 <!-- TOP-RIGHT TOASTS - Smooth animations -->
 <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full sm:w-96">
   <!-- SUCCESS TOAST -->
@@ -340,7 +325,7 @@ console.log('Received batches:', props.actionBatches);
   @click="openImportModal"
   class="btn-primary whitespace-nowrap"
 >
-  Upload Applications  from Google Forms
+  Upload Applications from Google Forms
 </button>
 </div> 
       </div>
@@ -388,8 +373,8 @@ console.log('Received batches:', props.actionBatches);
               <td class="border px-3 py-2">{{ app.action_batch }}</td>
 
               <!-- Trainee From -->
-              <td class="border px-3 py-2">
-  {{ formatLocation(app.trainees_from) }}
+<td class="border px-3 py-2">
+  {{ app.target_location !== null ? formatLocation(app.target_location) : 'Unknown' }}
 </td>
             </tr>
 

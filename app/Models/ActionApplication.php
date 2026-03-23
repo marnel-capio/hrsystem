@@ -27,7 +27,7 @@ public static function listPageData(?string $search = null)
     return static::query()
         ->select(
             'action_applicant_applications.id',
-            'resource_schedules.trainees_from', // ✅ use resource_schedules
+            'resource_schedules.target_location', // use target_location now
             'action_applicant_applications.action_applicant_id',
             'action_applicant_applications.action_batch_id',
             'action_batches.action_batch',
@@ -36,20 +36,20 @@ public static function listPageData(?string $search = null)
         )
         ->join('action_batches', 'action_applicant_applications.action_batch_id', '=', 'action_batches.id')
         ->join('action_applicants', 'action_applicant_applications.action_applicant_id', '=', 'action_applicants.id')
-        ->join('resource_schedules', 'action_batches.resource_schedule_id', '=', 'resource_schedules.id') // ✅ join schedule
+        ->leftJoin('resource_schedules', 'action_batches.id', '=', 'resource_schedules.action_batch_id')
         ->when($search, function ($query, $search) {
             $query->where(function ($q) use ($search) {
                 $q->where('action_applicants.first_name', 'like', "%{$search}%")
                   ->orWhere('action_applicants.last_name', 'like', "%{$search}%")
                   ->orWhere('action_batches.action_batch', 'like', "%{$search}%")
-                  ->orWhereRaw("resource_schedules.trainees_from LIKE ?", ["%{$search}%"]) // ✅ filter by schedule
+                  ->orWhereRaw("COALESCE(resource_schedules.target_location, '') LIKE ?", ["%{$search}%"])
                   ->orWhere('action_applicant_applications.id', 'like', "%{$search}%");
             });
         })
         ->orderBy('action_applicant_applications.created_time', 'desc')
         ->get();
 }
-public static function updateOrCreateFromRow($applicantId, $batchId, array $row, $exam_application_status, $exam_plan_date, $now)
+public static function updateOrCreateFromRow($applicantId, $batchId, array $row, $exam_application_status, $exam_plan_date, $now, $targetLocation = null)
 {
     return self::updateOrCreate(
         [
@@ -64,6 +64,7 @@ public static function updateOrCreateFromRow($applicantId, $batchId, array $row,
             'created_time' => $now,
             'updated_by' => Auth::id(),
             'updated_time' => $now,
+            'trainees_from' => $targetLocation, // save the correct target_location
         ]
     );
 }
