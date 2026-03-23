@@ -11,7 +11,7 @@ class IntermediateService
     {
         $project = new IntermediateProjectModel();
  
-        $project->project_name = strtoupper($data['project_name']);
+        $project->project_name = $data['project_name'];
         $project->remarks = $data['remarks'] ?? null;
  
         $project->created_by = auth()->user()->id;
