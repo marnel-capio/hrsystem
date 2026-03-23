@@ -73,21 +73,28 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
           </Link>
       </div>
  
-      <div class="card bg-white p-6 rounded shadow">
- 
         <!-- SEARCH -->
-        <div class="mb-4 text-xs">
-          <input
-            v-model="search"
-            placeholder="Search Project Name"
-            class="p-2 border rounded w-full"
-          />
+      <div class="flex gap-4 mb-4">
+        <div class="relative w-full">
+          <span class="absolute inset-y-0 left-3 flex items-center text-zinc-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
+            </svg>
+          </span>
+          <input v-model="search" type="text" placeholder="Search by Project Name"
+            class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
         </div>
- 
+      </div>
+      
+      <div class="card bg-white p-6 rounded shadow">
+        <!-- CARD WRAPPER -->
+      <div class="card">
         <!-- COUNT -->
         <div class="mb-2 text-xs text-gray-600">
-          Showing {{ projects.data.length > 0 ? projects.to : 0 }}
-          out of {{ projectsTotal }} items
+          Showing {{ projects.data.length > 0 ? projects.from : 0 }}–{{ projects.data.length > 0 ? projects.to : 0 }}
+out of {{ projectsTotal }} items
         </div>
  
         <!-- TABLE -->
@@ -156,6 +163,78 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
         </div>
       </div>
     </div>
+    </div>
   </AppLayout>
 </template>
+
+
+<style scoped>
+/* CARD */
+.card {
+  background: var(--ats-card, white);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--ats-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
+}
+
+/* TABLE WRAPPER */
+.table-wrapper {
+  overflow-x: hidden;
+  /* remove horizontal scroll */
+}
+
+.ats-table th,
+.ats-table td {
+  padding-left: 10px;
+  padding-right: 70px;
+}
+
+/* TABLE LINK */
+.table-link {
+  color: var(--ats-accent, #1C7BA5);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.table-link:hover {
+  text-decoration: underline;
+}
+
+/* PAGE HEADER */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--ats-text);
+}
+
+/* BUTTON */
+.btn-primary {
+  background: var(--ats-primary, #1C7BA5);
+  color: #fff;
+  padding: 0.55rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: var(--ats-accent, #165a80);
+}
+
+/* PAGE CONTENT */
+.page-content {
+  max-width: 1175px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+</style>
  
