@@ -12,7 +12,7 @@ class CheckUserPermission
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect('/');
         }
 
@@ -36,7 +36,6 @@ class CheckUserPermission
         | Only HR Admin & HR Manager allowed
         |----------------------------------------------------------------------
         */
-        if (in_array($routeName, ['user.index', 'user.register', 'user.store'])) {
         if (in_array($routeName, ['user.index', 'user.register', 'user.store', 'action.schedules.register', 'action.schedules.store', 'action.schedules.edit', 'action.schedules.update', 'action.create', 'action.show', 'action.schedules.notify', 'action.schedules.destroy'])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
@@ -49,7 +48,7 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-                /*
+        /*
         |--------------------------------------------------------------------------
         | Route: /action/schedules/ and /action/batches
         | Only permission 1, 2, and 3 allowed
@@ -64,8 +63,6 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
-
-        
 
         /*
         |----------------------------------------------------------------------
@@ -99,6 +96,60 @@ class CheckUserPermission
             }
         }
 
+        // ACTION BATCH
+        if (in_array($routeName, ['action.batches.list', 'action.batches.show'])) {
+            // Only permission 1, 2, and 3 are allowed for these routes
+            if (in_array($permission, [1, 2, 3])) {
+                return $next($request);
+            }
+
+            // Fetch the error message from errors.php using the correct key
+            $errorMessage = trans('errors.unauthorized_user.errorMessage');
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        if (in_array($routeName, ['action.batches.register', 'action.batches.store', 'action.batches.edit', 'action.batches.update'])) {
+            // Only permission 1 or 2 are allowed for these routes
+            if (in_array($permission, [1, 2])) {
+                return $next($request);
+            }
+
+            // Fetch the error message from errors.php using the correct key
+            $errorMessage = trans('errors.unauthorized_user.errorMessage');
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        // INTERMEDIATE PROJECT
+        if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
+            // Only permission 1, 2, 3, and 5 are allowed for these routes
+            if (in_array($permission, [1, 2, 3,5])) {
+                return $next($request);
+            }
+
+            // Fetch the error message from errors.php using the correct key
+            $errorMessage = trans('errors.unauthorized_user.errorMessage');
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        if (in_array($routeName, ['intermediate.projects.register', 'intermediate.projects.store', 'intermediate.projects.edit', 'intermediate.projects.update'])) {
+            // Only permission 1 or 5 are allowed for these routes
+            if (in_array($permission, [1, 5])) {
+                return $next($request);
+            }
+
+            // Fetch the error message from errors.php using the correct key
+            $errorMessage = trans('errors.unauthorized_user.errorMessage');
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
         /*
         |----------------------------------------------------------------------
         | Route: /user/{id}/edit → edit user profile
@@ -131,95 +182,19 @@ class CheckUserPermission
             }
         }
 
-
-        // ACTION BATCH 
-        if (in_array($routeName, ['action.batches.list', 'action.batches.show'])) {
-            // Only permission 1, 2, and 3 are allowed for these routes
-            if (in_array($permission, [1, 2, 3])) {
-                return $next($request); 
-            }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
-
-            return redirect('/dashboard')
-                    ->with('error', config('errors.unauthorized.errorMessage'));
-            }
-
-        if (in_array($routeName, ['action.batches.register', 'action.batches.store', 'action.batches.edit', 'action.batches.update'])) {
-            // Only permission 1 or 2 are allowed for these routes
-            if (in_array($permission, [1, 2])) {
-                return $next($request);  
-            }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
-
-            return redirect('/dashboard')
-                    ->with('error', config('errors.unauthorized.errorMessage'));
-            }
-        
-
-
-        
-        //INTERMEDIATE PROJECTS
-        if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
-            // Only permission 1, 2, and 3 are allowed for these routes
-            if (in_array($permission, [1, 2, 3, 5])) {
-                return $next($request); 
-            }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
-
-            return redirect('/dashboard')
-                    ->with('error', config('errors.unauthorized.errorMessage'));
-            }
-
-        if (in_array($routeName, ['intermediate.projects.register', 'intermediate.projects.store', 'intermediate.projects.edit', 'intermediate.projects.update'])) {
-            // Only permission 1 or 2 are allowed for these routes
-            if (in_array($permission, [1, 5])) {
-                return $next($request);  
-            }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
-
-            return redirect('/dashboard')
-                    ->with('error', config('errors.unauthorized.errorMessage'));
-            }
-        
-
-        /*
-        |----------------------------------------------------------------------
-        | Route: /user/{id}/edit → edit user profile
-        |----------------------------------------------------------------------
-        */
-        if ($routeName === 'user.edit') {
-
-            // Full access
+        if (in_array($routeName, ['action.applicants.index'])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
                 config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
             ])) {
                 return $next($request);
             }
 
-            // Limited access (own profile only)
-            if (in_array($permission, [
-                config('constants.HR_RECRUITER_PERMISSION.value'),
-                config('constants.HR_PERMISSION.value'),
-                config('constants.BU_MANAGER_PERMISSION.value'),
-                config('constants.INTERVIEWER_PERMISSION.value'),
-            ])) {
-
-                if ((int) $routeId === (int) $user->id) {
-                    return $next($request);
-                }
-
-                return redirect('/dashboard')
-                    ->with('error', config('errors.unauthorized.errorMessage'));
-            }
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
         /*
@@ -230,5 +205,4 @@ class CheckUserPermission
         return redirect('/dashboard')
             ->with('error', config('errors.unauthorized.errorMessage'));
     }
-}
 }
