@@ -12,7 +12,7 @@ class CheckUserPermission
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect('/');
         }
 
@@ -48,7 +48,7 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-                /*
+        /*
         |--------------------------------------------------------------------------
         | Route: /action/schedules/ and /action/batches
         | Only permission 1, 2, and 3 allowed
@@ -63,8 +63,6 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
-
-        
 
         /*
         |----------------------------------------------------------------------
@@ -98,34 +96,32 @@ class CheckUserPermission
             }
         }
 
-
-        // ACTION BATCH 
+        // ACTION BATCH
         if (in_array($routeName, ['action.batches.list', 'action.batches.show'])) {
             // Only permission 1, 2, and 3 are allowed for these routes
             if (in_array($permission, [1, 2, 3])) {
-                return $next($request); 
+                return $next($request);
             }
 
             // Fetch the error message from errors.php using the correct key
             $errorMessage = trans('errors.unauthorized_user.errorMessage');
 
             return redirect('/dashboard')
-                    ->with('error', config('errors.unauthorized.errorMessage'));
-            }
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
 
         if (in_array($routeName, ['action.batches.register', 'action.batches.store', 'action.batches.edit', 'action.batches.update'])) {
             // Only permission 1 or 2 are allowed for these routes
             if (in_array($permission, [1, 2])) {
-                return $next($request);  
+                return $next($request);
             }
 
             // Fetch the error message from errors.php using the correct key
             $errorMessage = trans('errors.unauthorized_user.errorMessage');
 
             return redirect('/dashboard')
-                    ->with('error', config('errors.unauthorized.errorMessage'));
-            }
-        
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
 
         /*
         |----------------------------------------------------------------------
@@ -157,6 +153,21 @@ class CheckUserPermission
                 return redirect('/dashboard')
                     ->with('error', config('errors.unauthorized.errorMessage'));
             }
+        }
+
+        if (in_array($routeName, ['action.applicants.index'])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
         /*

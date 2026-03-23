@@ -17,6 +17,7 @@ const props = defineProps<{
         remarks: string
     }>
     flash?: { error?: string }
+     userPermissions: number
 }>()
 
 const applicants = ref(props.applicants ?? [])
@@ -100,6 +101,11 @@ const showingTo = computed(() => {
     const total = filteredApplicants.value.length
     return end > total ? total : end
 })
+
+const canCreateApplicant = computed(() => {
+    // Only show for permissions 1, 2, 3
+    return [1, 2, 3].includes(props.userPermissions);
+})
 </script>
 
 <template>
@@ -116,9 +122,12 @@ const showingTo = computed(() => {
         <!-- HEADER -->
         <div class="page-header">
             <h2 class="page-title">ACTION Applicants List</h2>
-            <Link href="/action/applicants/register" class="!bg-[#1C7BA5] btn-primary">
-                Create ACTION Applicant
-            </Link>
+            <Link 
+        v-if="canCreateApplicant" 
+        href="/action/applicants/register" 
+        class="!bg-[#1C7BA5] btn-primary">
+        Create ACTION Applicant
+    </Link>
         </div>
 
         <!-- SEARCH -->

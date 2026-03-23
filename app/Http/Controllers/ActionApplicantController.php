@@ -13,6 +13,7 @@ class ActionApplicantController extends Controller
 
         return Inertia::render('action/applicants/Index', [
             'applicants' => $applicants,
+            'userPermissions' => auth()->user()->permissions,
         ]);
     }
 }

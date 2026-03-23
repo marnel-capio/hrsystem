@@ -43,9 +43,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
-    Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
-            ->name('applicant.index');
-
 });
 
     // Update user
@@ -102,7 +99,7 @@ Route::middleware(['auth'])->group(function () {
         });            
 
     // ------------------------
-    // Actions
+    // ACTION Batches
     // ------------------------
     Route::middleware(['auth', 'check.permission'])->group(function () {
         Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list');
@@ -111,6 +108,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/batches/{id}', [ActionBatchController::class, 'show'])->name('action.batches.show');       
         Route::get('/action/batches/{id}/edit', [ActionBatchController::class, 'edit'])->name('action.batches.edit');        
         Route::post('/action/batches/{id}/update', [ActionBatchController::class, 'update'])->name('action.batches.update');
+    });
+
+    // ------------------------
+    // ACTION Applicants
+    // ------------------------
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        
+        //list
+        Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
+            ->name('action.applicants.index');
     });
 
 
