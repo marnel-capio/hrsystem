@@ -133,16 +133,17 @@ return [
 
 
     //ACTION BATCH
-    'action_batch_unique' => [
-        'errorCode' => 'ACTION_BATCH_UNIQUE',
-        'errorMessage' => 'Action Batch already exists.',
-    ],
-    
-    // TARGET DATE
     'target_date_after_or_equal' => [
         'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
         'errorMessage' => 'The selected date must be in the future.',
     ],
+
+
+    //INTERMEDIATE
+    'project_name_unique'=>[
+        'errorCode' => 'PROJECT_NAME_UNIQUE',
+        'errorMessage' => 'Project already exists.',
+    ]
  
 ];  
 

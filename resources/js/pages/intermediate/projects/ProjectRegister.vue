@@ -35,7 +35,7 @@ const submit = () => {
     <!-- Form -->
     <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
  
-      <!-- ACTION Batch Dropdown -->
+      <!-- Project Dropdown -->
       <div class="grid grid-cols-2 gap-4">
         <div class="flex flex-col col-span-2">
           <label class="text-xs font-semibold mb-1">Project Name</label>
