@@ -103,6 +103,20 @@ return [
         5 => 'Walk-in'
     ],
 
+    'sTypes' => [
+        'CAMPUS_RECRUITMENT_VALUE' => 1,
+        'ACADEME_PARTNER_VALUE' => 2,
+        'RECRUITMENT_PORTALS_VALUE' => 3,
+        'EMPLOYEE_REFERRAL_VALUE' => 4,
+        "WALIK-IN_VALUE" => 5,
+        'CAMPUS_RECRUITMENT_NAME' => 'Campus Recruitment',
+        'ACADEME_PARTNER_NAME' => 'Academe Partner',
+        'RECRUITMENT_PORTALS_NAME' => 'Recruitment Portals',
+        'EMPLOYEE_REFERRAL_NAME' => 'Employee Referral',
+        "WALIK-IN_NAME" => 'Walk-in',
+    ],
+    
+
     'sources' => [
         1 => 'Mynimo',
         2 => 'Indeed',
@@ -113,6 +127,23 @@ return [
         7 => 'Jobstreet'
     ],
 
+    'source' => [
+        'MYNIMO_VALUE' => 1,
+        'INDEED_VALUE' => 2,
+        'KALIBRR_VALUE' => 3,
+        'FOUNDIT_VALUE' => 4,
+        "LINKEDIN_VALUE" => 5,
+        'FACEBOOK_VALUE' => 6,
+        "JOBSTREET_VALUE" => 7,
+        'MYNIMO_NAME' => 'Mynimo',
+        'INDEED_NAME' => 'Indeed',
+        'KALIBRR_NAME' => 'Kalibrr',
+        'FOUNDIT_NAME' => 'FoundIt',
+        "LINKEDIN_NAME" => 'LinkedIn',
+        'FACEBOOK_NAME' => 'Facebook',
+        "JOBSTREET_NAME" => 'Jobstreet',
+    ],
+
     // -------------------------
     // Gender Options
     // -------------------------
@@ -120,5 +151,13 @@ return [
         1 => 'Male',
         2 => 'Female'
     ],
+
+    'gender' => [
+        'MALE_VALUE' => 1,
+        'FEMALE_VALUE' => 2,
+        'MALE_NAME' => 'Male',
+        'FEMALE_NAME' => 'Female',
+    ],
+
 
 ];
