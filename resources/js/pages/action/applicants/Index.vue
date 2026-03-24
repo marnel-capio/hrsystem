@@ -167,7 +167,7 @@ const canCreateApplicant = computed(() => {
                     <tbody>
                         <tr v-for="a in paginatedApplicants" :key="a.id">
                             <td class="border px-3 py-2">
-                                <Link :href="`/applicants/${a.id}`" class="table-link">
+                                <Link :href="`action/applicants/${a.id}`" class="table-link">
                                     {{ a.first_name }} {{ a.middle_name }} {{ a.last_name }}
                                 </Link>
                             </td>
