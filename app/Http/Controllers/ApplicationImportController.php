@@ -15,49 +15,36 @@ class ApplicationImportController extends Controller
 {
     public function create()
     {
-        $actionBatches = ActionBatchModel::select('id', 'action_batch', 'target_trainees', 'target_date')
-            ->orderBy('id', 'desc')
-            ->get();
-
-        $applications = DB::table('action_applicant_applications as app')
-            ->join('action_applicants as applicant', 'app.action_applicant_id', '=', 'applicant.id')
-            ->join('action_batches as batch', 'app.action_batch_id', '=', 'batch.id')
-            ->leftJoin('resource_schedules as rs', 'batch.id', '=', 'rs.action_batch_id') // <- join resource_schedules
-            ->select([
-                'app.id',
-                'app.action_applicant_id',
-                'app.action_batch_id',
-                'applicant.first_name',
-                'applicant.last_name',
-                'batch.action_batch',
-                'rs.target_location',
-            ])
-            ->orderBy('app.id', 'desc')
-            ->get();
+        $actionBatches = ActionBatchModel::getWithTargetLocationAndApplications();
 
         return inertia('action/applications/ActionApplicationList', [
-            'applications' => $applications,
+            'applications' => $actionBatches->flatMap(function($batch) {
+                return $batch->applications->map(function($app) use ($batch) {
+                    return [
+                        'id' => $app->id,
+                        'action_applicant_id' => $app->action_applicant_id,
+                        'action_batch_id' => $app->action_batch_id,
+                        'first_name' => $app->applicant->first_name,
+                        'last_name' => $app->applicant->last_name,
+                        'action_batch' => $batch->action_batch,
+                        'target_location' => $batch->resourceSchedule->target_location ?? null,
+                    ];
+                });
+            }),
             'actionBatches' => $actionBatches,
             'filters' => ['search' => request('search', '')],
             'userPermissions' => auth()->user()->permissions ?? 0,
         ]);
-    }
+        }
 
     public function import(Request $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,csv|max:10240',
-            'batch_id' => 'required|integer|exists:action_batches,id',
-        ]);
+        $validated = $request->validated();
 
-        // Fetch batch + target location
-        $batch = DB::table('action_batches as b')
-            ->leftJoin('resource_schedules as rs', 'b.id', '=', 'rs.action_batch_id')
-            ->where('b.id', $request->batch_id)
-            ->select('b.id', 'b.action_batch', 'rs.target_location')
-            ->first();
+        $batch = ActionBatchModel::with('resourceSchedule')
+            ->find($validated['batch_id']);
 
-        $batchTargetLocation = $batch->target_location ?? null;
+        $batchTargetLocation = $batch->resourceSchedule->target_location ?? null;
 
         $file = $request->file('file');
         $rows = $this->parseFile($file);

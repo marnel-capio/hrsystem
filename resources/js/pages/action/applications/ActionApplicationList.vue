@@ -12,7 +12,7 @@ const flashMessages = ref({
   info: ''
 })
 
-const hasFlash = computed(() => 
+const hasFlash = computed(() =>
   !!flashMessages.value.success || !!flashMessages.value.error || !!flashMessages.value.info
 )
 
@@ -30,12 +30,12 @@ const clearFlash = () => {
   flashMessages.value = { success: '', error: '', info: '' }
 }
 
-const closeSuccess = () => { 
-  flashMessages.value.success = ''; 
+const closeSuccess = () => {
+  flashMessages.value.success = '';
 };
 
-const closeError = () => { 
-  flashMessages.value.error = ''; 
+const closeError = () => {
+  flashMessages.value.error = '';
 };
 
 onMounted(() => {
@@ -69,10 +69,10 @@ const closeImportModal = () => {
 const onImportFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (!target.files?.length) return;
-  
+
   const file = target.files[0];
   importFile.value = file;
-  
+
   console.log('File selected:', file.name); // Debug
 };
 
@@ -155,7 +155,7 @@ const filteredApplications = computed(() => {
     const batch = app.action_batch.toLowerCase();
 
     // Map trainees_from to string for search
-    const locLabel = formatLocation(app.target_location).toLowerCase(); 
+    const locLabel = formatLocation(app.target_location).toLowerCase();
     const locNumber = app.target_location !== null ? String(app.target_location) : '';
 
     return fullName.includes(q)
@@ -206,8 +206,8 @@ console.log('Received batches:', props.actionBatches);
 <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full sm:w-96">
   <!-- SUCCESS TOAST -->
   <TransitionGroup name="toast" tag="div">
-    <div 
-      v-if="flashMessages.success" 
+    <div
+      v-if="flashMessages.success"
       key="success"
       class="bg-green-100 border border-green-400 text-green-700  p-4 rounded-xl shadow-2xl backdrop-blur-sm border  max-h-80 overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-300"
     >
@@ -220,7 +220,7 @@ console.log('Received batches:', props.actionBatches);
         <div class="flex-1 min-w-0">
           <pre class="whitespace-pre-wrap text-sm leading-relaxed font-medium">{{ flashMessages.success }}</pre>
         </div>
-            <button 
+            <button
 @click="closeSuccess"
       style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0,0,0,0.3); color:white; font-weight:bold; font-size:1rem;"
     >
@@ -232,8 +232,8 @@ console.log('Received batches:', props.actionBatches);
 
   <!-- ERROR TOAST -->
   <TransitionGroup name="toast" tag="div">
-    <div 
-      v-if="flashMessages.error" 
+    <div
+      v-if="flashMessages.error"
       key="error"
       class="bg-red-100 border-red-400 text-red-700 p-4 rounded-xl shadow-2xl backdrop-blur-sm border max-h-80 overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-300"
     >
@@ -246,7 +246,7 @@ console.log('Received batches:', props.actionBatches);
         <div class="flex-1 min-w-0">
           <pre class="whitespace-pre-wrap text-sm leading-relaxed font-medium">{{ flashMessages.error }}</pre>
         </div>
-            <button 
+            <button
 @click="closeError"
       style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0,0,0,0.3); color:white; font-weight:bold; font-size:1rem;"
     >
@@ -254,7 +254,7 @@ console.log('Received batches:', props.actionBatches);
     </button>
       </div>
     </div>
-    
+
   </TransitionGroup>
 </div>
     <!-- IMPORT MODAL -->
@@ -309,6 +309,7 @@ console.log('Received batches:', props.actionBatches);
         <h2 class="page-title">ACTION Application List</h2>
 <div class="flex gap-2 flex-nowrap">
   <Link
+    v-if="props.userPermissions != 5 && props.userPermissions != 6"
     href="/action/applications/register"
     class="!bg-[#1C7BA5] btn-primary whitespace-nowrap"
   >
@@ -321,13 +322,14 @@ console.log('Received batches:', props.actionBatches);
     accept=".xlsx,.csv"
   />
 <button
+  v-if="props.userPermissions != 5 && props.userPermissions != 6"
   type="button"
   @click="openImportModal"
   class="btn-primary whitespace-nowrap"
 >
   Upload Applications from Google Forms
 </button>
-</div> 
+</div>
       </div>
 
       <!-- SEARCH -->
@@ -364,7 +366,7 @@ console.log('Received batches:', props.actionBatches);
             <tr v-for="app in paginatedSchedules" :key="app.id">
               <!-- Application ID as clickable link -->
 <td class="border px-3 py-2">
-  <Link :href="`/applicants/${app.id}`" class="text-blue-600 hover:underline">
+  <Link :href="`/action/applications/${app.id}`" class="text-blue-600 hover:underline">
     {{ app.first_name }} {{ app.last_name }}
   </Link>
 </td>

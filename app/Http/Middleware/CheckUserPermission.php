@@ -50,11 +50,11 @@ class CheckUserPermission
 
                 /*
         |--------------------------------------------------------------------------
-        | Route: /action/schedules/ and /action/batches
+        | Route: /action/schedules/ and /action/batches and applications import
         | Only permission 1, 2, and 3 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list'])) {
+        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list', 'action.applications.import'])) {
 
             if (in_array($permission, [1, 2, 3])) {
                 return $next($request);
@@ -68,12 +68,12 @@ class CheckUserPermission
                         /*
         |--------------------------------------------------------------------------
         | Route: ACTION Applications List
-        | Only permission 1, 2, 3, 4, 5 allowed
+        | Only permission 1, 2, 3, 5, 6 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['action.applications.index, action.applications.import'])) {
+        if (in_array($routeName, ['action.applications.index'])) {
 
-            if (in_array($permission, [1, 2, 3, 4, 5])) {
+            if (in_array($permission, [1, 2, 3, 5, 6])) {
                 return $next($request);
             }
 
@@ -84,7 +84,7 @@ class CheckUserPermission
 
 
 
-        
+
 
         /*
         |----------------------------------------------------------------------
@@ -119,11 +119,11 @@ class CheckUserPermission
         }
 
 
-        // ACTION BATCH 
+        // ACTION BATCH
         if (in_array($routeName, ['action.batches.list', 'action.batches.show'])) {
             // Only permission 1, 2, and 3 are allowed for these routes
             if (in_array($permission, [1, 2, 3])) {
-                return $next($request); 
+                return $next($request);
             }
 
             // Fetch the error message from errors.php using the correct key
@@ -136,7 +136,7 @@ class CheckUserPermission
         if (in_array($routeName, ['action.batches.register', 'action.batches.store', 'action.batches.edit', 'action.batches.update'])) {
             // Only permission 1 or 2 are allowed for these routes
             if (in_array($permission, [1, 2])) {
-                return $next($request);  
+                return $next($request);
             }
 
             // Fetch the error message from errors.php using the correct key
@@ -145,7 +145,7 @@ class CheckUserPermission
             return redirect('/dashboard')
                     ->with('error', config('errors.unauthorized.errorMessage'));
             }
-        
+
 
         /*
         |----------------------------------------------------------------------

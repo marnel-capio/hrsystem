@@ -70,4 +70,9 @@ public static function updateOrCreateFromRow($applicantId, $batchId, array $row,
         ]
     );
 }
+
+public function applicant()
+    {
+        return $this->belongsTo(ActionApplicant::class, 'action_applicant_id', 'id');
+    }
 }
