@@ -6,7 +6,7 @@ use App\Models\ActionApplicant;
 use App\Models\ActionApplication;
 use App\Models\ActionBatchModel;
 use App\Models\Log;
-use Illuminate\Http\Request;
+use App\Http\Requests\ImportApplicationsRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -37,7 +37,7 @@ class ApplicationImportController extends Controller
         ]);
         }
 
-    public function import(Request $request)
+    public function import(ImportApplicationsRequest $request)
     {
         $validated = $request->validated();
 

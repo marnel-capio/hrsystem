@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\RequiredField;
 
 class ImportApplicationsRequest extends FormRequest
 {
@@ -11,13 +12,13 @@ class ImportApplicationsRequest extends FormRequest
         return true;
     }
 
-    public function rules(): array
-    {
-        return [
-            'file' => 'required|mimes:xlsx,csv|max:10240',
-            'batch_id' => 'required|integer|exists:action_batches,id',
-        ];
-    }
+        public function rules(): array
+        {
+            return [
+                'file' => [new RequiredField, 'mimes:xlsx,csv', 'max:10240'],
+                'batch_id' => [new RequiredField, 'integer', 'exists:action_batches,id'],
+            ];
+        }
 
     public function messages(): array
     {
