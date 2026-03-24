@@ -266,7 +266,7 @@ watch(
                         </div>
                         <div class="form-group half">
                             <label>Age</label>
-                            <input type="number" v-model="form.age" min="0" max="99" placeholder="Age" />
+                            <input type="number" v-model="form.age" min="1" max="99" placeholder="Age" />
                             <span v-if="form.errors.age" class="error">{{ form.errors.age }}</span>
                         </div>
                     </div>

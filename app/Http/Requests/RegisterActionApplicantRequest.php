@@ -49,7 +49,7 @@ class RegisterActionApplicantRequest extends FormRequest
             'middle_name' => ['nullable', new MaxLength(80), new AlphaSpaceDash],
             'email_address' => [new RequiredField, 'email', new MaxLength(80), new GenEmail,],
             'gender' => [new RequiredField, 'numeric', 'in:1,2'],
-            'age' => [new RequiredField, 'numeric', 'min:0', 'max:99'],
+            'age' => [new RequiredField, 'numeric', 'min:1', 'max:99'],
             'school' => [new RequiredField, 'string', new MaxLength(80)],
             'degree' => [new RequiredField, 'string', new MaxLength(80)],
             'others_degree' => ['nullable', 'string', new MaxLength(80)],
