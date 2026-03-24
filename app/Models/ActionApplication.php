@@ -27,7 +27,7 @@ public static function listPageData(?string $search = null)
     return static::query()
         ->select(
             'action_applicant_applications.id',
-            'resource_schedules.target_location', // use target_location now
+            'resource_schedules.target_location',
             'action_applicant_applications.action_applicant_id',
             'action_applicant_applications.action_batch_id',
             'action_batches.action_batch',
@@ -49,8 +49,10 @@ public static function listPageData(?string $search = null)
         ->orderBy('action_applicant_applications.created_time', 'desc')
         ->get();
 }
-public static function updateOrCreateFromRow($applicantId, $batchId, array $row, $exam_application_status, $exam_plan_date, $now, $targetLocation = null)
+public static function updateOrCreateFromRow($applicantId, $batchId, array $row, $exam_application_status, $exam_plan_date, $updatedTime, $targetLocation = null, $createdTime = null)
 {
+    $createdTime = $createdTime ?? $updatedTime;
+
     return self::updateOrCreate(
         [
             'action_applicant_id' => $applicantId,
@@ -61,10 +63,10 @@ public static function updateOrCreateFromRow($applicantId, $batchId, array $row,
             'exam_application_status' => $exam_application_status,
             'exam_plan_date' => $exam_plan_date,
             'created_by' => Auth::id(),
-            'created_time' => $now,
+            'created_time' => $createdTime,
             'updated_by' => Auth::id(),
-            'updated_time' => $now,
-            'trainees_from' => $targetLocation, // save the correct target_location
+            'updated_time' => $updatedTime,
+            'trainees_from' => $targetLocation,
         ]
     );
 }

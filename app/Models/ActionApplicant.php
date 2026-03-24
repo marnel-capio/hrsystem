@@ -10,10 +10,10 @@ class ActionApplicant extends Model
 {
     protected $table = 'action_applicants';
     public $timestamps = false;
-    
+
     protected $fillable = [
-        'source_type', // Keep as VARCHAR/TEXT - NOT integer
-        'source',      // Keep as VARCHAR/TEXT
+        'source_type',
+        'source',
         'last_name',
         'first_name',
         'middle_name',
@@ -23,7 +23,7 @@ class ActionApplicant extends Model
         'school',
         'degree',
         'others_degree',
-        'expected_graduation', // VARCHAR - store as string "2021"
+        'expected_graduation',
         'awards_recognition',
         'other_examination_certificate',
         'thesis_project',
@@ -38,7 +38,7 @@ class ActionApplicant extends Model
     protected $casts = [
         'created_time' => 'datetime',
         'updated_time' => 'datetime',
-        'expected_graduation' => 'string', // Force string
+        'expected_graduation' => 'string',
         'age' => 'integer',
     ];
 
@@ -48,8 +48,7 @@ class ActionApplicant extends Model
         'source' => '',
     ];
 
-// ActionApplicant.php
-public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source, $other_source, $now)
+public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source, $other_source, $createdTime, $updatedTime)
 {
     $nameParts = explode(',', $row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
     $last = trim($nameParts[0] ?? '');
@@ -58,7 +57,6 @@ public static function updateOrCreateFromRow(array $row, $gender, $source_type, 
 
     $email = trim($row['Email Address'] ?? '');
 
-    // updateOrCreate by email
     return self::updateOrCreate(
         ['email_address' => $email],
         [
@@ -77,11 +75,11 @@ public static function updateOrCreateFromRow(array $row, $gender, $source_type, 
             'awards_recognition' => trim($row['Awards/ Recognition '] ?? ''),
             'other_examination_certificate' => trim($row['Other Examinations/ Certifications taken'] ?? ''),
             'thesis_project' => trim($row['Thesis Project'] ?? ''),
-            'extra_curricular' => trim($row['Extra-curricular Activities'] ?? ''),
+            'extra_curricular' => substr(trim($row['Extra-curricular Activities'] ?? ''), 0, 255),
             'created_by' => Auth::id(),
-            'created_time' => $now,
+            'created_time' => $createdTime,
             'updated_by' => Auth::id(),
-            'updated_time' => $now,
+            'updated_time' => $updatedTime,
         ]
     );
 }
