@@ -25,7 +25,7 @@ class ApplicationImportController extends Controller
             ->leftJoin('resource_schedules as rs', 'batch.id', '=', 'rs.action_batch_id') // <- join resource_schedules
             ->select([
                 'app.id',
-                'app.action_applicant_id', 
+                'app.action_applicant_id',
                 'app.action_batch_id',
                 'applicant.first_name',
                 'applicant.last_name',
@@ -70,8 +70,8 @@ $batchTargetLocation = $batch->target_location ?? null;
     $examStatusMap = $config['exam_status'];
 
     $importedApplicants = [];
-    $skippedApplicants = [];  
-    $failedApplicants = []; 
+    $skippedApplicants = [];
+    $failedApplicants = [];
     $totalRows = count($rows);
     $now = now()->format('Y-m-d H:i:s');
 
@@ -162,29 +162,32 @@ $batchTargetLocation = $batch->target_location ?? null;
             $successList[] = ($index + 1) . '. ' . $name;
         }
         $successMsg = "Count of Successful Uploads: " . count($importedApplicants) . "\n\n" .
-                  config('errors.successful_action_application_import.errorMessage') . "\n" . 
+                  config('errors.successful_action_application_import.errorMessage') . "\n" .
                   implode("\n", $successList) . "\n\n";
     }
 
     $errorMsg = '';
-    if (!empty($failedApplicants)) {
+
+    // Merge skipped into failed
+    $allFailed = array_merge($failedApplicants, $skippedApplicants);
+
+    // Build failed message
+    $errorMsg = '';
+    if (!empty($allFailed)) {
         $errorList = [];
-        foreach ($failedApplicants as $index => $name) {
+        foreach ($allFailed as $index => $name) {
             $errorList[] = ($index + 1) . '. ' . $name;
         }
-        $errorMsg = "Count of Failed Uploads: " . count($failedApplicants) . "\n\n" .
-                config('errors.failed_action_application_import.errorMessage') . "\n" . 
-                implode("\n", $errorList) . "\n\n";
+
+        $errorMsg = "Count of Failed Uploads: " . count($allFailed) . "\n\n" .
+                    config('errors.failed_action_application_import.errorMessage') . "\n" .
+                    implode("\n", $errorList) . "\n\n";
     }
 
-    if (!empty($skippedApplicants)) {
-        $errorMsg .= "\nSkipped rows:\n" . implode("\n", $skippedApplicants);
-    }
-
-// ✅ Log after all imports
+// Log after all imports
     $user = Auth::user();
     $logMessage = "Imported ACTION applications and applicants. Total rows: {$totalRows}, Success: " . count($importedApplicants) .
-                  ", Skipped: " . count($skippedApplicants) . ", Failed: " . count($failedApplicants);
+                  ", Failed: " . count($allFailed);
 
     Log::createLog(
         'ACTION',
