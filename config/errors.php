@@ -2,12 +2,6 @@
 
 return [
 
-    // Universal message for field max length exceeded
-        'max_length_exceeded' => [
-        'errorCode' => 'MAX_LENGTH_EXCEEDED',
-        'errorMessage' => 'This field exceeds the maximum allowed length.',
-    ],
-
     // Universal message for all transaction failed
     'transaction_failed' => [
         'errorCode' => 'TRANSACTION_FAILED',
@@ -101,6 +95,10 @@ return [
     ],
 
     // FOR USER REGISTRATION
+    'max_length_exceeded' => [
+        'errorCode' => 'MAX_LENGTH_EXCEEDED',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
+    ],
 
     'password_complexity_failed' => [
         'errorCode' => 'PASSWORD_COMPLEXITY_FAILED',
@@ -140,9 +138,40 @@ return [
         'errorMessage' => 'Action Batch already exists.',
     ],
 
+    'input_max' => [
+        'errorCode' => 'INPUT_MAX',
+        'errorMessage' => 'This field exceeds the maximum allowed length.',
+    ],
+
+    // TARGET DATE
     'target_date_after_or_equal' => [
         'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
         'errorMessage' => 'The selected date must be in the future.',
     ],
-    
-];
+
+    // SUCCESS MESSAGE - CREATE
+    'action_batch_create_success' => [
+        'messageCode' => 'ACTION_BATCH_CREATE_SUCCESS',
+        'message' => 'Record created successfully.',
+    ],
+
+    // SYSTEM ERROR - CREATE
+    'action_batch_create_error' => [
+        'errorCode' => 'ACTION_BATCH_CREATE_ERROR',
+        'errorMessage' => 'An error occurred while creating the record.',
+    ],
+
+    // SUCCESS MESSAGE - UPDATE
+    'action_batch_update_success' => [
+        'messageCode' => 'ACTION_BATCH_UPDATE_SUCCESS',
+        'message' => 'Record updated successfully.',
+    ],
+
+    // SYSTEM ERROR - UPDATE
+    'action_batch_update_error' => [
+        'errorCode' => 'ACTION_BATCH_UPDATE_ERROR',
+        'errorMessage' => 'An error occurred while updating the record.',
+    ]
+ 
+];  
+
