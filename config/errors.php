@@ -144,5 +144,10 @@ return [
         'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
         'errorMessage' => 'The selected date must be in the future.',
     ],
+
+    'age_numeric' => [
+        'errorCode' => 'AGE_NUMERIC_INVALID',
+        'errorMessage' => 'Age must be a valid number',
+    ],
     
 ];

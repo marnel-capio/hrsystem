@@ -71,6 +71,7 @@ class RegisterActionApplicantRequest extends FormRequest
             'source.required_if' => config('errors.field_required.errorMessage'),
             'other_source.required_if' => config('errors.field_required.errorMessage'),
             'email_address.unique' => 'This email has already been registered.',
+            'age.numeric' => config('constants.age_numeric.errorMessage'),
         ];
     }
 }

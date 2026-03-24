@@ -120,7 +120,7 @@ const rules = {
         return true;
     },
     gender: (val: string) => !!val || 'Gender is required',
-    age: (val: string) => /^\d+$/.test(val) || 'Age must be a number',
+    age: (val: string) => /^\d+$/.test(val) || 'Age must be a valid number',
     school: (val: string) => !!val || 'School is required',
     degree: (val: string) => !!val || 'Degree is required',
 };
