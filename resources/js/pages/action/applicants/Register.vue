@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { useForm, Link, } from '@inertiajs/vue3'
 import { ref, watch, computed, onMounted } from 'vue'
 import axios from 'axios';
+import { reactive } from 'vue';
 
 axios.defaults.headers.common['X-CSRF-TOKEN'] =
     document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -16,6 +17,7 @@ const props = defineProps<{
         error?: string
     }
 }>()
+
 
 const sourceTypes = props.sourceTypes
     ? Object.entries(props.sourceTypes).map(([value, label]) => ({ value: Number(value), label }))
@@ -130,6 +132,20 @@ function validateField(field: keyof typeof rules) {
     const rule = rules[field];
     const result = rule(value);
     form.setError(field, result === true ? '' : result);
+}
+
+function validateAge() {
+    const age = Number(form.age); // convert string to number
+
+    if (form.age === null || form.age === '') {
+        form.setError('age', 'Age is required');
+    } else if (age < 1) {
+        form.setError('age', 'The age field must be at least 1.');
+    } else if (age > 99) {
+        form.setError('age', 'The age field must not be greater than 99.');
+    } else {
+        form.setError('age', ''); // valid
+    }
 }
 
 watch(() => form.last_name, () => validateField('last_name'));
@@ -266,7 +282,7 @@ watch(
                         </div>
                         <div class="form-group half">
                             <label>Age</label>
-                            <input type="number" v-model="form.age" min="1" max="99" placeholder="Age" />
+                            <input type="number" v-model="form.age" placeholder="Age" @input="validateAge" />
                             <span v-if="form.errors.age" class="error">{{ form.errors.age }}</span>
                         </div>
                     </div>
