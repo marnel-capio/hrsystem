@@ -59,7 +59,7 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
       <!-- PAGE HEADER -->
       <div class="page-header">
         <h2 class="page-title">Project List</h2>
-        <Link v-if="userPermissions === 1 || userPermissions === 2" :href="`/intermediate/projects/register`"
+        <Link v-if="userPermissions === 1 || userPermissions === 5" :href="`/intermediate/projects/register`"
           class="!bg-[#1C7BA5] btn-primary">
           Create Project
         </Link>
