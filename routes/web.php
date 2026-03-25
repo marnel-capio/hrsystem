@@ -114,17 +114,6 @@ Route::middleware(['auth'])->group(function () {
     // ------------------------
     // ACTION Applicants
     // ------------------------
-    Route::middleware(['auth', 'check.permission'])->group(function () {
-        
-        //list
-        Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
-            ->name('action.applicants.index');
-    });
-
-
-    // ------------------------
-    // ACTION Applicants
-    // ------------------------
     Route::middleware(['check.permission'])->group(function () {
         //action-applicants list
         Route::get('/action/applicants', [ActionApplicantController::class, 'index'])

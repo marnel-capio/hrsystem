@@ -77,4 +77,12 @@ class ActionApplicant extends Model
                 ];
             });
     }
+
+    public static function createApplicant(array $data)
+    {
+        $data['created_time'] = now();
+        $data['updated_time'] = now();
+
+        return self::create($data);
+    }
 }
