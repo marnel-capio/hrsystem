@@ -5,22 +5,22 @@ import { Link, router, usePage } from '@inertiajs/vue3'
 
 const page = usePage<any>()
 
-const batches = computed(() => page.props.batches)
+const projects = computed(() => page.props.projects)
 const filters = computed(() => page.props.filters)
 const userPermissions = computed(() => Number(page.props.user_permissions))
 const search = ref(filters.value.search || '')
 
 watch(search, (value: string) => {
   router.get(
-    '/action/batches',
+    '/intermediate/projects',
     { search: value },
     { preserveState: true, replace: true }
   )
 })
 
-const currentPage = computed(() => batches.value.current_page)
-const lastPage = computed(() => batches.value.last_page)
-const batchesTotal = computed(() => page.props.batches_total)
+const currentPage = computed(() => projects.value.current_page)
+const lastPage = computed(() => projects.value.last_page)
+const projectsTotal = computed(() => page.props.projects_total)
 
 const blockSize = 5
 const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize))
@@ -35,7 +35,7 @@ const pageNumbers = computed(() => {
 
 function goToPage(pageNumber: number) {
   router.get(
-    '/action/batches',
+    '/intermediate/projects',
     { page: pageNumber, search: search.value },
     { preserveState: true }
   )
@@ -49,7 +49,7 @@ function nextBlock() {
   if (endPage.value < lastPage.value) goToPage(endPage.value + 1)
 }
 
-const shouldShowPagination = computed(() => batchesTotal.value > 20)
+const shouldShowPagination = computed(() => projectsTotal.value > 20)
 </script>
 
 <template>
@@ -58,10 +58,10 @@ const shouldShowPagination = computed(() => batchesTotal.value > 20)
 
       <!-- PAGE HEADER -->
       <div class="page-header">
-        <h2 class="page-title">ACTION Batch List</h2>
-        <Link v-if="userPermissions === 1 || userPermissions === 2" :href="`/action/batches/register`"
+        <h2 class="page-title">Project List</h2>
+        <Link v-if="userPermissions === 1 || userPermissions === 2" :href="`/intermediate/projects/register`"
           class="!bg-[#1C7BA5] btn-primary">
-          Create ACTION Batch
+          Create Project
         </Link>
       </div>
 
@@ -75,7 +75,7 @@ const shouldShowPagination = computed(() => batchesTotal.value > 20)
                 d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
             </svg>
           </span>
-          <input v-model="search" type="text" placeholder="Search by ACTION Batch Name"
+          <input v-model="search" type="text" placeholder="Search by Project Name"
             class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
         </div>
       </div>
@@ -84,8 +84,8 @@ const shouldShowPagination = computed(() => batchesTotal.value > 20)
       <div class="card">
         <!-- COUNT -->
         <div class="mb-2 text-xs text-gray-600">
-          Showing {{ batches.data.length > 0 ? batches.from : 0 }}–{{ batches.data.length > 0 ? batches.to : 0 }}
-          out of {{ batchesTotal }} items
+          Showing {{ projects.data.length > 0 ? projects.from : 0 }}–{{ projects.data.length > 0 ? projects.to : 0 }}
+          out of {{ projectsTotal }} items
         </div>
 
         <!-- TABLE -->
@@ -93,22 +93,18 @@ const shouldShowPagination = computed(() => batchesTotal.value > 20)
           <table class="ats-table w-full table-auto border-collapse border text-sm">
             <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
-                <th class="border px-3 py-2">ACTION Batch</th>
-                <th class="border px-3 py-2">Target Trainees</th>
-                <th class="border px-3 py-2">Target Start Date</th>
+                <th class="border px-3 py-2">Project Name</th>
                 <th class="border px-3 py-2">Remarks</th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-zinc-900">
-              <tr v-for="batch in batches.data" :key="batch.id">
+              <tr v-for="project in projects.data" :key="project.id">
                 <td class="border px-3 py-2">
-                  <Link :href="`/action/batches/${batch.id}`" class="table-link">{{ batch.action_batch }}</Link>
+                  <Link :href="`/intermediate/projects/${project.id}`" class="table-link">{{ project.project_name }}</Link>
                 </td>
-                <td class="border px-3 py-2">{{ batch.target_trainees }}</td>
-                <td class="border px-3 py-2">{{ batch.target_date }}</td>
-                <td class="border px-3 py-2">{{ batch.remarks }}</td>
+                <td class="border px-3 py-2">{{ project.remarks }}</td>
               </tr>
-              <tr v-if="batches.data.length === 0">
+              <tr v-if="projects.data.length === 0">
                 <td colspan="4" class="text-center p-6 text-zinc-500">
                   No records found
                 </td>

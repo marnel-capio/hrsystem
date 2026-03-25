@@ -4,6 +4,7 @@ use App\Http\Controllers\ActionBatchController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActionApplicantController;
@@ -100,7 +101,7 @@ Route::middleware(['auth'])->group(function () {
         });            
 
     // ------------------------
-    // Actions
+    // Actions Batches
     // ------------------------
     Route::middleware(['auth', 'check.permission'])->group(function () {
         Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list');
@@ -132,6 +133,14 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
                 ->name('action.applicants.detail');
+    });
+
+
+
+    // Intermediate Projects
+    // ------------------------
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        Route::get('/intermediate/projects', [IntermediateProjectController::class, 'index'])->name('intermediate.projects.list');
     });
 
 

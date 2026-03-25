@@ -66,7 +66,7 @@ return [
         '/action/schedules' => [1, 2, 3],
         '/action/applicants' => [1, 2, 3, 5, 6],
         '/action/applications' => [1, 2, 3, 5, 6],
-        '/intermediate/projects' => [1, 5],
+        '/intermediate/projects' => [1,2,3,5],
         '/intermediate/resource-requisitions' => [1, 2, 3, 5],
         '/intermediate/applicants' => [1, 2, 3, 5, 6],
         '/intermediate/applications' => [1, 2, 3, 5, 6],

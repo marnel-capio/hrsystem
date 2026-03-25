@@ -35,6 +35,40 @@ class ActionBatchService
  
         return $batch;
     }
+
+    public function getNextBatchOptions()
+    {
+        $lastBatch = ActionBatchModel::orderBy('id', 'desc')->first();
+    
+        if (!$lastBatch) {
+            return ['ACTION 1', 'ACTION 1-A'];
+        }
+    
+        $value = $lastBatch->action_batch;
+    
+        preg_match('/ACTION\s(\d+)(?:-([A-Z]))?/', $value, $matches);
+    
+        $number = (int) $matches[1];
+        $suffix = $matches[2] ?? null;
+    
+        $options = [];
+    
+        if (!$suffix) {
+            $options[] = "ACTION " . ($number + 1);
+            $options[] = "ACTION " . ($number + 1) . "-A";
+        } else {
+            $nextLetter = chr(ord($suffix) + 1);
+    
+            if ($nextLetter <= 'Z') {
+                $options[] = "ACTION {$number}-{$nextLetter}";
+            }
+    
+            $options[] = "ACTION " . ($number + 1);
+            $options[] = "ACTION " . ($number + 1) . "-A";
+        }
+    
+        return $options;
+    }
     
 
     //UPDATE
