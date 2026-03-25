@@ -33,5 +33,57 @@ class IntermediateService
  
         return $project;
     }
+
+
+    public function update($data, $request)
+    {
+        $project = IntermediateProjectModel::findOrFail($data['id']);
+        
+        // Store old values for comparison
+        $oldData = [
+            'project_name' => $project->project_name,
+            'remarks' => $project->remarks,
+        ];
+
+        // Update fields
+        $project->project_name = strtoupper($data['project_name']);
+        $project->remarks = $data['remarks'] ?? null;
+
+        $project->updated_by = auth()->user()->id;
+        $project->updated_time = now();
+
+        $project->save();
+
+        // Log creation
+        $activityLines = [];
+        $activityLines[] = "Updated Intermediate Project {$project->project_name}.";
+        $activityLines[] = 'Details:';
+
+        $fields = ['project_name', 'remarks'];
+
+        foreach ($fields as $field) {
+            $oldValue = $oldData[$field] ?? null;
+            $newValue = $project->$field ?? null;
+
+            $oldValueStr = is_bool($oldValue) ? (int) $oldValue : (string) $oldValue;
+            $newValueStr = is_bool($newValue) ? (int) $newValue : (string) $newValue;
+
+            if ($oldValueStr !== $newValueStr) {
+                $activityLines[] = "{$field}: {$oldValueStr} -> {$newValueStr}";
+            }
+        }
+
+        $activity = implode("\n", $activityLines);
+
+        DB::table('logs')->insert([
+            'module' => 'Intermediate',
+            'activity' => $activity,
+            'ip_address' => $request->ip(),
+            'updated_by' => auth()->user()->id,
+            'update_time' => now(),
+        ]);
+
+        return $project;
+    }
 }
  

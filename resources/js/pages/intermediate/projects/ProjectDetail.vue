@@ -65,7 +65,7 @@ watch(successMessage, (val) => {
       <h2 class="text-xl font-bold">Project Detail</h2>
 
       <Link
-        v-if="userPermissions === 1 || userPermissions === 2"
+        v-if="userPermissions === 1 || userPermissions === 5"
         :href="`/intermediate/projects/${project.id}/edit`"
         class="bg-[#1C7BA5] text-white px-4 py-2 text-xs rounded cursor-pointer"
       >

@@ -21,9 +21,14 @@ class IntermediateRequest extends FormRequest
                 'required',
                 'string',
                 'max:20',
-                $projectId ? 'unique:projects,project_name' : Rule::unique('projects', 'project_name'),
+                $projectId
+                    ? Rule::unique('projects', 'project_name')->ignore($projectId)
+                    : Rule::unique('projects', 'project_name'),
             ],
-            'remarks' => 'nullable|string|max:1024',];
+            'target_trainees' => 'required|integer|max:99',
+            'target_date' => 'required|date|after_or_equal:today',
+            'remarks' => 'nullable|string|max:1024',
+        ];
     }
 
     public function messages(): array
