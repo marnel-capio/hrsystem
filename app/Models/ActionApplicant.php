@@ -2,23 +2,17 @@
 
 namespace App\Models;
 
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class ActionApplicant extends Model
 {
-
     use HasFactory;
 
-    // Explicit table name
     protected $table = 'action_applicants';
-
-    // Primary key
     protected $primaryKey = 'id';
-
-    // Mass assignable fields
-    public $timestamps = false; // since you use created_time / updated_time
+    public $timestamps = false; // we use created_time / updated_time
 
     protected $fillable = [
         'source_type',
@@ -45,6 +39,9 @@ class ActionApplicant extends Model
         'updated_time',
     ];
 
+    /**
+     * Get all applicants with mapped human-readable fields
+     */
     public static function getAllActionApplicants()
     {
         $sourceTypes = config('constants.sourceTypes');
@@ -78,11 +75,48 @@ class ActionApplicant extends Model
             });
     }
 
+    /**
+     * Create a new applicant
+     */
     public static function createApplicant(array $data)
     {
         $data['created_time'] = now();
         $data['updated_time'] = now();
+        $data['created_by'] = Auth::id();  
+        $data['updated_by'] = Auth::id();
 
         return self::create($data);
+    }
+
+    /**
+     * Update an existing applicant
+     */
+    public function updateApplicant(array $data)
+    {
+        $data['updated_time'] = now();
+        $data['updated_by'] = Auth::id();
+        $this->update($data);
+        return $this;
+    }
+
+    /**
+     * Upsert an applicant by email
+     * - If email exists, update
+     * - If email does not exist, create
+     */
+    public static function upsertByEmail(array $data)
+    {
+        $email = $data['email_address'] ?? null;
+        if (!$email) {
+            throw new \Exception('Email address is required for upsert.');
+        }
+
+        $applicant = self::where('email_address', $email)->first();
+
+        if ($applicant) {
+            return $applicant->updateApplicant($data);
+        }
+
+        return self::createApplicant($data);
     }
 }

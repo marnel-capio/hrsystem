@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Http\Requests\RegisterActionApplicantRequest;
 use App\Models\ActionApplicant;
 use App\Models\Log;
@@ -36,19 +35,7 @@ class ActionApplicantController extends Controller
         DB::beginTransaction();
 
         try {
-            // TEMPORARY: force an exception to test the catch block
-            // throw new \Exception('');
-            $email = $request->input('email_address');
-
-            $applicant = ActionApplicant::where('email_address', $email)->first();
-
-            if ($applicant) {
-                // Update existing
-                $applicant->update($request->validated());
-            } else {
-                // Create new
-                $applicant = ActionApplicant::createApplicant($request->validated());
-            }
+            $applicant = ActionApplicant::upsertByEmail($request->validated());
 
             Log::createLog(
                 'ACTION',
@@ -94,7 +81,3 @@ class ActionApplicantController extends Controller
         ]);
     }
 }
-
-    
-
-
