@@ -241,7 +241,7 @@ watch(
                             <span v-if="form.errors.first_name" class="error">{{ form.errors.first_name }}</span>
                         </div>
                         <div class="form-group middle-name">
-                            <label>Middle Initial</label>
+                            <label>Middle Name</label>
                             <input type="text" v-model="form.middle_name" placeholder="MI" />
                             <span v-if="form.errors.middle_name" class="error">{{ form.errors.middle_name }}</span>
                         </div>

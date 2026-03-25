@@ -497,4 +497,10 @@ show: Object.assign(show, show),
 edit: Object.assign(edit, edit),
 }
 
+export default user register),
+store: Object.assign(store, store),
+show: Object.assign(show, show),
+edit: Object.assign(edit, edit),
+}
+
 export default user

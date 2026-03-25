@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../wayfinder'
 /**
 * @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::login
  * @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:47
@@ -283,6 +284,11 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
                         }
+                    }),
+            method: 'get',
+        })
+    
+    dashboard.form = dashboardForm               }
                     }),
             method: 'get',
         })

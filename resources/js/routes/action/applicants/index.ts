@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
  * @see app/Http/Controllers/ActionApplicantController.php:14
@@ -366,6 +367,11 @@ const applicants = {
     index: Object.assign(index, index),
 register: Object.assign(register, register),
 store: Object.assign(store, store),
+checkEmail: Object.assign(checkEmail, checkEmail),
+detail: Object.assign(detail, detail),
+}
+
+export default applicantsassign(store, store),
 checkEmail: Object.assign(checkEmail, checkEmail),
 detail: Object.assign(detail, detail),
 }
