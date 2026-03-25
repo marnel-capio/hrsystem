@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicantController::show
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:23
  * @route '/action/applicants/{id}'
  */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::show
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:23
  * @route '/action/applicants/{id}'
  */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::show
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:23
  * @route '/action/applicants/{id}'
  */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantController::show
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:23
  * @route '/action/applicants/{id}'
  */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::show
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:23
  * @route '/action/applicants/{id}'
  */
     const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::show
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:23
  * @route '/action/applicants/{id}'
  */
         showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\ActionApplicantController::show
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:23
  * @route '/action/applicants/{id}'
  */
         showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -98,7 +98,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     show.form = showForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -122,7 +122,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -131,7 +131,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -141,7 +141,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -151,7 +151,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -160,7 +160,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:13
  * @route '/action/applicants'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
