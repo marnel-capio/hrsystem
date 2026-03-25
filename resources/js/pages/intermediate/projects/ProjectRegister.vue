@@ -32,6 +32,10 @@ const validateRemarks = () => {
 }
 
 const submit = () => {
+  // Clear frontend validation errors
+  projectNameError.value = ''
+  remarksError.value = ''
+
   form.value.processing = true
 
   router.post('/intermediate/projects', form.value, {
@@ -102,13 +106,13 @@ const submit = () => {
         </button>
 
         <button
-  type="button"
-  class="btn btn-primary"
-  @click="submit"
-  :disabled="form.processing || projectNameError || remarksError || page.props.errors?.project_name || page.props.errors?.remarks"
->
-  {{ form.processing ? 'Creating…' : 'Create' }}
-</button>
+          type="button"
+          class="btn btn-primary"
+          @click="submit"
+          :disabled="form.processing"
+        >
+          {{ form.processing ? 'Creating…' : 'Create' }}
+        </button>
       </div>
 
     </div>
