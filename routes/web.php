@@ -44,6 +44,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
+        Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
+                ->name('action.applicants.detail');
+
 });
 
     // Update user
@@ -114,11 +117,22 @@ Route::middleware(['auth'])->group(function () {
     // ------------------------
     // ACTION Applicants
     // ------------------------
-    Route::middleware(['auth', 'check.permission'])->group(function () {
-        
-        //list
+    Route::middleware(['check.permission'])->group(function () {
+        //action-applicants list
         Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
-            ->name('action.applicants.index');
+                ->name('action.applicants.index');
+        
+        //action-applicants register       
+        Route::get('/action/applicants/register', [ActionApplicantController::class, 'create'])
+                ->name('action.applicants.register');
+
+        Route::post('/action/applicants', [ActionApplicantController::class, 'store'])
+                ->name('action.applicants.store');
+
+        Route::post('/action/applicants/check-email', [ActionApplicantController::class, 'checkEmail'])
+                ->name('action.applicants.check-email');
+
+        
     });
 
 

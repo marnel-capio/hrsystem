@@ -28,6 +28,7 @@ namespace App\Models {
      * @property bool|null $source
      * @property bool|null $source_type
      * @property int $id
+     * @property-read \App\Models\User $updatedBy
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSourceType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSource($value)

@@ -497,14 +497,4 @@ show: Object.assign(show, show),
 edit: Object.assign(edit, edit),
 }
 
-export default usereditForm
-const user = {
-    update: Object.assign(update, update),
-index: Object.assign(index, index),
-register: Object.assign(register, register),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-}
-
 export default user

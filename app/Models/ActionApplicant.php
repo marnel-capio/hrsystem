@@ -67,4 +67,9 @@ class ActionApplicant extends Model
                 ];
             });
     }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
 }
