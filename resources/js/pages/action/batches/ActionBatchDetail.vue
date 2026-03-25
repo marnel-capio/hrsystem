@@ -124,7 +124,7 @@ watch(successMessage, (val) => {
       <!-- RIGHT -->
       <div class="col-span-2 bg-white rounded-xl shadow border p-6">
         <h4 class="text-xs font-bold mb-3 text-center">REMARKS</h4>
-        <p class="text-xs">{{ batch.remarks }}</p>
+        <p class="text-xs break-all">{{ batch.remarks }}</p>
       </div>
     </div>
   </AppLayout>

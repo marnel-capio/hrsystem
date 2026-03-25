@@ -1,5 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::index
  * @see app/Http/Controllers/ResourceScheduleController.php:19
@@ -79,74 +78,74 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     index.form = indexForm
 /**
-* @see \App\Http\Controllers\ResourceScheduleController::register
+* @see \App\Http\Controllers\ResourceScheduleController::create
  * @see app/Http/Controllers/ResourceScheduleController.php:32
  * @route '/action/schedules/register'
  */
-export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 
-register.definition = {
+create.definition = {
     methods: ["get","head"],
     url: '/action/schedules/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ResourceScheduleController::register
+* @see \App\Http\Controllers\ResourceScheduleController::create
  * @see app/Http/Controllers/ResourceScheduleController.php:32
  * @route '/action/schedules/register'
  */
-register.url = (options?: RouteQueryOptions) => {
-    return register.definition.url + queryParams(options)
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ResourceScheduleController::register
+* @see \App\Http\Controllers\ResourceScheduleController::create
  * @see app/Http/Controllers/ResourceScheduleController.php:32
  * @route '/action/schedules/register'
  */
-register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\ResourceScheduleController::register
+* @see \App\Http\Controllers\ResourceScheduleController::create
  * @see app/Http/Controllers/ResourceScheduleController.php:32
  * @route '/action/schedules/register'
  */
-register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: register.url(options),
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\ResourceScheduleController::register
+* @see \App\Http\Controllers\ResourceScheduleController::create
  * @see app/Http/Controllers/ResourceScheduleController.php:32
  * @route '/action/schedules/register'
  */
-    const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: register.url(options),
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\ResourceScheduleController::register
+* @see \App\Http\Controllers\ResourceScheduleController::create
  * @see app/Http/Controllers/ResourceScheduleController.php:32
  * @route '/action/schedules/register'
  */
-        registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url(options),
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\ResourceScheduleController::register
+* @see \App\Http\Controllers\ResourceScheduleController::create
  * @see app/Http/Controllers/ResourceScheduleController.php:32
  * @route '/action/schedules/register'
  */
-        registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url({
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -155,7 +154,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    register.form = registerForm
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::store
  * @see app/Http/Controllers/ResourceScheduleController.php:44
@@ -490,26 +489,26 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     
     update.form = updateForm
 /**
-* @see \App\Http\Controllers\ResourceScheduleController::notify
+* @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
  * @see app/Http/Controllers/ResourceScheduleController.php:180
  * @route '/action/schedules/{id}/send-notification'
  */
-export const notify = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: notify.url(args, options),
+export const sendResourceScheduleNotification = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: sendResourceScheduleNotification.url(args, options),
     method: 'post',
 })
 
-notify.definition = {
+sendResourceScheduleNotification.definition = {
     methods: ["post"],
     url: '/action/schedules/{id}/send-notification',
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\ResourceScheduleController::notify
+* @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
  * @see app/Http/Controllers/ResourceScheduleController.php:180
  * @route '/action/schedules/{id}/send-notification'
  */
-notify.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+sendResourceScheduleNotification.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { id: args }
     }
@@ -527,42 +526,42 @@ notify.url = (args: { id: string | number } | [id: string | number ] | string | 
                         id: args.id,
                 }
 
-    return notify.definition.url
+    return sendResourceScheduleNotification.definition.url
             .replace('{id}', parsedArgs.id.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ResourceScheduleController::notify
+* @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
  * @see app/Http/Controllers/ResourceScheduleController.php:180
  * @route '/action/schedules/{id}/send-notification'
  */
-notify.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: notify.url(args, options),
+sendResourceScheduleNotification.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: sendResourceScheduleNotification.url(args, options),
     method: 'post',
 })
 
     /**
-* @see \App\Http\Controllers\ResourceScheduleController::notify
+* @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
  * @see app/Http/Controllers/ResourceScheduleController.php:180
  * @route '/action/schedules/{id}/send-notification'
  */
-    const notifyForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: notify.url(args, options),
+    const sendResourceScheduleNotificationForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: sendResourceScheduleNotification.url(args, options),
         method: 'post',
     })
 
             /**
-* @see \App\Http\Controllers\ResourceScheduleController::notify
+* @see \App\Http\Controllers\ResourceScheduleController::sendResourceScheduleNotification
  * @see app/Http/Controllers/ResourceScheduleController.php:180
  * @route '/action/schedules/{id}/send-notification'
  */
-        notifyForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: notify.url(args, options),
+        sendResourceScheduleNotificationForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: sendResourceScheduleNotification.url(args, options),
             method: 'post',
         })
     
-    notify.form = notifyForm
+    sendResourceScheduleNotification.form = sendResourceScheduleNotificationForm
 /**
 * @see \App\Http\Controllers\ResourceScheduleController::destroy
  * @see app/Http/Controllers/ResourceScheduleController.php:209
@@ -647,15 +646,6 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
         })
     
     destroy.form = destroyForm
-const schedules = {
-    index: Object.assign(index, index),
-register: Object.assign(register, register),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-notify: Object.assign(notify, notify),
-destroy: Object.assign(destroy, destroy),
-}
+const ResourceScheduleController = { index, create, store, show, edit, update, sendResourceScheduleNotification, destroy }
 
-export default schedules
+export default ResourceScheduleController

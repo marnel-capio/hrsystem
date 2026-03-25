@@ -1,74 +1,73 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\IntermediateProjectController::list
+* @see \App\Http\Controllers\IntermediateProjectController::index
  * @see app/Http/Controllers/IntermediateProjectController.php:23
  * @route '/intermediate/projects'
  */
-export const list = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: list.url(options),
+export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
     method: 'get',
 })
 
-list.definition = {
+index.definition = {
     methods: ["get","head"],
     url: '/intermediate/projects',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateProjectController::list
+* @see \App\Http\Controllers\IntermediateProjectController::index
  * @see app/Http/Controllers/IntermediateProjectController.php:23
  * @route '/intermediate/projects'
  */
-list.url = (options?: RouteQueryOptions) => {
-    return list.definition.url + queryParams(options)
+index.url = (options?: RouteQueryOptions) => {
+    return index.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateProjectController::list
+* @see \App\Http\Controllers\IntermediateProjectController::index
  * @see app/Http/Controllers/IntermediateProjectController.php:23
  * @route '/intermediate/projects'
  */
-list.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: list.url(options),
+index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\IntermediateProjectController::list
+* @see \App\Http\Controllers\IntermediateProjectController::index
  * @see app/Http/Controllers/IntermediateProjectController.php:23
  * @route '/intermediate/projects'
  */
-list.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: list.url(options),
+index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateProjectController::list
+* @see \App\Http\Controllers\IntermediateProjectController::index
  * @see app/Http/Controllers/IntermediateProjectController.php:23
  * @route '/intermediate/projects'
  */
-    const listForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: list.url(options),
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateProjectController::list
+* @see \App\Http\Controllers\IntermediateProjectController::index
  * @see app/Http/Controllers/IntermediateProjectController.php:23
  * @route '/intermediate/projects'
  */
-        listForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: list.url(options),
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\IntermediateProjectController::list
+* @see \App\Http\Controllers\IntermediateProjectController::index
  * @see app/Http/Controllers/IntermediateProjectController.php:23
  * @route '/intermediate/projects'
  */
-        listForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: list.url({
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -77,76 +76,76 @@ list.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    list.form = listForm
+    index.form = indexForm
 /**
-* @see \App\Http\Controllers\IntermediateProjectController::register
+* @see \App\Http\Controllers\IntermediateProjectController::create
  * @see app/Http/Controllers/IntermediateProjectController.php:42
  * @route '/intermediate/projects/register'
  */
-export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 
-register.definition = {
+create.definition = {
     methods: ["get","head"],
     url: '/intermediate/projects/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateProjectController::register
+* @see \App\Http\Controllers\IntermediateProjectController::create
  * @see app/Http/Controllers/IntermediateProjectController.php:42
  * @route '/intermediate/projects/register'
  */
-register.url = (options?: RouteQueryOptions) => {
-    return register.definition.url + queryParams(options)
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateProjectController::register
+* @see \App\Http\Controllers\IntermediateProjectController::create
  * @see app/Http/Controllers/IntermediateProjectController.php:42
  * @route '/intermediate/projects/register'
  */
-register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\IntermediateProjectController::register
+* @see \App\Http\Controllers\IntermediateProjectController::create
  * @see app/Http/Controllers/IntermediateProjectController.php:42
  * @route '/intermediate/projects/register'
  */
-register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: register.url(options),
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateProjectController::register
+* @see \App\Http\Controllers\IntermediateProjectController::create
  * @see app/Http/Controllers/IntermediateProjectController.php:42
  * @route '/intermediate/projects/register'
  */
-    const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: register.url(options),
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateProjectController::register
+* @see \App\Http\Controllers\IntermediateProjectController::create
  * @see app/Http/Controllers/IntermediateProjectController.php:42
  * @route '/intermediate/projects/register'
  */
-        registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url(options),
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\IntermediateProjectController::register
+* @see \App\Http\Controllers\IntermediateProjectController::create
  * @see app/Http/Controllers/IntermediateProjectController.php:42
  * @route '/intermediate/projects/register'
  */
-        registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url({
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -155,7 +154,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    register.form = registerForm
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\IntermediateProjectController::store
  * @see app/Http/Controllers/IntermediateProjectController.php:47
@@ -479,13 +478,6 @@ update.post = (args: { id: string | number } | [id: string | number ] | string |
         })
     
     update.form = updateForm
-const projects = {
-    list: Object.assign(list, list),
-register: Object.assign(register, register),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-}
+const IntermediateProjectController = { index, create, store, show, edit, update }
 
-export default projects
+export default IntermediateProjectController

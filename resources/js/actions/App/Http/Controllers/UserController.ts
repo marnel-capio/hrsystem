@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\UserController::update
  * @see app/Http/Controllers/UserController.php:95
@@ -162,74 +162,74 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     index.form = indexForm
 /**
-* @see \App\Http\Controllers\UserController::register
+* @see \App\Http\Controllers\UserController::create
  * @see app/Http/Controllers/UserController.php:35
  * @route '/user/register'
  */
-export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 
-register.definition = {
+create.definition = {
     methods: ["get","head"],
     url: '/user/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\UserController::register
+* @see \App\Http\Controllers\UserController::create
  * @see app/Http/Controllers/UserController.php:35
  * @route '/user/register'
  */
-register.url = (options?: RouteQueryOptions) => {
-    return register.definition.url + queryParams(options)
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\UserController::register
+* @see \App\Http\Controllers\UserController::create
  * @see app/Http/Controllers/UserController.php:35
  * @route '/user/register'
  */
-register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\UserController::register
+* @see \App\Http\Controllers\UserController::create
  * @see app/Http/Controllers/UserController.php:35
  * @route '/user/register'
  */
-register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: register.url(options),
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\UserController::register
+* @see \App\Http\Controllers\UserController::create
  * @see app/Http/Controllers/UserController.php:35
  * @route '/user/register'
  */
-    const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: register.url(options),
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\UserController::register
+* @see \App\Http\Controllers\UserController::create
  * @see app/Http/Controllers/UserController.php:35
  * @route '/user/register'
  */
-        registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url(options),
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\UserController::register
+* @see \App\Http\Controllers\UserController::create
  * @see app/Http/Controllers/UserController.php:35
  * @route '/user/register'
  */
-        registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url({
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -238,7 +238,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    register.form = registerForm
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\UserController::store
  * @see app/Http/Controllers/UserController.php:43
@@ -488,23 +488,6 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
     
     edit.form = editForm
-const user = {
-    update: Object.assign(update, update),
-index: Object.assign(index, index),
-register: Object.assign(register, register),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-}
+const UserController = { update, index, create, store, show, edit }
 
-export default usereditForm
-const user = {
-    update: Object.assign(update, update),
-index: Object.assign(index, index),
-register: Object.assign(register, register),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-}
-
-export default user
+export default UserController

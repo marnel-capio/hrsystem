@@ -13,10 +13,41 @@ const form = ref({
   remarks: '',
   processing: false,
 })
- 
+
+const targetTraineesError = ref('')
+const remarksError = ref('')
+const targetDateError = ref('')
+
+// Constants for validation
+const maxTargetTrainees = 100  
+const maxRemarksLength = 1024 
+const today = new Date().toISOString().slice(0, 10)  
+const validateTargetTrainees = () => {
+  targetTraineesError.value = form.value.target_trainees && Number(form.value.target_trainees) > maxTargetTrainees
+  ? `This field exceeds the maximum allowed length.`
+  : ''
+}
+
+const validateRemarks = () => {
+  remarksError.value = form.value.remarks.length > maxRemarksLength
+    ? `This field exceeds the maximum allowed length.`
+    : ''
+}
+const validateTargetDate = () => {
+  targetDateError.value = form.value.target_date && form.value.target_date <= today
+    ? 'The selected date must be in the future.'
+    : ''
+}
+
 const submit = () => {
+  // Clear frontend validation errors
+  targetTraineesError.value = ''
+  remarksError.value = ''
+  targetDateError.value = ''
+
   form.value.processing = true
- 
+  loading.value = true
+
   router.post('/action/batches', form.value, {
     onFinish: () => {
       form.value.processing = false
@@ -25,7 +56,7 @@ const submit = () => {
   })
 }
 </script>
- 
+
 <template>
   <Head title="ACTION Batch Register" />
  
@@ -66,11 +97,15 @@ const submit = () => {
  
           <input
             v-model="form.target_trainees"
+            @input="validateTargetTrainees"
             placeholder="Target Trainees"
             type="number"
             class="border p-2 rounded w-full"
           />
  
+          <span v-if="targetTraineesError" class="text-red-600 text-xs mt-1">
+            {{ targetTraineesError }}
+          </span>
           <span v-if="page.props.errors?.target_trainees" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.target_trainees }}
           </span>
@@ -84,10 +119,14 @@ const submit = () => {
  
           <input
             v-model="form.target_date"
+            @input="validateTargetDate"
             type="month"
             class="border p-2 rounded w-full"
           />
  
+          <span v-if="targetDateError" class="text-red-600 text-xs mt-1">
+            {{ targetDateError }}
+          </span>
           <span v-if="page.props.errors?.target_date" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.target_date }}
           </span>
@@ -101,11 +140,15 @@ const submit = () => {
  
           <textarea
             v-model="form.remarks"
+            @input="validateRemarks"
             rows="6"
             placeholder="Remarks"
             class="border p-2 rounded w-full"
           />
  
+          <span v-if="remarksError" class="text-red-600 text-xs mt-1">
+            {{ remarksError }}
+          </span>
           <span v-if="page.props.errors?.remarks" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.remarks }}
           </span>
@@ -119,15 +162,11 @@ const submit = () => {
           @click="$inertia.get('/action/batches')"
         >
           Cancel
-      </button>
+        </button>
  
-        <button
-            type="button"
-            class="btn btn-primary"
-            @click="submit"
-            :disabled="form.processing"
-            >
-            {{ form.processing ? 'Creating…' : 'Create' }}
+        <button type="button" class="btn btn-primary"
+          @click="submit" :disabled="form.processing" > 
+          {{ form.processing ? 'Creating…' : 'Create' }} 
         </button>
       </div>
  
