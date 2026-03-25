@@ -133,6 +133,8 @@ return [
 
 
     //ACTION BATCH
+
+    // TARGET DATE
     'target_date_after_or_equal' => [
         'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
         'errorMessage' => 'The selected date must be in the future.',
