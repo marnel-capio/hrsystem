@@ -5,6 +5,7 @@ use App\Http\Controllers\ActionApplicantController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -120,6 +121,13 @@ Route::middleware(['auth'])->group(function () {
             ->name('action.applicants.index');
     });
 
+
+    // ------------------------
+    // Intermediate Projects
+    // ------------------------
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        Route::get('/intermediate/projects', [IntermediateProjectController::class, 'index'])->name('intermediate.projects.list');
+    });
 
 // ------------------------
 // Include additional routes
