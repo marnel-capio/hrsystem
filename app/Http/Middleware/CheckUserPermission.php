@@ -124,10 +124,10 @@ class CheckUserPermission
         }
 
 
-        // INTERMEDIATE PROJECT
+        // INTERMEDIATE
         if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
             // Only permission 1, 2, 3, and 5 are allowed for these routes
-            if (in_array($permission, [1, 2, 3,5])) {
+            if (in_array($permission, [1, 2, 3, 5])) {
                 return $next($request);
             }
 
@@ -150,7 +150,6 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
-
 
         /*
         |----------------------------------------------------------------------

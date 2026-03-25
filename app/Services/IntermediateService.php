@@ -5,13 +5,13 @@ namespace App\Services;
 use App\Models\IntermediateProjectModel;
 use Illuminate\Support\Facades\DB;
  
-class IntermediateProjectService
+class IntermediateService
 {
     public function create($data, $request)
     {
         $project = new IntermediateProjectModel();
  
-        $project->project_name = strtoupper($data['project_name']);
+        $project->project_name = $data['project_name'];
         $project->remarks = $data['remarks'] ?? null;
  
         $project->created_by = auth()->user()->id;
@@ -23,7 +23,7 @@ class IntermediateProjectService
  
         DB::table('logs')->insert([
             'module' => 'Intermediate',
-            'activity' => 'Created a new project ' . $project->project_name,
+            'activity' => 'Created a new Intermediate Project ' . $project->project_name,
             'ip_address' => $request->ip(),
             'created_by' => auth()->user()->id,
             'updated_by' => auth()->user()->id,
