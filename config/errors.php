@@ -140,7 +140,12 @@ return [
         'errorMessage' => 'The selected date must be in the future.',
     ],
 
-    
+
+    //INTERMEDIATE
+    'project_name_unique'=>[
+        'errorCode' => 'PROJECT_NAME_UNIQUE',
+        'errorMessage' => 'Project already exists.',
+    ]
  
 ];  
 
