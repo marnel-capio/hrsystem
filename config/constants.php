@@ -89,6 +89,7 @@ return [
         'LOCATION_1_NAME' => 'Manila',
         'LOCATION_2_NAME' => 'Cebu',
     ],
+    
     'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
 

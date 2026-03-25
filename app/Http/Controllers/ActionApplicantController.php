@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Http\Requests\RegisterActionApplicantRequest;
 use App\Models\ActionApplicant;
 use App\Models\Log;
@@ -11,6 +12,16 @@ use Inertia\Inertia;
 
 class ActionApplicantController extends Controller
 {
+    public function index()
+    {
+        $applicants = ActionApplicant::getAllActionApplicants();
+
+        return Inertia::render('action/applicants/Index', [
+            'applicants' => $applicants,
+            'userPermissions' => auth()->user()->permissions,
+        ]);
+    }
+
     public function create()
     {
         return Inertia::render('action/applicants/Register', [
@@ -18,11 +29,6 @@ class ActionApplicantController extends Controller
             'sources' => config('constants.sources'),
             'genders' => config('constants.genders'),
         ]);
-    }
-
-    public function index()
-    {
-        return Inertia::render('action/applicants/Index');
     }
 
     public function store(RegisterActionApplicantRequest $request)
@@ -88,3 +94,7 @@ class ActionApplicantController extends Controller
         ]);
     }
 }
+
+    
+
+

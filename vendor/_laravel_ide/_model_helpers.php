@@ -18,7 +18,11 @@ namespace App\Models {
      * @property string|null $others_degree
      * @property string $degree
      * @property string $school
+<<<<<<< HEAD
      * @property integer $age
+=======
+     * @property bool $age
+>>>>>>> develop
      * @property bool $gender
      * @property string $email_address
      * @property string|null $middle_name

@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ActionApplicant extends Model
 {
+
     use HasFactory;
 
     // Explicit table name
@@ -16,6 +18,8 @@ class ActionApplicant extends Model
     protected $primaryKey = 'id';
 
     // Mass assignable fields
+    public $timestamps = false; // since you use created_time / updated_time
+
     protected $fillable = [
         'source_type',
         'source',
@@ -36,48 +40,41 @@ class ActionApplicant extends Model
         'extra_curricular',
         'remarks',
         'created_by',
-        'updated_by',
         'created_time',
+        'updated_by',
         'updated_time',
     ];
 
-    // Disable default timestamps because we have custom column names
-    public $timestamps = false;
-
-    // Optional: cast age as integer, expected_graduation as date string
-    protected $casts = [
-        'age' => 'integer',
-        // expected_graduation is varchar in DB, so no Carbon casting
-        // 'expected_graduation' => 'date',
-    ];
-
-    public static function createApplicant($request)
+    public static function getAllActionApplicants()
     {
-        $now = now();
+        $sourceTypes = config('constants.sourceTypes');
+        $sources = config('constants.sources');
+        $genders = config('constants.genders');
 
-        return self::create([
-            'source_type' => $request['source_type'],
-            'source' => $request['source'],
-            'other_source' => $request['other_source'],
-            'last_name' => $request['last_name'],
-            'first_name' => $request['first_name'],
-            'middle_name' => $request['middle_name'],
-            'email_address' => $request['email_address'],
-            'gender' => $request['gender'],
-            'age' => $request['age'],
-            'school' => $request['school'],
-            'degree' => $request['degree'],
-            'others_degree' => $request['others_degree'],
-            'expected_graduation' => $request['expected_graduation'],
-            'awards_recognition' => $request['awards_recognition'],
-            'other_examination_certificate' => $request['other_examination_certificate'],
-            'thesis_project' => $request['thesis_project'],
-            'extra_curricular' => $request['extra_curricular'],
-            'remarks' => $request['remarks'],
-            'created_by' => auth()->id(),
-            'updated_by' => auth()->id(),
-            'created_time' => $now,
-            'updated_time' => $now,
-        ]);
+        return self::orderBy('created_time', 'desc')
+            ->get()
+            ->map(function ($a) use ($sourceTypes, $sources, $genders) {
+                return [
+                    'id' => $a->id,
+                    'source_type' => $sourceTypes[$a->source_type] ?? '',
+                    'source' => $sources[$a->source] ?? '',
+                    'other_source' => $a->other_source,
+                    'last_name' => $a->last_name,
+                    'first_name' => $a->first_name,
+                    'middle_name' => $a->middle_name,
+                    'email_address' => $a->email_address,
+                    'gender' => $genders[$a->gender] ?? '',
+                    'age' => $a->age,
+                    'school' => $a->school,
+                    'degree' => $a->degree,
+                    'others_degree' => $a->others_degree,
+                    'expected_graduation' => $a->expected_graduation,
+                    'awards_recognition' => $a->awards_recognition,
+                    'other_examination_certificate' => $a->other_examination_certificate,
+                    'thesis_project' => $a->thesis_project,
+                    'extra_curricular' => $a->extra_curricular,
+                    'remarks' => $a->remarks,
+                ];
+            });
     }
 }
