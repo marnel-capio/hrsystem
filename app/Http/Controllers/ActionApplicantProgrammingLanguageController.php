@@ -2,75 +2,153 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ActionApplicantProgrammingLanguageRequest;
+use App\Models\ActionApplicant;
 use App\Models\ActionApplicantProgrammingLanguage;
+use App\Models\Log;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ActionApplicantProgrammingLanguageController extends Controller
 {
-    // List all languages for an applicant, including remarks
     public function index($applicantId)
     {
-        return ActionApplicantProgrammingLanguage::where('action_applicant_id', $applicantId)
-            ->select('id', 'program_language', 'remarks') // explicitly include remarks
-            ->get();
+        return response()->json(ActionApplicantProgrammingLanguage::forApplicant($applicantId));
     }
 
-    // Add a new language with optional remarks
-    public function store(Request $request, $applicantId)
+    public function store(ActionApplicantProgrammingLanguageRequest $request, $applicantId): JsonResponse
     {
-        $request->validate([
-            'program_language' => 'required|string|max:80',
-            'remarks' => 'nullable|string|max:255', // allow remarks
-        ]);
+        try {
+            $lang = DB::transaction(function () use ($applicantId, $request) {
+                $lang = ActionApplicantProgrammingLanguage::addLanguage($applicantId, $request->validated());
 
-        $lang = ActionApplicantProgrammingLanguage::create([
-            'action_applicant_id' => $applicantId,
-            'program_language' => $request->program_language,
-            'remarks' => $request->remarks ?? null, // save remarks
-            'created_by' => auth()->id() ?? 1,
-            'created_time' => now(),
-            'updated_by' => auth()->id() ?? 1,
-            'updated_time' => now(),
-        ]);
+                // Logging
+                $applicant = ActionApplicant::find($applicantId);
+                Log::createLog(
+                    'ACTION',
+                    "Added {$lang->program_language} programming language to {$applicant->email_address}.",
+                    $applicantId
+                );
 
-        return response()->json($lang);
+                return $lang;
+            });
+
+            return response()->json([
+                'data' => $lang,
+                'responseMessage' => [
+                    'errorCode' => 'RECORD_CREATED_SUCCESSFULLY',
+                    'errorMessage' => 'Record created successfully.',
+                ],
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'responseMessage' => [
+                    'errorCode' => 'TRANSACTION_FAILED',
+                    'errorMessage' => 'An error occurred while creating the record. Please try again.',
+                ],
+            ], 500);
+        }
     }
 
-    // Update an existing language with remarks
-    public function update(Request $request, $applicantId, $langId)
+    public function update(ActionApplicantProgrammingLanguageRequest $request, $applicantId, $langId): JsonResponse
     {
-        $request->validate([
-            'program_language' => 'required|string|max:80',
-            'remarks' => 'nullable|string|max:255',
-        ]);
+        try {
+            $lang = DB::transaction(function () use ($langId, $request, $applicantId) {
+                $lang = ActionApplicantProgrammingLanguage::updateLanguage($langId, $request->validated());
 
-        $lang = ActionApplicantProgrammingLanguage::findOrFail($langId);
-        $lang->program_language = $request->program_language;
-        $lang->remarks = $request->remarks ?? null;
-        $lang->updated_by = auth()->id() ?? 1;
-        $lang->updated_time = now();
-        $lang->save();
+                // Logging
+                $applicant = ActionApplicant::find($applicantId);
+                Log::createLog(
+                    'ACTION',
+                    "Updated {$lang->program_language} programming language to {$applicant->email_address}.",
+                    $applicantId
+                );
 
-        return response()->json($lang);
+                return $lang;
+            });
+
+            return response()->json([
+                'data' => $lang,
+                'responseMessage' => [
+                    'errorCode' => 'RECORD_UPDATED_SUCCESSFULLY',
+                    'errorMessage' => 'Record updated successfully.',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'responseMessage' => [
+                    'errorCode' => 'UPDATE_FAILED',
+                    'errorMessage' => 'An error occurred while saving the record. Please try again.',
+                ],
+            ], 500);
+        }
     }
 
-    // Delete a single language
-    public function destroy($applicantId, $langId)
+    public function destroy($applicantId, $langId): JsonResponse
     {
-        $lang = ActionApplicantProgrammingLanguage::findOrFail($langId);
-        $lang->delete(); // hard delete
+        try {
+            DB::transaction(function () use ($langId, $applicantId) {
+                $lang = ActionApplicantProgrammingLanguage::find($langId);
+                ActionApplicantProgrammingLanguage::deleteLanguage($langId);
 
-        return response()->json(['success' => true]);
+                // Logging
+                $applicant = ActionApplicant::find($applicantId);
+                Log::createLog(
+                    'ACTION',
+                    "Deleted {$lang->program_language} programming language of {$applicant->email_address}.",
+                    $applicantId
+                );
+            });
+
+            return response()->json([
+                'responseMessage' => [
+                    'errorCode' => 'RECORD_DELETED_SUCCESSFULLY',
+                    'errorMessage' => 'Record successfully deleted.',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'responseMessage' => [
+                    'errorCode' => 'RECORD_DELETED_FAILED',
+                    'errorMessage' => 'An error occurred while deleting the record. Please try again.',
+                ],
+            ], 500);
+        }
     }
 
-    // Bulk delete selected languages
-    public function bulkDelete(Request $request, $applicantId)
+    public function bulkDelete(Request $request, $applicantId): JsonResponse
     {
-        ActionApplicantProgrammingLanguage::where('action_applicant_id', $applicantId)
-            ->whereIn('id', $request->ids)
-            ->delete(); // hard delete
+        try {
+            DB::transaction(function () use ($applicantId, $request) {
+                $langs = ActionApplicantProgrammingLanguage::whereIn('id', $request->ids)->get();
 
-        return response()->json(['success' => true]);
+                ActionApplicantProgrammingLanguage::bulkDeleteLanguages($applicantId, $request->ids);
+
+                // Logging for each deleted language
+                $applicant = ActionApplicant::find($applicantId);
+                foreach ($langs as $lang) {
+                    Log::createLog(
+                        'ACTION',
+                        "Deleted {$lang->program_language} programming language of {$applicant->email_address}.",
+                        $applicantId
+                    );
+                }
+            });
+
+            return response()->json([
+                'responseMessage' => [
+                    'errorCode' => 'RECORD_DELETED_SUCCESSFULLY',
+                    'errorMessage' => 'Record successfully deleted.',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'responseMessage' => [
+                    'errorCode' => 'RECORD_DELETED_FAILED',
+                    'errorMessage' => 'An error occurred while deleting the record. Please try again.',
+                ],
+            ], 500);
+        }
     }
-}       
-
+}

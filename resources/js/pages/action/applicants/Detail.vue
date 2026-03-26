@@ -49,6 +49,33 @@ watch(successMessage, (val) => {
     }
 }, { immediate: true })
 
+const messages = {
+    record_created_successfully: {
+        errorCode: 'RECORD_CREATED_SUCCESSFULLY',
+        errorMessage: 'Record created successfully.',
+    },
+    record_updated_successfully: {
+        errorCode: 'RECORD_UPDATED_SUCCESSFULLY',
+        errorMessage: 'Record updated successfully.',
+    },
+    record_deleted_successfully: {
+        errorCode: 'RECORD_DELETED_SUCCESSFULLY',
+        errorMessage: 'Record successfully deleted.',
+    },
+    transaction_failed: {
+        errorCode: 'TRANSACTION_FAILED',
+        errorMessage: 'An error occurred while creating the record. Please try again.',
+    },
+    update_failed: {
+        errorCode: 'UPDATE_FAILED',
+        errorMessage: 'An error occurred while saving the record. Please try again.',
+    },
+    record_deleted_failed: {
+        errorCode: 'RECORD_DELETED_FAILED',
+        errorMessage: 'An error occurred while deleting the record. Please try again.',
+    },
+}
+
 // Map gender
 const genderLabel = (gender: number) => gender === 1 ? 'Male' : 'Female'
 
@@ -166,13 +193,27 @@ const saveLanguageEdit = async () => {
     try {
         await axios.put(`/action/applicants/${applicant.value.id}/languages/${languageBeingEdited.value.id}`, {
             program_language: editedLanguage.value.trim(),
-            remarks: editedRemarks.value.trim() || null // send remarks
+            remarks: editedRemarks.value.trim() || null
         })
         fetchLanguages()
-        editModalVisible.value = false
-    } catch (error) {
-        console.error('Edit failed', error)
-        alert('Failed to update language. Check console.')
+        closeEditModal()
+
+        // Show success toast
+        toastMessage.value = messages.record_updated_successfully.errorMessage
+        toastType.value = 'success'
+        showToast.value = true
+        setTimeout(() => (showToast.value = false), 5000)
+
+    } catch (error: any) {
+        if (error.response?.data?.errors) {
+            editLanguageError.value = error.response.data.errors.program_language?.[0] || null
+            editRemarksError.value = error.response.data.errors.remarks?.[0] || null
+        } else {
+            toastMessage.value = messages.update_failed.errorMessage
+            toastType.value = 'error'
+            showToast.value = true
+            setTimeout(() => (showToast.value = false), 5000)
+        }
     }
 }
 
@@ -181,7 +222,9 @@ const closeEditModal = () => {
     editModalVisible.value = false
     languageBeingEdited.value = null
     editedLanguage.value = ''
-    editedRemarks.value = '' // reset remarks
+    editedRemarks.value = ''
+    editLanguageError.value = null
+    editRemarksError.value = null
 }
 
 // Add Modal state
@@ -201,6 +244,8 @@ const closeAddModal = () => {
     addModalVisible.value = false
     newLanguageName.value = ''
     newLanguageRemarks.value = ''
+    addLanguageError.value = null
+    addRemarksError.value = null
 }
 
 // Save new language
@@ -219,12 +264,25 @@ const saveNewLanguage = async () => {
             remarks: newLanguageRemarks.value.trim() || null
         })
 
-        // Refresh list
         fetchLanguages()
         closeAddModal()
-    } catch (error) {
-        console.error('Failed to add language', error)
-        alert('Failed to add language. Check console for details.')
+
+        // Show success toast
+        toastMessage.value = messages.record_created_successfully.errorMessage
+        toastType.value = 'success'
+        showToast.value = true
+        setTimeout(() => (showToast.value = false), 5000)
+
+    } catch (error: any) {
+        if (error.response?.data?.errors) {
+            addLanguageError.value = error.response.data.errors.program_language?.[0] || null
+            addRemarksError.value = error.response.data.errors.remarks?.[0] || null
+        } else {
+            toastMessage.value = messages.transaction_failed.errorMessage
+            toastType.value = 'error'
+            showToast.value = true
+            setTimeout(() => (showToast.value = false), 5000)
+        }
     }
 }
 
@@ -265,10 +323,22 @@ const performDelete = async () => {
         } else if (deleteTargetId.value !== null) {
             await axios.delete(`/action/applicants/${applicant.value.id}/languages/${deleteTargetId.value}`)
         }
+
         fetchLanguages()
+
+        // Success toast
+        toastMessage.value = messages.record_deleted_successfully.errorMessage
+        toastType.value = 'success'
+        showToast.value = true
+        setTimeout(() => (showToast.value = false), 5000)
+
     } catch (error) {
         console.error('Delete failed', error)
-        alert('Failed to delete language(s). Check console.')
+
+        toastMessage.value = messages.record_deleted_failed.errorMessage
+        toastType.value = 'error'
+        showToast.value = true
+        setTimeout(() => (showToast.value = false), 5000)
     } finally {
         closeDeleteModal()
     }
@@ -398,14 +468,21 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
         <!-- Add Language Modal -->
         <div v-if="addModalVisible" class="modal-overlay">
             <div class="modal-content">
-                <h3 class="modal-title">
-                    Add Programming Language
-                </h3>
-                <input v-model="newLanguageName" class="modal-input" placeholder="Programming Language" />
-                <span v-if="addLanguageError" class="text-red-500 text-xs mt-1 block">{{ addLanguageError }}</span>
-                <textarea v-model="newLanguageRemarks" class="modal-textarea"
-                    placeholder="Remarks (optional)"></textarea>
-                <span v-if="addRemarksError" class="text-red-500 text-xs mt-1 block">{{ addRemarksError }}</span>
+                <h3 class="modal-title">Add Programming Language</h3>
+
+                <!-- Language Input -->
+                <div class="modal-field">
+                    <input v-model="newLanguageName" class="modal-input" placeholder="Programming Language" />
+                    <span v-if="addLanguageError" class="modal-error">{{ addLanguageError }}</span>
+                </div>
+
+                <!-- Remarks Textarea -->
+                <div class="modal-field">
+                    <textarea v-model="newLanguageRemarks" class="modal-textarea"
+                        placeholder="Remarks (optional)"></textarea>
+                    <span v-if="addRemarksError" class="modal-error">{{ addRemarksError }}</span>
+                </div>
+
                 <div class="modal-actions">
                     <button class="btn-red" @click="closeAddModal">Cancel</button>
                     <button class="btn-primary" @click="saveNewLanguage">Add</button>
@@ -416,13 +493,21 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
         <!-- Edit Language Modal -->
         <div v-if="editModalVisible" class="modal-overlay">
             <div class="modal-content">
-                <h3 class="modal-title">
-                    Edit Programming Language
-                </h3>
-                <input v-model="editedLanguage" class="modal-input" placeholder="Programming language" />
-                <span v-if="editLanguageError" class="text-red-500 text-xs mt-1 block">{{ editLanguageError }}</span>
-                <textarea v-model="editedRemarks" class="modal-textarea" placeholder="Remarks (optional)"></textarea>
-                <span v-if="editRemarksError" class="text-red-500 text-xs mt-1 block">{{ editRemarksError }}</span>
+                <h3 class="modal-title">Edit Programming Language</h3>
+
+                <!-- Language Input -->
+                <div class="modal-field">
+                    <input v-model="editedLanguage" class="modal-input" placeholder="Programming Language" />
+                    <span v-if="editLanguageError" class="modal-error">{{ editLanguageError }}</span>
+                </div>
+
+                <!-- Remarks Textarea -->
+                <div class="modal-field">
+                    <textarea v-model="editedRemarks" class="modal-textarea"
+                        placeholder="Remarks (optional)"></textarea>
+                    <span v-if="editRemarksError" class="modal-error">{{ editRemarksError }}</span>
+                </div>
+
                 <div class="modal-actions">
                     <button class="btn-red" @click="closeEditModal">Cancel</button>
                     <button class="btn-primary" @click="saveLanguageEdit">Save</button>
@@ -555,7 +640,7 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
                         <td class="px-2 py-2 break-words">{{ app.exam_remarks || '-' }}</td>
                         <td class="px-2 py-2">{{ initialInterviewResultLabel(app.initial_interview_result) }}</td>
                         <td class="px-2 py-2">{{ initialInterviewStatusLabel(app.initial_interview_application_status)
-                        }}</td>
+                            }}</td>
                         <td class="px-2 py-2 break-words">{{ app.initial_interview_remarks || '-' }}</td>
                         <td class="px-2 py-2">{{ finalInterviewResultLabel(app.final_interview_result) }}</td>
                         <td class="px-2 py-2">{{ finalInterviewStatusLabel(app.final_interview_application_status) }}
@@ -623,6 +708,33 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
 </template>
 
 <style scoped>
+/* Modal fields wrapper for consistent spacing */
+.modal-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+}
+
+/* Error messages */
+.modal-error {
+    color: #e53e3e;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    min-height: 1rem;
+    /* Reserve space so modal doesn't jump */
+}
+
+/* Inputs and textareas */
+.modal-input,
+.modal-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
 /* Override global button styles only inside modals */
 .modal-actions button {
     width: 20%;
