@@ -72,4 +72,14 @@ class ActionApplicant extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function applications()
+    {
+        return $this->hasMany(ActionApplication::class, 'action_applicant_id');
+    }
+
+    public function programmingLanguages()
+    {
+        return $this->hasMany(ActionApplicantProgrammingLanguage::class, 'action_applicant_id', 'id');
+    }
 }

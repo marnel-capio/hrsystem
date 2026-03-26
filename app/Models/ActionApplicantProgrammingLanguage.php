@@ -28,4 +28,5 @@ class ActionApplicantProgrammingLanguage extends Model
     {
         return $this->belongsTo(ActionApplicant::class, 'action_applicant_id');
     }
+    
 }

@@ -29,6 +29,10 @@ namespace App\Models {
      * @property bool|null $source_type
      * @property int $id
      * @property-read \App\Models\User $updatedBy
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplication> $applications
+     * @property-read int|null $applications_count
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplicantProgrammingLanguage> $programmingLanguages
+     * @property-read int|null $programming_languages_count
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSourceType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSource($value)
@@ -714,7 +718,7 @@ namespace App\Models {
      * @property bool|null $job_offer_status
      * @property string|null $job_offer_schedule
      * @property string|null $final_interview_remarks
-     * @property bool|null $finall_interview_application_status
+     * @property bool|null $final_interview_application_status
      * @property bool|null $final_interview_result
      * @property float|null $final_interview_final
      * @property float|null $final_interview_ma
@@ -774,7 +778,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewMa($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewFinal($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewResult($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinallInterviewApplicationStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewApplicationStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereJobOfferSchedule($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereJobOfferStatus($value)

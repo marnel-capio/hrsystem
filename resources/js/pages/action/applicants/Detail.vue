@@ -2,7 +2,7 @@
 import { Head, usePage, Link } from '@inertiajs/vue3'
 import { ref, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
-import { Pen, Trash } from '@lucide/vue';
+import { Pen, Trash, Eye } from '@lucide/vue';
 import AppLayout from '@/layouts/AppLayout.vue'
 
 // Inertia page props
@@ -155,8 +155,11 @@ const openEditModal = (lang: any) => {
 const saveLanguageEdit = async () => {
     if (!languageBeingEdited.value) return
 
+    editLanguageError.value = null
+    editRemarksError.value = null
+
     if (!editedLanguage.value.trim()) {
-        alert("Language cannot be empty")
+        editLanguageError.value = "This is a required field."
         return
     }
 
@@ -202,8 +205,11 @@ const closeAddModal = () => {
 
 // Save new language
 const saveNewLanguage = async () => {
+    addLanguageError.value = null
+    addRemarksError.value = null
+
     if (!newLanguageName.value.trim()) {
-        alert("Programming language cannot be empty")
+        addLanguageError.value = "This is a required field"
         return
     }
 
@@ -242,6 +248,13 @@ const confirmBulkDelete = () => {
     deleteModalVisible.value = true
 }
 
+const addLanguageError = ref<string | null>(null)
+const addRemarksError = ref<string | null>(null)
+
+const editLanguageError = ref<string | null>(null)
+const editRemarksError = ref<string | null>(null)
+
+
 const performDelete = async () => {
     try {
         if (isBulkDelete.value) {
@@ -267,6 +280,107 @@ const closeDeleteModal = () => {
     deleteTargetId.value = null
     isBulkDelete.value = false
 }
+
+const applications = computed(() => applicant.value.applications || []);
+
+// Keep these mapping functions for overall exam, interviews, and job offer
+const examStatusLabel = (val: number | null) => {
+    switch (val) {
+        case 1: return 'Pending'
+        case 2: return '1st Priority (Passed)'
+        case 3: return '2nd Priority (P2)'
+        case 4: return 'Done'
+        case 5: return 'Passed'
+        case 6: return 'Failed'
+        default: return '-'
+    }
+}
+
+const examResultLabel = (val: number | null) => {
+    switch (val) {
+        case 1: return 'Pending'
+        case 2: return 'Passed'
+        case 3: return 'Failed'
+        default: return '-'
+    }
+}
+
+const initialInterviewResultLabel = (val: number | null) => {
+    switch (val) {
+        case 1: return 'Pending'
+        case 2: return 'Passed'
+        case 3: return 'Failed'
+        default: return '-'
+    }
+}
+
+const initialInterviewStatusLabel = (val: number | null) => {
+    switch (val) {
+        case 1: return 'Pending'
+        case 2: return 'Done'
+        case 3: return 'Passed'
+        case 4: return 'P2'
+        case 5: return 'Failed'
+        default: return '-'
+    }
+}
+
+const finalInterviewResultLabel = (val: number | null) => {
+    switch (val) {
+        case 1: return 'Pending'
+        case 2: return 'Passed'
+        case 3: return 'Failed'
+        default: return '-'
+    }
+}
+
+const finalInterviewStatusLabel = (val: number | null) => {
+    switch (val) {
+        case 1: return 'Pending'
+        case 2: return 'Done'
+        case 3: return 'Passed'
+        case 4: return 'P2'
+        case 5: return 'Failed'
+        default: return '-'
+    }
+}
+
+const jobOfferStatusLabel = (val: number | null) => {
+    switch (val) {
+        case 1: return 'Pending'
+        case 2: return 'Done'
+        case 3: return 'Accept'
+        case 4: return 'Decline'
+        case 5: return 'Withdraw'
+        case 6: return 'Retracted'
+        default: return '-'
+    }
+}
+
+const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', value: number | null) => {
+    if (value === null) return 'bg-gray-200 text-gray-700'
+
+    switch (type) {
+        case 'examResult':
+        case 'interviewResult':
+            // 1-Pending, 2-Passed, 3-Failed
+            if (value === 1) return 'bg-yellow-100 text-yellow-800'
+            if (value === 2) return 'bg-green-100 text-green-800'
+            if (value === 3) return 'bg-red-100 text-red-800'
+            return 'bg-gray-200 text-gray-700'
+        case 'jobOffer':
+            // 1-Pending, 2-Done, 3-Accept, 4-Decline, 5-Withdraw, 6-Retracted
+            if (value === 1) return 'bg-yellow-100 text-yellow-800'
+            if (value === 2) return 'bg-blue-100 text-blue-800'
+            if (value === 3) return 'bg-green-100 text-green-800'
+            if ([4, 5, 6].includes(value)) return 'bg-red-100 text-red-800'
+            return 'bg-gray-200 text-gray-700'
+    }
+}
+
+
+
+
 </script>
 
 <template>
@@ -281,14 +395,34 @@ const closeDeleteModal = () => {
             </div>
         </div>
 
+        <!-- Add Language Modal -->
+        <div v-if="addModalVisible" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="modal-title">
+                    Add Programming Language
+                </h3>
+                <input v-model="newLanguageName" class="modal-input" placeholder="Programming Language" />
+                <span v-if="addLanguageError" class="text-red-500 text-xs mt-1 block">{{ addLanguageError }}</span>
+                <textarea v-model="newLanguageRemarks" class="modal-textarea"
+                    placeholder="Remarks (optional)"></textarea>
+                <span v-if="addRemarksError" class="text-red-500 text-xs mt-1 block">{{ addRemarksError }}</span>
+                <div class="modal-actions">
+                    <button class="btn-red" @click="closeAddModal">Cancel</button>
+                    <button class="btn-primary" @click="saveNewLanguage">Add</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Edit Language Modal -->
         <div v-if="editModalVisible" class="modal-overlay">
             <div class="modal-content">
                 <h3 class="modal-title">
-                    Edit {{ applicant.first_name }}'s Programming Language
+                    Edit Programming Language
                 </h3>
                 <input v-model="editedLanguage" class="modal-input" placeholder="Programming language" />
+                <span v-if="editLanguageError" class="text-red-500 text-xs mt-1 block">{{ editLanguageError }}</span>
                 <textarea v-model="editedRemarks" class="modal-textarea" placeholder="Remarks (optional)"></textarea>
+                <span v-if="editRemarksError" class="text-red-500 text-xs mt-1 block">{{ editRemarksError }}</span>
                 <div class="modal-actions">
                     <button class="btn-red" @click="closeEditModal">Cancel</button>
                     <button class="btn-primary" @click="saveLanguageEdit">Save</button>
@@ -308,7 +442,7 @@ const closeDeleteModal = () => {
                         {{ isBulkDelete ? selectedLanguages.length + ' selected language(s)' : 'this language' }}
                     </strong>?
                 </p>
-                <div class="modal-actions justify-center">
+                <div class="modal-actions">
                     <button class="btn-red" @click="closeDeleteModal">Cancel</button>
                     <button class="btn-primary" @click="performDelete">Delete</button>
                 </div>
@@ -340,28 +474,28 @@ const closeDeleteModal = () => {
                     <table class="min-w-full table-auto text-xs">
                         <tbody>
                             <tr v-if="applicant.email_address">
-                                <th class="px-2 py-2 font-semibold text-gray-600 w-40">Email</th>
+                                <th class="px-2 py-2 font-semibold text-gray-600 w-40 text-right">Email</th>
                                 <td class="px-2">{{ applicant.email_address }}</td>
                             </tr>
                             <tr v-if="applicant.gender !== null && applicant.gender !== undefined">
-                                <th class="px-2 py-2 font-semibold text-gray-600">Gender</th>
+                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">Gender</th>
                                 <td class="px-2">{{ genderLabel(applicant.gender) }}</td>
                             </tr>
                             <tr v-if="applicant.age">
-                                <th class="px-2 py-2 font-semibold text-gray-600">Age</th>
+                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">Age</th>
                                 <td class="px-2">{{ applicant.age }}</td>
                             </tr>
                             <tr v-if="applicant.school">
-                                <th class="px-2 py-2 font-semibold text-gray-600">School</th>
+                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">School</th>
                                 <td class="px-2">{{ applicant.school }}</td>
                             </tr>
                             <tr v-if="applicant.degree || applicant.others_degree">
-                                <th class="px-2 py-2 font-semibold text-gray-600">Degree</th>
+                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">Degree</th>
                                 <td class="px-2">{{ applicant.degree }} {{
                                     applicant.others_degree ? `(${applicant.others_degree})` : '' }}</td>
                             </tr>
                             <tr v-if="applicant.expected_graduation">
-                                <th class="px-2 py-2 font-semibold text-gray-600">Expected Graduation</th>
+                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">Expected Graduation</th>
                                 <td class="px-2">{{ applicant.expected_graduation }}</td>
                             </tr>
                         </tbody>
@@ -390,71 +524,136 @@ const closeDeleteModal = () => {
             </div>
         </div>
 
+        <!-- Application Details Table -->
+        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6">
+            <h3 class="text-lg font-semibold mb-4">Application Details</h3>
+
+            <table class="min-w-full table-auto text-xs border-collapse">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-2 py-2 font-semibold text-gray-600">No.</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Exam Result</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Exam Status</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Exam Remarks</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Initial Interview Result</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Initial Interview Status</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Initial Interview Remarks</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Final Interview Result</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Final Interview Status</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Final Interview Remarks</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Job Offer Status</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Job Offer Remarks</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Remarks</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(app, index) in applications" :key="app.id">
+                        <td class="px-2 py-2 font-medium text-gray-700">{{ Number(index) + 1 }}</td>
+                        <td class="px-2 py-2">{{ examResultLabel(app.exam_result) }}</td>
+                        <td class="px-2 py-2">{{ examStatusLabel(app.exam_application_status) }}</td>
+                        <td class="px-2 py-2 break-words">{{ app.exam_remarks || '-' }}</td>
+                        <td class="px-2 py-2">{{ initialInterviewResultLabel(app.initial_interview_result) }}</td>
+                        <td class="px-2 py-2">{{ initialInterviewStatusLabel(app.initial_interview_application_status)
+                        }}</td>
+                        <td class="px-2 py-2 break-words">{{ app.initial_interview_remarks || '-' }}</td>
+                        <td class="px-2 py-2">{{ finalInterviewResultLabel(app.final_interview_result) }}</td>
+                        <td class="px-2 py-2">{{ finalInterviewStatusLabel(app.final_interview_application_status) }}
+                        </td>
+                        <td class="px-2 py-2 break-words">{{ app.final_interview_remarks || '-' }}</td>
+                        <td class="px-2 py-2">{{ jobOfferStatusLabel(app.job_offer_status) }}</td>
+                        <td class="px-2 py-2 break-words">{{ app.job_offer_remarks || '-' }}</td>
+                        <td class="px-2 py-2 break-words">{{ app.remarks || '-' }}</td>
+                        <td class="flex justify-center px-2 py-2">
+                            <Link :href="`/action/applications/${app.id}`" class="cursor-pointer"
+                                title="View Application">
+                                <Eye class="w-5 h-5 text-green-500 hover:text-green-600" />
+                            </Link>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <!-- Programming Languages Section -->
-        <div class="languages-section-wrapper">
-            <div class="languages-section">
-                <!-- Header with title and buttons -->
-                <div class="languages-header flex justify-between items-center mb-4">
-                    <h3 class="languages-title">Programming Languages</h3>
-                    <div class="languages-buttons">
-                        <button @click="openAddModal" class="btn-primary btn-small">Add</button>
-                        <button @click="confirmBulkDelete" class="btn-red btn-small"
-                            :disabled="!selectedLanguages.length">
-                            Delete Selected
-                        </button>
-                    </div>
+        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Programming Languages</h3>
+                <div class="flex gap-2">
+                    <button @click="openAddModal" class="btn-primary btn-small">Add</button>
+                    <button @click="confirmBulkDelete" class="btn-red btn-small" :disabled="!selectedLanguages.length">
+                        Delete Selected
+                    </button>
                 </div>
-
-                <!-- Add Language Modal -->
-                <div v-if="addModalVisible" class="modal-overlay">
-                    <div class="modal-content">
-                        <h3 class="modal-title">
-                            Add Programming Language to
-                            {{ [applicant.first_name].filter(Boolean).join('') }}
-                        </h3>
-                        <input v-model="newLanguageName" class="modal-input" placeholder="Programming Language" />
-                        <textarea v-model="newLanguageRemarks" class="modal-textarea"
-                            placeholder="Remarks (optional)"></textarea>
-                        <div class="modal-actions">
-                            <button class="btn-red" @click="closeAddModal">Cancel</button>
-                            <button class="btn-primary" @click="saveNewLanguage">Add</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Table -->
-                <table class="languages-table">
-                    <thead>
-                        <tr>
-                            <th class="w-10"><input type="checkbox" @change="toggleAllLanguages($event)" /></th>
-                            <th class="text-left">Language</th>
-                            <th class="text-left">Remarks</th> <!-- New column -->
-                            <th class="w-24">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="lang in languages" :key="lang.id">
-                            <td><input type="checkbox" :value="lang.id" v-model="selectedLanguages" /></td>
-                            <td>{{ lang.program_language }}</td>
-                            <td>{{ lang.remarks || '-' }}</td> <!-- Display remarks -->
-                            <td class="flex gap-2 justify-center">
-                                <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditModal(lang)"
-                                    title="Edit" />
-                                <Trash class="w-5 h-5 text-red-500 cursor-pointer"
-                                    @click="confirmDeleteLanguage(lang.id)" title="Delete" />
-                            </td>
-                        </tr>
-                        <tr v-if="!languages.length">
-                            <td colspan="4" class="empty-state">No programming languages found.</td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
+
+            <!-- Languages Table -->
+            <table class="min-w-full table-auto text-xs border-collapse">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="w-10 text-left px-3 py-2 font-semibold text-gray-700 ">
+                            <input type="checkbox" @change="toggleAllLanguages($event)" />
+                        </th>
+                        <th class="text-left px-3 py-2 font-semibold text-gray-700 ">Language</th>
+                        <th class="text-left px-3 py-2 font-semibold text-gray-700 ">Remarks</th>
+                        <th class="w-24 px-3 py-2 font-semibold text-gray-700 ">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="lang in languages" :key="lang.id" class="hover:bg-gray-50">
+                        <td class="px-3 py-2"><input type="checkbox" :value="lang.id" v-model="selectedLanguages" />
+                        </td>
+                        <td class="px-3 py-2">{{ lang.program_language }}</td>
+                        <td class="px-3 py-2">{{ lang.remarks || '-' }}</td>
+                        <td class="flex gap-2 justify-center px-3 py-2">
+                            <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditModal(lang)"
+                                title="Edit" />
+                            <Trash class="w-5 h-5 text-red-500 cursor-pointer" @click="confirmDeleteLanguage(lang.id)"
+                                title="Delete" />
+                        </td>
+                    </tr>
+                    <tr v-if="!languages.length">
+                        <td colspan="4" class="text-center text-gray-500 py-2 italic">No programming languages found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </AppLayout>
 </template>
 
 <style scoped>
+/* Override global button styles only inside modals */
+.modal-actions button {
+    width: 20%;
+    /* remove 100% width from global CSS */
+    padding: 0.50rem 0.75rem;
+    /* tight padding around text */
+    font-size: 0.875rem;
+    /* adjust font size */
+    border-radius: 0.5rem;
+    /* keep slightly rounded corners */
+    white-space: nowrap;
+    /* prevent text from wrapping */
+}
+
+/* Keep original colors */
+.modal-actions .btn-primary {
+    background-color: #1C7BA5;
+    color: white;
+}
+
+.modal-actions .btn-red {
+    background-color: #E53E3E;
+    color: white;
+}
+
+span.text-red-500 {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+}
+
 /* =========================
    EDIT LANGUAGE MODAL
    ========================= */
@@ -505,8 +704,22 @@ const closeDeleteModal = () => {
 
 .modal-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
+    /* align buttons to bottom-left */
     gap: 0.5rem;
+    margin-top: 1rem;
+    /* slight spacing above buttons */
+}
+
+.btn-red,
+.btn-primary {
+    padding: 0.35rem 0.7rem;
+    /* slightly smaller */
+    font-size: 0.75rem;
+    /* slightly smaller font */
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background 0.15s ease;
 }
 
 .btn-red {
@@ -617,15 +830,11 @@ const closeDeleteModal = () => {
     padding: 0 1.5rem;
 }
 
-.languages-table {
-    width: 100%;
-    table-layout: auto;
-    /* let table expand naturally */
-}
 
 .languages-header {
     display: flex;
-    justify-content: space-between; /* title left, buttons right */
+    justify-content: space-between;
+    /* title left, buttons right */
     align-items: center;
     margin-bottom: 1rem;
 }
@@ -634,7 +843,8 @@ const closeDeleteModal = () => {
     font-size: 1.125rem;
     font-weight: 600;
     color: #1f2937;
-    text-align: left; /* left align */
+    text-align: left;
+    /* left align */
     margin: 0;
 }
 
