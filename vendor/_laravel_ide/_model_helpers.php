@@ -14,10 +14,10 @@ namespace App\Models {
      * @property string|null $thesis_project
      * @property string $other_examination_certificate
      * @property string $awards_recognition
-     * @property string $expected_graduation
+     * @property string|null $expected_graduation
      * @property string $others_degree
      * @property string $degree
-     * @property string $school
+     * @property string|null $school
      * @property integer $age
      * @property bool $gender
      * @property string $email_address
@@ -371,6 +371,7 @@ namespace App\Models {
      *
      * @property string $updated_time
      * @property mixed $updated_by
+     * @property string|null $source_date
      * @property string $created_time
      * @property mixed $created_by
      * @property string|null $remarks
@@ -409,6 +410,7 @@ namespace App\Models {
      * @property mixed $action_batch_id
      * @property mixed $action_applicant_id
      * @property int $id
+     * @property-read \App\Models\ActionApplicant $applicant
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereActionApplicantId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereActionBatchId($value)
@@ -447,6 +449,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereCreatedTime($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereSourceDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereUpdatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereUpdatedTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication newModelQuery()
@@ -777,6 +780,9 @@ namespace App\Models {
      * @property bool $target_trainees
      * @property string $action_batch
      * @property int $id
+     * @property-read \App\Models\ResourceSchedule $resourceSchedule
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplication> $applications
+     * @property-read int|null $applications_count
      * @method static \Illuminate\Database\Eloquent\Builder<ActionBatchModel>|ActionBatchModel whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionBatchModel>|ActionBatchModel whereActionBatch($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionBatchModel>|ActionBatchModel whereTargetTrainees($value)

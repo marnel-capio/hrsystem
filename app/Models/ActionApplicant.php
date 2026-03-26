@@ -14,6 +14,7 @@ class ActionApplicant extends Model
     protected $fillable = [
         'source_type',
         'source',
+        'other_source',
         'last_name',
         'first_name',
         'middle_name',
@@ -77,9 +78,9 @@ public static function updateOrCreateFromRow(array $row, $gender, $source_type, 
             'thesis_project' => trim($row['Thesis Project'] ?? ''),
             'extra_curricular' => substr(trim($row['Extra-curricular Activities'] ?? ''), 0, 255),
             'created_by' => Auth::id(),
-            'created_time' => $createdTime,
+            'created_time' => now(),
             'updated_by' => Auth::id(),
-            'updated_time' => $updatedTime,
+            'updated_time' => now(),
         ]
     );
 }

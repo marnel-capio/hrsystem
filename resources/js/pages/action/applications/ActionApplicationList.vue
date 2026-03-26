@@ -46,6 +46,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 
 const form = useForm({
   action_batch_id: null as number | null,
+  file: null as File | null,
 });
 
 // Modal state
@@ -66,49 +67,128 @@ const closeImportModal = () => {
 };
 
 // Handle file selection
+// Handle file selection
 const onImportFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (!target.files?.length) return;
 
   const file = target.files[0];
-  importFile.value = file;
 
-  console.log('File selected:', file.name); // Debug
+  // Clear any previous file errors before validation
+  if (form.errors.file) form.clearErrors("file");
+
+  // Frontend validation
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  const fileTooLarge = (page.props as any).errorsConfig?.file_too_large;
+
+  if (file.size > maxSize) {
+    form.setError("file", fileTooLarge);
+    importFile.value = null;
+    form.file = null;
+
+    // Reset input
+    target.value = "";
+    return;
+  }
+
+  // Additional file type validation
+  const allowedTypes = ['.xlsx', '.csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv'];
+  const fileType = file.name.split('.').pop()?.toLowerCase();
+  const isValidType = allowedTypes.some(type =>
+    type === fileType ||
+    (type.includes('/') && file.type === type)
+  );
+
+  if (!isValidType) {
+    form.setError("file", "Please upload only .xlsx or .csv files");
+    importFile.value = null;
+    form.file = null;
+    target.value = "";
+    return;
+  }
+
+  importFile.value = file;
+  form.file = file;
+
+  console.log("File selected:", file.name);
 };
 
 const processing = ref(false);
 
 // Submit import - FIXED
+// Submit import - FIXED
 const submitImport = () => {
-  if (!form.action_batch_id) {
-    alert("Please select a batch.");
-    return;
-  }
-  if (!importFile.value) {
-    alert("Please select a file (.xlsx or .csv).");
-    return;
+  // Clear old errors first
+  form.clearErrors();
+
+  if (!form.file || !form.action_batch_id) {
+    // Use backend error config
+    const fieldRequired = (page.props as any).errorsConfig?.field_required;
+
+    if (!form.file) form.setError('file', fieldRequired);
+    if (!form.action_batch_id) form.setError('action_batch_id', fieldRequired);
+
+    return; // Stop submission
   }
 
   const formData = new FormData();
-  formData.append("file", importFile.value);
-  formData.append("batch_id", String(form.action_batch_id));
+  formData.append('file', form.file as File);
+  formData.append('batch_id', String(form.action_batch_id));
 
-  processing.value = true; // Start uploading
+  processing.value = true;
 
-  router.post("/applications/import", formData, {
-    forceFormData: true,
+  router.post('/applications/import', formData, {
+    forceFormData: true,      // required for file uploads
     preserveState: true,
     preserveScroll: true,
-    onSuccess: (page) => {
+    onSuccess: () => {
       closeImportModal();
-      router.reload({ only: ['applications'] });
+      router.reload({ only: ['applications'] }); // refresh table after import
     },
     onError: (errors) => {
-      alert('Import failed: ' + Object.values(errors).join(', '));
+      // Map backend validation errors to form fields exactly like your other example
+      console.log('Errors received:', errors); // Debug log
+
+      // Check if errors is an object with field-specific errors
+      if (errors && typeof errors === 'object') {
+        // Handle file validation errors
+        if (errors.file) {
+          // If errors.file is an array, take the first element
+          const fileError = Array.isArray(errors.file) ? errors.file[0] : errors.file;
+          form.setError('file', fileError);
+        }
+
+        // Handle batch_id validation errors
+        if (errors.batch_id) {
+          const batchError = Array.isArray(errors.batch_id) ? errors.batch_id[0] : errors.batch_id;
+          form.setError('action_batch_id', batchError);
+        }
+
+        // Handle any other fields that might have errors
+        Object.keys(errors).forEach((key) => {
+          if (key !== 'file' && key !== 'batch_id' && key in form) {
+            const errorValue = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
+            form.setError(key as any, errorValue);
+          }
+        });
+      } else if (typeof errors === 'string') {
+        // If it's a string error, show it as a flash message
+        flashMessages.value.error = errors;
+      } else {
+        // Fallback for any other error format
+        flashMessages.value.error = 'An error occurred during import. Please check the file format and try again.';
+      }
+
+      // Ensure the file input field is cleared on error to prevent re-submission of corrupted file
+      if (form.errors.file && fileInput.value) {
+        fileInput.value.value = '';
+        importFile.value = null;
+        form.file = null;
+      }
     },
     onFinish: () => {
-      processing.value = false; // Done uploading
-    }
+      processing.value = false;
+    },
   });
 };
 //END OF UPLOAD FUNCTIONS
@@ -266,23 +346,30 @@ console.log('Received batches:', props.actionBatches);
       Upload Applications from Google Forms
     </h2>
 
-    <!-- Batch Dropdown -->
-    <label class="block text-sm font-medium mb-1">Select ACTION Batch</label>
+<!-- Batch Dropdown -->
+<label class="block text-sm font-medium mb-1">Select ACTION Batch</label>
 <select v-model="form.action_batch_id" class="border rounded px-2 py-1 w-full">
-    <option value="">Select</option>
-    <option v-for="batch in actionBatches" :key="batch.id" :value="batch.id">
-      {{ batch.action_batch }}
-    </option>
-  </select>
+  <option value="">Select</option>
+  <option v-for="batch in actionBatches" :key="batch.id" :value="batch.id">
+    {{ batch.action_batch }}
+  </option>
+</select>
+<!-- Error message under the field -->
+<p v-if="form.errors.action_batch_id" class="text-red-600 text-xs mt-1">
+  {{ form.errors.action_batch_id }}
+</p>
 
-    <!-- File Input -->
-    <label class="block text-sm font-medium mb-1 mt-6">Choose File (.xlsx or .csv)</label>
-  <input
-    type="file"
-    accept=".xlsx,.csv"
-    @change="onImportFileChange"
-    class="file-input-btn w-full mb-4"
-  />
+<!-- File Input -->
+<label class="block text-sm font-medium mb-1 mt-6">Choose File (.xlsx or .csv)</label>
+<input
+  type="file"
+  accept=".xlsx,.csv"
+  @change="onImportFileChange"
+  class="file-input-btn w-full mb-1"
+/>
+<p v-if="form.errors.file" class="text-red-600 text-xs mt-1">
+  {{ form.errors.file }}
+</p>
 
     <!-- Buttons -->
     <div class="flex justify-end gap-2 mt-4">

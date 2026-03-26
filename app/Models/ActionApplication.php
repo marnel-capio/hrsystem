@@ -18,8 +18,10 @@ class ActionApplication extends Model
         'exam_plan_date',
         'created_by',
         'created_time',
+        'source_date',
         'updated_by',
         'updated_time',
+        'other_source',
     ];
 
 public static function listPageData(?string $search = null)
@@ -63,9 +65,10 @@ public static function updateOrCreateFromRow($applicantId, $batchId, array $row,
             'exam_application_status' => $exam_application_status,
             'exam_plan_date' => $exam_plan_date,
             'created_by' => Auth::id(),
-            'created_time' => $createdTime,
+            'created_time' => now(),
+            'source_date' => $createdTime,
             'updated_by' => Auth::id(),
-            'updated_time' => $updatedTime,
+            'updated_time' => now(),
             'trainees_from' => $targetLocation,
         ]
     );

@@ -27,6 +27,8 @@ class ImportApplicationsRequest extends FormRequest
         return [
             'file.required' => $errors['field_required']['errorMessage'],
             'batch_id.required' => $errors['field_required']['errorMessage'],
+            'file.max' => $errors['file_too_large']['errorMessage'],
+            'file.mimes' => $errors['corrupted_file']['errorMessage'] ?? 'Invalid file type. File may be corrupted.',
         ];
     }
 }

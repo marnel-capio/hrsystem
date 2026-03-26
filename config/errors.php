@@ -15,7 +15,7 @@ return [
         'errorCode' => 'FIELD_REQUIRED',
         'errorMessage' => 'This is a required field.',
     ],
-    
+
     // record created succesfully
     'record_created_successfully' => [
         'errorCode' => 'RECORD_CREATED_SUCCESSFULLY',
@@ -37,21 +37,21 @@ return [
     // record delete failed
     'record_deleted_failed' => [
         'errorCode' => 'RECORD_DELETED_FAILED',
-        'errorMessage' => 'An error occurred while deleting the record. Please try again.												
+        'errorMessage' => 'An error occurred while deleting the record. Please try again.
 ',
     ],
 
     // record update success
     'record_updated_successfully' => [
         'errorCode' => 'RECORD_UPDATED_SUCCESSFULLY',
-        'errorMessage' => 'Record updated successfully.												
+        'errorMessage' => 'Record updated successfully.
 ',
     ],
 
     // record update failed
     'record_updated_failed' => [
         'errorCode' => 'RECORD_UPDATED_FAILED',
-        'errorMessage' => 'An error occurred while updating the record. Please try again.												
+        'errorMessage' => 'An error occurred while updating the record. Please try again.
 ',
     ],
 
@@ -72,24 +72,35 @@ return [
         'errorCode' => 'PASSWORD_MISMATCH',
         'errorMessage' => 'Passwords do not match.',
     ],
-    
+
     // email sent success
     'email_sent_success' => [
         'errorCode' => 'EMAIL_SUCCESS',
         'errorMessage' => 'Email/s sent successfully',
     ],
 
-    
+
      // email sent failed
     'email_sent_failed' => [
         'errorCode' => 'EMAIL_FAILED',
-        'errorMessage' => 'An error occurred while sending the email/s. Please try again.',										
+        'errorMessage' => 'An error occurred while sending the email/s. Please try again.',
     ],
 
     // account is inactive
     'account_inactive' => [
     'errorCode' => 'ACCOUNT_INACTIVE',
     'errorMessage' => 'Your account is no longer active. Please check with your manager or admin.',
+    ],
+
+    // upload exceeds 10mb
+    'file_too_large' => [
+    'errorCode' => 'FILE_TOO_LARGE',
+    'errorMessage' => 'The uploaded file exceeds the maximum size of 10MB.',
+],
+
+//upload corrupt
+'corrupted_file' => [
+        'errorMessage' => 'Invalid file type. File may be corrupted.'
     ],
 
 

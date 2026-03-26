@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ImportApplicationsRequest;
 use App\Models\ActionApplicant;
 use App\Models\ActionApplication;
 use App\Models\ActionBatchModel;
 use App\Models\Log;
-use App\Http\Requests\ImportApplicationsRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -18,6 +18,11 @@ class ApplicationImportController extends Controller
         $actionBatches = ActionBatchModel::getWithTargetLocationAndApplications();
 
         return inertia('action/applications/ActionApplicationList', [
+            'errorsConfig' => [
+            'field_required' => config('errors.field_required')['errorMessage'],
+            'max_length_exceeded' => config('errors.max_length_exceeded')['errorMessage'],
+            'file_too_large' => config('errors.file_too_large')['errorMessage'],
+        ],
             'applications' => $actionBatches->flatMap(function($batch) {
                 return $batch->applications->map(function($app) use ($batch) {
                     return [
@@ -39,6 +44,7 @@ class ApplicationImportController extends Controller
 
     public function import(ImportApplicationsRequest $request)
     {
+
         $validated = $request->validated();
 
         $batch = ActionBatchModel::with('resourceSchedule')
@@ -61,127 +67,173 @@ class ApplicationImportController extends Controller
         $now = now()->format('Y-m-d H:i:s');
         $sixMonthsAgo = now()->subMonths(6);
 
-        foreach ($rows as $rowIndex => $row) {
-            if (empty(array_filter($row))) {
-                $skippedApplicants[] = "Row " . ($rowIndex + 2) . " - Empty row";
-                continue;
+foreach ($rows as $rowIndex => $row) {
+    if (empty(array_filter($row))) {
+        $skippedApplicants[] = "Row " . ($rowIndex + 2) . " - Empty row";
+        continue;
+    }
+
+    $name = trim($row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
+    if (empty($name)) {
+        $skippedApplicants[] = "Row " . ($rowIndex + 2) . " - No name found";
+        continue;
+    }
+
+    try {
+        DB::beginTransaction();
+
+        // -------------------------
+        // PARSE EXCEL TIMESTAMP
+        // -------------------------
+        $rawTimestamp = trim($row['Timestamp'] ?? '');
+        $createdTime = now()->format('Y-m-d H:i:s'); // default fallback
+        if (!empty($rawTimestamp)) {
+            // Attempt d/m/Y H:i:s
+            $ts = \DateTime::createFromFormat('d/m/Y H:i:s', $rawTimestamp);
+            if ($ts === false) {
+                // fallback to strtotime in case Excel formatted differently
+                $parsed = strtotime($rawTimestamp);
+                if ($parsed !== false) {
+                    $ts = new \DateTime();
+                    $ts->setTimestamp($parsed);
+                }
             }
-
-            $name = trim($row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
-            if (empty($name)) {
-                $skippedApplicants[] = "Row " . ($rowIndex + 2) . " - No name found";
-                continue;
+            if ($ts !== false) {
+                $createdTime = $ts->format('Y-m-d H:i:s');
             }
+        }
+        \Log::debug('Parsed timestamp', ['row' => $rowIndex + 2, 'createdTime' => $createdTime]);
 
-            try {
-                DB::beginTransaction();
+        // -------------------------
+        // REQUIRED FIELDS CHECK
+        // -------------------------
+        $hasGender = !empty(trim($row['Gender'] ?? ''));
+        $hasSource = !empty(trim($row['From what recruitment channel have you applied for this job?'] ?? ''));
+        $hasResume = !empty(trim($row['Upload your updated resume'] ?? ''));
 
-                // -------------------------
-                // PARSE EXCEL TIMESTAMP
-                // -------------------------
-                $rawTimestamp = trim($row['Timestamp'] ?? '');
-                $createdTime = $now; // fallback
-                if (!empty($rawTimestamp)) {
-                    $ts = \DateTime::createFromFormat('d/m/Y H:i:s', $rawTimestamp);
-                    if ($ts !== false) {
-                        $createdTime = $ts->format('Y-m-d H:i:s');
-                    }
-                }
+        if (!$hasGender) { $skippedApplicants[] = "{$name} - Missing gender"; DB::rollBack(); continue; }
+        if (!$hasSource) { $skippedApplicants[] = "{$name} - Missing source"; DB::rollBack(); continue; }
+        if (!$hasResume) { $skippedApplicants[] = "{$name} - Missing resume"; DB::rollBack(); continue; }
 
-                // Required fields
-                $hasGender = !empty(trim($row['Gender'] ?? ''));
-                $hasSource = !empty(trim($row['From what recruitment channel have you applied for this job?'] ?? ''));
-                $hasResume = !empty(trim($row['Upload your updated resume'] ?? ''));
+        // -------------------------
+        // GENDER & SOURCE MAPPING
+        // -------------------------
+        $rawGender = strtolower(preg_replace('/\s+/', '', $row['Gender']));
+        $gender = $genderMap[$rawGender] ?? null;
+        if (is_null($gender)) { $skippedApplicants[] = "{$name} - Invalid gender"; DB::rollBack(); continue; }
 
-                if (!$hasGender) { $skippedApplicants[] = "{$name} - Missing gender"; DB::rollBack(); continue; }
-                if (!$hasSource) { $skippedApplicants[] = "{$name} - Missing source"; DB::rollBack(); continue; }
-                if (!$hasResume) { $skippedApplicants[] = "{$name} - Missing resume"; DB::rollBack(); continue; }
+        $config = config('constants');
+        $recruitmentPortalKeywords = $config['recruitment_portal_keywords'];
+        $sourceMap = $config['source'];
 
-                // Gender & source mapping
-                $rawGender = strtolower(preg_replace('/\s+/', '', $row['Gender']));
-                $gender = $genderMap[$rawGender] ?? null;
-                if (is_null($gender)) { $skippedApplicants[] = "{$name} - Invalid gender"; DB::rollBack(); continue; }
+        $rawSource = trim($row['From what recruitment channel have you applied for this job?']);
+        \Log::info('Source value:', ['rawSource' => $rawSource]);
 
-                $rawSource = trim($row['From what recruitment channel have you applied for this job?']);
-                $source_type = $sourceTypeMap[$rawSource] ?? 3;
-                $source = $sourceMap[$rawSource] ?? 1;
-                $other_source = in_array($source_type, [1,2,4,5]) ? $rawSource : null;
+        if (in_array($rawSource, $recruitmentPortalKeywords)) {
+            // Recruitment Portal
+            $source_type = 3;
+            $source = $sourceMap[$rawSource];
+            $other_source = null;
+        } elseif ($rawSource === 'Referral (Employee Referral or Applicant Referral)') {
+            // Employee Referral
+            $source_type = 4;
+            $source = null;
+            $other_source = $rawSource;
+        } elseif ($rawSource === 'Campus Recruitment Activity') {
+            // Campus Recruitment
+            $source_type = 1;
+            $source = null;
+            $other_source = $rawSource;
+        } else {
+            // Everything else goes to other_source with null source_type and source
+            $source_type = null;
+            $source = null;
+            $other_source = $rawSource;
+        }
 
-                // Exam status
-                $rawExamStatus = trim(strtolower($row['Results'] ?? ''));
-                $examApplicationStatusFromExcel = $examStatusMap[$rawExamStatus] ?? 1;
+        \Log::info('Result after assignment', [
+    'source_type' => $source_type,
+    'source' => $source,
+    'other_source' => $other_source,
+]);
 
-                // Exam plan date
-                $rawDate = trim($row['Exam Schedule.'] ?? '');
-                $exam_plan_date = null;
-                if (!empty($rawDate)) {
-                    $ts = strtotime($rawDate);
-                    if ($ts !== false) $exam_plan_date = date('Y-m-d H:i:s', $ts);
-                }
+        // -------------------------
+        // EXAM STATUS & DATE
+        // -------------------------
+        $rawExamStatus = trim(strtolower($row['Results'] ?? ''));
+        $examApplicationStatusFromExcel = $examStatusMap[$rawExamStatus] ?? 1;
 
-                // -------------------------
-                // Decision logic for application type
-                // -------------------------
-                $email = trim($row['Email Address'] ?? '');
-                $existingApplicant = ActionApplicant::where('email_address', $email)->first();
-                $lastApplication = $existingApplicant
-                    ? ActionApplication::where('action_applicant_id', $existingApplicant->id)
-                        ->orderBy('created_time', 'desc')
-                        ->first()
-                    : null;
+        $rawDate = trim($row['Exam Schedule.'] ?? '');
+        $exam_plan_date = null;
+        if (!empty($rawDate)) {
+            $ts = strtotime($rawDate);
+            if ($ts !== false) $exam_plan_date = date('Y-m-d H:i:s', $ts);
+        }
 
-                // Default statuses
-                $exam_application_status = null;
-                $initial_interview_application_status = null;
+        // -------------------------
+        // DECIDE APPLICANT TYPE
+        // -------------------------
+        $email = trim($row['Email Address'] ?? '');
+        $existingApplicant = ActionApplicant::where('email_address', $email)->first();
+        $lastApplication = $existingApplicant
+            ? ActionApplication::where('action_applicant_id', $existingApplicant->id)
+                ->orderBy('created_time', 'desc')
+                ->first()
+            : null;
 
-                $failedExamStatuses = [6,7]; // Failed, No Show
-                $failedInitialStatuses = [5]; // Failed initial interview
+        $exam_application_status = null;
+        $initial_interview_application_status = null;
+        $failedExamStatuses = [6,7];
+        $failedInitialStatuses = [5];
+        $sixMonthsAgo = now()->subMonths(6);
 
-                if (!$existingApplicant) {
-                    // New applicant -> just create applicant, no statuses
-                    $applicant = ActionApplicant::updateOrCreateFromRow($row, $gender, $source_type, $source, $other_source, $createdTime, $now
-                    );
-                } elseif ($lastApplication) {
-                    $applicant = $existingApplicant;
-                    $lastAppTime = $lastApplication->created_time;
+        if (!$existingApplicant) {
+            // New applicant
+            $applicant = ActionApplicant::updateOrCreateFromRow(
+                $row, $gender, $source_type, $source, $other_source, $createdTime, now()->format('Y-m-d H:i:s')
+            );
+        } elseif ($lastApplication) {
+            $applicant = $existingApplicant;
+            $lastAppTime = $lastApplication->created_time;
 
-                    $isFailed = in_array($lastApplication->exam_application_status, $failedExamStatuses) ||
-                                in_array($lastApplication->initial_interview_application_status, $failedInitialStatuses);
+            $isFailed = in_array($lastApplication->exam_application_status, $failedExamStatuses) ||
+                        in_array($lastApplication->initial_interview_application_status, $failedInitialStatuses);
 
-                    if ($isFailed && $lastAppTime > $sixMonthsAgo) {
-                        // Skip
-                        $skippedApplicants[] = "{$name} - Last failed app <6mo, skipping";
-                        DB::rollBack();
-                        continue;
-                    } elseif ($isFailed && $lastAppTime <= $sixMonthsAgo) {
-                        // Failed >6mo → new application (no statuses)
-                    } elseif (!$isFailed && $lastAppTime > $sixMonthsAgo) {
-                        // No fail <6mo → Initial Interview app
-                        $exam_application_status = 5; // Passed
-                        $initial_interview_application_status = 1; // Pending
-                    } else {
-                        // No fail >6mo → Exam app
-                        $exam_application_status = 1; // Pending
-                    }
-                }
-
-                // -------------------------
-                // Insert application via model
-                // -------------------------
-                ActionApplication::updateOrCreateFromRow($applicant->id, $request->batch_id, $row, $exam_application_status, $exam_plan_date, $now, $createdTime         // <-- timestamp from Excel
-                );
-
-                DB::commit();
-
-                // Force UTF-8 for import messages
-                $importedApplicants[] = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
-
-            } catch (\Exception $e) {
+            if ($isFailed && $lastAppTime > $sixMonthsAgo) {
+                $skippedApplicants[] = "{$name} - Last failed app <6mo, skipping";
                 DB::rollBack();
-                $failedApplicants[] = mb_convert_encoding("{$name} - Excel row contains invalid data", 'UTF-8', 'UTF-8');
+                continue;
+            } elseif ($isFailed && $lastAppTime <= $sixMonthsAgo) {
+                // New application, no statuses
+            } elseif (!$isFailed && $lastAppTime > $sixMonthsAgo) {
+                $exam_application_status = 5;
+                $initial_interview_application_status = 1;
+            } else {
+                $exam_application_status = 1;
             }
         }
 
+        // -------------------------
+        // CREATE APPLICATION
+        // -------------------------
+        ActionApplication::updateOrCreateFromRow(
+            $applicant->id,
+            $request->batch_id,
+            $row,
+            $exam_application_status,
+            $exam_plan_date,
+            now()->format('Y-m-d H:i:s'),
+            $createdTime // <-- Excel timestamp used here
+        );
+
+        DB::commit();
+        $importedApplicants[] = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        $failedApplicants[] = mb_convert_encoding("{$name} - Excel row contains invalid data", 'UTF-8', 'UTF-8');
+    }
+}
         // -------------------------
         // Prepare messages that show on screen & logging
         // -------------------------

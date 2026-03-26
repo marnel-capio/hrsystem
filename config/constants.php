@@ -60,8 +60,8 @@ return [
     // -------------------------
     'menuPermissions' => [
         '/user' => [1,2],
-        '/application-tracker' => [1, 2, 3, 5, 6], 
-        '/application-tracker-dashboard' => [1, 2, 3, 5, 6], 
+        '/application-tracker' => [1, 2, 3, 5, 6],
+        '/application-tracker-dashboard' => [1, 2, 3, 5, 6],
         '/action/batches' => [1, 2, 3],
         '/action/schedules' => [1, 2, 3],
         '/action/applicants' => [1, 2, 3, 5, 6],
@@ -70,14 +70,14 @@ return [
         '/intermediate/resource-requisitions' => [1, 2, 3, 5],
         '/intermediate/applicants' => [1, 2, 3, 5, 6],
         '/intermediate/applications' => [1, 2, 3, 5, 6],
-        '/dashboard' => [1,2,3,5], 
+        '/dashboard' => [1,2,3,5],
         '/walk-in-application' => [1, 7],
         '/account/settings' => [1,2,3,4,5,6],
     ],
 
     'hiddenLinks' => [
-        '/application-tracker' => [4, 7], 
-        '/application-tracker-dashboard' => [4, 6, 7], 
+        '/application-tracker' => [4, 7],
+        '/application-tracker-dashboard' => [4, 6, 7],
         '/action' => [4, 7],
         '/intermediate' => [4, 7],
         '/account/settings' => [7],
@@ -92,26 +92,31 @@ return [
     'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
 
-        'source_type' => [
-        'Campus Recruitment' => 1,
-        'Academe Partner' => 2,
-        'Recruitment Portals' => 3,
-        'Employee Referral' => 4,
-        'Walk-in' => 5,
+
+    // Source Type Mapping
+    'source_type' => [
+        'Indeed' => 3,
+        'Facebook' => 3,
+        'Kalibrr' => 3,
+        'Linkedin' => 3,
+        'Jobstreet' => 3,
+        'Referral (Employee Referral or Applicant Referral)' => 4,
+        'Campus Recruitment Activity' => 1,
     ],
 
-    // -------------------------
-    // Source Mapping
-    // -------------------------
+    // Source Mapping (for Recruitment Portals)
     'source' => [
-        'Mynimo' => 1,
         'Indeed' => 2,
-        'Kalibrr' => 3,
-        'FoundIt' => 4,
-        'LinkedIn' => 5,
         'Facebook' => 6,
+        'Kalibrr' => 3,
+        'Linkedin' => 5,
         'Jobstreet' => 7,
     ],
+
+    // Recruitment Portal Keywords (case-insensitive check)
+    'recruitment_portal_keywords' => ['Indeed', 'Facebook', 'Kalibrr', 'Linkedin', 'Jobstreet'],
+
+
 
     // -------------------------
     // Gender Mapping
