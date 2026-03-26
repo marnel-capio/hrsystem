@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::index
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:11
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
 export const index = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(args, options),
@@ -11,13 +11,13 @@ export const index = (args: { applicantId: string | number } | [applicantId: str
 
 index.definition = {
     methods: ["get","head"],
-    url: '/action-applicants/{applicantId}/languages',
+    url: '/action/applicants/{applicantId}/languages',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::index
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:11
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
 index.url = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -45,7 +45,7 @@ index.url = (args: { applicantId: string | number } | [applicantId: string | num
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::index
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:11
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
 index.get = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(args, options),
@@ -54,7 +54,7 @@ index.get = (args: { applicantId: string | number } | [applicantId: string | num
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::index
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:11
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
 index.head = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(args, options),
@@ -64,7 +64,7 @@ index.head = (args: { applicantId: string | number } | [applicantId: string | nu
     /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::index
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:11
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
     const indexForm = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: index.url(args, options),
@@ -74,7 +74,7 @@ index.head = (args: { applicantId: string | number } | [applicantId: string | nu
             /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::index
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:11
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
         indexForm.get = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url(args, options),
@@ -83,7 +83,7 @@ index.head = (args: { applicantId: string | number } | [applicantId: string | nu
             /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::index
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:11
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
         indexForm.head = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url(args, {
@@ -99,7 +99,7 @@ index.head = (args: { applicantId: string | number } | [applicantId: string | nu
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::store
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:19
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
 export const store = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
@@ -108,13 +108,13 @@ export const store = (args: { applicantId: string | number } | [applicantId: str
 
 store.definition = {
     methods: ["post"],
-    url: '/action-applicants/{applicantId}/languages',
+    url: '/action/applicants/{applicantId}/languages',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::store
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:19
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
 store.url = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -142,7 +142,7 @@ store.url = (args: { applicantId: string | number } | [applicantId: string | num
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::store
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:19
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
 store.post = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
@@ -152,7 +152,7 @@ store.post = (args: { applicantId: string | number } | [applicantId: string | nu
     /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::store
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:19
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
     const storeForm = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: store.url(args, options),
@@ -162,7 +162,7 @@ store.post = (args: { applicantId: string | number } | [applicantId: string | nu
             /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::store
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:19
- * @route '/action-applicants/{applicantId}/languages'
+ * @route '/action/applicants/{applicantId}/languages'
  */
         storeForm.post = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: store.url(args, options),
@@ -173,7 +173,7 @@ store.post = (args: { applicantId: string | number } | [applicantId: string | nu
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::update
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:40
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
 export const update = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
@@ -182,13 +182,13 @@ export const update = (args: { applicantId: string | number, langId: string | nu
 
 update.definition = {
     methods: ["put"],
-    url: '/action-applicants/{applicantId}/languages/{langId}',
+    url: '/action/applicants/{applicantId}/languages/{langId}',
 } satisfies RouteDefinition<["put"]>
 
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::update
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:40
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
 update.url = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
@@ -214,7 +214,7 @@ update.url = (args: { applicantId: string | number, langId: string | number } | 
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::update
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:40
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
 update.put = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
@@ -224,7 +224,7 @@ update.put = (args: { applicantId: string | number, langId: string | number } | 
     /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::update
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:40
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
     const updateForm = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: update.url(args, {
@@ -239,7 +239,7 @@ update.put = (args: { applicantId: string | number, langId: string | number } | 
             /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::update
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:40
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
         updateForm.put = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
@@ -255,7 +255,7 @@ update.put = (args: { applicantId: string | number, langId: string | number } | 
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::destroy
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:58
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
 export const destroy = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
@@ -264,13 +264,13 @@ export const destroy = (args: { applicantId: string | number, langId: string | n
 
 destroy.definition = {
     methods: ["delete"],
-    url: '/action-applicants/{applicantId}/languages/{langId}',
+    url: '/action/applicants/{applicantId}/languages/{langId}',
 } satisfies RouteDefinition<["delete"]>
 
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::destroy
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:58
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
 destroy.url = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
@@ -296,7 +296,7 @@ destroy.url = (args: { applicantId: string | number, langId: string | number } |
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::destroy
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:58
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
 destroy.delete = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
@@ -306,7 +306,7 @@ destroy.delete = (args: { applicantId: string | number, langId: string | number 
     /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::destroy
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:58
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
     const destroyForm = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
@@ -321,7 +321,7 @@ destroy.delete = (args: { applicantId: string | number, langId: string | number 
             /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::destroy
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:58
- * @route '/action-applicants/{applicantId}/languages/{langId}'
+ * @route '/action/applicants/{applicantId}/languages/{langId}'
  */
         destroyForm.delete = (args: { applicantId: string | number, langId: string | number } | [applicantId: string | number, langId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
@@ -337,7 +337,7 @@ destroy.delete = (args: { applicantId: string | number, langId: string | number 
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::bulkDelete
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:67
- * @route '/action-applicants/{applicantId}/languages/bulk-delete'
+ * @route '/action/applicants/{applicantId}/languages/bulk-delete'
  */
 export const bulkDelete = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: bulkDelete.url(args, options),
@@ -346,13 +346,13 @@ export const bulkDelete = (args: { applicantId: string | number } | [applicantId
 
 bulkDelete.definition = {
     methods: ["post"],
-    url: '/action-applicants/{applicantId}/languages/bulk-delete',
+    url: '/action/applicants/{applicantId}/languages/bulk-delete',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::bulkDelete
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:67
- * @route '/action-applicants/{applicantId}/languages/bulk-delete'
+ * @route '/action/applicants/{applicantId}/languages/bulk-delete'
  */
 bulkDelete.url = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -380,7 +380,7 @@ bulkDelete.url = (args: { applicantId: string | number } | [applicantId: string 
 /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::bulkDelete
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:67
- * @route '/action-applicants/{applicantId}/languages/bulk-delete'
+ * @route '/action/applicants/{applicantId}/languages/bulk-delete'
  */
 bulkDelete.post = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: bulkDelete.url(args, options),
@@ -390,7 +390,7 @@ bulkDelete.post = (args: { applicantId: string | number } | [applicantId: string
     /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::bulkDelete
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:67
- * @route '/action-applicants/{applicantId}/languages/bulk-delete'
+ * @route '/action/applicants/{applicantId}/languages/bulk-delete'
  */
     const bulkDeleteForm = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: bulkDelete.url(args, options),
@@ -400,7 +400,7 @@ bulkDelete.post = (args: { applicantId: string | number } | [applicantId: string
             /**
 * @see \App\Http\Controllers\ActionApplicantProgrammingLanguageController::bulkDelete
  * @see app/Http/Controllers/ActionApplicantProgrammingLanguageController.php:67
- * @route '/action-applicants/{applicantId}/languages/bulk-delete'
+ * @route '/action/applicants/{applicantId}/languages/bulk-delete'
  */
         bulkDeleteForm.post = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: bulkDelete.url(args, options),

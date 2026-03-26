@@ -47,11 +47,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
             ->name('action.applicants.detail');
-    Route::get('/action-applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'index']);
-    Route::post('/action-applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'store']);
-    Route::put('/action-applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'update']);
-    Route::delete('/action-applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'destroy']);
-    Route::post('/action-applicants/{applicantId}/languages/bulk-delete', [ActionApplicantProgrammingLanguageController::class, 'bulkDelete']);
+    Route::get('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'index']);
+    Route::post('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'store']);
+    Route::put('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'update']);
+    Route::delete('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'destroy']);
+    Route::post('/action/applicants/{applicantId}/languages/bulk-delete', [ActionApplicantProgrammingLanguageController::class, 'bulkDelete']);
 
 });
 

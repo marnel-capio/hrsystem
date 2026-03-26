@@ -69,7 +69,7 @@ const newLanguage = ref('')
 
 // Fetch languages for this applicant
 const fetchLanguages = async () => {
-    const res = await axios.get(`/action-applicants/${applicant.value.id}/languages`)
+    const res = await axios.get(`/action/applicants/${applicant.value.id}/languages`)
     languages.value = res.data
 }
 
@@ -78,7 +78,7 @@ const addLanguage = async () => {
     if (!newLanguage.value.trim()) return;
 
     try {
-        await axios.post(`/action-applicants/${applicant.value.id}/languages`, {
+        await axios.post(`/action/applicants/${applicant.value.id}/languages`, {
             program_language: newLanguage.value.trim()
         });
 
@@ -94,7 +94,7 @@ const addLanguage = async () => {
 const editLanguage = (lang: any) => {
     const updated = prompt('Edit language', lang.program_language)
     if (updated && updated.trim() !== lang.program_language) {
-        axios.put(`/action-applicants/${applicant.value.id}/languages/${lang.id}`, {
+        axios.put(`/action/applicants/${applicant.value.id}/languages/${lang.id}`, {
             program_language: updated.trim()
         }).then(fetchLanguages)
     }
@@ -103,7 +103,7 @@ const editLanguage = (lang: any) => {
 // Delete single
 const deleteLanguage = async (id: number) => {
     if (!confirm('Delete this language?')) return
-    await axios.delete(`/action-applicants/${applicant.value.id}/languages/${id}`)
+    await axios.delete(`/action/applicants/${applicant.value.id}/languages/${id}`)
         .then(fetchLanguages)
 }
 
@@ -114,7 +114,7 @@ const bulkDelete = async () => {
     if (!confirm('Delete selected languages?')) return;
 
     try {
-        await axios.post(`/action-applicants/${applicant.value.id}/languages/bulk-delete`, {
+        await axios.post(`/action/applicants/${applicant.value.id}/languages/bulk-delete`, {
             ids: selectedLanguages.value
         });
 
@@ -161,7 +161,7 @@ const saveLanguageEdit = async () => {
     }
 
     try {
-        await axios.put(`/action-applicants/${applicant.value.id}/languages/${languageBeingEdited.value.id}`, {
+        await axios.put(`/action/applicants/${applicant.value.id}/languages/${languageBeingEdited.value.id}`, {
             program_language: editedLanguage.value.trim(),
             remarks: editedRemarks.value.trim() || null // send remarks
         })
@@ -208,7 +208,7 @@ const saveNewLanguage = async () => {
     }
 
     try {
-        await axios.post(`/action-applicants/${applicant.value.id}/languages`, {
+        await axios.post(`/action/applicants/${applicant.value.id}/languages`, {
             program_language: newLanguageName.value.trim(),
             remarks: newLanguageRemarks.value.trim() || null
         })
@@ -245,12 +245,12 @@ const confirmBulkDelete = () => {
 const performDelete = async () => {
     try {
         if (isBulkDelete.value) {
-            await axios.post(`/action-applicants/${applicant.value.id}/languages/bulk-delete`, {
+            await axios.post(`/action/applicants/${applicant.value.id}/languages/bulk-delete`, {
                 ids: selectedLanguages.value
             });
             selectedLanguages.value = []
         } else if (deleteTargetId.value !== null) {
-            await axios.delete(`/action-applicants/${applicant.value.id}/languages/${deleteTargetId.value}`)
+            await axios.delete(`/action/applicants/${applicant.value.id}/languages/${deleteTargetId.value}`)
         }
         fetchLanguages()
     } catch (error) {
@@ -317,7 +317,7 @@ const closeDeleteModal = () => {
 
         <!-- Header -->
         <div class="flex justify-between mx-5 mb-3">
-            <h2 class="text-xl font-bold">Detail ACTION Applicant</h2>
+            <h2 class="text-xl font-bold">ACTION Applicant's Details</h2>
             <Link :href="`/action/applicants/${applicant.id}/edit`" class="btn-primary !bg-[#1C7BA5]">
                 Edit ACTION Applicant
             </Link>
