@@ -46,8 +46,16 @@ class ActionApplicantController extends Controller
     {
         $applicant = ActionApplicant::findOrFail($id);
 
+        // Fetch constants for dropdowns
+        $sourceTypes = config('constants.sourceTypes', []);
+        $sources = config('constants.sources', []);
+        $genders = config('constants.genders', []);
+
         return Inertia::render('action/applicants/Edit', [
             'applicant' => $applicant,
+            'sourceTypes' => $sourceTypes,
+            'sources' => $sources,
+            'genders' => $genders,
         ]);
     }
 }

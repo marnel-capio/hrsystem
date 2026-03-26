@@ -93,7 +93,7 @@ return [
     'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
 
-     'sourceTypes' => [
+    'sourceTypes' => [
         1 => 'Campus Recruitment',
         2 => 'Academe Partner',
         3 => 'Recruitment Portals',
