@@ -97,6 +97,103 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     
     show.form = showForm
 /**
+* @see \App\Http\Controllers\ActionApplicantController::edit
+ * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @route '/action/applicants/{id}/edit'
+ */
+export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(args, options),
+    method: 'get',
+})
+
+edit.definition = {
+    methods: ["get","head"],
+    url: '/action/applicants/{id}/edit',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicantController::edit
+ * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @route '/action/applicants/{id}/edit'
+ */
+edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return edit.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicantController::edit
+ * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @route '/action/applicants/{id}/edit'
+ */
+edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(args, options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\ActionApplicantController::edit
+ * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @route '/action/applicants/{id}/edit'
+ */
+edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: edit.url(args, options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicantController::edit
+ * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @route '/action/applicants/{id}/edit'
+ */
+    const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicantController::edit
+ * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @route '/action/applicants/{id}/edit'
+ */
+        editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ActionApplicantController::edit
+ * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @route '/action/applicants/{id}/edit'
+ */
+        editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
+/**
 * @see \App\Http\Controllers\ActionApplicantController::index
  * @see app/Http/Controllers/ActionApplicantController.php:11
  * @route '/action/applicants'
@@ -362,6 +459,6 @@ checkEmail.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
         })
     
     checkEmail.form = checkEmailForm
-const ActionApplicantController = { show, index, create, store, checkEmail }
+const ActionApplicantController = { show, edit, index, create, store, checkEmail }
 
 export default ActionApplicantController

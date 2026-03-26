@@ -41,4 +41,13 @@ class ActionApplicantController extends Controller
             'applicant' => $applicant,
         ]);
     }
+
+    public function edit($id)
+    {
+        $applicant = ActionApplicant::findOrFail($id);
+
+        return Inertia::render('action/applicants/Edit', [
+            'applicant' => $applicant,
+        ]);
+    }
 }
