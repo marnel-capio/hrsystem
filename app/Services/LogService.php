@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\ActionApplicant;
 use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class LogService
 {
@@ -30,9 +30,10 @@ class LogService
             $newValue = $newData[$field] ?? null;
 
             if ($field === 'password') {
-                if (!empty($newValue)) {
-                    $activityLines[] = "password: [HIDDEN] -> [UPDATED]";
+                if (! empty($newValue)) {
+                    $activityLines[] = 'password: [HIDDEN] -> [UPDATED]';
                 }
+
                 continue;
             }
 
@@ -55,5 +56,31 @@ class LogService
             'create_time' => now(),
             'update_time' => now(),
         ]);
+    }
+
+    public function createProgrammingLanguageUpdateLog(array $oldData, array $newData, int $applicantId): void
+    {
+        $applicant = ActionApplicant::find($applicantId);
+        $ipAddress = request()->ip();
+        $activityLines = [];
+
+        $activityLines[] = "Updated programming language for {$applicant->email_address}.";
+        $activityLines[] = 'Details:';
+
+        // List of fields to track
+        $fields = ['program_language', 'remarks']; // add other relevant fields
+
+        foreach ($fields as $field) {
+            $oldValue = $oldData[$field] ?? null;
+            $newValue = $newData[$field] ?? null;
+
+            if ((string) $oldValue !== (string) $newValue) {
+                $activityLines[] = "{$field}: {$oldValue} -> {$newValue}";
+            }
+        }
+
+        $activity = implode("\n", $activityLines);
+
+        Log::createLog('ACTION', $activity, $applicantId, $ipAddress);
     }
 }
