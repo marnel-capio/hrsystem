@@ -372,19 +372,19 @@ const closeDeleteModal = () => {
             <!-- RIGHT: Remarks, Awards, Thesis, Extra Curricular -->
             <div class="col-span-2 bg-white rounded-xl shadow border p-6 space-y-4">
                 <div v-if="applicant.remarks">
-                    <h4 class="text-xs font-bold mb-2 text-center">REMARKS</h4>
+                    <h4 class="text-xs font-bold mb-2 text-left">REMARKS</h4>
                     <p class="text-xs break-words">{{ applicant.remarks }}</p>
                 </div>
                 <div v-if="applicant.awards_recognition">
-                    <h4 class="text-xs font-bold mb-2 text-center">AWARDS / RECOGNITION</h4>
+                    <h4 class="text-xs font-bold mb-2 text-left">AWARDS / RECOGNITION</h4>
                     <p class="text-xs break-words">{{ applicant.awards_recognition }}</p>
                 </div>
                 <div v-if="applicant.thesis_project">
-                    <h4 class="text-xs font-bold mb-2 text-center">THESIS / PROJECT</h4>
+                    <h4 class="text-xs font-bold mb-2 text-left">THESIS / PROJECT</h4>
                     <p class="text-xs break-words">{{ applicant.thesis_project }}</p>
                 </div>
                 <div v-if="applicant.extra_curricular">
-                    <h4 class="text-xs font-bold mb-2 text-center">EXTRA CURRICULAR</h4>
+                    <h4 class="text-xs font-bold mb-2 text-left">EXTRA CURRICULAR</h4>
                     <p class="text-xs break-words">{{ applicant.extra_curricular }}</p>
                 </div>
             </div>
@@ -393,10 +393,9 @@ const closeDeleteModal = () => {
         <!-- Programming Languages Section -->
         <div class="languages-section-wrapper">
             <div class="languages-section">
-                <h3>Programming Languages</h3>
-
-                <!-- Add / Bulk Delete -->
-                <div class="languages-actions justify-end">
+                <!-- Header with title and buttons -->
+                <div class="languages-header flex justify-between items-center mb-4">
+                    <h3 class="languages-title">Programming Languages</h3>
                     <div class="languages-buttons">
                         <button @click="openAddModal" class="btn-primary btn-small">Add</button>
                         <button @click="confirmBulkDelete" class="btn-red btn-small"
@@ -618,22 +617,44 @@ const closeDeleteModal = () => {
     padding: 0 1.5rem;
 }
 
-.languages-section-wrapper {
+.languages-table {
+    width: 100%;
+    table-layout: auto;
+    /* let table expand naturally */
+}
+
+.languages-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between; /* title left, buttons right */
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.languages-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    text-align: left; /* left align */
+    margin: 0;
+}
+
+.languages-section-wrapper {
+    display: block;
+    /* instead of flex center */
     margin-top: 2rem;
+    width: 100%;
+    /* take full width */
 }
 
 .languages-section {
     background-color: #ffffff;
     border-radius: 12px;
     padding: 1rem 1.25rem;
-    /* slightly smaller padding */
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-    width: 600px;
-    /* smaller card width */
-    max-width: 90%;
-    /* responsive for small screens */
+    width: 100%;
+    /* full width */
+    max-width: 100%;
+    /* override previous max-width */
 }
 
 .languages-section h3 {
