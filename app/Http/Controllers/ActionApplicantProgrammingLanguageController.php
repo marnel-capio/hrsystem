@@ -42,14 +42,14 @@ class ActionApplicantProgrammingLanguageController extends Controller
                 'data' => $lang,
                 'responseMessage' => [
                     'errorCode' => 'RECORD_CREATED_SUCCESSFULLY',
-                    'errorMessage' => 'Record created successfully.',
+                    'errorMessage' => config('errors.record_created_successfully.errorMessage'),
                 ],
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'responseMessage' => [
                     'errorCode' => 'TRANSACTION_FAILED',
-                    'errorMessage' => 'An error occurred while creating the record. Please try again.',
+                    'errorMessage' => config('errors.transaction_failed.errorMessage'),
                 ],
             ], 500);
         }
@@ -82,14 +82,14 @@ class ActionApplicantProgrammingLanguageController extends Controller
                 'data' => $lang,
                 'responseMessage' => [
                     'errorCode' => 'RECORD_UPDATED_SUCCESSFULLY',
-                    'errorMessage' => 'Record updated successfully.',
+                    'errorMessage' => config('errors.record_updated_successfully.errorMessage'),
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'responseMessage' => [
                     'errorCode' => 'UPDATE_FAILED',
-                    'errorMessage' => 'An error occurred while saving the record. Please try again.',
+                    'errorMessage' => config('errors.update_failed.errorMessage'),
                 ],
             ], 500);
         }
@@ -118,14 +118,14 @@ class ActionApplicantProgrammingLanguageController extends Controller
             return response()->json([
                 'responseMessage' => [
                     'errorCode' => 'RECORD_DELETED_SUCCESSFULLY',
-                    'errorMessage' => 'Record successfully deleted.',
+                    'errorMessage' => config('errors.record_deleted_successfully.errorMessage'),
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'responseMessage' => [
                     'errorCode' => 'RECORD_DELETED_FAILED',
-                    'errorMessage' => 'An error occurred while deleting the record. Please try again.',
+                    'errorMessage' => config('errors.record_deleted_failed.errorMessage'),
                 ],
             ], 500);
         }
@@ -159,14 +159,14 @@ class ActionApplicantProgrammingLanguageController extends Controller
             return response()->json([
                 'responseMessage' => [
                     'errorCode' => 'RECORD_DELETED_SUCCESSFULLY',
-                    'errorMessage' => 'Record successfully deleted.',
+                    'errorMessage' => config('errors.record_deleted_successfully.errorMessage'),
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'responseMessage' => [
                     'errorCode' => 'RECORD_DELETED_FAILED',
-                    'errorMessage' => 'An error occurred while deleting the record. Please try again.',
+                    'errorMessage' => config('errors.record_deleted_failed.errorMessage'),
                 ],
             ], 500);
         }
