@@ -14,6 +14,7 @@ const form = ref({
   processing: false,
 })
 const remarksError = ref('')
+const nameError = ref('')
 
 // Constants for validation
 const maxRemarksLength = 1024 
@@ -22,9 +23,20 @@ const validateRemarks = () => {
     ? `This field exceeds the maximum allowed length.`
     : ''
 }
+const maxNameLength = 20
+const validateProjectName = () => {
+  nameError.value = form.value.project_name.length > maxNameLength
+    ? `This field exceeds the maximum allowed length.`
+    : ''
+}
 
 const submit = () => {
   remarksError.value = ''
+  nameError.value = ''
+
+  page.props.errors.project_name = undefined
+  page.props.errors.remarks = undefined
+
   form.value.processing = true
   loading.value = true
 
@@ -35,7 +47,6 @@ const submit = () => {
     }
   })
 }
-
 
 </script>
 
@@ -53,9 +64,15 @@ const submit = () => {
           <label class="text-xs font-semibold mb-1">Project Name</label>
           <input
             v-model="form.project_name"
-            readonly
-            class="border p-2 rounded w-full bg-gray-100 cursor-not-allowed"
+            @input="validateProjectName"
+            class="border p-2 rounded w-full"
           />
+          <span v-if="page.props.errors?.project_name" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.project_name }}
+          </span>
+          <span v-if="nameError" class="text-red-600 text-xs mt-1">
+            {{ nameError }}
+          </span>
         </div>
       </div>
 
