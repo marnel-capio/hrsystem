@@ -179,7 +179,7 @@ watch(
             <meta name="csrf-token" content="{{ csrf_token() }}">
         </head>
         <div class="page-header">
-            <h2 class="page-title">Create ACTION Applicant</h2>
+            <h2 class="page-title">Edit ACTION Applicant</h2>
         </div>
 
         <div v-if="showEmailExistsModal" class="modal-overlay">
@@ -341,7 +341,7 @@ watch(
                     <div class="form-actions">
                         <Link href="/action/applicants" class="btn btn-secondary">Cancel</Link>
                         <button type="submit" :disabled="form.processing" class="btn btn-primary">
-                            {{ form.processing ? 'Creating…' : 'Create' }}
+                            {{ form.processing ? 'Updating..' : 'Update' }}
                         </button>
                     </div>
                 </form>
