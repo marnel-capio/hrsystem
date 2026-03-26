@@ -11,7 +11,7 @@ class IntermediateService
     {
         $project = new IntermediateProjectModel();
  
-        $project->project_name = strtoupper($data['project_name']);
+        $project->project_name = $data['project_name'];
         $project->remarks = $data['remarks'] ?? null;
  
         $project->created_by = auth()->user()->id;
@@ -46,7 +46,7 @@ class IntermediateService
         ];
 
         // Update fields
-        $project->project_name = strtoupper($data['project_name']);
+        //$project->project_name = strtoupper($data['project_name']);
         $project->remarks = $data['remarks'] ?? null;
 
         $project->updated_by = auth()->user()->id;
@@ -56,10 +56,10 @@ class IntermediateService
 
         // Log creation
         $activityLines = [];
-        $activityLines[] = "Updated Intermediate Project {$project->project_name}.";
+        $activityLines[] = "Updated remarks for project: {$project->project_name}.";
         $activityLines[] = 'Details:';
 
-        $fields = ['project_name', 'remarks'];
+        $fields = ['remarks'];
 
         foreach ($fields as $field) {
             $oldValue = $oldData[$field] ?? null;
@@ -79,9 +79,12 @@ class IntermediateService
             'module' => 'Intermediate',
             'activity' => $activity,
             'ip_address' => $request->ip(),
+            'created_by' => auth()->user()->id, 
             'updated_by' => auth()->user()->id,
+            'create_time' => now(),               
             'update_time' => now(),
         ]);
+ 
 
         return $project;
     }

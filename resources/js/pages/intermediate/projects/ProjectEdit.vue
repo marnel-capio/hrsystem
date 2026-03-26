@@ -13,11 +13,21 @@ const form = ref({
   remarks: page.props.project?.remarks ?? '',
   processing: false,
 })
+const remarksError = ref('')
 
+// Constants for validation
+const maxRemarksLength = 1024 
+const validateRemarks = () => {
+  remarksError.value = form.value.remarks.length > maxRemarksLength
+    ? `This field exceeds the maximum allowed length.`
+    : ''
+}
 
 const submit = () => {
+  remarksError.value = ''
   form.value.processing = true
- 
+  loading.value = true
+
   router.post(`/intermediate/projects/${form.value.id}/update`, form.value, {
     onFinish: () => {
       form.value.processing = false
@@ -25,7 +35,7 @@ const submit = () => {
     }
   })
 }
-console.log(form.value);
+
 
 </script>
 
@@ -46,9 +56,6 @@ console.log(form.value);
             readonly
             class="border p-2 rounded w-full bg-gray-100 cursor-not-allowed"
           />
-          <span v-if="page.props.errors?.project_name" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.project_name }}
-          </span>
         </div>
       </div>
 
@@ -58,11 +65,15 @@ console.log(form.value);
           <textarea
             v-model="form.remarks"
             rows="6"
+             @input="validateRemarks"
             placeholder="Remarks"
             class="border p-2 rounded w-full"
           />
           <span v-if="page.props.errors?.remarks" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.remarks }}
+          </span>
+          <span v-if="remarksError" class="text-red-600 text-xs mt-1">
+            {{ remarksError }}
           </span>
         </div>
       </div>
@@ -70,7 +81,7 @@ console.log(form.value);
       <div class="mt-10 w-full flex justify-end space-x-2">
         <button
           type="button"
-          class="px-4 text-xs !h-10 !border !border-gray-300 py-2 rounded 
+          class="px-4 !h-10 !text-xs !border !border-gray-300 py-2 rounded 
                 !bg-secondary !hover:bg-gray-700 !text-black
                 !w-fit inline-flex items-center justify-center shrink-0"
           @click="$inertia.get(`/intermediate/projects/${form.id}`)"
@@ -81,7 +92,7 @@ console.log(form.value);
 
         <button
           type="button"
-          class="px-4 text-xs !h-10 py-2 bg-[#2F359E] text-white rounded 
+          class="px-4 !h-10 !text-xs py-2 bg-[#2F359E] text-white rounded 
                 hover:bg-blue-400 
                 disabled:opacity-60 disabled:cursor-not-allowed
                 !w-fit inline-flex items-center justify-center"

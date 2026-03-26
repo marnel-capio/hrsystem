@@ -97,6 +97,7 @@ class IntermediateProjectController extends Controller
             'user_permissions' => auth()->user()->permissions,
         ]);
     }
+    
 
     public function update(IntermediateRequest $request, $id)
     {
@@ -114,13 +115,13 @@ class IntermediateProjectController extends Controller
             DB::commit();
     
             return redirect()
-                ->route('intermediate.project.show', $project->id)
+                ->route('intermediate.projects.show', $project->id)
                 ->with('success', config('errors.record_updated_successfully.errorMessage'));
     
         } catch (\Exception $e) {
     
             DB::rollBack();
-    
+
             return back()->withErrors([
                 'error' => config('errors.record_updated_failed.errorMessage')
             ]);

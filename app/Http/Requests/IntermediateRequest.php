@@ -25,8 +25,6 @@ class IntermediateRequest extends FormRequest
                     ? Rule::unique('projects', 'project_name')->ignore($projectId)
                     : Rule::unique('projects', 'project_name'),
             ],
-            'target_trainees' => 'required|integer|max:99',
-            'target_date' => 'required|date|after_or_equal:today',
             'remarks' => 'nullable|string|max:1024',
         ];
     }
