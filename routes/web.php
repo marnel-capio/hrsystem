@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\ActionBatchController;
+use App\Http\Controllers\ActionApplicantController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActionApplicationController;
@@ -43,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
+
 });
 
     // Update user
@@ -109,7 +112,7 @@ Route::middleware(['auth'])->group(function () {
 
 
     // ------------------------
-    // Actions
+    // ACTION Batches
     // ------------------------
     Route::middleware(['auth', 'check.permission'])->group(function () {
         Route::get('/action/batches', [ActionBatchController::class, 'index'])->name('action.batches.list');
@@ -120,6 +123,28 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/action/batches/{id}/update', [ActionBatchController::class, 'update'])->name('action.batches.update');
     });
 
+    // ------------------------
+    // ACTION Applicants
+    // ------------------------
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        
+        //list
+        Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
+            ->name('action.applicants.index');
+    });
+
+
+    // ------------------------
+    // Intermediate Projects
+    // ------------------------
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        Route::get('/intermediate/projects', [IntermediateProjectController::class, 'index'])->name('intermediate.projects.list');
+        Route::get('/intermediate/projects/register', [IntermediateProjectController::class, 'create'])->name('intermediate.projects.register');
+        Route::post('/intermediate/projects', [IntermediateProjectController::class, 'store'])->name('intermediate.projects.store');
+        Route::get('/intermediate/projects/{id}', [IntermediateProjectController::class, 'show'])->name('intermediate.projects.show');       
+        Route::get('/intermediate/projects/{id}/edit', [IntermediateProjectController::class, 'edit'])->name('intermediate.projects.edit');        
+        Route::post('/intermediate/projects/{id}/update', [IntermediateProjectController::class, 'update'])->name('intermediate.projects.update');
+    });
 
 // ------------------------
 // Include additional routes

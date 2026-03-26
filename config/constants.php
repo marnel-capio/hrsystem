@@ -66,7 +66,7 @@ return [
         '/action/schedules' => [1, 2, 3],
         '/action/applicants' => [1, 2, 3, 5, 6],
         '/action/applications' => [1, 2, 3, 5, 6],
-        '/intermediate/projects' => [1, 5],
+        '/intermediate/projects' => [1,2,3,5],
         '/intermediate/resource-requisitions' => [1, 2, 3, 5],
         '/intermediate/applicants' => [1, 2, 3, 5, 6],
         '/intermediate/applications' => [1, 2, 3, 5, 6],
@@ -89,6 +89,7 @@ return [
         'LOCATION_1_NAME' => 'Manila',
         'LOCATION_2_NAME' => 'Cebu',
     ],
+
     'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
 
@@ -141,6 +142,28 @@ return [
         'FAILED'  => 3,
         'Withdrew'=> 6,
         'No Show' => 7,
+    ],
+
+
+     'sourceTypes' => [
+        1 => 'Campus Recruitment',
+        2 => 'Academe Partner',
+        3 => 'Recruitment Portals',
+        4 => 'Employee Referral',
+        5 => 'Walk-in',
+    ],
+
+    'sources' => [
+        1 => 'University Career Fair',
+        2 => 'Partner School',
+        3 => 'JobStreet',
+        4 => 'LinkedIn',
+        5 => 'Referral',
+    ],
+
+    'genders' => [
+        1 => 'Male',
+        2 => 'Female',
     ],
 
 ];

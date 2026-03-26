@@ -75,7 +75,7 @@ const shouldShowPagination = computed(() => batchesTotal.value > 20)
                 d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
             </svg>
           </span>
-          <input v-model="search" type="text" placeholder="Search by action batch"
+          <input v-model="search" type="text" placeholder="Search by ACTION Batch Name"
             class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
         </div>
       </div>
