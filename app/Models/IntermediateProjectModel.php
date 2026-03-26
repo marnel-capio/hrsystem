@@ -1,0 +1,42 @@
+<?php
+ 
+namespace App\Models;
+ 
+use Illuminate\Database\Eloquent\Model;
+ 
+class IntermediateProjectModel extends Model
+{
+    protected $table = 'projects';
+ 
+    public $timestamps = true;
+ 
+    protected $fillable = [
+        'project_name',
+        'remarks',
+        'created_by',
+        'created_time',
+        'updated_by',
+        'updated_time',
+    ];
+ 
+    public function scopeSearch($query, $search)
+    {
+        if ($search) {
+            $query->where('project_name', 'like', "%{$search}%");
+        }
+ 
+        return $query;
+    }
+ 
+    public static function getPaginated($search = null, $perPage = 20)
+    {
+        return self::query()
+            ->search($search)
+            ->orderBy('id', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    const CREATED_AT = 'created_time';
+    const UPDATED_AT = 'updated_time';
+}
