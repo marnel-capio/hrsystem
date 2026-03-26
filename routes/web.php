@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\IntermediateProjectController;
+use App\Http\Controllers\IntermediateRequisitionController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -132,6 +133,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/intermediate/projects/{id}', [IntermediateProjectController::class, 'show'])->name('intermediate.projects.show');       
         Route::get('/intermediate/projects/{id}/edit', [IntermediateProjectController::class, 'edit'])->name('intermediate.projects.edit');        
         Route::post('/intermediate/projects/{id}/update', [IntermediateProjectController::class, 'update'])->name('intermediate.projects.update');
+    });
+
+
+
+    // ------------------------
+    // Intermediate Resource Requisitions
+    // ------------------------
+    Route::middleware(['auth', 'check.permission'])->group(function () {
+        Route::get('/intermediate/resource-requisitions', [IntermediateRequisitionController::class, 'index'])->name('intermediate.requisitions.list');
+        Route::get('/intermediate/resource-requisitions/register', [IntermediateRequisitionController::class, 'create'])->name('intermediate.requisitions.register');
+        Route::post('/intermediate/resource-requisitions', [IntermediateRequisitionController::class, 'store'])->name('intermediate.requisitions.store');
+        Route::get('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'show'])->name('intermediate.requisitions.show');       
+        Route::get('/intermediate/resource-requisitions/{id}/edit', [IntermediateRequisitionController::class, 'edit'])->name('intermediate.requisitions.edit');        
+        Route::post('/intermediate/resource-requisitions/{id}/update', [IntermediateRequisitionController::class, 'update'])->name('intermediate.requisitions.update');
     });
 
 // ------------------------

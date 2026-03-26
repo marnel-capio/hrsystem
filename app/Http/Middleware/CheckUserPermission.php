@@ -124,7 +124,7 @@ class CheckUserPermission
         }
 
 
-        // INTERMEDIATE
+        // INTERMEDIATE PROJECTS
         if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
             // Only permission 1, 2, 3, and 5 are allowed for these routes
             if (in_array($permission, [1, 2, 3, 5])) {
@@ -139,6 +139,33 @@ class CheckUserPermission
         }
 
         if (in_array($routeName, ['intermediate.projects.register', 'intermediate.projects.store', 'intermediate.projects.edit', 'intermediate.projects.update'])) {
+            // Only permission 1 or 5 are allowed for these routes
+            if (in_array($permission, [1, 5])) {
+                return $next($request);
+            }
+
+            // Fetch the error message from errors.php using the correct key
+            $errorMessage = trans('errors.unauthorized_user.errorMessage');
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        // INTERMEDIATE RREQUISITIONS
+        if (in_array($routeName, ['intermediate.requisitions.list', 'intermediate.requisitions.show'])) {
+            // Only permission 1, 2, 3, and 5 are allowed for these routes
+            if (in_array($permission, [1, 2, 3, 5])) {
+                return $next($request);
+            }
+
+            // Fetch the error message from errors.php using the correct key
+            $errorMessage = trans('errors.unauthorized_user.errorMessage');
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        if (in_array($routeName, ['intermediate.requisitions.register', 'intermediate.requisitions.store', 'intermediate.requisitions.edit', 'intermediate.requisitions.update'])) {
             // Only permission 1 or 5 are allowed for these routes
             if (in_array($permission, [1, 5])) {
                 return $next($request);

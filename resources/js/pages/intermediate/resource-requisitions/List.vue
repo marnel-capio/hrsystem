@@ -2,25 +2,34 @@
 import { computed, ref, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
+import debounce from 'lodash/debounce'
+
 
 const page = usePage<any>()
 
-const projects = computed(() => page.props.projects)
+const requisitions = computed(() => page.props.requisitions)
 const filters = computed(() => page.props.filters)
 const userPermissions = computed(() => Number(page.props.user_permissions))
 const search = ref(filters.value.search || '')
 
 watch(search, (value: string) => {
   router.get(
-    '/intermediate/projects',
+    '/intermediate/resource-requisitions',
     { search: value },
     { preserveState: true, replace: true }
   )
 })
+const doSearch = debounce((value: string) => {
+  router.get(
+    '/intermediate/resource-requisitions',
+    { search: value },
+    { preserveState: true, replace: true }
+  )
+}, 100)
 
-const currentPage = computed(() => projects.value.current_page)
-const lastPage = computed(() => projects.value.last_page)
-const projectsTotal = computed(() => page.props.projects_total)
+const currentPage = computed(() => requisitions.value.current_page)
+const lastPage = computed(() => requisitions.value.last_page)
+const requisitionsTotal = computed(() => page.props.requisitions_total)
 
 const blockSize = 5
 const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize))
@@ -35,10 +44,18 @@ const pageNumbers = computed(() => {
 
 function goToPage(pageNumber: number) {
   router.get(
-    '/intermediate/projects',
+    '/intermediate/resource-requisitions',
     { page: pageNumber, search: search.value },
     { preserveState: true }
   )
+}
+const locationMap: Record<number, string> = {
+  1: 'Alabang',
+  2: 'Makati',
+  3: 'Cebu',
+  4: 'Japan',
+  5: 'China',
+  6: 'Other'
 }
 
 function prevBlock() {
@@ -49,13 +66,7 @@ function nextBlock() {
   if (endPage.value < lastPage.value) goToPage(endPage.value + 1)
 }
 
-const shouldShowPagination = computed(() => projectsTotal.value > 20)
-
-const selectedOption = ref('')
-const otherValue = ref('')
-
-const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
-
+const shouldShowPagination = computed(() => requisitionsTotal.value > 20)
 </script>
 
 <template>
@@ -64,10 +75,10 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
 
       <!-- PAGE HEADER -->
       <div class="page-header">
-        <h2 class="page-title">Project List</h2>
-        <Link v-if="userPermissions === 1 || userPermissions === 5" :href="`/intermediate/projects/register`"
+        <h2 class="page-title">Resource Requisition List</h2>
+        <Link v-if="userPermissions === 1 || userPermissions === 5" :href="`/intermediate/resource-requisitions/register`"
           class="!bg-[#1C7BA5] btn-primary">
-          Create Project
+          Create Resource Requisition
         </Link>
       </div>
 
@@ -81,7 +92,7 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
                 d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
             </svg>
           </span>
-          <input v-model="search" type="text" placeholder="Search by Project Name"
+          <input v-model="search" type="text" placeholder="Search by Project Name and Location Assignment"
             class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
         </div>
       </div>
@@ -90,8 +101,8 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
       <div class="card">
         <!-- COUNT -->
         <div class="mb-2 text-xs text-gray-600">
-          Showing {{ projects.data.length > 0 ? projects.from : 0 }}–{{ projects.data.length > 0 ? projects.to : 0 }}
-          out of {{ projectsTotal }} items
+          Showing {{ requisitions.data.length > 0 ? requisitions.from : 0 }}–{{ requisitions.data.length > 0 ? requisitions.to : 0 }}
+          out of {{ requisitionsTotal }} items
         </div>
 
         <!-- TABLE -->
@@ -100,17 +111,22 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
             <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
                 <th class="border px-3 py-2">Project Name</th>
-                <th class="border px-3 py-2">Remarks</th>
+                <th class="border px-3 py-2">Project Description</th>
+                <th class="border px-3 py-2">Location Assignment</th>
+                <th class="border px-3 py-2">Start Date</th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-zinc-900">
-              <tr v-for="project in projects.data" :key="project.id">
+              <tr v-for="requisition in requisitions.data" :key="requisition.id">
                 <td class="border px-3 py-2">
-                  <Link :href="`/intermediate/projects/${project.id}`" class="table-link">{{ project.project_name }}</Link>
+                  <Link :href="`/intermediate/requisitions/${requisition.id}`" class="table-link">{{ requisition.project?.project_name }}</Link>
                 </td>
-                <td class="border px-3 py-2">{{ project.remarks }}</td>
+                <td class="border px-3 py-2">{{ requisition.project_description }}</td>
+                <td class="border px-3 py-2">
+                    {{ locationMap[requisition.location_assignment] }}</td>
+                <td class="border px-3 py-2">{{ requisition.start_date }}</td>
               </tr>
-              <tr v-if="projects.data.length === 0">
+              <tr v-if="requisitions.data.length === 0">
                 <td colspan="4" class="text-center p-6 text-zinc-500">
                   No records found
                 </td>
@@ -131,6 +147,7 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
           <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer"
             :class="{ 'opacity-50 cursor-not-allowed': endPage === lastPage }">Next</span>
         </div>
+
       </div>
     </div>
   </AppLayout>
