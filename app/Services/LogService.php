@@ -83,4 +83,62 @@ class LogService
 
         Log::createLog('ACTION', $activity, $applicantId, $ipAddress);
     }
+
+    public function createApplicantUpdateLog(array $oldData, array $newData, int $applicantId): void
+    {
+        $applicant = ActionApplicant::find($applicantId);
+        $ipAddress = request()->ip();
+        $activityLines = [];
+
+        $activityLines[] = "Updated ACTION Applicant: {$applicant->first_name} {$applicant->last_name}.";
+        $activityLines[] = 'Details:';
+
+        $sourceTypes = config('constants.sourceTypes', []);
+        $sources = config('constants.sources', []);
+        $genders = [1 => 'Male', 2 => 'Female'];
+
+        $fields = [
+            'source_type', 'source', 'other_source', 'last_name', 'first_name', 'middle_name',
+            'email_address', 'gender', 'age', 'school', 'degree', 'others_degree',
+            'expected_graduation', 'awards_recognition', 'other_examination_certificate',
+            'thesis_project', 'extra_curricular',
+        ];
+
+        foreach ($fields as $field) {
+            $oldValue = $oldData[$field] ?? null;
+            $newValue = $newData[$field] ?? null;
+
+            // Convert IDs to human-readable
+            if ($field === 'source_type') {
+                $oldValueStr = $sourceTypes[$oldValue] ?? $oldValue;
+                $newValueStr = $sourceTypes[$newValue] ?? $newValue;
+            } elseif ($field === 'source') {
+                $oldValueStr = $sources[$oldValue] ?? $oldValue;
+                $newValueStr = $sources[$newValue] ?? $newValue;
+            } elseif ($field === 'gender') {
+                $oldValueStr = $genders[$oldValue] ?? $oldValue;
+                $newValueStr = $genders[$newValue] ?? $newValue;
+            } else {
+                $oldValueStr = (string) $oldValue;
+                $newValueStr = (string) $newValue;
+            }
+
+            if ($oldValueStr !== $newValueStr) {
+                $activityLines[] = "{$field}: {$oldValueStr} -> {$newValueStr}";
+            }
+        }
+
+        $activity = implode("\n", $activityLines);
+
+        // Store in logs table
+        Log::create([
+            'module' => 'ACTION',
+            'activity' => $activity,
+            'ip_address' => $ipAddress,
+            'created_by' => auth()->id(),
+            'updated_by' => auth()->id(),
+            'create_time' => now(),
+            'update_time' => now(),
+        ]);
+    }
 }

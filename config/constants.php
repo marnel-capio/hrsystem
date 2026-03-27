@@ -107,6 +107,8 @@ return [
         3 => 'JobStreet',
         4 => 'LinkedIn',
         5 => 'Referral',
+        6 => 'Facebook',
+        7 => 'Jobstreet',
     ],
 
     'genders' => [

@@ -17,15 +17,15 @@ class UpdateActionApplicantRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'source_type' => [new RequiredField, 'integer'],
-            'source' => 'nullable|integer',
-            'other_source' => ['nullable', 'string', new MaxLength(80)],
+            'source_type' => [new RequiredField, 'numeric'],
+            'source' => 'nullable|numeric|required_if:source_type,3',
+            'other_source' => ['nullable', 'string', new MaxLength(80), 'required_if:source_type,1,2,4,5'],
             'last_name' => [new RequiredField, 'string', new MaxLength(80)],
             'first_name' => [new RequiredField, 'string', new MaxLength(80)],
             'middle_name' => ['nullable', 'string', new MaxLength(80)],
             'email_address' => [new RequiredField, 'email', new MaxLength(80) ],
-            'gender' => [new RequiredField, 'integer'],
-            'age' => [new RequiredField, 'integer', 'min:1', 'max:99'],
+            'gender' => [new RequiredField, 'numeric', 'in:1,2'],
+            'age' => [new RequiredField, 'numeric', 'min:1', 'max:99'],
             'school' => [new RequiredField, 'string', new MaxLength(80)],
             'degree' => [new RequiredField, 'string', new MaxLength(80)],
             'others_degree' => ['nullable', 'string', new MaxLength(80)],
@@ -35,6 +35,14 @@ class UpdateActionApplicantRequest extends FormRequest
             'thesis_project' => ['nullable', 'string', new MaxLength(1024)],
             'extra_curricular' => ['nullable', 'string', new MaxLength(1024)],
             'remarks' => ['nullable', 'string', new MaxLength(1024)],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'source.required_if' => config('errors.field_required.errorMessage'),
+            'other_source.required_if' => config('errors.field_required.errorMessage'),
         ];
     }
 }

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicantController::detail
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:24
  * @route '/action/applicants/{id}'
  */
 export const detail = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ detail.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::detail
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:24
  * @route '/action/applicants/{id}'
  */
 detail.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ detail.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::detail
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:24
  * @route '/action/applicants/{id}'
  */
 detail.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ detail.get = (args: { id: string | number } | [id: string | number ] | string | 
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantController::detail
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:24
  * @route '/action/applicants/{id}'
  */
 detail.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ detail.head = (args: { id: string | number } | [id: string | number ] | string |
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::detail
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:24
  * @route '/action/applicants/{id}'
  */
     const detailForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ detail.head = (args: { id: string | number } | [id: string | number ] | string |
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::detail
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:24
  * @route '/action/applicants/{id}'
  */
         detailForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ detail.head = (args: { id: string | number } | [id: string | number ] | string |
         })
             /**
 * @see \App\Http\Controllers\ActionApplicantController::detail
- * @see app/Http/Controllers/ActionApplicantController.php:22
+ * @see app/Http/Controllers/ActionApplicantController.php:24
  * @route '/action/applicants/{id}'
  */
         detailForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -98,7 +98,7 @@ detail.head = (args: { id: string | number } | [id: string | number ] | string |
     detail.form = detailForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:47
+ * @see app/Http/Controllers/ActionApplicantController.php:49
  * @route '/action/applicants/{id}/edit'
  */
 export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:47
+ * @see app/Http/Controllers/ActionApplicantController.php:49
  * @route '/action/applicants/{id}/edit'
  */
 edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -141,7 +141,7 @@ edit.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:47
+ * @see app/Http/Controllers/ActionApplicantController.php:49
  * @route '/action/applicants/{id}/edit'
  */
 edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -150,7 +150,7 @@ edit.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:47
+ * @see app/Http/Controllers/ActionApplicantController.php:49
  * @route '/action/applicants/{id}/edit'
  */
 edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -160,7 +160,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:47
+ * @see app/Http/Controllers/ActionApplicantController.php:49
  * @route '/action/applicants/{id}/edit'
  */
     const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -170,7 +170,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:47
+ * @see app/Http/Controllers/ActionApplicantController.php:49
  * @route '/action/applicants/{id}/edit'
  */
         editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -179,7 +179,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:47
+ * @see app/Http/Controllers/ActionApplicantController.php:49
  * @route '/action/applicants/{id}/edit'
  */
         editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -195,7 +195,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::update
- * @see app/Http/Controllers/ActionApplicantController.php:64
+ * @see app/Http/Controllers/ActionApplicantController.php:66
  * @route '/action/applicants/{id}/update'
  */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -210,7 +210,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::update
- * @see app/Http/Controllers/ActionApplicantController.php:64
+ * @see app/Http/Controllers/ActionApplicantController.php:66
  * @route '/action/applicants/{id}/update'
  */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -238,7 +238,7 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::update
- * @see app/Http/Controllers/ActionApplicantController.php:64
+ * @see app/Http/Controllers/ActionApplicantController.php:66
  * @route '/action/applicants/{id}/update'
  */
 update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -248,7 +248,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::update
- * @see app/Http/Controllers/ActionApplicantController.php:64
+ * @see app/Http/Controllers/ActionApplicantController.php:66
  * @route '/action/applicants/{id}/update'
  */
     const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -263,7 +263,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::update
- * @see app/Http/Controllers/ActionApplicantController.php:64
+ * @see app/Http/Controllers/ActionApplicantController.php:66
  * @route '/action/applicants/{id}/update'
  */
         updateForm.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -279,7 +279,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -294,7 +294,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -303,7 +303,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -312,7 +312,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -322,7 +322,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -332,7 +332,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -341,7 +341,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:12
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

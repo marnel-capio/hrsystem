@@ -458,6 +458,29 @@ const awardsDisplay = computed(() => {
 
 const canSeeRemarks = computed(() => [1, 2, 3].includes(userPermissions.value))
 
+// Map source ID to readable label
+const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
+    const sources: Record<number, string> = {
+        1: 'University Career Fair',
+        2: 'Partner School',
+        3: 'JobStreet',
+        4: 'LinkedIn',
+        5: 'Referral',
+        6: 'Facebook',
+        7: 'Jobstreet',
+    }
+
+    const id = parseInt(sourceId)
+    if (!isNaN(id) && sources[id]) {
+        return sources[id]
+    }
+
+    // fallback to other_source if present
+    if (otherSource && otherSource.trim()) return otherSource
+
+    return '-'
+}
+
 </script>
 
 <template>
@@ -598,6 +621,21 @@ const canSeeRemarks = computed(() => [1, 2, 3].includes(userPermissions.value))
 
             <!-- RIGHT: Remarks, Awards, Thesis, Extra Curricular -->
             <div class="col-span-2 bg-white rounded-xl shadow border p-6 space-y-4">
+                <!-- Source Information -->
+                <div v-if="applicant.source_type || applicant.source || applicant.other_source"
+                    class="bg-white rounded-xl shadow border p-4 mb-4">
+                    <h4 class="text-xs font-bold mb-2">SOURCE INFORMATION</h4>
+                    <p class="text-xs break-words">
+                        <strong>Source Type:</strong> {{ sourceTypeLabel(applicant.source_type) || '-' }}<br>
+                        <strong>Source:</strong>
+                        {{ applicant.source
+                            ? sourceLabel(applicant.source)
+                            : applicant.other_source
+                                ? applicant.other_source
+                        : '-'
+                        }}
+                    </p>
+                </div>
                 <div v-if="applicant.remarks">
                     <h4 class="text-xs font-bold mb-2 text-left">REMARKS</h4>
                     <p class="text-xs break-words">{{ applicant.remarks }}</p>
@@ -670,7 +708,7 @@ const canSeeRemarks = computed(() => [1, 2, 3].includes(userPermissions.value))
         </div>
 
         <!-- Programming Languages Section -->
-        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6" v-if="![5,6].includes(userPermissions)">
+        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6" v-if="![5, 6].includes(userPermissions)">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold">Programming Languages</h3>
                 <div class="flex gap-2">

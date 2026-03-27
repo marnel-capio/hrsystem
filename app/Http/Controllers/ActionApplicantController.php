@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateActionApplicantRequest;
 use App\Models\ActionApplicant;
+use App\Services\LogService;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ActionApplicantController extends Controller
@@ -65,10 +67,34 @@ class ActionApplicantController extends Controller
     {
         $applicant = ActionApplicant::findOrFail($id);
 
-        $applicant->updateWithRequest($request->validated(), auth()->id());
+        DB::beginTransaction();
 
-        return redirect()
-            ->route('action.applicants.detail', $applicant->id)
-            ->with('success', 'ACTION Applicant updated successfully.');
+        try {
+            $oldData = $applicant->only([
+                'source_type', 'source', 'other_source', 'last_name', 'first_name', 'middle_name',
+                'email_address', 'gender', 'age', 'school', 'degree', 'others_degree',
+                'expected_graduation', 'awards_recognition', 'other_examination_certificate',
+                'thesis_project', 'extra_curricular',
+            ]);
+
+            // TEMPORARY: force an exception to test the catch block
+            // throw new \Exception('');
+
+            $applicant->updateWithRequest($request->validated(), auth()->id());
+
+            $newData = $applicant->fresh()->only(array_keys($oldData));
+
+            app(LogService::class)->createApplicantUpdateLog($oldData, $newData, $applicant->id);
+
+            DB::commit();
+
+            return redirect()
+                ->route('action.applicants.detail', $applicant->id)
+                ->with('success', config('errors.user_updated_successfully.errorMessage'));
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return Inertia::back()->with('error', config('errors.update_failed.errorMessage'));
+        }
     }
 }
