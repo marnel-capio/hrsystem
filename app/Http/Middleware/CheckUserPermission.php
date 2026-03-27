@@ -123,7 +123,6 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-
         // INTERMEDIATE
         if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
             // Only permission 1, 2, 3, and 5 are allowed for these routes
@@ -183,6 +182,11 @@ class CheckUserPermission
             }
         }
 
+        /*
+        |----------------------------------------------------------------------
+        | Route: /action/applicants
+        |----------------------------------------------------------------------
+        */
         if (in_array($routeName, ['action.applicants.index'])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
@@ -190,6 +194,52 @@ class CheckUserPermission
                 config('constants.HR_RECRUITER_PERMISSION.value'),
                 config('constants.BU_MANAGER_PERMISSION.value'),
                 config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        /*
+        |----------------------------------------------------------------------
+        | Route: /action/applicants/{id}
+        |----------------------------------------------------------------------
+        */
+        if ($routeName === 'action.applicants.detail') {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        /*
+        |----------------------------------------------------------------------
+        | Route: /action/applicants/{id}/edit, CRUD ProgLang, Update
+        |----------------------------------------------------------------------
+        */
+        if (in_array($routeName, [
+            'action.applicants.edit',
+            'action.applicants.update',
+            'action.applicants.languages.index',
+            'action.applicants.languages.store',
+            'action.applicants.languages.update',
+            'action.applicants.languages.destroy',
+            'action.applicants.languages.bulk-delete',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
             ])) {
                 return $next($request);
             }
