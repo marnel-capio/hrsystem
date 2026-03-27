@@ -1,233 +1,435 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Link, router, usePage } from '@inertiajs/vue3'
-import debounce from 'lodash/debounce'
+import { Head, usePage } from '@inertiajs/vue3';
+import { ref, computed, watch } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Inertia } from '@inertiajs/inertia';
+import { type BreadcrumbItem } from '@/types';
 
+const breadcrumbs: BreadcrumbItem[] = [
+  { title: 'Logs', href: '#' },
+];
 
-const page = usePage<any>()
+const page = usePage();
 
-const requisitions = computed(() => page.props.requisitions)
-const filters = computed(() => page.props.filters)
-const userPermissions = computed(() => Number(page.props.user_permissions))
-const search = ref(filters.value.search || '')
+const props = defineProps<{
+  logs: Array<{
+    id: number;
+    module: string;
+    activity: string;
+    ip_address: string;
+    created_by_name: string;
+    create_time: string;
+  }>;
+  filters: {
+    search: string;
+  };
+  userPermissions: number;
+}>();
 
-const doSearch = debounce((value: string) => {
-router.get(
-  '/intermediate/resource-requisitions',
-  { search: value },
-  { preserveState: true, replace: true }
-)
-}, 100)
- 
-watch(search, (value: string) => {
-doSearch(value)
-})
+const selectedDate = ref<string>('');
+const showDateFilter = ref<boolean>(false); 
 
-const currentPage = computed(() => requisitions.value.current_page)
-const lastPage = computed(() => requisitions.value.last_page)
-const requisitionsTotal = computed(() => page.props.requisitions_total)
+const selectedModule = ref<string>(''); 
+const showModuleFilter = ref<boolean>(false);  
 
-const blockSize = 5
-const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize))
-const startPage = computed(() => (currentBlock.value - 1) * blockSize + 1)
-const endPage = computed(() => Math.min(startPage.value + blockSize - 1, lastPage.value))
+function formatTableDate(dateStr: string) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  });
+}
+
+function formatDetailDate(dateStr: string) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+}
+
+// Pagination setup
+const currentPage = ref(1);
+const perPage = 20;
+const blockSize = 5;
+const searchQuery = ref(''); // NEW
+
+const selectedLog = ref<null | {
+  id: number;
+  module: string;
+  activity: string;
+  ip_address: string;
+  created_by_name: string;
+  create_time: string;
+}>(null);
+
+watch(searchQuery, () => {
+  selectedLog.value = null; 
+});
+
+watch(selectedDate, (newDate) => {
+  if (newDate) selectedLog.value = null; 
+});
+
+watch(selectedModule, (newModule) => {
+  if (newModule) selectedLog.value = null; 
+});
+
+const detailsRef = ref<HTMLElement | null>(null);
+
+function showDetails(log: any) {
+  if (selectedLog.value?.id === log.id) {
+    selectedLog.value = null; // Deselect if the same row is clicked
+  } else {
+    selectedLog.value = log; // Select the row
+  }
+  setTimeout(() => {
+    detailsRef.value?.scrollIntoView({ behavior: 'smooth' });
+  }, 100);
+}
+
+function highlightText(text: string): string {
+  if (!searchQuery.value.trim()) return text; 
+  const regex = new RegExp(`(${searchQuery.value.trim()})`, 'gi'); 
+  return text.replace(regex, '<span class="highlight">$1</span>'); 
+}
+
+const filteredLogs = computed(() => {
+  const date = selectedDate.value;
+  const module = selectedModule.value?.trim().toLowerCase();
+  const search = searchQuery.value?.trim().toLowerCase();
+
+  let data = props.logs;
+
+  // Apply the Date filter if it's enabled
+  if (showDateFilter.value && date) {
+    data = data.filter((log) => {
+      const logDate = new Date(log.create_time).toLocaleDateString();
+      return logDate === new Date(date).toLocaleDateString();
+    });
+  }
+
+  // Apply the Module filter if it's enabled
+  if (showModuleFilter.value && module) {
+    data = data.filter(log => log.module?.toLowerCase().trim() === module);  
+  }
+
+  // Apply the Search filter
+  if (search) {
+    data = data.filter(log =>
+      log.activity?.toLowerCase().includes(search) ||
+      log.created_by_name?.toLowerCase().includes(search)
+    );
+  }
+
+  return [...data].sort((a, b) => b.id - a.id);
+});
+
+const totalPages = computed(() => Math.ceil(filteredLogs.value.length / perPage));
+const paginatedLogs = computed(() => {
+  const start = (currentPage.value - 1) * perPage;
+  return filteredLogs.value.slice(start, start + perPage);
+});
+
+const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize));
+const startPage = computed(() => (currentBlock.value - 1) * blockSize + 1);
+const endPage = computed(() => Math.min(startPage.value + blockSize - 1, totalPages.value));
 
 const pageNumbers = computed(() => {
-  const pages = []
-  for (let i = startPage.value; i <= endPage.value; i++) pages.push(i)
-  return pages
-})
+  const pages = [];
+  for (let i = startPage.value; i <= endPage.value; i++) pages.push(i);
+  return pages;
+});
 
-function goToPage(pageNumber: number) {
-  router.get(
-    '/intermediate/resource-requisitions',
-    { page: pageNumber, search: search.value },
-    { preserveState: true }
-  )
-}
-const locationMap: Record<number, string> = {
-  1: 'Alabang',
-  2: 'Makati',
-  3: 'Cebu',
-  4: 'Japan',
-  5: 'China',
-  6: 'Other'
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages.value) currentPage.value = page;
 }
 
 function prevBlock() {
-  if (startPage.value > 1) goToPage(startPage.value - 1)
+  if (startPage.value > 1) goToPage(startPage.value - 1);
 }
 
 function nextBlock() {
-  if (endPage.value < lastPage.value) goToPage(endPage.value + 1)
+  if (endPage.value < totalPages.value) goToPage(endPage.value + 1);
 }
 
-const shouldShowPagination = computed(() => requisitionsTotal.value > 20)
-function formatDate(dateString: string) {
-  if (!dateString) return ''
- 
-  const date = new Date(dateString)
- 
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: '2-digit'
-  })
+const showingFrom = computed(() =>
+  filteredLogs.value.length === 0 ? 0 : (currentPage.value - 1) * perPage + 1
+);
+
+const showingTo = computed(() => {
+  const end = currentPage.value * perPage;
+  return end > filteredLogs.value.length ? filteredLogs.value.length : end;
+});
+
+function formatActivitySummary(activity: string) {
+  const detailsIndex = activity.indexOf('Details:');
+  return detailsIndex === -1 ? activity : activity.substring(0, detailsIndex).trim();
 }
 
 </script>
 
 <template>
-  <AppLayout>
-    <div class="page-content">
-
-      <!-- PAGE HEADER -->
-      <div class="page-header">
-        <h2 class="page-title">Resource Requisition List</h2>
-        <Link v-if="userPermissions === 1 || userPermissions === 5" :href="`/intermediate/resource-requisitions/register`"
-          class="!bg-[#1C7BA5] btn-primary">
-          Create Resource Requisition
-        </Link>
-      </div>
-
-      <!-- SEARCH -->
-      <div class="flex gap-4 mb-4">
-        <div class="relative w-full">
-          <span class="absolute inset-y-0 left-3 flex items-center text-zinc-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
-            </svg>
-          </span>
-          <input v-model="search" type="text" placeholder="Search by Project Name and Location Assignment"
-            class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
+  <Head title="Log List" />
+  <AppLayout :breadcrumbs="breadcrumbs">
+    <div class="flex flex-col gap-6 p-8 bg-zinc-50/50 dark:bg-zinc-950 min-h-screen">
+      <div class="page-content">
+        <!-- HEADER -->
+        <div class="page-header">
+          <h2 class="page-title">Logs List</h2>
         </div>
-      </div>
 
-      <!-- CARD WRAPPER -->
-      <div class="card">
-        <!-- COUNT -->
-        <div class="mb-2 text-xs text-gray-600">
-          Showing {{ requisitions.data.length > 0 ? requisitions.from : 0 }}–{{ requisitions.data.length > 0 ? requisitions.to : 0 }}
-          out of {{ requisitionsTotal }} items
+        <!-- SEARCH --> 
+        <div class="flex gap-4 mb-4"> 
+          <div class="relative w-full"> 
+            <input 
+              v-model="searchQuery"
+              type="text" 
+              placeholder="Search by activity or creator" 
+              class="w-full pl-3 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" 
+            /> 
+          </div>
+        </div>
+
+        <!-- FILTER BY -->
+        <div class="flex gap-4 mb-4">
+          <label class="text-sm font-semibold">Filter by:</label>
+          
+          <!-- Date Filter Checkbox -->
+          <div class="flex items-center gap-2">
+            <input
+              v-model="showDateFilter"
+              type="checkbox"
+              id="date-filter-checkbox"
+              class="cursor-pointer"
+            />
+            <label for="date-filter-checkbox" class="text-sm">Date</label>
+          </div>
+
+          <!-- Module Filter Checkbox -->
+          <div class="flex items-center gap-2">
+            <input
+              v-model="showModuleFilter"
+              type="checkbox"
+              id="module-filter-checkbox"
+              class="cursor-pointer"
+            />
+            <label for="module-filter-checkbox" class="text-sm">Module</label>
+          </div>
+        </div>
+
+        <div v-if="showDateFilter" class="flex gap-4 mb-4">
+          <div class="relative w-full">
+            <input
+              v-model="selectedDate"
+              type="date"
+              class="w-42 pl-3 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700"
+            />
+          </div>
+        </div>
+
+        <div v-if="showModuleFilter" class="flex gap-4 mb-4">
+          <div class="relative w-full">
+            <select
+              v-model="selectedModule"
+              class="w-42 pl-3 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700"
+            >
+              <option value="" class="readonly">Select Module</option>
+              <option value="Users">Users</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="ACTION">ACTION</option>
+            </select>
+          </div>
         </div>
 
         <!-- TABLE -->
-        <div class="table-wrapper">
-          <table class="ats-table w-full table-auto border-collapse border text-sm">
-            <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
-              <tr>
-                <th class="border px-3 py-2">Project Name</th>
-                <th class="border px-3 py-2">Project Description</th>
-                <th class="border px-3 py-2">Location Assignment</th>
-                <th class="border px-3 py-2">Start Date</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white dark:bg-zinc-900">
-              <tr v-for="requisition in requisitions.data" :key="requisition.id">
-                <td class="border px-3 py-2">
-                  <Link :href="`/intermediate/requisitions/${requisition.id}`" class="table-link">{{ requisition.project?.project_name }}</Link>
-                </td>
-                <td class="border px-3 py-2">{{ requisition.project_description }}</td>
-                <td class="border px-3 py-2">
-                    {{ locationMap[requisition.location_assignment] }}</td>
-                <td class="border px-3 py-2">{{ formatDate (requisition.start_date)}}</td>
-              </tr>
-              <tr v-if="requisitions.data.length === 0">
-                <td colspan="4" class="text-center p-6 text-zinc-500">
-                  No records found
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="card">
+          <div class="mb-2 text-xs text-gray-600">
+            Showing {{ showingFrom }}–{{ showingTo }} out of {{ filteredLogs.length }} items
+          </div>
+
+          <div class="table-wrapper">
+            <table class="ats-table w-full table-auto border-collapse border text-sm">
+              <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
+                <tr>
+                  <th class="border px-3 py-2 w-40">Timestamp</th>
+                  <th class="border px-3 py-2 w-100 break-all">Activity Summary</th>
+                  <th class="border px-3 py-2">Created By</th>
+                  <th class="border px-3 py-2">IP Address</th>
+                </tr>
+              </thead>
+
+              <tbody class="bg-white dark:bg-zinc-900">
+                <tr
+                  v-for="log in paginatedLogs"
+                  :key="log.id"
+                  :class="[ selectedLog?.id === log.id ? 'bg-blue-50 dark:bg-zinc-800' : '', 'hover:bg-blue-100 dark:hover:bg-zinc-700' ]"
+                >
+                  <td class="border px-3 py-2">{{ formatTableDate(log.create_time) }}</td>
+                  <td
+                    class="border px-3 py-2 cursor-pointer"
+                    @click="showDetails(log)">
+                    {{ formatActivitySummary(log.activity) }}
+                  </td>
+
+                  <td class="border px-3 py-2" v-html="highlightText(log.created_by_name)"></td>
+                  <td class="border px-3 py-2">{{ formatTableDate(log.ip_address) }}</td>
+                </tr>
+
+                <tr v-if="paginatedLogs.length === 0">
+                  <td colspan="4" class="text-center p-6 text-zinc-500">
+                    No logs found.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- PAGINATION -->
-        <div v-if="shouldShowPagination" class="flex justify-center mt-3 gap-2 text-xs">
-          <span @click="prevBlock" class="px-3 py-2 border rounded cursor-pointer"
-            :class="{ 'opacity-50 cursor-not-allowed': startPage === 1 }">Prev</span>
+        <div
+          class="flex justify-center mt-3 gap-2 text-xs"
+          v-if="filteredLogs.length > perPage"
+        >
+          <span @click="prevBlock" class="px-3 py-2 border rounded cursor-pointer">
+            Prev
+          </span>
 
-          <span v-for="pageNumber in pageNumbers" :key="pageNumber" @click="goToPage(pageNumber)"
+          <span
+            v-for="pageNumber in pageNumbers"
+            :key="pageNumber"
+            @click="goToPage(pageNumber)"
             class="px-3 py-2 border rounded cursor-pointer"
-            :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''">{{ pageNumber }}</span>
+            :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''"
+          >
+            {{ pageNumber }}
+          </span>
 
-          <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer"
-            :class="{ 'opacity-50 cursor-not-allowed': endPage === lastPage }">Next</span>
+          <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer">
+            Next
+          </span>
         </div>
 
+        <!-- DETAILS -->
+        <div v-if="selectedLog" ref="detailsRef" class="card mt-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Log Details</h3>
+
+            <button
+              @click="selectedLog = null"
+              class="!px-4 !py-2 !text-xs !bg-[#1C7BA5] text-white !rounded !hover:bg-[#1C7BA5]-200 !flex items-center !justify-center !w-15 !h-7"
+            >
+              Close
+            </button>
+          </div>
+
+          <div class="log-details-container">
+            <div class="log-details-left">
+              <div><strong>Creation Date</strong></div>
+              <div>{{ formatDetailDate(selectedLog.create_time) }}</div>
+              <div><strong>Created by</strong></div>
+              <div>{{ selectedLog.created_by_name }}</div>
+
+              <div><strong>Module</strong></div>
+              <div>{{ selectedLog.module }}</div>
+              <div><strong>IP address</strong></div>
+              <div>{{ selectedLog.ip_address }}</div>
+            </div>
+
+            <div class="activity-wrapper">
+              <div class="activity-title">Activity</div>
+              <div class="activity-content">
+                {{ selectedLog.activity }}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </AppLayout>
 </template>
 
+
 <style scoped>
-/* CARD */
 .card {
-  background: var(--ats-card, white);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: var(--ats-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
+padding: 1rem;
+border-radius: 0.5rem;
+box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-
-/* TABLE WRAPPER */
-.table-wrapper {
-  overflow-x: hidden;
-  /* remove horizontal scroll */
-}
-
-.ats-table th,
-.ats-table td {
-  padding-left: 10px;
-  padding-right: 70px;
-}
-
-/* TABLE LINK */
+ 
 .table-link {
-  color: var(--ats-accent, #1C7BA5);
-  font-weight: 500;
-  text-decoration: none;
+color: #1C7BA5;
+font-weight: 500;
 }
 
-.table-link:hover {
-  text-decoration: underline;
-}
-
-/* PAGE HEADER */
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
+.highlight {
+  background-color: yellow;
+  padding: 0 3px;
+  border-radius: 3px;
 }
 
 .page-title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--ats-text);
+font-size: 1.4rem;
+font-weight: 600;
+}
+ 
+.log-details-container {
+display: flex;
+gap: 6rem;
+}
+ 
+.log-details-left {
+display: grid;
+grid-template-columns: 120px 1fr;
+gap: 10px;
+}
+ 
+.activity-wrapper {
+width: 700px;
+border: 1px solid #e5e7eb;
+border-radius: 12px;
+padding: 1rem;
+}
+ 
+.activity-title {
+text-align: center;
+font-weight: 600;
+margin-bottom: 0.5rem;
+}
+ 
+
+.ats-table td {
+  max-width: 250px;
+}
+.activity-content {
+font-size: 0.85rem;
+white-space: pre-wrap;
+}
+ 
+.close-btn {
+background-color: #1C7BA5;
+color: white;
+font-size: 0.75rem;
+padding: 4px 12px;
+border-radius: 6px;
+border: none;
+cursor: pointer;
 }
 
-/* BUTTON */
-.btn-primary {
-  background: var(--ats-primary, #1C7BA5);
-  color: #fff;
-  padding: 0.55rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: background 0.15s ease;
-}
-
-.btn-primary:hover {
-  background: var(--ats-accent, #165a80);
-}
-
-/* PAGE CONTENT */
-.page-content {
-  max-width: 1175px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
+.ats-table td:nth-child(2) {
+  max-width: 400px;
+  white-space: normal;
+  word-break: break-word;
+  cursor: pointer;
 }
 </style>
