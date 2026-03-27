@@ -12,20 +12,17 @@ const filters = computed(() => page.props.filters)
 const userPermissions = computed(() => Number(page.props.user_permissions))
 const search = ref(filters.value.search || '')
 
-watch(search, (value: string) => {
-  router.get(
-    '/intermediate/resource-requisitions',
-    { search: value },
-    { preserveState: true, replace: true }
-  )
-})
 const doSearch = debounce((value: string) => {
-  router.get(
-    '/intermediate/resource-requisitions',
-    { search: value },
-    { preserveState: true, replace: true }
-  )
+router.get(
+  '/intermediate/resource-requisitions',
+  { search: value },
+  { preserveState: true, replace: true }
+)
 }, 100)
+ 
+watch(search, (value: string) => {
+doSearch(value)
+})
 
 const currentPage = computed(() => requisitions.value.current_page)
 const lastPage = computed(() => requisitions.value.last_page)
@@ -67,6 +64,18 @@ function nextBlock() {
 }
 
 const shouldShowPagination = computed(() => requisitionsTotal.value > 20)
+function formatDate(dateString: string) {
+  if (!dateString) return ''
+ 
+  const date = new Date(dateString)
+ 
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit'
+  })
+}
+
 </script>
 
 <template>
@@ -124,7 +133,7 @@ const shouldShowPagination = computed(() => requisitionsTotal.value > 20)
                 <td class="border px-3 py-2">{{ requisition.project_description }}</td>
                 <td class="border px-3 py-2">
                     {{ locationMap[requisition.location_assignment] }}</td>
-                <td class="border px-3 py-2">{{ requisition.start_date }}</td>
+                <td class="border px-3 py-2">{{ formatDate (requisition.start_date)}}</td>
               </tr>
               <tr v-if="requisitions.data.length === 0">
                 <td colspan="4" class="text-center p-6 text-zinc-500">

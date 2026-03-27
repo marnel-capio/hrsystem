@@ -23,7 +23,7 @@ class IntermediateRequisitionController extends Controller
     public function index(Request $request)
 {
     $user = Auth::user();
-    $search = $request->input('search');  // Make sure this is correctly passed
+    $search = $request->input('search'); 
 
     $requisitions = IntermediateRequisitionModel::getPaginated($search, perPage: 20);
     $requisitionsTotal = IntermediateRequisitionModel::search($search)->count();

@@ -38,15 +38,34 @@ class IntermediateRequisitionModel extends Model
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            $query->where(function ($q) use ($search) {
+    
+            $locationMap = [
+                'alabang' => 1,
+                'makati' => 2,
+                'cebu' => 3,
+                'japan' => 4,
+                'china' => 5,
+                'other' => 6,
+            ];
+    
+            $query->where(function ($q) use ($search, $locationMap) {
+    
                 $q->whereHas('project', function ($q2) use ($search) {
                     $q2->where('project_name', 'like', "%{$search}%");
-                })
-                ->orWhere('location_assignment', 'like', "%{$search}%")
-                ->orWhere('start_date', 'like', "%{$search}%");
+                });
+    
+                $q->orWhere('start_date', 'like', "%{$search}%");
+    
+                $searchLower = strtolower($search);
+    
+                foreach ($locationMap as $key => $value) {
+                    if (str_contains($key, $searchLower)) {
+                        $q->orWhere('location_assignment', $value);
+                    }
+                }
             });
         }
-
+    
         return $query;
     }
 
@@ -66,7 +85,14 @@ class IntermediateRequisitionModel extends Model
     public static function getPaginated($search = null, $perPage = 20)
     {
         return self::query()
-            ->with('project') 
+            ->select([
+                'id',
+                'project_id',
+                'project_description',
+                'location_assignment',
+                'start_date'
+            ])
+            ->with('project:id,project_name')
             ->search($search)
             ->orderBy('id', 'desc')
             ->paginate($perPage)
