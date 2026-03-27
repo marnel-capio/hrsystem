@@ -121,6 +121,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('action.applications.store');
         Route::get('/action/applications', [ApplicationImportController::class, 'create'])->name('action.applications.index');
         Route::post('/applications/import', [ApplicationImportController::class, 'import'])->name('action.applications.import');
+        Route::get('/action/applications/eligible-applicants/{batchId}', [ActionApplicationController::class, 'getApplicantsForBatch']); //api
+        Route::post('/action/applications/check-eligibility', [ActionApplicationController::class, 'checkEligibility']); //api
         });
 
 

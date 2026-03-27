@@ -1,34 +1,79 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { useForm, Link } from '@inertiajs/vue3'
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import axios from 'axios';
 
-axios.defaults.headers.common['X-CSRF-TOKEN'] =
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
 const props = defineProps<{
-    actionApplicants?: Record<number, string>,
     actionBatches?: Record<number, string>,
     examVenues?: Record<number, string>,
-    traineesFrom?: Record<number, string>
+    examResults?: Record<number, string>,
+    examStatuses?: Record<number, string>,
+    interviewResults?: Record<number, string>,
+    interviewAppStatuses?: Record<number, string>,
+    jobOfferStatuses?: Record<number, string>,
     flash?: {
         error?: string
     }
 }>()
 
-const actionApplicants = props.actionApplicants
-    ? Object.entries(props.actionApplicants).map(([value, label]) => ({ value: Number(value), label }))
-    : []
-const actionBatches = props.actionBatches
-    ? Object.entries(props.actionBatches).map(([value, label]) => ({ value: Number(value), label }))
-    : []
-const examVenues = props.examVenues
-    ? Object.entries(props.examVenues).map(([value, label]) => ({ value: Number(value), label }))
-    : []
-const traineesFrom = props.traineesFrom
-    ? Object.entries(props.traineesFrom).map(([value, label]) => ({ value: Number(value), label }))
-    : []
+// Convert props to arrays for dropdowns
+const actionBatches = ref<Array<{value: number, label: string}>>([])
+const examVenues = ref<Array<{value: number, label: string}>>([])
+const examResults = ref<Array<{value: number, label: string}>>([])
+const examStatuses = ref<Array<{value: number, label: string}>>([])
+const interviewResults = ref<Array<{value: number, label: string}>>([])
+const interviewAppStatuses = ref<Array<{value: number, label: string}>>([])
+const jobOfferStatuses = ref<Array<{value: number, label: string}>>([])
+
+// Eligible applicants (loaded dynamically)
+const actionApplicants = ref<Array<{value: number, label: string}>>([])
+
+// Initialize dropdowns
+onMounted(() => {
+    if (props.actionBatches) {
+        actionBatches.value = Object.entries(props.actionBatches).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label)
+        }))
+    }
+    if (props.examVenues) {
+        examVenues.value = Object.entries(props.examVenues).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label)
+        }))
+    }
+    if (props.examResults) {
+        examResults.value = Object.entries(props.examResults).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label)
+        }))
+    }
+    if (props.examStatuses) {
+        examStatuses.value = Object.entries(props.examStatuses).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label)
+        }))
+    }
+    if (props.interviewResults) {
+        interviewResults.value = Object.entries(props.interviewResults).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label)
+        }))
+    }
+    if (props.interviewAppStatuses) {
+        interviewAppStatuses.value = Object.entries(props.interviewAppStatuses).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label)
+        }))
+    }
+    if (props.jobOfferStatuses) {
+        jobOfferStatuses.value = Object.entries(props.jobOfferStatuses).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label)
+        }))
+    }
+})
 
 // File references
 const resumeFile = ref<File | null>(null)
@@ -40,6 +85,7 @@ const resumePreview = ref<string | null>(null)
 const torPreview = ref<string | null>(null)
 const picturePreview = ref<string | null>(null)
 
+// Form data - matches database columns exactly
 const form = useForm({
     action_applicant_id: '',
     action_batch_id: '',
@@ -74,15 +120,14 @@ const form = useForm({
     job_offer_schedule: '',
     job_offer_status: '',
     job_offer_remarks: '',
-    trainees_from: '',
     remarks: ''
 })
 
+// Validation rules
 const rules = {
-    action_applicant_id: (val: string) => !!val || 'Action Applicant is required',
-    action_batch_id: (val: string) => !!val || 'Action Batch is required',
-    trainees_from: (val: string) => !!val || 'Trainees From is required',
-};
+    action_applicant_id: (val: string) => !!val || 'ACTION Applicant is required',
+    action_batch_id: (val: string) => !!val || 'ACTION Batch is required',
+}
 
 function validateField(field: keyof typeof rules) {
     const value = (form as any)[field];
@@ -93,37 +138,59 @@ function validateField(field: keyof typeof rules) {
 
 watch(() => form.action_applicant_id, () => validateField('action_applicant_id'));
 watch(() => form.action_batch_id, () => validateField('action_batch_id'));
-watch(() => form.trainees_from, () => validateField('trainees_from'));
+
+// Watch for batch selection to load eligible applicants
+watch(() => form.action_batch_id, async (newBatchId) => {
+    if (newBatchId) {
+        try {
+            const response = await axios.get(`/action/applications/eligible-applicants/${newBatchId}`);
+            actionApplicants.value = Object.entries(response.data).map(([value, label]) => ({
+                value: Number(value),
+                label: String(label)
+            }));
+            form.action_applicant_id = ''; // Reset applicant selection
+        } catch (error) {
+            console.error('Failed to load eligible applicants:', error);
+        }
+    }
+});
+
+// Watch for applicant selection to check eligibility
+watch(() => form.action_applicant_id, async (newApplicantId) => {
+    if (newApplicantId && form.action_batch_id) {
+        try {
+            const response = await axios.post('/action/applications/check-eligibility', {
+                action_applicant_id: newApplicantId,
+                action_batch_id: form.action_batch_id
+            });
+
+            if (!response.data.eligible) {
+                errorMessage.value = 'This applicant cannot apply at this time. A previous application from the last 6 months shows a failed status.';
+                showError.value = true;
+                form.action_applicant_id = ''; // Clear selection
+                setTimeout(() => {
+                    showError.value = false;
+                }, 5000);
+            }
+        } catch (error) {
+            console.error('Failed to check eligibility:', error);
+        }
+    }
+});
 
 const showError = ref(false)
 const errorMessage = ref<string | null>(null)
-
-watch(
-    () => props.flash,
-    (flash) => {
-        if (flash?.error) {
-            errorMessage.value = flash.error
-            showError.value = true
-            setTimeout(() => {
-                showError.value = false
-            }, 10000)
-        }
-    },
-    { immediate: true, deep: true }
-)
 
 // File handling functions
 const handleResumeUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
     if (target.files && target.files[0]) {
         const file = target.files[0]
-        // Validate file type
         const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
         if (!allowedTypes.includes(file.type)) {
             form.setError('upload_resume', 'Please upload a PDF or Word document')
             return
         }
-        // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             form.setError('upload_resume', 'File size must be less than 5MB')
             return
@@ -132,7 +199,6 @@ const handleResumeUpload = (event: Event) => {
         resumeFile.value = file
         form.upload_resume = file.name
 
-        // Create preview URL for PDF
         if (file.type === 'application/pdf') {
             resumePreview.value = URL.createObjectURL(file)
         } else {
@@ -147,9 +213,9 @@ const handleTorUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
     if (target.files && target.files[0]) {
         const file = target.files[0]
-        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png']
         if (!allowedTypes.includes(file.type)) {
-            form.setError('upload_tor', 'Please upload a PDF or Word document')
+            form.setError('upload_tor', 'Please upload a PDF, Word document, or image')
             return
         }
         if (file.size > 5 * 1024 * 1024) {
@@ -174,9 +240,9 @@ const handlePictureUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
     if (target.files && target.files[0]) {
         const file = target.files[0]
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif']
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
         if (!allowedTypes.includes(file.type)) {
-            form.setError('upload_pic', 'Please upload an image file (JPEG, PNG, GIF)')
+            form.setError('upload_pic', 'Please upload a JPG or PNG image')
             return
         }
         if (file.size > 2 * 1024 * 1024) {
@@ -186,10 +252,7 @@ const handlePictureUpload = (event: Event) => {
 
         pictureFile.value = file
         form.upload_pic = file.name
-
-        // Create preview URL for image
         picturePreview.value = URL.createObjectURL(file)
-
         form.clearErrors('upload_pic')
     }
 }
@@ -224,13 +287,26 @@ const removeFile = (type: 'resume' | 'tor' | 'picture') => {
 }
 
 async function submit() {
+    // Validate required fields
+    if (!form.action_applicant_id) {
+        form.setError('action_applicant_id', 'ACTION Applicant is required');
+        return;
+    }
+    if (!form.action_batch_id) {
+        form.setError('action_batch_id', 'ACTION Batch is required');
+        return;
+    }
+
     // Create FormData for file upload
     const formData = new FormData()
 
     // Append all form fields
     Object.keys(form.data()).forEach(key => {
         if (key !== 'upload_resume' && key !== 'upload_tor' && key !== 'upload_pic') {
-            formData.append(key, (form as any)[key])
+            const value = (form as any)[key];
+            if (value !== null && value !== undefined && value !== '') {
+                formData.append(key, value)
+            }
         }
     })
 
@@ -246,12 +322,21 @@ async function submit() {
     }
 
     // Submit with FormData
-    form.post('/action/applicant-applications', {
+    form.post('/action/applications', {
         data: formData,
         headers: {
             'Content-Type': 'multipart/form-data'
         },
-        onFinish: () => console.log('Submitted!')
+        onError: (errors) => {
+            console.error('Submission errors:', errors);
+            if (errors.eligibility) {
+                errorMessage.value = errors.eligibility;
+                showError.value = true;
+                setTimeout(() => {
+                    showError.value = false;
+                }, 5000);
+            }
+        }
     });
 }
 </script>
@@ -266,13 +351,9 @@ async function submit() {
             </div>
         </div>
 
-        <head>
-            <meta name="csrf-token" content="{{ csrf_token() }}">
-        </head>
-
         <div class="page-container">
             <div class="page-header">
-                <h2 class="page-title">Create ACTION Applicant Application</h2>
+                <h2 class="page-title">Create ACTION Application</h2>
             </div>
 
             <div class="form-wrapper">
@@ -285,8 +366,12 @@ async function submit() {
                             </div>
                             <div class="form-grid grid-2">
                                 <div class="form-field">
-                                    <label class="field-label required">Action Applicant</label>
-                                    <select v-model="form.action_applicant_id" class="form-select">
+                                    <label class="field-label required">ACTION Applicant</label>
+                                    <select
+                                        v-model="form.action_applicant_id"
+                                        class="form-select"
+                                        :disabled="!form.action_batch_id"
+                                    >
                                         <option disabled value="">Select Applicant</option>
                                         <option v-for="applicant in actionApplicants" :key="applicant.value" :value="applicant.value">
                                             {{ applicant.label }}
@@ -295,7 +380,7 @@ async function submit() {
                                     <span v-if="form.errors.action_applicant_id" class="error-message">{{ form.errors.action_applicant_id }}</span>
                                 </div>
                                 <div class="form-field">
-                                    <label class="field-label required">Action Batch</label>
+                                    <label class="field-label required">ACTION Batch</label>
                                     <select v-model="form.action_batch_id" class="form-select">
                                         <option disabled value="">Select Batch</option>
                                         <option v-for="batch in actionBatches" :key="batch.value" :value="batch.value">
@@ -320,7 +405,7 @@ async function submit() {
                                         <input
                                             type="file"
                                             @change="handleResumeUpload"
-                                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                            accept=".pdf,.doc,.docx"
                                             class="file-input"
                                             :disabled="form.processing"
                                         />
@@ -339,9 +424,6 @@ async function submit() {
                                         </div>
                                     </div>
                                     <span v-if="form.errors.upload_resume" class="error-message">{{ form.errors.upload_resume }}</span>
-                                    <div v-if="resumePreview" class="file-preview">
-                                        <a :href="resumePreview" target="_blank" class="preview-link">Preview PDF</a>
-                                    </div>
                                 </div>
 
                                 <!-- TOR Upload -->
@@ -351,7 +433,7 @@ async function submit() {
                                         <input
                                             type="file"
                                             @change="handleTorUpload"
-                                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                             class="file-input"
                                             :disabled="form.processing"
                                         />
@@ -370,19 +452,16 @@ async function submit() {
                                         </div>
                                     </div>
                                     <span v-if="form.errors.upload_tor" class="error-message">{{ form.errors.upload_tor }}</span>
-                                    <div v-if="torPreview" class="file-preview">
-                                        <a :href="torPreview" target="_blank" class="preview-link">Preview PDF</a>
-                                    </div>
                                 </div>
 
                                 <!-- Picture Upload -->
                                 <div class="form-field">
-                                    <label class="field-label">Upload Picture</label>
+                                    <label class="field-label">Upload 2x2 Pic</label>
                                     <div class="file-upload-container">
                                         <input
                                             type="file"
                                             @change="handlePictureUpload"
-                                            accept="image/jpeg,image/png,image/jpg,image/gif"
+                                            accept="image/jpeg,image/png,image/jpg"
                                             class="file-input"
                                             :disabled="form.processing"
                                         />
@@ -423,18 +502,18 @@ async function submit() {
                                     <input type="datetime-local" v-model="form.exam_actual_date" class="form-input" />
                                 </div>
                             </div>
-                            <div class="form-grid grid-4">
+                            <div class="form-field">
+                                <label class="field-label">Exam Venue</label>
+                                <select v-model="form.exam_venue" class="form-select">
+                                    <option value="">Select Venue</option>
+                                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
+                                        {{ venue.label }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-grid grid-3">
                                 <div class="form-field">
-                                    <label class="field-label">Exam Venue</label>
-                                    <select v-model="form.exam_venue" class="form-select">
-                                        <option value="">Select Venue</option>
-                                        <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
-                                            {{ venue.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                                <div class="form-field">
-                                    <label class="field-label">ATPP Result</label>
+                                    <label class="field-label">ATTP Result</label>
                                     <input type="number" step="0.01" v-model="form.exam_atpp_result" placeholder="0.00" class="form-input" />
                                 </div>
                                 <div class="form-field">
@@ -451,28 +530,25 @@ async function submit() {
                                     <label class="field-label">Exam Result</label>
                                     <select v-model="form.exam_result" class="form-select">
                                         <option value="">Select Result</option>
-                                        <option value="1">Pending</option>
-                                        <option value="2">Passed</option>
-                                        <option value="3">Failed</option>
+                                        <option v-for="result in examResults" :key="result.value" :value="result.value">
+                                            {{ result.label }}
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label">Exam Application Status</label>
                                     <select v-model="form.exam_application_status" class="form-select">
                                         <option value="">Select Status</option>
-                                        <option value="1">Pending</option>
-                                        <option value="2">1st Priority (Passed)</option>
-                                        <option value="3">2nd Priority (P2)</option>
-                                        <option value="4">Done</option>
-                                        <option value="5">Passed</option>
-                                        <option value="6">Failed</option>
-                                        <option value="7">No Show</option>
+                                        <option v-for="status in examStatuses" :key="status.value" :value="status.value">
+                                            {{ status.label }}
+                                        </option>
                                     </select>
                                 </div>
                             </div>
                             <div class="form-field">
                                 <label class="field-label">Exam Comments</label>
                                 <textarea v-model="form.exam_remarks" placeholder="(recruiter only)" rows="3" class="form-textarea"></textarea>
+                                <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks }}</span>
                             </div>
                         </div>
 
@@ -492,6 +568,15 @@ async function submit() {
                                 </div>
                             </div>
                             <div class="form-field">
+                                <label class="field-label">Venue</label>
+                                <select v-model="form.initial_interview_venue" class="form-select">
+                                    <option value="">Select Venue</option>
+                                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
+                                        {{ venue.label }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-field">
                                 <label class="field-label">Initial Interview Final Score</label>
                                 <input type="number" step="0.01" v-model="form.initial_interview_final" placeholder="0.00" class="form-input" />
                             </div>
@@ -500,26 +585,25 @@ async function submit() {
                                     <label class="field-label">Result</label>
                                     <select v-model="form.initial_interview_result" class="form-select">
                                         <option value="">Select Result</option>
-                                        <option value="1">Pending</option>
-                                        <option value="2">Passed</option>
-                                        <option value="3">Failed</option>
+                                        <option v-for="result in interviewResults" :key="result.value" :value="result.value">
+                                            {{ result.label }}
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label">Application Status</label>
                                     <select v-model="form.initial_interview_application_status" class="form-select">
                                         <option value="">Select Status</option>
-                                        <option value="1">Pending</option>
-                                        <option value="2">Done</option>
-                                        <option value="3">Passed</option>
-                                        <option value="4">P2</option>
-                                        <option value="5">Failed</option>
+                                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
+                                            {{ status.label }}
+                                        </option>
                                     </select>
                                 </div>
                             </div>
                             <div class="form-field">
                                 <label class="field-label">Initial Interview Comments</label>
                                 <textarea v-model="form.initial_interview_remarks" placeholder="(recruiter only)" rows="3" class="form-textarea"></textarea>
+                                <span v-if="form.errors.initial_interview_remarks" class="error-message">{{ form.errors.initial_interview_remarks }}</span>
                             </div>
                         </div>
 
@@ -559,26 +643,25 @@ async function submit() {
                                     <label class="field-label">Result</label>
                                     <select v-model="form.final_interview_result" class="form-select">
                                         <option value="">Select Result</option>
-                                        <option value="1">Pending</option>
-                                        <option value="2">Passed</option>
-                                        <option value="3">Failed</option>
+                                        <option v-for="result in interviewResults" :key="result.value" :value="result.value">
+                                            {{ result.label }}
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label">Application Status</label>
                                     <select v-model="form.final_interview_application_status" class="form-select">
                                         <option value="">Select Status</option>
-                                        <option value="1">Pending</option>
-                                        <option value="2">Done</option>
-                                        <option value="3">Passed</option>
-                                        <option value="4">P2</option>
-                                        <option value="5">Failed</option>
+                                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
+                                            {{ status.label }}
+                                        </option>
                                     </select>
                                 </div>
                             </div>
                             <div class="form-field">
                                 <label class="field-label">Final Interview Comments</label>
                                 <textarea v-model="form.final_interview_remarks" placeholder="(recruiter only)" rows="3" class="form-textarea"></textarea>
+                                <span v-if="form.errors.final_interview_remarks" class="error-message">{{ form.errors.final_interview_remarks }}</span>
                             </div>
                         </div>
 
@@ -596,18 +679,16 @@ async function submit() {
                                     <label class="field-label">Status</label>
                                     <select v-model="form.job_offer_status" class="form-select">
                                         <option value="">Select Status</option>
-                                        <option value="1">Pending</option>
-                                        <option value="2">Done</option>
-                                        <option value="3">Accept</option>
-                                        <option value="4">Decline</option>
-                                        <option value="5">Withdraw</option>
-                                        <option value="6">Retracted</option>
+                                        <option v-for="status in jobOfferStatuses" :key="status.value" :value="status.value">
+                                            {{ status.label }}
+                                        </option>
                                     </select>
                                 </div>
                             </div>
                             <div class="form-field">
                                 <label class="field-label">Job Offer Comments</label>
                                 <textarea v-model="form.job_offer_remarks" placeholder="(recruiter only)" rows="3" class="form-textarea"></textarea>
+                                <span v-if="form.errors.job_offer_remarks" class="error-message">{{ form.errors.job_offer_remarks }}</span>
                             </div>
                         </div>
 
@@ -619,23 +700,23 @@ async function submit() {
                             <div class="form-field">
                                 <label class="field-label">General Remarks</label>
                                 <textarea v-model="form.remarks" placeholder="General remarks" rows="3" class="form-textarea"></textarea>
+                                <span v-if="form.errors.remarks" class="error-message">{{ form.errors.remarks }}</span>
                             </div>
                         </div>
 
                         <!-- Form Actions -->
-                    <div class="form-actions">
-                        <Link href="/action/applications" class="btn btn-secondary">Cancel</Link>
-                        <button type="submit" :disabled="form.processing" class="btn btn-primary">
-                            {{ form.processing ? 'Creating…' : 'Create' }}
-                        </button>
-                    </div>
+                        <div class="form-actions">
+                            <Link href="/action/applications" class="btn btn-secondary">Cancel</Link>
+                            <button type="submit" :disabled="form.processing" class="btn btn-primary">
+                                {{ form.processing ? 'Creating…' : 'Create' }}
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
-        </AppLayout>
+    </AppLayout>
 </template>
-
 
 <style scoped>
 /* CSS Variables */

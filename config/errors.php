@@ -123,6 +123,11 @@ return [
             'errorMessage' => 'An error occurred while uploading the following applicants:',
     ],
 
+    'ineligible_applicant' => [
+        'errorCode' => 'INELIGIBLE_APPLICANT',
+        'errorMessage' => 'This applicant cannot apply at this time. A previous application from the last 6 months shows a failed status.',
+    ],
+
 
 
 

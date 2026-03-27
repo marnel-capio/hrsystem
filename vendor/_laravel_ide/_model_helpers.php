@@ -28,6 +28,8 @@ namespace App\Models {
      * @property bool|null $source
      * @property bool|null $source_type
      * @property int $id
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplication> $applications
+     * @property-read int|null $applications_count
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSourceType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSource($value)
@@ -411,6 +413,7 @@ namespace App\Models {
      * @property mixed $action_applicant_id
      * @property int $id
      * @property-read \App\Models\ActionApplicant $applicant
+     * @property-read \App\Models\ActionBatchModel $batch
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereActionApplicantId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereActionBatchId($value)

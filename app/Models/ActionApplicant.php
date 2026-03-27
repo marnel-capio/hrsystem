@@ -51,6 +51,7 @@ class ActionApplicant extends Model
         'source' => '',
     ];
 
+    //Upload application functions
 public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source, $other_source, $createdTime, $updatedTime)
 {
     $nameParts = explode(',', $row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
@@ -118,5 +119,49 @@ public static function updateOrCreateFromRow(array $row, $gender, $source_type, 
                     'remarks' => $a->remarks,
                 ];
             });
+    }
+
+    //End of Upload application functions
+
+    /**
+     * Get eligible applicants for a specific batch
+     */
+    public static function getEligibleApplicantsForBatch($batchId)
+    {
+        return self::select('action_applicants.id', 'action_applicants.email_address')
+            ->whereNotIn('action_applicants.id', function($query) use ($batchId) {
+                $query->select('action_applicant_id')
+                    ->from('action_applicant_applications')
+                    ->where('action_batch_id', $batchId);
+            })
+            ->whereNotIn('action_applicants.id', function($query) {
+                $query->select('action_applicant_id')
+                    ->from('action_applicant_applications')
+                    ->where('created_time', '>=', now()->subDays(180))
+                    ->where(function($q) {
+                        $q->whereIn('exam_application_status', [6, 7])
+                          ->orWhere('initial_interview_result', 3)
+                          ->orWhereIn('job_offer_status', [4, 5, 6]);
+                    });
+            })
+            ->get()
+            ->pluck('email_address', 'id')
+            ->toArray();
+    }
+
+    /**
+     * Get all eligible applicants
+     */
+    public static function getEligibleApplicants()
+    {
+        return self::getEligibleApplicantsForBatch(null);
+    }
+
+    /**
+     * Relationship with applications
+     */
+    public function applications()
+    {
+        return $this->hasMany(ActionApplication::class, 'action_applicant_id', 'id');
     }
 }
