@@ -166,4 +166,55 @@ return [
         2 => 'Female',
     ],
 
+    'examVenues' => [
+        1 => 'Gmeet',
+        2 => 'Zoom',
+        3 => 'USJ-R Basak',
+        4 => 'AdDU',
+    ],
+
+    'examResults' => [
+        1 => 'Pending',
+        2 => 'Passed',
+        3 => 'Failed',
+    ],
+
+    'examApplicationStatuses' => [
+        1 => 'Pending',
+        2 => '1st Priority (Passed)',
+        3 => '2nd Priority (P2)',
+        4 => 'Done',
+        5 => 'Passed',
+        6 => 'Failed',
+        7 => 'No Show',
+    ],
+
+    'interviewResults' => [
+        1 => 'Pending',
+        2 => 'Passed',
+        3 => 'Failed',
+    ],
+
+    'applicationStatuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Passed',
+        4 => 'P2',
+        5 => 'Failed',
+    ],
+
+    'jobOfferStatuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Accept',
+        4 => 'Decline',
+        5 => 'Withdraw',
+        6 => 'Retracted',
+    ],
+
+    'traineesFrom' => [
+        1 => 'Manila',
+        2 => 'Cebu',
+    ],
+
 ];

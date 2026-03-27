@@ -5,20 +5,13 @@ namespace App\Models {
     /**
      * App\Models\ActionApplicant
      *
-<<<<<<< HEAD
      * @property \Illuminate\Support\Carbon|null $updated_time
      * @property mixed $updated_by
      * @property \Illuminate\Support\Carbon|null $created_time
-=======
-     * @property string|null $updated_time
-     * @property mixed $updated_by
-     * @property string|null $created_time
->>>>>>> develop
      * @property mixed $created_by
      * @property string|null $remarks
      * @property string|null $extra_curricular
      * @property string|null $thesis_project
-<<<<<<< HEAD
      * @property string $other_examination_certificate
      * @property string $awards_recognition
      * @property string|null $expected_graduation
@@ -26,15 +19,6 @@ namespace App\Models {
      * @property string $degree
      * @property string|null $school
      * @property integer $age
-=======
-     * @property string|null $other_examination_certificate
-     * @property string|null $awards_recognition
-     * @property string $expected_graduation
-     * @property string|null $others_degree
-     * @property string $degree
-     * @property string $school
-     * @property bool $age
->>>>>>> develop
      * @property bool $gender
      * @property string $email_address
      * @property string|null $middle_name
@@ -217,10 +201,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
-<<<<<<< HEAD
      * @method static mixed inOrderOf($column, $values)
-=======
->>>>>>> develop
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)
@@ -386,7 +367,6 @@ namespace App\Models {
     }
 
     /**
-<<<<<<< HEAD
      * App\Models\ActionApplication
      *
      * @property string $updated_time
@@ -788,8 +768,6 @@ namespace App\Models {
     }
 
     /**
-=======
->>>>>>> develop
      * App\Models\ActionBatchModel
      *
      * @property \Illuminate\Support\Carbon $updated_time

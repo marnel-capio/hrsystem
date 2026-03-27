@@ -50,11 +50,11 @@ class CheckUserPermission
 
         /*
         |--------------------------------------------------------------------------
-        | Route: /action/schedules/ and /action/batches and applications import
+        | Route: /action/schedules/ and /action/batches and /action/applications/register and /action/applications/id and applications import
         | Only permission 1, 2, and 3 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list', 'action.applications.import'])) {
+        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list', 'action.applications.import', 'action.applications.create', 'action.applications.show', 'action.applications.store'])) {
 
             if (in_array($permission, [1, 2, 3])) {
                 return $next($request);
@@ -209,4 +209,5 @@ class CheckUserPermission
         return redirect('/dashboard')
             ->with('error', config('errors.unauthorized.errorMessage'));
     }
+}
 }
