@@ -230,11 +230,6 @@ class CheckUserPermission
         if (in_array($routeName, [
             'action.applicants.edit',
             'action.applicants.update',
-            'action.applicants.languages.index',
-            'action.applicants.languages.store',
-            'action.applicants.languages.update',
-            'action.applicants.languages.destroy',
-            'action.applicants.languages.bulk-delete',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),

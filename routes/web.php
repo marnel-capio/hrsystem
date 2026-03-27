@@ -44,6 +44,21 @@ Route::middleware(['auth'])->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
+
+    //action-applicants proglang list
+        Route::get('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'index']);
+
+        //action-applicants proglang add api
+        Route::post('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'store']);
+
+        //action-applicants proglang edit api
+        Route::put('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'update']);
+
+        //action-applicants proglang delete single api
+        Route::delete('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'destroy']);
+
+        //action-applicants proglang delete bulk api
+        Route::post('/action/applicants/{applicantId}/languages/bulk-delete', [ActionApplicantProgrammingLanguageController::class, 'bulkDelete']);
 });
 
     // Update user
@@ -139,20 +154,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/applicants/{id}/edit', [ActionApplicantController::class, 'edit'])
                 ->name('action.applicants.edit');
 
-        //action-applicants proglang list
-        Route::get('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'index']);
-
-        //action-applicants proglang add api
-        Route::post('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'store']);
-
-        //action-applicants proglang edit api
-        Route::put('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'update']);
-
-        //action-applicants proglang delete single api
-        Route::delete('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'destroy']);
-
-        //action-applicants proglang delete bulk api
-        Route::post('/action/applicants/{applicantId}/languages/bulk-delete', [ActionApplicantProgrammingLanguageController::class, 'bulkDelete']);
+        
 
         //action-applicants update api
         Route::put('/action/applicants/{id}/update', [ActionApplicantController::class, 'update'])
