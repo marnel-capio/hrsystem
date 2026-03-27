@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateActionApplicantRequest;
 use App\Models\ActionApplicant;
 use Illuminate\Support\Facades\Config;
 use Inertia\Inertia;
@@ -58,5 +59,16 @@ class ActionApplicantController extends Controller
             'sources' => $sources,
             'genders' => $genders,
         ]);
+    }
+
+    public function update(UpdateActionApplicantRequest $request, $id)
+    {
+        $applicant = ActionApplicant::findOrFail($id);
+
+        $applicant->updateWithRequest($request->validated(), auth()->id());
+
+        return redirect()
+            ->route('action.applicants.detail', $applicant->id)
+            ->with('success', 'ACTION Applicant updated successfully.');
     }
 }

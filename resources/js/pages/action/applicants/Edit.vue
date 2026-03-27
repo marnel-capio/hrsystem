@@ -82,8 +82,8 @@ watch(() => form.source_type, (val) => {
 const pendingFormData = ref<typeof form | null>(null);
 
 async function submit() {
-    const url = props.applicant?.id 
-        ? `/action/applicants/${props.applicant.id}` 
+    const url = props.applicant?.id
+        ? `/action/applicants/${props.applicant.id}/update`
         : '/action/applicants';
 
     const method = props.applicant?.id ? 'put' : 'post';
@@ -209,7 +209,7 @@ watch(
                                 <option v-for="s in sources" :key="s.value" :value="s.value">{{ s.label }}</option>
                             </select>
                             <span v-if="!isSourceDisabled && form.errors.source" class="error">{{ form.errors.source
-                                }}</span>
+                            }}</span>
                         </div>
 
                         <div class="form-group half">
@@ -287,9 +287,10 @@ watch(
                     <!-- Expected Graduation -->
                     <div class="form-group">
                         <label>Expected Graduation</label>
-                        <input type="date" v-model="form.expected_graduation" :min="minGraduationDate" />
-                        <span v-if="form.errors.expected_graduation" class="error">{{ form.errors.expected_graduation
-                            }}</span>
+                        <input type="date" v-model="form.expected_graduation" />
+                        <span v-if="form.errors.expected_graduation" class="error">
+                            {{ form.errors.expected_graduation }}
+                        </span>
                     </div>
 
                     <!-- Achievements / Remarks -->
@@ -297,7 +298,7 @@ watch(
                         <label>Awards / Recognition</label>
                         <textarea v-model="form.awards_recognition" placeholder="Awards or recognition"></textarea>
                         <span v-if="form.errors.awards_recognition" class="error">{{ form.errors.awards_recognition
-                            }}</span>
+                        }}</span>
                     </div>
 
                     <div class="form-group">
@@ -317,7 +318,7 @@ watch(
                         <label>Extra Curricular</label>
                         <textarea v-model="form.extra_curricular"></textarea>
                         <span v-if="form.errors.extra_curricular" class="error">{{ form.errors.extra_curricular
-                            }}</span>
+                        }}</span>
                     </div>
 
                     <div class="form-group">
@@ -328,7 +329,9 @@ watch(
 
                     <!-- Actions -->
                     <div class="form-actions">
-                        <Link href="/action/applicants" class="btn btn-secondary">Cancel</Link>
+                        <!-- Cancel goes to the applicant's show page -->
+                        <Link :href="`/action/applicants/${props.applicant.id}`" class="btn btn-secondary">Cancel</Link>
+
                         <button type="submit" :disabled="form.processing" class="btn btn-primary">
                             {{ form.processing ? 'Updating..' : 'Update' }}
                         </button>
