@@ -448,8 +448,15 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
     }
 }
 
+const awardsDisplay = computed(() => {
+    if (!applicant.value.awards_recognition) return ''
 
+    return applicant.value.other_examination_certificate
+        ? `${applicant.value.awards_recognition} (${applicant.value.other_examination_certificate})`
+        : applicant.value.awards_recognition
+})
 
+const canSeeRemarks = computed(() => [1, 2, 3].includes(userPermissions.value))
 
 </script>
 
@@ -537,7 +544,8 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
         <!-- Header -->
         <div class="flex justify-between mx-5 mb-3">
             <h2 class="text-xl font-bold">ACTION Applicant's Details</h2>
-            <Link :href="`/action/applicants/${applicant.id}/edit`" class="btn-primary !bg-[#1C7BA5]">
+            <Link v-if="![5, 6].includes(userPermissions)" :href="`/action/applicants/${applicant.id}/edit`"
+                class="btn-primary !bg-[#1C7BA5]">
                 Edit ACTION Applicant
             </Link>
         </div>
@@ -596,7 +604,7 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
                 </div>
                 <div v-if="applicant.awards_recognition">
                     <h4 class="text-xs font-bold mb-2 text-left">AWARDS / RECOGNITION</h4>
-                    <p class="text-xs break-words">{{ applicant.awards_recognition }}</p>
+                    <p class="text-xs break-words">{{ awardsDisplay }}</p>
                 </div>
                 <div v-if="applicant.thesis_project">
                     <h4 class="text-xs font-bold mb-2 text-left">THESIS / PROJECT</h4>
@@ -619,15 +627,15 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
                         <th class="px-2 py-2 font-semibold text-gray-600">No.</th>
                         <th class="px-2 py-2 font-semibold text-gray-600">Exam Result</th>
                         <th class="px-2 py-2 font-semibold text-gray-600">Exam Status</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Exam Remarks</th>
+                        <th v-if="canSeeRemarks">Exam Remarks</th>
                         <th class="px-2 py-2 font-semibold text-gray-600">Initial Interview Result</th>
                         <th class="px-2 py-2 font-semibold text-gray-600">Initial Interview Status</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Initial Interview Remarks</th>
+                        <th v-if="canSeeRemarks">Initial Interview Remarks</th>
                         <th class="px-2 py-2 font-semibold text-gray-600">Final Interview Result</th>
                         <th class="px-2 py-2 font-semibold text-gray-600">Final Interview Status</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Final Interview Remarks</th>
+                        <th v-if="canSeeRemarks">Final Interview Remarks</th>
                         <th class="px-2 py-2 font-semibold text-gray-600">Job Offer Status</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Job Offer Remarks</th>
+                        <th v-if="canSeeRemarks">Job Offer Remarks</th>
                         <th class="px-2 py-2 font-semibold text-gray-600">Remarks</th>
                         <th class="px-2 py-2 font-semibold text-gray-600">Action</th>
                     </tr>
@@ -637,17 +645,18 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
                         <td class="px-2 py-2 font-medium text-gray-700">{{ Number(index) + 1 }}</td>
                         <td class="px-2 py-2">{{ examResultLabel(app.exam_result) }}</td>
                         <td class="px-2 py-2">{{ examStatusLabel(app.exam_application_status) }}</td>
-                        <td class="px-2 py-2 break-words">{{ app.exam_remarks || '-' }}</td>
+                        <td v-if="canSeeRemarks">{{ app.exam_remarks || '-' }}</td>
                         <td class="px-2 py-2">{{ initialInterviewResultLabel(app.initial_interview_result) }}</td>
                         <td class="px-2 py-2">{{ initialInterviewStatusLabel(app.initial_interview_application_status)
-                            }}</td>
-                        <td class="px-2 py-2 break-words">{{ app.initial_interview_remarks || '-' }}</td>
+                            }}
+                        </td>
+                        <td v-if="canSeeRemarks">{{ app.initial_interview_remarks || '-' }}</td>
                         <td class="px-2 py-2">{{ finalInterviewResultLabel(app.final_interview_result) }}</td>
                         <td class="px-2 py-2">{{ finalInterviewStatusLabel(app.final_interview_application_status) }}
                         </td>
-                        <td class="px-2 py-2 break-words">{{ app.final_interview_remarks || '-' }}</td>
+                        <td v-if="canSeeRemarks">{{ app.final_interview_remarks || '-' }}</td>
                         <td class="px-2 py-2">{{ jobOfferStatusLabel(app.job_offer_status) }}</td>
-                        <td class="px-2 py-2 break-words">{{ app.job_offer_remarks || '-' }}</td>
+                        <td v-if="canSeeRemarks">{{ app.job_offer_remarks || '-' }}</td>
                         <td class="px-2 py-2 break-words">{{ app.remarks || '-' }}</td>
                         <td class="flex justify-center px-2 py-2">
                             <Link :href="`/action/applications/${app.id}`" class="cursor-pointer"
@@ -661,7 +670,7 @@ const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', v
         </div>
 
         <!-- Programming Languages Section -->
-        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6">
+        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6" v-if="![5,6].includes(userPermissions)">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold">Programming Languages</h3>
                 <div class="flex gap-2">

@@ -54,7 +54,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'update']);
     Route::delete('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'destroy']);
     Route::post('/action/applicants/{applicantId}/languages/bulk-delete', [ActionApplicantProgrammingLanguageController::class, 'bulkDelete']);
-
+    Route::put('/action/applicants/{id}/update', [ActionApplicantController::class, 'update'])
+            ->name('action.applicants.update');
 });
 
     // Update user

@@ -39,6 +39,7 @@ class ActionApplicantController extends Controller
 
         return Inertia::render('action/applicants/Detail', [
             'applicant' => $applicant,
+            'user_permissions' => auth()->user()?->permissions ?? 0,
         ]);
     }
 

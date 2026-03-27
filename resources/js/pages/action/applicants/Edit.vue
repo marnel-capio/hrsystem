@@ -48,18 +48,37 @@ const form = useForm({
     remarks: props.applicant?.remarks || ''
 })
 
+const originalSourceType = props.applicant?.source_type || null
+const originalSource = props.applicant?.source || ''
+const originalOtherSource = props.applicant?.other_source || ''
+
 const isSourceDisabled = computed(() => Number(form.source_type) !== 3)
 const isOtherSourceDisabled = computed(() => ![1, 2, 4, 5].includes(Number(form.source_type)))
 
 watch(() => form.source_type, (val) => {
-    const otherSourceTypes = [1, 2, 4, 5];
-    form.source = ''
-    form.other_source = ''
-    form.clearErrors('source')
-    form.clearErrors('other_source')
+    const sourceType = Number(val)
+
+    // Handle Source dropdown
+    if (sourceType === 3) {
+        // If this is the original source_type, restore original value
+        form.source = sourceType === originalSourceType ? originalSource : ''
+        form.clearErrors('source')
+    } else {
+        form.source = ''
+        form.clearErrors('source')
+    }
+
+    // Handle Other Source
+    if ([1, 2, 4, 5].includes(sourceType)) {
+        // If this is the original source_type, restore original other_source
+        form.other_source = sourceType === originalSourceType ? originalOtherSource : form.other_source
+        form.clearErrors('other_source')
+    } else {
+        form.other_source = ''
+        form.clearErrors('other_source')
+    }
 })
 
-const showEmailExistsModal = ref(false);
 const pendingFormData = ref<typeof form | null>(null);
 
 async function submit() {
@@ -72,21 +91,6 @@ async function submit() {
     form[method](url, {
         onFinish: () => console.log(props.applicant?.id ? 'Updated!' : 'Created!')
     });
-}
-
-function confirmUpdate() {
-    if (pendingFormData.value) {
-        Object.assign(form, pendingFormData.value); // copy back
-        form.post('/action/applicants', {
-            onFinish: () => {
-                showEmailExistsModal.value = false;
-            }
-        });
-    }
-}
-
-function cancelUpdate() {
-    showEmailExistsModal.value = false;
 }
 
 const minGraduationDate = computed(() => {
@@ -180,21 +184,6 @@ watch(
         </head>
         <div class="page-header">
             <h2 class="page-title">Edit ACTION Applicant</h2>
-        </div>
-
-        <div v-if="showEmailExistsModal" class="modal-overlay">
-            <div class="modal-content modal-confirm">
-                <p class="modal-text" style="text-align: center;">
-                    <strong>This applicant data already exists.</strong>
-                </p>
-                <p class="modal-text" style="text-align: center;">
-                    Do you want to update the applicant's data with the current information?
-                </p>
-                <div class="modal-actions">
-                    <button @click="confirmUpdate" class="btn-primary">Confirm</button>
-                    <button @click="cancelUpdate" class="btn-secondary">Cancel</button>
-                </div>
-            </div>
         </div>
 
         <div class="form-center">
@@ -539,90 +528,6 @@ select:disabled {
     /* slightly darker border for definition */
 }
 
-/* =========================
-   MODAL DESIGN (ACTION APPLICANT)
-   ========================= */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    /* top placement */
-    padding-top: 3rem;
-    z-index: 9999;
-    animation: slide-down 0.25s ease-out;
-}
-
-.modal-content.modal-confirm {
-    background: #fff;
-    padding: 1.5rem 2rem;
-    border-radius: 8px;
-    max-width: 400px;
-    width: 100%;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    position: relative;
-}
-
-.modal-text {
-    font-size: 0.95rem;
-    color: #374151;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-}
-
-.modal-actions .btn-primary {
-    background-color: var(--ats-primary);
-    color: #fff;
-    padding: 0.5rem 1.2rem;
-    border-radius: 5px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background 0.15s ease;
-}
-
-.modal-actions .btn-primary:hover {
-    background-color: var(--ats-accent);
-}
-
-.modal-actions .btn-secondary {
-    background-color: #f3f4f6;
-    color: #374151;
-    padding: 0.5rem 1.2rem;
-    border-radius: 5px;
-    font-weight: 500;
-    border: 1px solid #d1d5db;
-    cursor: pointer;
-    transition: background 0.15s ease;
-}
-
-.modal-actions .btn-secondary:hover {
-    background-color: #e5e7eb;
-}
-
-@keyframes slide-down {
-    from {
-        transform: translateY(-20px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
 
 .full-width-alert {
     width: 100%;

@@ -98,7 +98,7 @@ detail.head = (args: { id: string | number } | [id: string | number ] | string |
     detail.form = detailForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @see app/Http/Controllers/ActionApplicantController.php:46
  * @route '/action/applicants/{id}/edit'
  */
 export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @see app/Http/Controllers/ActionApplicantController.php:46
  * @route '/action/applicants/{id}/edit'
  */
 edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -141,7 +141,7 @@ edit.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @see app/Http/Controllers/ActionApplicantController.php:46
  * @route '/action/applicants/{id}/edit'
  */
 edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -150,7 +150,7 @@ edit.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @see app/Http/Controllers/ActionApplicantController.php:46
  * @route '/action/applicants/{id}/edit'
  */
 edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -160,7 +160,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @see app/Http/Controllers/ActionApplicantController.php:46
  * @route '/action/applicants/{id}/edit'
  */
     const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -170,7 +170,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @see app/Http/Controllers/ActionApplicantController.php:46
  * @route '/action/applicants/{id}/edit'
  */
         editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -179,7 +179,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\ActionApplicantController::edit
- * @see app/Http/Controllers/ActionApplicantController.php:45
+ * @see app/Http/Controllers/ActionApplicantController.php:46
  * @route '/action/applicants/{id}/edit'
  */
         editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -193,6 +193,90 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
     
     edit.form = editForm
+/**
+* @see \App\Http\Controllers\ActionApplicantController::update
+ * @see app/Http/Controllers/ActionApplicantController.php:0
+ * @route '/action/applicants/{id}/update'
+ */
+export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: update.url(args, options),
+    method: 'put',
+})
+
+update.definition = {
+    methods: ["put"],
+    url: '/action/applicants/{id}/update',
+} satisfies RouteDefinition<["put"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicantController::update
+ * @see app/Http/Controllers/ActionApplicantController.php:0
+ * @route '/action/applicants/{id}/update'
+ */
+update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return update.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicantController::update
+ * @see app/Http/Controllers/ActionApplicantController.php:0
+ * @route '/action/applicants/{id}/update'
+ */
+update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: update.url(args, options),
+    method: 'put',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicantController::update
+ * @see app/Http/Controllers/ActionApplicantController.php:0
+ * @route '/action/applicants/{id}/update'
+ */
+    const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicantController::update
+ * @see app/Http/Controllers/ActionApplicantController.php:0
+ * @route '/action/applicants/{id}/update'
+ */
+        updateForm.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    update.form = updateForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
  * @see app/Http/Controllers/ActionApplicantController.php:11
@@ -462,6 +546,7 @@ checkEmail.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 const applicants = {
     detail: Object.assign(detail, detail),
 edit: Object.assign(edit, edit),
+update: Object.assign(update, update),
 index: Object.assign(index, index),
 register: Object.assign(register, register),
 store: Object.assign(store, store),

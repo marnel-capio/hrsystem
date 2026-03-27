@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\RequiredField;
 use App\Rules\MaxLength;
+use App\Rules\RequiredField;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ActionApplicantProgrammingLanguageRequest extends FormRequest
 {
@@ -20,12 +22,21 @@ class ActionApplicantProgrammingLanguageRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'program_language' => [new RequiredField, 'string', new MaxLength(80)],
+            'program_language' => [
+                new RequiredField,
+                'string',
+                new MaxLength(80),
+                Rule::unique('action_applicants_programming_languages', 'program_language')
+                    ->where(function ($query) {
+                        return $query->where('action_applicant_id', $this->route('applicantId'));
+                    })
+                    ->ignore($this->route('langId')), // IMPORTANT: use langId
+            ],
             'remarks' => ['nullable', 'string', new MaxLength(255)],
         ];
     }
