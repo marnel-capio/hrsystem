@@ -441,7 +441,7 @@ export const store = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/applicant-applications/{id}'
  */
 const showdd3ed03cf65e040ef0d900001fba1366 = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -456,7 +456,7 @@ showdd3ed03cf65e040ef0d900001fba1366.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/applicant-applications/{id}'
  */
 showdd3ed03cf65e040ef0d900001fba1366.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -484,7 +484,7 @@ showdd3ed03cf65e040ef0d900001fba1366.url = (args: { id: string | number } | [id:
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/applicant-applications/{id}'
  */
 showdd3ed03cf65e040ef0d900001fba1366.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -493,7 +493,7 @@ showdd3ed03cf65e040ef0d900001fba1366.get = (args: { id: string | number } | [id:
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/applicant-applications/{id}'
  */
 showdd3ed03cf65e040ef0d900001fba1366.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -503,7 +503,7 @@ showdd3ed03cf65e040ef0d900001fba1366.head = (args: { id: string | number } | [id
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/applicant-applications/{id}'
  */
     const showdd3ed03cf65e040ef0d900001fba1366Form = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -513,7 +513,7 @@ showdd3ed03cf65e040ef0d900001fba1366.head = (args: { id: string | number } | [id
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/applicant-applications/{id}'
  */
         showdd3ed03cf65e040ef0d900001fba1366Form.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -522,7 +522,7 @@ showdd3ed03cf65e040ef0d900001fba1366.head = (args: { id: string | number } | [id
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/applicant-applications/{id}'
  */
         showdd3ed03cf65e040ef0d900001fba1366Form.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -538,7 +538,7 @@ showdd3ed03cf65e040ef0d900001fba1366.head = (args: { id: string | number } | [id
     showdd3ed03cf65e040ef0d900001fba1366.form = showdd3ed03cf65e040ef0d900001fba1366Form
     /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
 const showc3ad6b3b435c15606ae7b57cb12445ea = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -553,7 +553,7 @@ showc3ad6b3b435c15606ae7b57cb12445ea.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
 showc3ad6b3b435c15606ae7b57cb12445ea.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -581,7 +581,7 @@ showc3ad6b3b435c15606ae7b57cb12445ea.url = (args: { id: string | number } | [id:
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
 showc3ad6b3b435c15606ae7b57cb12445ea.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -590,7 +590,7 @@ showc3ad6b3b435c15606ae7b57cb12445ea.get = (args: { id: string | number } | [id:
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
 showc3ad6b3b435c15606ae7b57cb12445ea.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -600,7 +600,7 @@ showc3ad6b3b435c15606ae7b57cb12445ea.head = (args: { id: string | number } | [id
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
     const showc3ad6b3b435c15606ae7b57cb12445eaForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -610,7 +610,7 @@ showc3ad6b3b435c15606ae7b57cb12445ea.head = (args: { id: string | number } | [id
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
         showc3ad6b3b435c15606ae7b57cb12445eaForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -619,7 +619,7 @@ showc3ad6b3b435c15606ae7b57cb12445ea.head = (args: { id: string | number } | [id
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
         showc3ad6b3b435c15606ae7b57cb12445eaForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -696,7 +696,7 @@ checkUnique.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     checkUnique.form = checkUniqueForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:97
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 export const getApplicantsForBatch = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -711,7 +711,7 @@ getApplicantsForBatch.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:97
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 getApplicantsForBatch.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -739,7 +739,7 @@ getApplicantsForBatch.url = (args: { batchId: string | number } | [batchId: stri
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:97
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 getApplicantsForBatch.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -748,7 +748,7 @@ getApplicantsForBatch.get = (args: { batchId: string | number } | [batchId: stri
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:97
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -758,7 +758,7 @@ getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: str
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:97
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
     const getApplicantsForBatchForm = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -768,7 +768,7 @@ getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: str
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:97
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         getApplicantsForBatchForm.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -777,7 +777,7 @@ getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: str
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:97
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         getApplicantsForBatchForm.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

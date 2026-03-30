@@ -39,6 +39,10 @@ class ActionApplicationController extends Controller
         DB::beginTransaction();
 
         try {
+
+        //Test error
+        throw new \Exception('');
+
             // Prepare data for insertion
             $data = $request->validated();
 

@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -172,7 +172,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -200,7 +200,7 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -209,7 +209,7 @@ show.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -219,7 +219,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
     const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -229,7 +229,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
         showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -238,7 +238,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:84
+ * @see app/Http/Controllers/ActionApplicationController.php:88
  * @route '/action/applications/{id}'
  */
         showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
