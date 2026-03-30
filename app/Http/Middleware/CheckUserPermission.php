@@ -18,10 +18,10 @@ class CheckUserPermission
 
         $permission = (int) $user->permissions;
         $routeName = optional($request->route())->getName();
-        $routePath = $request->path(); // Get the actual path for API routes
+        $routePath = $request->path();
 
         if ($request->is('action/applications') && $request->isMethod('post')) {
-    if (in_array($permission, [1, 2, 3])) {
+    if (in_array($permission, [config('constants.HR_ADMIN_PERMISSION.value'), config('constants.HR_MANAGER_PERMISSION.value'), config('constants.HR_RECRUITER_PERMISSION.value')])) {
         return $next($request);
     }
 
@@ -40,11 +40,11 @@ class CheckUserPermission
         }
 
         // Allow API routes based on path (since they might not have names)
-        if (str_contains($routePath, 'eligible-applicants') || 
-            str_contains($routePath, 'check-eligibility') || 
+        if (str_contains($routePath, 'eligible-applicants') ||
+            str_contains($routePath, 'check-eligibility') ||
             str_contains($routePath, 'check-unique')) {
             // API routes should be accessible to HR Admin, HR Manager, and HR Recruiter
-            if (in_array($permission, [1, 2, 3])) {
+            if (in_array($permission, [config('constants.HR_ADMIN_PERMISSION.value'), config('constants.HR_MANAGER_PERMISSION.value'), config('constants.HR_RECRUITER_PERMISSION.value')])) {
                 return $next($request);
             }
             return redirect('/dashboard')
@@ -76,18 +76,18 @@ class CheckUserPermission
         |--------------------------------------------------------------------------
         */
         if (in_array($routeName, [
-            'action.schedules.index', 
-            'action.schedules.show', 
-            'action.list', 
-            'action.applications.import', 
-            'action.applications.create', 
-            'action.applications.show', 
+            'action.schedules.index',
+            'action.schedules.show',
+            'action.list',
+            'action.applications.import',
+            'action.applications.create',
+            'action.applications.show',
             'action.applications.store',
-            'action.applications.eligible-applicants', // Add this
-            'action.applications.check-eligibility',   // Add this
-            'action.applications.check-unique'         // Add this
+            'action.applications.eligible-applicants',
+            'action.applications.check-eligibility',
+            'action.applications.check-unique'
         ])) {
-            if (in_array($permission, [1, 2, 3])) {
+            if (in_array($permission, [config('constants.HR_ADMIN_PERMISSION.value'), config('constants.HR_MANAGER_PERMISSION.value'), config('constants.HR_RECRUITER_PERMISSION.value')])) {
                 return $next($request);
             }
 

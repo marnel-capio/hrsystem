@@ -93,6 +93,23 @@ return [
     'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
 
+    'sourceTypes' => [
+        1 => 'Campus Recruitment',
+        2 => 'Academe Partner',
+        3 => 'Recruitment Portals',
+        4 => 'Employee Referral',
+        5 => 'Walk-in',
+    ],
+
+    'genders' => [
+        1 => 'Male',
+        2 => 'Female',
+    ],
+
+    'recruitment_portal_keywords' => ['Indeed', 'Facebook', 'Kalibrr', 'Linkedin', 'Jobstreet'],
+
+
+    //APPLICATIONS CONSTANTS
 
     // Source Type Mapping
     'source_type' => [
@@ -114,12 +131,7 @@ return [
         'Jobstreet' => 7,
     ],
 
-    // Recruitment Portal Keywords (case-insensitive check)
-    'recruitment_portal_keywords' => ['Indeed', 'Facebook', 'Kalibrr', 'Linkedin', 'Jobstreet'],
-
-
-
-    // -------------------------
+        // -------------------------
     // Gender Mapping
     // -------------------------
     'gender' => [
@@ -144,26 +156,12 @@ return [
         'No Show' => 7,
     ],
 
-
-     'sourceTypes' => [
-        1 => 'Campus Recruitment',
-        2 => 'Academe Partner',
-        3 => 'Recruitment Portals',
-        4 => 'Employee Referral',
-        5 => 'Walk-in',
-    ],
-
     'sources' => [
         1 => 'University Career Fair',
         2 => 'Partner School',
         3 => 'JobStreet',
         4 => 'LinkedIn',
         5 => 'Referral',
-    ],
-
-    'genders' => [
-        1 => 'Male',
-        2 => 'Female',
     ],
 
     'examVenues' => [

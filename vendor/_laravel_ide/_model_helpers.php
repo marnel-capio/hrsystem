@@ -14,10 +14,10 @@ namespace App\Models {
      * @property string|null $thesis_project
      * @property string $other_examination_certificate
      * @property string $awards_recognition
-     * @property string|null $expected_graduation
+     * @property string $expected_graduation
      * @property string $others_degree
      * @property string $degree
-     * @property string|null $school
+     * @property string $school
      * @property bool $age
      * @property bool $gender
      * @property string $email_address
@@ -2501,7 +2501,7 @@ namespace App\Models {
      * @property mixed $created_by
      * @property boolean $active_status
      * @property mixed $permissions
-     * @property bool $position
+     * @property string $position
      * @property string $email_address
      * @property string $contact_no
      * @property string $address
