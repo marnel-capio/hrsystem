@@ -102,7 +102,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
     // ------------------------
-    // ACTION Applications
+    // ACTION ApplicaTIONS
     // ------------------------
     Route::middleware(['check.permission'])->group(function () {
          Route::prefix('applicant-applications')->name('applicant-applications.')->group(function () {
@@ -111,15 +111,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [ActionApplicationController::class, 'store'])->name('store');
         Route::get('/{id}', [ActionApplicationController::class, 'show'])->name('detail');
         Route::post('/check-unique', [ActionApplicationController::class, 'checkUnique'])->name('checkUnique');});
-
         Route::get('/action/applications', [ActionApplicationController::class, 'index'])->name('action.applications.index');
         Route::get('/action/applications/register', [ActionApplicationController::class, 'create'])
         ->name('action.applications.create');
         Route::get('/action/applications/{id}', [ActionApplicationController::class, 'show'])
         ->name('action.applications.show');
+        Route::get('/action/applications/{id}', [ActionApplicationController::class, 'show'])
+        ->name('action.applications.show');
         Route::post('/action/applications', [ActionApplicationController::class, 'store'])
         ->name('action.applications.store');
-        Route::get('/action/applications', [ApplicationImportController::class, 'create'])->name('action.applications.index');
         Route::post('/applications/import', [ApplicationImportController::class, 'import'])->name('action.applications.import');
         Route::get('/action/applications/eligible-applicants/{batchId}', [ActionApplicationController::class, 'getApplicantsForBatch']); //api
         Route::post('/action/applications/check-eligibility', [ActionApplicationController::class, 'checkEligibility']); //api

@@ -17,8 +17,17 @@ class CheckUserPermission
         }
 
         $permission = (int) $user->permissions;
-        $routeName = $request->route()->getName();
-        $routeId = $request->route('id');
+        $routeName = optional($request->route())->getName();
+        $routePath = $request->path(); // Get the actual path for API routes
+
+        if ($request->is('action/applications') && $request->isMethod('post')) {
+    if (in_array($permission, [1, 2, 3])) {
+        return $next($request);
+    }
+
+    return redirect('/dashboard')
+        ->with('error', config('errors.unauthorized.errorMessage'));
+}
 
         /*
         |----------------------------------------------------------------------
@@ -26,6 +35,18 @@ class CheckUserPermission
         |----------------------------------------------------------------------
         */
         if ($permission === config('constants.WALKIN_PERMISSION.value')) {
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        // Allow API routes based on path (since they might not have names)
+        if (str_contains($routePath, 'eligible-applicants') || 
+            str_contains($routePath, 'check-eligibility') || 
+            str_contains($routePath, 'check-unique')) {
+            // API routes should be accessible to HR Admin, HR Manager, and HR Recruiter
+            if (in_array($permission, [1, 2, 3])) {
+                return $next($request);
+            }
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
@@ -54,8 +75,18 @@ class CheckUserPermission
         | Only permission 1, 2, and 3 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list', 'action.applications.import', 'action.applications.create', 'action.applications.show', 'action.applications.store'])) {
-
+        if (in_array($routeName, [
+            'action.schedules.index', 
+            'action.schedules.show', 
+            'action.list', 
+            'action.applications.import', 
+            'action.applications.create', 
+            'action.applications.show', 
+            'action.applications.store',
+            'action.applications.eligible-applicants', // Add this
+            'action.applications.check-eligibility',   // Add this
+            'action.applications.check-unique'         // Add this
+        ])) {
             if (in_array($permission, [1, 2, 3])) {
                 return $next($request);
             }
@@ -64,15 +95,13 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-
-                        /*
+        /*
         |--------------------------------------------------------------------------
         | Route: ACTION Applications List
         | Only permission 1, 2, 3, 5, 6 allowed
         |--------------------------------------------------------------------------
         */
         if (in_array($routeName, ['action.applications.index'])) {
-
             if (in_array($permission, [1, 2, 3, 5, 6])) {
                 return $next($request);
             }
@@ -81,18 +110,12 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-
-
-
-
-
         /*
         |----------------------------------------------------------------------
         | Route: /user/{id} → show user profile
         |----------------------------------------------------------------------
         */
         if ($routeName === 'user.show') {
-
             // Full access
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
@@ -108,7 +131,6 @@ class CheckUserPermission
                 config('constants.BU_MANAGER_PERMISSION.value'),
                 config('constants.INTERVIEWER_PERMISSION.value'),
             ])) {
-
                 if ((int) $routeId === (int) $user->id) {
                     return $next($request);
                 }
@@ -120,39 +142,29 @@ class CheckUserPermission
 
         // ACTION BATCH
         if (in_array($routeName, ['action.batches.list', 'action.batches.show'])) {
-            // Only permission 1, 2, and 3 are allowed for these routes
             if (in_array($permission, [1, 2, 3])) {
                 return $next($request);
             }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
 
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
         if (in_array($routeName, ['action.batches.register', 'action.batches.store', 'action.batches.edit', 'action.batches.update'])) {
-            // Only permission 1 or 2 are allowed for these routes
             if (in_array($permission, [1, 2])) {
                 return $next($request);
             }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
 
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-
         // INTERMEDIATE
         if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
-            // Only permission 1, 2, 3, and 5 are allowed for these routes
             if (in_array($permission, [1, 2, 3, 5])) {
                 return $next($request);
             }
-
+        }
 
         /*
         |----------------------------------------------------------------------
@@ -160,8 +172,6 @@ class CheckUserPermission
         |----------------------------------------------------------------------
         */
         if ($routeName === 'user.edit') {
-
-            // Full access
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
                 config('constants.HR_MANAGER_PERMISSION.value'),
@@ -169,14 +179,12 @@ class CheckUserPermission
                 return $next($request);
             }
 
-            // Limited access (own profile only)
             if (in_array($permission, [
                 config('constants.HR_RECRUITER_PERMISSION.value'),
                 config('constants.HR_PERMISSION.value'),
                 config('constants.BU_MANAGER_PERMISSION.value'),
                 config('constants.INTERVIEWER_PERMISSION.value'),
             ])) {
-
                 if ((int) $routeId === (int) $user->id) {
                     return $next($request);
                 }
@@ -209,5 +217,4 @@ class CheckUserPermission
         return redirect('/dashboard')
             ->with('error', config('errors.unauthorized.errorMessage'));
     }
-}
 }

@@ -5,9 +5,9 @@ namespace App\Models {
     /**
      * App\Models\ActionApplicant
      *
-     * @property \Illuminate\Support\Carbon|null $updated_time
+     * @property string|null $updated_time
      * @property mixed $updated_by
-     * @property \Illuminate\Support\Carbon|null $created_time
+     * @property string|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
      * @property string|null $extra_curricular
@@ -18,7 +18,7 @@ namespace App\Models {
      * @property string $others_degree
      * @property string $degree
      * @property string|null $school
-     * @property integer $age
+     * @property bool $age
      * @property bool $gender
      * @property string $email_address
      * @property string|null $middle_name
@@ -30,6 +30,7 @@ namespace App\Models {
      * @property int $id
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplication> $applications
      * @property-read int|null $applications_count
+     * @property-read \App\Models\ActionApplication $latestApplication
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSourceType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSource($value)

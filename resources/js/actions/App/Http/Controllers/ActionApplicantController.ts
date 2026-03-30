@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
  * @see app/Http/Controllers/ActionApplicantController.php:10
@@ -77,8 +77,6 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
     
     index.form = indexForm
-const applicants = {
-    index: Object.assign(index, index),
-}
+const ActionApplicantController = { index }
 
-export default applicants
+export default ActionApplicantController

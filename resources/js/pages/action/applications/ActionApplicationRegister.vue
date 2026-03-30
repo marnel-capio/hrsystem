@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { useForm, Link } from '@inertiajs/vue3'
-import { ref, watch, onMounted } from 'vue'
+import { useForm, usePage, Link } from '@inertiajs/vue3'
+import { ref, watch, computed, onMounted, onUnmounted} from 'vue'
 import axios from 'axios';
 
+const page = usePage();
 const props = defineProps<{
     actionBatches?: Record<number, string>,
     examVenues?: Record<number, string>,
@@ -28,6 +29,9 @@ const jobOfferStatuses = ref<Array<{value: number, label: string}>>([])
 
 // Eligible applicants (loaded dynamically)
 const actionApplicants = ref<Array<{value: number, label: string}>>([])
+
+// Track if no applicants are available for the selected batch
+const noApplicantsError = ref<string>('');
 
 // Initialize dropdowns
 onMounted(() => {
@@ -73,6 +77,11 @@ onMounted(() => {
             label: String(label)
         }))
     }
+    document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
 })
 
 // File references
@@ -123,35 +132,59 @@ const form = useForm({
     remarks: ''
 })
 
-// Validation rules
-const rules = {
-    action_applicant_id: (val: string) => !!val || 'ACTION Applicant is required',
-    action_batch_id: (val: string) => !!val || 'ACTION Batch is required',
-}
+// Error and success handling
+const errorMessage = computed(() => (page.props.flash as any)?.error || '');
+const showError = ref(false);
+const successMessage = computed(() => (page.props.flash as any)?.success || '');
+const showSuccess = ref(false);
 
-function validateField(field: keyof typeof rules) {
-    const value = (form as any)[field];
-    const rule = rules[field];
-    const result = rule(value);
-    form.setError(field, result === true ? '' : result);
-}
+// Watch for error messages
+watch(errorMessage, (val) => {
+    if (val) {
+        showError.value = true;
+        setTimeout(() => showError.value = false, 5000);
+    }
+});
 
-watch(() => form.action_applicant_id, () => validateField('action_applicant_id'));
-watch(() => form.action_batch_id, () => validateField('action_batch_id'));
+// Watch for success messages
+watch(successMessage, (val) => {
+    if (val) {
+        showSuccess.value = true;
+        setTimeout(() => showSuccess.value = false, 5000);
+    }
+});
 
 // Watch for batch selection to load eligible applicants
 watch(() => form.action_batch_id, async (newBatchId) => {
     if (newBatchId) {
+        // Clear previous errors
+        noApplicantsError.value = '';
+        form.action_applicant_id = '';
+
         try {
             const response = await axios.get(`/action/applications/eligible-applicants/${newBatchId}`);
-            actionApplicants.value = Object.entries(response.data).map(([value, label]) => ({
-                value: Number(value),
-                label: String(label)
-            }));
-            form.action_applicant_id = ''; // Reset applicant selection
-        } catch (error) {
+
+            if (response.data && Object.keys(response.data).length === 0) {
+                // Set error message instead of alert banner
+                noApplicantsError.value = 'No eligible applicants found for this batch. All applicants either already applied or have failed applications in the last 6 months.';
+                actionApplicants.value = [];
+            } else {
+                actionApplicants.value = Object.entries(response.data).map(([value, label]) => ({
+                    value: Number(value),
+                    label: String(label)
+                }));
+                noApplicantsError.value = '';
+            }
+
+        } catch (error: any) {
             console.error('Failed to load eligible applicants:', error);
+            noApplicantsError.value = error.response?.data?.error || 'Failed to load eligible applicants. Please try again.';
+            actionApplicants.value = [];
         }
+    } else {
+        // Reset when no batch selected
+        noApplicantsError.value = '';
+        actionApplicants.value = [];
     }
 });
 
@@ -165,12 +198,11 @@ watch(() => form.action_applicant_id, async (newApplicantId) => {
             });
 
             if (!response.data.eligible) {
-                errorMessage.value = 'This applicant cannot apply at this time. A previous application from the last 6 months shows a failed status.';
-                showError.value = true;
-                form.action_applicant_id = ''; // Clear selection
-                setTimeout(() => {
-                    showError.value = false;
-                }, 5000);
+                // Set error on the applicant field
+                form.setError('action_applicant_id', 'This applicant cannot apply at this time. A previous application from the last 6 months shows a failed status.');
+                form.action_applicant_id = '';
+            } else {
+                form.clearErrors('action_applicant_id');
             }
         } catch (error) {
             console.error('Failed to check eligibility:', error);
@@ -178,10 +210,7 @@ watch(() => form.action_applicant_id, async (newApplicantId) => {
     }
 });
 
-const showError = ref(false)
-const errorMessage = ref<string | null>(null)
-
-// File handling functions
+// File handling functions with previews
 const handleResumeUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
     if (target.files && target.files[0]) {
@@ -199,7 +228,9 @@ const handleResumeUpload = (event: Event) => {
         resumeFile.value = file
         form.upload_resume = file.name
 
+        // Create preview for PDF
         if (file.type === 'application/pdf') {
+            if (resumePreview.value) URL.revokeObjectURL(resumePreview.value)
             resumePreview.value = URL.createObjectURL(file)
         } else {
             resumePreview.value = null
@@ -226,7 +257,9 @@ const handleTorUpload = (event: Event) => {
         torFile.value = file
         form.upload_tor = file.name
 
-        if (file.type === 'application/pdf') {
+        // Create preview for PDF or image
+        if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+            if (torPreview.value) URL.revokeObjectURL(torPreview.value)
             torPreview.value = URL.createObjectURL(file)
         } else {
             torPreview.value = null
@@ -252,7 +285,11 @@ const handlePictureUpload = (event: Event) => {
 
         pictureFile.value = file
         form.upload_pic = file.name
+
+        // Create preview for image
+        if (picturePreview.value) URL.revokeObjectURL(picturePreview.value)
         picturePreview.value = URL.createObjectURL(file)
+
         form.clearErrors('upload_pic')
     }
 }
@@ -286,71 +323,153 @@ const removeFile = (type: 'resume' | 'tor' | 'picture') => {
     }
 }
 
-async function submit() {
+// Submit function - KEEP ORIGINAL WORKING VERSION
+function submit() {
+    // Clear any existing errors first
+    form.clearErrors();
+
     // Validate required fields
+    let hasError = false;
+
     if (!form.action_applicant_id) {
-        form.setError('action_applicant_id', 'ACTION Applicant is required');
-        return;
+        form.setError('action_applicant_id', 'This field is required.');
+        hasError = true;
     }
     if (!form.action_batch_id) {
-        form.setError('action_batch_id', 'ACTION Batch is required');
+        form.setError('action_batch_id', 'This field is required.');
+        hasError = true;
+    }
+
+    if (hasError) {
         return;
     }
 
-    // Create FormData for file upload
-    const formData = new FormData()
+    // For file uploads with Inertia, use transform
+    form.transform((data) => {
+        const formData = new FormData();
 
-    // Append all form fields
-    Object.keys(form.data()).forEach(key => {
-        if (key !== 'upload_resume' && key !== 'upload_tor' && key !== 'upload_pic') {
-            const value = (form as any)[key];
-            if (value !== null && value !== undefined && value !== '') {
-                formData.append(key, value)
+        // Append all form fields
+        Object.keys(data).forEach(key => {
+            if (key !== 'upload_resume' && key !== 'upload_tor' && key !== 'upload_pic') {
+                const value = data[key as keyof typeof data];
+                if (value !== null && value !== undefined && value !== '') {
+                    formData.append(key, String(value));
+                }
             }
+        });
+
+        // Append files
+        if (resumeFile.value) {
+            formData.append('upload_resume', resumeFile.value);
         }
-    })
+        if (torFile.value) {
+            formData.append('upload_tor', torFile.value);
+        }
+        if (pictureFile.value) {
+            formData.append('upload_pic', pictureFile.value);
+        }
 
-    // Append files
-    if (resumeFile.value) {
-        formData.append('upload_resume', resumeFile.value)
-    }
-    if (torFile.value) {
-        formData.append('upload_tor', torFile.value)
-    }
-    if (pictureFile.value) {
-        formData.append('upload_pic', pictureFile.value)
-    }
+        return formData as any;
+    });
 
-    // Submit with FormData
+    // Submit with Inertia
     form.post('/action/applications', {
-        data: formData,
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        },
+        preserveState: true,
+        preserveScroll: true,
         onError: (errors) => {
             console.error('Submission errors:', errors);
-            if (errors.eligibility) {
-                errorMessage.value = errors.eligibility;
-                showError.value = true;
-                setTimeout(() => {
-                    showError.value = false;
-                }, 5000);
-            }
-        }
+        },
+        onSuccess: () => {
+            form.reset();
+            actionApplicants.value = [];
+            noApplicantsError.value = '';
+            // Clear files
+            removeFile('resume');
+            removeFile('tor');
+            removeFile('picture');
+            // Clear file inputs
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            fileInputs.forEach((input: any) => {
+                if (input) input.value = '';
+            });
+        },
     });
+}
+
+// Add these refs
+const isDropdownOpen = ref(false)
+const searchQuery = ref('')
+
+// Computed property for selected applicant label
+const selectedApplicantLabel = computed(() => {
+    const selected = actionApplicants.value.find(a => a.value === form.action_applicant_id)
+    return selected ? selected.label : ''
+})
+
+// Filtered applicants based on search
+const filteredApplicants = computed(() => {
+    if (!searchQuery.value.trim()) {
+        return actionApplicants.value
+    }
+    const query = searchQuery.value.toLowerCase()
+    return actionApplicants.value.filter(applicant =>
+        applicant.label.toLowerCase().includes(query)
+    )
+})
+
+// Toggle dropdown
+function toggleDropdown() {
+    if (!form.action_batch_id || actionApplicants.value.length === 0) return
+    isDropdownOpen.value = !isDropdownOpen.value
+    if (isDropdownOpen.value) {
+        searchQuery.value = ''
+    }
+}
+
+// Select applicant
+function selectApplicant(applicant: {value: number, label: string}) {
+    form.action_applicant_id = applicant.value  // Remove String() - keep as number
+    isDropdownOpen.value = false
+    searchQuery.value = ''
+    // Remove validateField if it doesn't exist, or define it
+}
+
+// Validation function
+function validateField(field: string) {
+    // Simple validation - you can expand this
+    if (field === 'action_applicant_id' && !form.action_applicant_id) {
+        form.setError('action_applicant_id', 'This field is required.')
+    } else {
+        form.clearErrors(field)
+    }
+}
+
+// Close dropdown when clicking outside
+function handleClickOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement
+    if (!target.closest('.custom-select-wrapper')) {
+        isDropdownOpen.value = false
+    }
 }
 </script>
 
 <template>
     <AppLayout>
-        <!-- Alert Banner -->
+        <!-- Success Alert Banner -->
+        <div v-if="showSuccess" class="full-width-alert">
+            <div class="alert-banner alert-success-banner">
+                <div class="alert-body">{{ successMessage }}</div>
+                <button type="button" class="close-btn" @click="showSuccess = false">×</button>
+            </div>
+        </div>
+
+        <!-- Error Alert Banner (only for server errors, not for no applicants) -->
         <div v-if="showError" class="full-width-alert">
             <div class="alert-banner alert-error-banner">
                 <div class="alert-body">{{ errorMessage }}</div>
                 <button type="button" class="close-btn" @click="showError = false">×</button>
             </div>
         </div>
-
         <div class="page-container">
             <div class="page-header">
                 <h2 class="page-title">Create ACTION Application</h2>
@@ -365,21 +484,56 @@ async function submit() {
                                 <h3>Basic Information</h3>
                             </div>
                             <div class="form-grid grid-2">
-                                <div class="form-field">
-                                    <label class="field-label required">ACTION Applicant</label>
-                                    <select
-                                        v-model="form.action_applicant_id"
-                                        class="form-select"
-                                        :disabled="!form.action_batch_id"
-                                    >
-                                        <option disabled value="">Select Applicant</option>
-                                        <option v-for="applicant in actionApplicants" :key="applicant.value" :value="applicant.value">
-                                            {{ applicant.label }}
-                                        </option>
-                                    </select>
-                                    <span v-if="form.errors.action_applicant_id" class="error-message">{{ form.errors.action_applicant_id }}</span>
-                                </div>
-                                <div class="form-field">
+
+<div class="form-field">
+    <label class="field-label required">ACTION Applicant</label>
+
+    <!-- Custom searchable dropdown that looks like form-select -->
+    <div class="custom-select-wrapper" :class="{ 'is-open': isDropdownOpen }">
+<div
+    class="custom-select-trigger"
+    @click="toggleDropdown"
+    :class="{ 'is-disabled': !form.action_batch_id || actionApplicants.length === 0 }"
+>
+    <span class="custom-select-value">
+        {{ selectedApplicantLabel || 'Select Applicant' }}
+    </span>
+    <svg class="custom-select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+</div>
+
+        <div class="custom-select-dropdown" v-show="isDropdownOpen">
+            <div class="dropdown-search">
+                <input
+                    type="text"
+                    v-model="searchQuery"
+                    placeholder="Search applicants..."
+                    class="dropdown-search-input"
+                    @click.stop
+                />
+            </div>
+            <div class="dropdown-options-list">
+                <div
+                    v-for="applicant in filteredApplicants"
+                    :key="applicant.value"
+                    class="dropdown-option-item"
+                    :class="{ 'is-selected': form.action_applicant_id === applicant.value }"
+                    @click="selectApplicant(applicant)"
+                >
+                    {{ applicant.label }}
+                </div>
+                <div v-if="filteredApplicants.length === 0" class="dropdown-empty-item">
+                    No applicants found
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <span v-if="noApplicantsError" class="error-message">{{ noApplicantsError }}</span>
+    <span v-if="form.errors.action_applicant_id" class="error-message">{{ form.errors.action_applicant_id }}</span>
+</div>
+                                                                <div class="form-field">
                                     <label class="field-label required">ACTION Batch</label>
                                     <select v-model="form.action_batch_id" class="form-select">
                                         <option disabled value="">Select Batch</option>
@@ -399,91 +553,68 @@ async function submit() {
                             </div>
                             <div class="form-grid grid-3">
                                 <!-- Resume Upload -->
-                                <div class="form-field">
-                                    <label class="field-label">Upload Resume</label>
-                                    <div class="file-upload-container">
-                                        <input
-                                            type="file"
-                                            @change="handleResumeUpload"
-                                            accept=".pdf,.doc,.docx"
-                                            class="file-input"
-                                            :disabled="form.processing"
-                                        />
-                                        <div class="file-upload-button" @click="$event => ($event.target as HTMLElement).previousElementSibling?.click()">
-                                            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                            </svg>
-                                            <span>Choose File</span>
-                                        </div>
-                                        <div v-if="form.upload_resume" class="file-info">
-                                            <span class="file-name">{{ form.upload_resume }}</span>
-                                            <button type="button" @click="removeFile('resume')" class="remove-file" title="Remove file">×</button>
-                                        </div>
-                                        <div v-else class="file-info empty">
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </div>
-                                    <span v-if="form.errors.upload_resume" class="error-message">{{ form.errors.upload_resume }}</span>
-                                </div>
+<!-- Resume Upload -->
+<div class="form-field">
+    <label class="field-label">Upload Resume</label>
+    <input
+        type="file"
+        @change="handleResumeUpload"
+        accept=".pdf,.doc,.docx"
+        class="file-input-btn w-full"
+        :disabled="form.processing"
+    />
+    <div v-if="form.upload_resume" class="file-info">
+        <span class="file-name">{{ form.upload_resume }}</span>
+        <button type="button" @click="removeFile('resume')" class="remove-file" title="Remove file">×</button>
+    </div>
+    <span v-if="form.errors.upload_resume" class="error-message">{{ form.errors.upload_resume }}</span>
+    <!-- PDF Preview Link -->
+    <div v-if="resumePreview" class="file-preview">
+        <a :href="resumePreview" target="_blank" class="preview-link">Preview PDF</a>
+    </div>
+</div>
 
-                                <!-- TOR Upload -->
-                                <div class="form-field">
-                                    <label class="field-label">Upload TOR</label>
-                                    <div class="file-upload-container">
-                                        <input
-                                            type="file"
-                                            @change="handleTorUpload"
-                                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                            class="file-input"
-                                            :disabled="form.processing"
-                                        />
-                                        <div class="file-upload-button" @click="$event => ($event.target as HTMLElement).previousElementSibling?.click()">
-                                            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                            </svg>
-                                            <span>Choose File</span>
-                                        </div>
-                                        <div v-if="form.upload_tor" class="file-info">
-                                            <span class="file-name">{{ form.upload_tor }}</span>
-                                            <button type="button" @click="removeFile('tor')" class="remove-file" title="Remove file">×</button>
-                                        </div>
-                                        <div v-else class="file-info empty">
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </div>
-                                    <span v-if="form.errors.upload_tor" class="error-message">{{ form.errors.upload_tor }}</span>
-                                </div>
+<!-- TOR Upload -->
+<div class="form-field">
+    <label class="field-label">Upload TOR</label>
+    <input
+        type="file"
+        @change="handleTorUpload"
+        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+        class="file-input-btn w-full"
+        :disabled="form.processing"
+    />
+    <div v-if="form.upload_tor" class="file-info">
+        <span class="file-name">{{ form.upload_tor }}</span>
+        <button type="button" @click="removeFile('tor')" class="remove-file" title="Remove file">×</button>
+    </div>
+    <span v-if="form.errors.upload_tor" class="error-message">{{ form.errors.upload_tor }}</span>
+    <!-- TOR Preview (PDF or Image) -->
+    <div v-if="torPreview" class="file-preview">
+        <a v-if="torFile && torFile.type === 'application/pdf'" :href="torPreview" target="_blank" class="preview-link">Preview PDF</a>
+        <img v-else-if="torFile && torFile.type.startsWith('image/')" :src="torPreview" alt="TOR preview" class="preview-image"/>
+    </div>
+</div>
 
-                                <!-- Picture Upload -->
-                                <div class="form-field">
-                                    <label class="field-label">Upload 2x2 Pic</label>
-                                    <div class="file-upload-container">
-                                        <input
-                                            type="file"
-                                            @change="handlePictureUpload"
-                                            accept="image/jpeg,image/png,image/jpg"
-                                            class="file-input"
-                                            :disabled="form.processing"
-                                        />
-                                        <div class="file-upload-button" @click="$event => ($event.target as HTMLElement).previousElementSibling?.click()">
-                                            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                            </svg>
-                                            <span>Choose File</span>
-                                        </div>
-                                        <div v-if="form.upload_pic" class="file-info">
-                                            <span class="file-name">{{ form.upload_pic }}</span>
-                                            <button type="button" @click="removeFile('picture')" class="remove-file" title="Remove file">×</button>
-                                        </div>
-                                        <div v-else class="file-info empty">
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </div>
-                                    <span v-if="form.errors.upload_pic" class="error-message">{{ form.errors.upload_pic }}</span>
-                                    <div v-if="picturePreview" class="picture-preview">
-                                        <img :src="picturePreview" alt="Picture preview" class="preview-image" />
-                                    </div>
-                                </div>
+<!-- Picture Upload -->
+<div class="form-field">
+    <label class="field-label">Upload 2x2 Pic</label>
+    <input
+        type="file"
+        @change="handlePictureUpload"
+        accept="image/jpeg,image/png,image/jpg"
+        class="file-input-btn w-full"
+        :disabled="form.processing"
+    />
+    <div v-if="form.upload_pic" class="file-info">
+        <span class="file-name">{{ form.upload_pic }}</span>
+        <button type="button" @click="removeFile('picture')" class="remove-file" title="Remove file">×</button>
+    </div>
+    <span v-if="form.errors.upload_pic" class="error-message">{{ form.errors.upload_pic }}</span>
+    <div v-if="picturePreview" class="picture-preview">
+        <img :src="picturePreview" alt="Picture preview" class="preview-image" />
+    </div>
+</div>
                             </div>
                         </div>
 
@@ -719,6 +850,128 @@ async function submit() {
 </template>
 
 <style scoped>
+
+/* Custom Searchable Select - matches .form-select styling */
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.custom-select-trigger:hover {
+    border-color: var(--ats-primary);
+}
+
+.custom-select-trigger.is-disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+    color: #9ca3af;
+}
+
+.custom-select-value {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #374151;
+}
+
+.custom-select-trigger.is-disabled .custom-select-value {
+    color: #9ca3af;
+}
+
+.custom-select-arrow {
+    width: 0.85rem;
+    height: 0.85rem;
+    color: #000000;
+    transition: transform 0.2s ease;
+
+}
+
+.custom-select-wrapper.is-open .custom-select-arrow {
+    transform: rotate(180deg);
+}
+
+.custom-select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.25rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 50;
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdown-search {
+    padding: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dropdown-search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    outline: none;
+    background: white;
+}
+
+.dropdown-search-input:focus {
+    border-color: var(--ats-primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.dropdown-options-list {
+    overflow-y: auto;
+    max-height: 250px;
+}
+
+.dropdown-option-item {
+    padding: 0.625rem 0.875rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    font-size: 0.875rem;
+}
+
+.dropdown-option-item:hover {
+    background: #f3f4f6;
+}
+
+.dropdown-option-item.is-selected {
+    background: var(--ats-primary);
+    color: white;
+}
+
+.dropdown-option-item.is-selected:hover {
+    background: var(--ats-accent);
+}
+
+.dropdown-empty-item {
+    padding: 0.625rem 0.875rem;
+    color: #9ca3af;
+    text-align: center;
+    font-size: 0.875rem;
+}
+yyyyy
 /* CSS Variables */
 :root {
     --ats-primary: #3b82f6;
@@ -1067,32 +1320,10 @@ a.btn-secondary:hover {
     to { transform: rotate(360deg); }
 }
 
-/* Alert Banner Styles */
-.full-width-alert {
-    margin-bottom: 1rem;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.alert-banner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.alert-error-banner {
-    background: #fee2e2;
-    border-left: 4px solid #ef4444;
-    color: #991b1b;
-}
-
-.alert-body {
-    flex: 1;
-    font-size: 0.875rem;
+.alert-success-banner {
+    background: #dcfce7;
+    border-left: 4px solid #22c55e;
+    color: #166534;
 }
 
 .close-btn {

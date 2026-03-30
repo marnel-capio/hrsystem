@@ -3,90 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ActionApplicant extends Model
 {
     protected $table = 'action_applicants';
-
-    public $timestamps = false; // since you use created_time / updated_time
+    public $timestamps = false;
 
     protected $fillable = [
-        'source_type',
-        'source',
-        'other_source',
-        'last_name',
         'first_name',
-        'middle_name',
+        'last_name',
         'email_address',
-        'gender',
-        'age',
-        'school',
-        'degree',
-        'others_degree',
-        'expected_graduation',
-        'awards_recognition',
-        'other_examination_certificate',
-        'thesis_project',
-        'extra_curricular',
-        'remarks',
+        'contact_number',
+        'address',
         'created_by',
         'created_time',
         'updated_by',
         'updated_time',
     ];
-
-    // Cast dates properly
-    protected $casts = [
-        'created_time' => 'datetime',
-        'updated_time' => 'datetime',
-        'expected_graduation' => 'string',
-        'age' => 'integer',
-    ];
-
-    // Mutators to clean data
-    protected $attributes = [
-        'source_type' => '',
-        'source' => '',
-    ];
-
-    //Upload application functions
-public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source, $other_source, $createdTime, $updatedTime)
-{
-    $nameParts = explode(',', $row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
-    $last = trim($nameParts[0] ?? '');
-    $first = isset($nameParts[1]) ? trim(explode(' ', trim($nameParts[1]))[0]) : '';
-    $middle = isset($nameParts[1]) ? trim(explode(' ', trim($nameParts[1]))[1] ?? '') : '';
-
-    $email = trim($row['Email Address'] ?? '');
-
-    return self::updateOrCreate(
-        ['email_address' => $email],
-        [
-            'source_type' => $source_type,
-            'source' => $source,
-            'other_source' => $other_source,
-            'last_name' => $last,
-            'first_name' => $first,
-            'middle_name' => $middle,
-            'gender' => $gender,
-            'age' => (int)($row['Age'] ?? 0),
-            'school' => trim($row['School '] ?? ''),
-            'degree' => trim($row["Bachelor's Degree"] ?? ''),
-            'others_degree' => trim($row["If others, please indicate below.\nWrite NA if not applicable (if degree is among the choices from previous question)"] ?? ''),
-            'expected_graduation' => trim($row['Year of Expected Graduation'] ?? ''),
-            'awards_recognition' => trim($row['Awards/ Recognition '] ?? ''),
-            'other_examination_certificate' => trim($row['Other Examinations/ Certifications taken'] ?? ''),
-            'thesis_project' => trim($row['Thesis Project'] ?? ''),
-            'extra_curricular' => substr(trim($row['Extra-curricular Activities'] ?? ''), 0, 255),
-            'created_by' => Auth::id(),
-            'created_time' => now(),
-            'updated_by' => Auth::id(),
-            'updated_time' => now(),
-        ]
-    );
-}
 
     public static function getAllActionApplicants()
     {
@@ -121,47 +55,55 @@ public static function updateOrCreateFromRow(array $row, $gender, $source_type, 
             });
     }
 
-    //End of Upload application functions
 
     /**
-     * Get eligible applicants for a specific batch
+     * Get eligible applicants for a specific batch (STATIC METHOD - CORRECT)
      */
     public static function getEligibleApplicantsForBatch($batchId)
     {
-        return self::select('action_applicants.id', 'action_applicants.email_address')
-            ->whereNotIn('action_applicants.id', function($query) use ($batchId) {
-                $query->select('action_applicant_id')
+        return self::select(
+                'action_applicants.id',
+                DB::raw("CONCAT(action_applicants.first_name, ' ', action_applicants.last_name, ' (', action_applicants.email_address, ')') as full_name")
+            )
+            // Exclude applicants who already applied for this batch
+            ->whereNotExists(function($query) use ($batchId) {
+                $query->select(DB::raw(1))
                     ->from('action_applicant_applications')
-                    ->where('action_batch_id', $batchId);
+                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                    ->where('action_applicant_applications.action_batch_id', $batchId);
             })
-            ->whereNotIn('action_applicants.id', function($query) {
-                $query->select('action_applicant_id')
+            // Exclude applicants with failed applications in last 6 months
+            ->whereNotExists(function($query) {
+                $query->select(DB::raw(1))
                     ->from('action_applicant_applications')
-                    ->where('created_time', '>=', now()->subDays(180))
+                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                    ->where('action_applicant_applications.created_time', '>=', now()->subDays(180))
                     ->where(function($q) {
-                        $q->whereIn('exam_application_status', [6, 7])
-                          ->orWhere('initial_interview_result', 3)
-                          ->orWhereIn('job_offer_status', [4, 5, 6]);
+                        $q->whereIn('action_applicant_applications.exam_application_status', [6, 7])
+                          ->orWhere('action_applicant_applications.initial_interview_result', 3)
+                          ->orWhere('action_applicant_applications.final_interview_result', 3)
+                          ->orWhereIn('action_applicant_applications.job_offer_status', [4, 5, 6]);
                     });
             })
+            ->orderBy('action_applicants.last_name')
+            ->orderBy('action_applicants.first_name')
             ->get()
-            ->pluck('email_address', 'id')
+            ->pluck('full_name', 'id')
             ->toArray();
     }
 
-    /**
-     * Get all eligible applicants
-     */
-    public static function getEligibleApplicants()
-    {
-        return self::getEligibleApplicantsForBatch(null);
-    }
 
     /**
-     * Relationship with applications
+     * Relationships
      */
     public function applications()
     {
         return $this->hasMany(ActionApplication::class, 'action_applicant_id', 'id');
+    }
+
+    public function latestApplication()
+    {
+        return $this->hasOne(ActionApplication::class, 'action_applicant_id', 'id')
+            ->latest('created_time');
     }
 }

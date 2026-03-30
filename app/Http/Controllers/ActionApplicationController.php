@@ -14,21 +14,6 @@ use Inertia\Inertia;
 
 class ActionApplicationController extends Controller
 {
-    /**
-     * Display a listing of the applications.
-     */
-    public function index()
-    {
-        $search = request('search', '');
-
-        $applications = ActionApplication::listPageData($search);
-
-        return inertia('action/applications/ActionApplicationList', [
-            'applications' => $applications,
-            'filters' => ['search' => $search],
-            'userPermissions' => auth()->user()->permissions,
-        ]);
-    }
 
     /**
      * Show the form for creating a new application.
@@ -54,19 +39,6 @@ class ActionApplicationController extends Controller
         DB::beginTransaction();
 
         try {
-            // Check eligibility before storing
-            $isEligible = $this->checkApplicantEligibility(
-                $request->action_applicant_id,
-                $request->action_batch_id
-            );
-
-            if (!$isEligible) {
-                return redirect()
-                    ->back()
-                    ->withInput()
-                    ->withErrors(['eligibility' => config('errors.ineligible_applicant.errorMessage')]);
-            }
-
             // Prepare data for insertion
             $data = $request->validated();
 
@@ -82,17 +54,13 @@ class ActionApplicationController extends Controller
             }
 
             $application = ActionApplication::createApplication($data);
-
+            $user = Auth::user();
             // Create log entry
-            Log::create([
-                'module' => 'ACTION',
-                'activity' => "Application for {$application->applicant->email_address} registered successfully.",
-                'ip_address' => request()->ip(),
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
-                'created_time' => now(),
-                'updated_time' => now(),
-            ]);
+            Log::createLog(
+                'ACTION',
+                "Application for {$application->applicant->email_address} registered successfully.",
+                $user->id
+            );
 
             DB::commit();
 
@@ -125,63 +93,23 @@ class ActionApplicationController extends Controller
     /**
      * Get eligible applicants for a specific batch
      */
-    public function getApplicantsForBatch(Request $request)
+
+    public function getApplicantsForBatch($batchId)
     {
-        $batchId = $request->input('action_batch_id');
+        try {
+            \Log::info('Getting eligible applicants for batch: ' . $batchId);
 
-        $eligibleApplicants = ActionApplicant::getEligibleApplicantsForBatch($batchId);
+            $eligibleApplicants = ActionApplicant::getEligibleApplicantsForBatch($batchId);
 
-        return response()->json($eligibleApplicants);
+            \Log::info('Found ' . count($eligibleApplicants) . ' eligible applicants');
+
+            return response()->json($eligibleApplicants);
+        } catch (\Exception $e) {
+            \Log::error('Error getting eligible applicants: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Check applicant eligibility (if not in action batch chosen)
-     */
-    public function checkEligibility(Request $request)
-    {
-        $applicantId = $request->input('action_applicant_id');
-        $batchId = $request->input('action_batch_id');
-
-        $isEligible = $this->checkApplicantEligibility($applicantId, $batchId);
-
-        return response()->json(['eligible' => $isEligible]);
-    }
-
-    /**
-     * Check applicant eligibility (6 month condition)
-     */
-    private function checkApplicantEligibility($applicantId, $batchId)
-    {
-        $latestApplication = ActionApplication::where('action_applicant_id', $applicantId)
-            ->orderBy('created_time', 'desc')
-            ->first();
-
-        if (!$latestApplication) {
-            return true; // No previous application
-        }
-
-        $daysSinceLastApplication = now()->diffInDays($latestApplication->created_time);
-
-        if ($daysSinceLastApplication > 180) {
-            return true; // Older than 6 months
-        }
-
-        // Check for failed status within 6 months
-        $failedStatuses = [
-            'exam_application_status' => [6, 7], // Failed, No Show
-            'initial_interview_result' => [3], // Failed
-            'final_interview_result' => [3], // Failed
-            'job_offer_status' => [4, 5, 6] // Decline, Withdraw, Retracted
-        ];
-
-        foreach ($failedStatuses as $field => $failedValues) {
-            if (in_array($latestApplication->$field, $failedValues)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     /**
      * Handle file upload
