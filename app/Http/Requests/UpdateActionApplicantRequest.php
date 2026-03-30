@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Rules\MaxLength;
 use App\Rules\RequiredField;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateActionApplicantRequest extends FormRequest
 {
@@ -23,7 +24,7 @@ class UpdateActionApplicantRequest extends FormRequest
             'last_name' => [new RequiredField, 'string', new MaxLength(80)],
             'first_name' => [new RequiredField, 'string', new MaxLength(80)],
             'middle_name' => ['nullable', 'string', new MaxLength(80)],
-            'email_address' => [new RequiredField, 'email', new MaxLength(80) ],
+            'email_address' => [new RequiredField, 'email', new MaxLength(80), Rule::unique('action_applicants', 'email_address')->ignore($this->route('id')) ],
             'gender' => [new RequiredField, 'numeric', 'in:1,2'],
             'age' => [new RequiredField, 'numeric', 'min:1', 'max:99'],
             'school' => [new RequiredField, 'string', new MaxLength(80)],
