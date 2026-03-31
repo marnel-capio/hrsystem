@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IntermediateProjectController::list
  * @see app/Http/Controllers/IntermediateProjectController.php:23
@@ -309,7 +310,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     show.form = showForm
 /**
 * @see \App\Http\Controllers\IntermediateProjectController::edit
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
  * @route '/intermediate/projects/{id}/edit'
  */
 export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -324,7 +325,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateProjectController::edit
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
  * @route '/intermediate/projects/{id}/edit'
  */
 edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -352,7 +353,7 @@ edit.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\IntermediateProjectController::edit
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
  * @route '/intermediate/projects/{id}/edit'
  */
 edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -361,7 +362,7 @@ edit.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\IntermediateProjectController::edit
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
  * @route '/intermediate/projects/{id}/edit'
  */
 edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -371,7 +372,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\IntermediateProjectController::edit
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
  * @route '/intermediate/projects/{id}/edit'
  */
     const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -381,7 +382,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\IntermediateProjectController::edit
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
  * @route '/intermediate/projects/{id}/edit'
  */
         editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -390,7 +391,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\IntermediateProjectController::edit
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
  * @route '/intermediate/projects/{id}/edit'
  */
         editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -406,7 +407,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\IntermediateProjectController::update
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
  * @route '/intermediate/projects/{id}/update'
  */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -421,7 +422,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateProjectController::update
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
  * @route '/intermediate/projects/{id}/update'
  */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -449,7 +450,7 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\IntermediateProjectController::update
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
  * @route '/intermediate/projects/{id}/update'
  */
 update.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -459,7 +460,7 @@ update.post = (args: { id: string | number } | [id: string | number ] | string |
 
     /**
 * @see \App\Http\Controllers\IntermediateProjectController::update
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
  * @route '/intermediate/projects/{id}/update'
  */
     const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -469,7 +470,7 @@ update.post = (args: { id: string | number } | [id: string | number ] | string |
 
             /**
 * @see \App\Http\Controllers\IntermediateProjectController::update
- * @see app/Http/Controllers/IntermediateProjectController.php:0
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
  * @route '/intermediate/projects/{id}/update'
  */
         updateForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
