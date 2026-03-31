@@ -33,7 +33,7 @@ class CheckUserPermission
         /*
         |----------------------------------------------------------------------
         | Routes: /user & /user/register
-        | Only HR Admin & HR Manager allowed
+        | Only HR Admin & HR Manager allowedintermediate.projects.lis
         |----------------------------------------------------------------------
         */
         if (in_array($routeName, ['user.index', 'user.register', 'user.store', 'action.schedules.register', 'action.schedules.store', 'action.schedules.edit', 'action.schedules.update', 'action.create', 'action.show', 'action.schedules.notify', 'action.schedules.destroy'])) {
@@ -64,8 +64,7 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-
-                        /*
+        /*
         |--------------------------------------------------------------------------
         | Route: ACTION Applications List
         | Only permission 1, 2, 3, 5, 6 allowed
@@ -80,11 +79,6 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
-
-
-
-
-
 
         /*
         |----------------------------------------------------------------------
@@ -145,14 +139,13 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-
         // INTERMEDIATE
         if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
             // Only permission 1, 2, 3, and 5 are allowed for these routes
             if (in_array($permission, [1, 2, 3, 5])) {
                 return $next($request);
             }
-
+        }
 
         /*
         |----------------------------------------------------------------------
@@ -193,6 +186,29 @@ class CheckUserPermission
                 config('constants.HR_RECRUITER_PERMISSION.value'),
                 config('constants.BU_MANAGER_PERMISSION.value'),
                 config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTION Applicants → only HR Admin, HR Manager, HR Recruiter
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($routeName, [
+            'action.applicants.register',
+            'action.applicants.store',
+            'action.applicants.detail',
+            'action.applicants.check-email',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
             ])) {
                 return $next($request);
             }

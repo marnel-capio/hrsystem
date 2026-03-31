@@ -153,9 +153,6 @@ return [
         'errorMessage' => 'The contact number must be exactly 11 digits.',
     ],
 
-
-
-
     //ACTION BATCH
 
     // TARGET DATE
@@ -164,6 +161,17 @@ return [
         'errorMessage' => 'The selected date must be in the future.',
     ],
 
+
+    'age_numeric' => [
+        'errorCode' => 'AGE_NUMERIC_INVALID',
+        'errorMessage' => 'Age must be a valid number',
+    ],
+
+    // SUCCESS MESSAGE - CREATE
+    'action_batch_create_success' => [
+        'messageCode' => 'ACTION_BATCH_CREATE_SUCCESS',
+        'message' => 'Record created successfully.',
+    ],
 
     //INTERMEDIATE
     'project_name_unique'=>[
