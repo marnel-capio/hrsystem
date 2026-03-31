@@ -212,7 +212,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\ActionApplicantController::checkEmail
- * @see app/Http/Controllers/ActionApplicantController.php:140
+ * @see app/Http/Controllers/ActionApplicantController.php:148
  * @route '/action/applicants/check-email'
  */
 export const checkEmail = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -227,7 +227,7 @@ checkEmail.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::checkEmail
- * @see app/Http/Controllers/ActionApplicantController.php:140
+ * @see app/Http/Controllers/ActionApplicantController.php:148
  * @route '/action/applicants/check-email'
  */
 checkEmail.url = (options?: RouteQueryOptions) => {
@@ -236,7 +236,7 @@ checkEmail.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::checkEmail
- * @see app/Http/Controllers/ActionApplicantController.php:140
+ * @see app/Http/Controllers/ActionApplicantController.php:148
  * @route '/action/applicants/check-email'
  */
 checkEmail.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -246,7 +246,7 @@ checkEmail.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::checkEmail
- * @see app/Http/Controllers/ActionApplicantController.php:140
+ * @see app/Http/Controllers/ActionApplicantController.php:148
  * @route '/action/applicants/check-email'
  */
     const checkEmailForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -256,7 +256,7 @@ checkEmail.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::checkEmail
- * @see app/Http/Controllers/ActionApplicantController.php:140
+ * @see app/Http/Controllers/ActionApplicantController.php:148
  * @route '/action/applicants/check-email'
  */
         checkEmailForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

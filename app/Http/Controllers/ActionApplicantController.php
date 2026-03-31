@@ -93,8 +93,8 @@ class ActionApplicantController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('action.applicants.detail', $applicant->id)
-                ->with('success', config('errors.user_updated_successfully.errorMessage'));
+                ->route('action.applicants.detail', ['id' => $applicant->id])
+                ->with('success', config('errors.record_updated_successfully.errorMessage'));
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -127,12 +127,20 @@ class ActionApplicantController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('action.applicants.detail', $applicant->id)
-                ->with('success', config('errors.user_updated_successfully.errorMessage'));
-        } catch (\Throwable $e) {
+                ->route('action.applicants.detail', ['id' => $applicant->id])
+                ->with('success', config('errors.record_created_successfully.errorMessage'));
+
+        } catch (\Exception $e) {
             DB::rollBack();
 
-            return Inertia::back()->with('error', config('errors.update_failed.errorMessage'));
+            return Inertia::render('action/applicants/Register', [
+                'sourceTypes' => config('constants.sourceTypes'),
+                'sources' => config('constants.sources'),
+                'genders' => config('constants.genders'),
+                'flash' => [
+                    'error' => config('errors.transaction_failed.errorMessage'),
+                ],
+            ]);
         }
     }
 
