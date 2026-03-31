@@ -5,9 +5,9 @@ namespace App\Models {
     /**
      * App\Models\ActionApplicant
      *
-     * @property string|null $updated_time
+     * @property \Illuminate\Support\Carbon|null $updated_time
      * @property mixed $updated_by
-     * @property string|null $created_time
+     * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
      * @property string|null $extra_curricular
@@ -18,7 +18,7 @@ namespace App\Models {
      * @property string|null $others_degree
      * @property string $degree
      * @property string $school
-     * @property bool $age
+     * @property integer $age
      * @property bool $gender
      * @property string $email_address
      * @property string|null $middle_name
@@ -206,6 +206,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
+     * @method static mixed inOrderOf($column, $values)
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)
@@ -540,6 +541,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
+     * @method static mixed inOrderOf($column, $values)
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)
@@ -940,6 +942,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
+     * @method static mixed inOrderOf($column, $values)
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)
@@ -1117,6 +1120,9 @@ namespace App\Models {
      * @property bool $target_trainees
      * @property string $action_batch
      * @property int $id
+     * @property-read \App\Models\ResourceSchedule $resourceSchedule
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplication> $applications
+     * @property-read int|null $applications_count
      * @method static \Illuminate\Database\Eloquent\Builder<ActionBatchModel>|ActionBatchModel whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionBatchModel>|ActionBatchModel whereActionBatch($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionBatchModel>|ActionBatchModel whereTargetTrainees($value)
@@ -1278,6 +1284,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
+     * @method static mixed inOrderOf($column, $values)
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)
@@ -1617,6 +1624,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
+     * @method static mixed inOrderOf($column, $values)
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)
@@ -1949,6 +1957,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
+     * @method static mixed inOrderOf($column, $values)
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)
@@ -2284,6 +2293,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
+     * @method static mixed inOrderOf($column, $values)
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)
@@ -2653,6 +2663,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
+     * @method static mixed inOrderOf($column, $values)
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)
@@ -3003,6 +3014,7 @@ namespace App\Models {
      * @method static mixed oldest($column)
      * @method static mixed orderByVectorDistance($column, $vector)
      * @method static mixed inRandomOrder($seed)
+     * @method static mixed inOrderOf($column, $values)
      * @method static mixed orderByRaw($sql, $bindings)
      * @method static mixed skip($value)
      * @method static mixed offset($value)

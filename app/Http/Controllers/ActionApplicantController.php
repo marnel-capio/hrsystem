@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Http\Requests\UpdateActionApplicantRequest;
 use App\Models\ActionApplicant;
 use App\Services\LogService;
 use Illuminate\Support\Facades\Config;
+use App\Http\Requests\RegisterActionApplicantRequest;
+use App\Models\Log;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -97,4 +101,49 @@ class ActionApplicantController extends Controller
             return Inertia::back()->with('error', config('errors.update_failed.errorMessage'));
         }
     }
+    
+    public function create()
+    {
+        return Inertia::render('action/applicants/Register', [
+            'sourceTypes' => config('constants.sourceTypes'),
+            'sources' => config('constants.sources'),
+            'genders' => config('constants.genders'),
+        ]);
+    }
+
+    public function store(RegisterActionApplicantRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $applicant = ActionApplicant::upsertByEmail($request->validated());
+
+            Log::createLog(
+                'ACTION',
+                "Applicant with {$applicant->email_address} email address registered/updated successfully.",
+                $applicant->id
+            );
+
+            DB::commit();
+
+            return redirect()
+                ->route('action.applicants.detail', $applicant->id)
+                ->with('success', config('errors.user_updated_successfully.errorMessage'));
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return Inertia::back()->with('error', config('errors.update_failed.errorMessage'));
+        }
+    }
+
+
+    public function checkEmail(Request $request)
+    {
+        $email = $request->input('email_address');
+
+        $exists = ActionApplicant::where('email_address', $email)->exists();
+
+        return response()->json(['exists' => $exists]);
+    }
+
 }

@@ -4,6 +4,7 @@ import DashboardController from './DashboardController'
 import ActionApplicantProgrammingLanguageController from './ActionApplicantProgrammingLanguageController'
 import UserController from './UserController'
 import ResourceScheduleController from './ResourceScheduleController'
+import ApplicationImportController from './ApplicationImportController'
 import ActionBatchController from './ActionBatchController'
 import ActionApplicantController from './ActionApplicantController'
 import IntermediateProjectController from './IntermediateProjectController'
@@ -15,6 +16,7 @@ DashboardController: Object.assign(DashboardController, DashboardController),
 ActionApplicantProgrammingLanguageController: Object.assign(ActionApplicantProgrammingLanguageController, ActionApplicantProgrammingLanguageController),
 UserController: Object.assign(UserController, UserController),
 ResourceScheduleController: Object.assign(ResourceScheduleController, ResourceScheduleController),
+ApplicationImportController: Object.assign(ApplicationImportController, ApplicationImportController),
 ActionBatchController: Object.assign(ActionBatchController, ActionBatchController),
 ActionApplicantController: Object.assign(ActionApplicantController, ActionApplicantController),
 IntermediateProjectController: Object.assign(IntermediateProjectController, IntermediateProjectController),
