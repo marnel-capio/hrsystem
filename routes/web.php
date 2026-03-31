@@ -8,6 +8,8 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ActionApplicationController;
+use App\Http\Controllers\ApplicationImportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -97,7 +99,17 @@ Route::middleware(['auth'])->group(function () {
         //delete
         Route::delete('/action/schedules/{id}', [ResourceScheduleController::class, 'destroy'])
         ->name('action.schedules.destroy');
-        });            
+        });   
+        
+    // ------------------------
+    // ACTION Applications
+    // ------------------------
+    Route::middleware(['check.permission'])->group(function () {
+        Route::get('/action/applications', [ActionApplicationController::class, 'index'])->name('action.applications.index');
+        });   
+        Route::get('/action/applications', [ApplicationImportController::class, 'create'])->name('action.applications.index');
+        Route::post('/applications/import', [ApplicationImportController::class, 'import'])->name('action.applications.import');    
+
 
     // ------------------------
     // ACTION Batches
@@ -114,15 +126,27 @@ Route::middleware(['auth'])->group(function () {
     // ------------------------
     // ACTION Applicants
     // ------------------------
-    Route::middleware(['auth', 'check.permission'])->group(function () {
-        
-        //list
+    Route::middleware(['check.permission'])->group(function () {
+        //action-applicants list
         Route::get('/action/applicants', [ActionApplicantController::class, 'index'])
-            ->name('action.applicants.index');
+                ->name('action.applicants.index');
+        
+        //action-applicants register       
+        Route::get('/action/applicants/register', [ActionApplicantController::class, 'create'])
+                ->name('action.applicants.register');
+
+        Route::post('/action/applicants', [ActionApplicantController::class, 'store'])
+                ->name('action.applicants.store');
+
+        Route::post('/action/applicants/check-email', [ActionApplicantController::class, 'checkEmail'])
+                ->name('action.applicants.check-email');
+
+        Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
+                ->name('action.applicants.detail');
     });
 
 
-    // ------------------------
+
     // Intermediate Projects
     // ------------------------
     Route::middleware(['auth', 'check.permission'])->group(function () {
@@ -133,6 +157,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/intermediate/projects/{id}/edit', [IntermediateProjectController::class, 'edit'])->name('intermediate.projects.edit');        
         Route::post('/intermediate/projects/{id}/update', [IntermediateProjectController::class, 'update'])->name('intermediate.projects.update');
     });
+
 
 // ------------------------
 // Include additional routes
