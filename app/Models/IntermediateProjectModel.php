@@ -55,6 +55,12 @@ class IntermediateProjectModel extends Model
         return $query->get();
     }
 
+
+    public function requisitions()
+    {
+        return $this->hasMany(IntermediateRequisitionModel::class, 'project_id');
+    }
+
     const CREATED_AT = 'created_time';
     const UPDATED_AT = 'updated_time';
 }

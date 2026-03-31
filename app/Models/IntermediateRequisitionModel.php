@@ -36,73 +36,117 @@ class IntermediateRequisitionModel extends Model
     ];
  
     public function scopeSearch($query, $search)
-    {
-        if ($search) {
-    
-            $locationMap = [
-                'alabang' => 1,
-                'makati' => 2,
-                'cebu' => 3,
-                'japan' => 4,
-                'china' => 5,
-                'other' => 6,
-            ];
-    
-            $query->where(function ($q) use ($search, $locationMap) {
-    
-                $q->whereHas('project', function ($q2) use ($search) {
-                    $q2->where('project_name', 'like', "%{$search}%");
-                });
-    
-                $q->orWhere('start_date', 'like', "%{$search}%");
-    
-                $searchLower = strtolower($search);
-    
-                foreach ($locationMap as $key => $value) {
-                    if (str_contains($key, $searchLower)) {
-                        $q->orWhere('location_assignment', $value);
-                    }
-                }
+{
+    if ($search) {
+
+        $locationMap = [
+            'alabang' => 1,
+            'makati' => 2,
+            'cebu' => 3,
+            'japan' => 4,
+            'china' => 5,
+            'other' => 6,
+        ];
+
+        $query->where(function ($q) use ($search, $locationMap) {
+
+            // Project name search
+            $q->whereHas('project', function ($q2) use ($search) {
+                $q2->where('project_name', 'like', "%{$search}%");
             });
-        }
-    
-        return $query;
+
+            // Start date search: Check if it's a month name (case-insensitive)
+            $searchLower = strtolower($search);
+            $months = [
+                'january' => 1,
+                'february' => 2,
+                'march' => 3,
+                'april' => 4,
+                'may' => 5,
+                'june' => 6,
+                'july' => 7,
+                'august' => 8,
+                'september' => 9,
+                'october' => 10,
+                'november' => 11,
+                'december' => 12,
+            ];
+
+            // If the search term is a month, filter by the month of the start date
+            if (array_key_exists($searchLower, $months)) {
+                $month = $months[$searchLower];
+                $q->orWhereMonth('start_date', '=', $month);
+            } else {
+                // Otherwise, search by the full date string (YYYY-MM-DD)
+                $q->orWhere('start_date', 'like', "%{$search}%");
+            }
+
+            // Requested by (searching first name or last name)
+            $q->orWhereHas('requestedBy', function ($q3) use ($search) {
+                $q3->where('first_name', 'like', "%{$search}%")
+                   ->orWhere('last_name', 'like', "%{$search}%");
+            });
+
+            // Location assignment search
+            foreach ($locationMap as $key => $value) {
+                if (stripos($key, $searchLower) !== false) {
+                    $q->orWhere('location_assignment', $value);
+                }
+            }
+        });
     }
 
-    public function getLocationAssignmentLabelAttribute()
-    {
-        return match ((int) $this->location_assignment) {
-            1 => 'Alabang',
-            2 => 'Makati',
-            3 => 'Cebu',
-            4 => 'Japan',
-            5 => 'China',
-            6 => 'Other',
-            default => 'Unknown',
-        };
-    }
+    return $query;
+}
+
+// Relationship to projects table
+public function project()
+{
+    return $this->belongsTo(IntermediateProjectModel::class, 'project_id');
+}
+
+
+public function requestedBy()
+{
+    return $this->belongsTo(User::class, 'created_by', 'id') 
+                ->select('id', 'first_name', 'last_name'); 
+}
+
+public function getLocationAssignmentLabelAttribute()
+{
+    return match ((int) $this->location_assignment) {
+        1 => 'Alabang',
+        2 => 'Makati',
+        3 => 'Cebu',
+        4 => 'Japan',
+        5 => 'China',
+        6 => 'Other',
+        default => 'Unknown',
+    };
+}
  
     public static function getPaginated($search = null, $perPage = 20)
-    {
-        return self::query()
-            ->select([
-                'id',
-                'project_id',
-                'project_description',
-                'location_assignment',
-                'start_date'
-            ])
-            ->with('project:id,project_name')
-            ->search($search)
-            ->orderBy('id', 'desc')
-            ->paginate($perPage)
-            ->withQueryString();
-    }
+{
+    return self::query()
+        ->select([
+            'id',
+            'project_id',
+            'project_description',
+            'location_assignment',
+            'start_date',
+            'created_by',
+            'created_time'
+        ])
+        ->with([
+            'project:id,project_name',
+            'requestedBy:id,first_name,last_name' // Fix here
+        ])
+        ->search($search)
+        ->orderBy('id', 'desc')
+        ->paginate($perPage)
+        ->withQueryString();
+}
 
-    public function project()
-    {
-        return $this->belongsTo(IntermediateProjectModel::class, 'project_id');
-    }
 
     const CREATED_AT = 'created_time';
     const UPDATED_AT = 'updated_time';

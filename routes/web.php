@@ -141,7 +141,7 @@ Route::middleware(['auth'])->group(function () {
     // Intermediate Resource Requisitions
     // ------------------------
     Route::middleware(['auth', 'check.permission'])->group(function () {
-        Route::get('/intermediate/resource-requisitions', [IntermediateRequisitionController::class, 'index'])->name('intermediate.requisitions.list');
+        Route::get('/intermediate/resource-requisitions', [IntermediateRequisitionController::class, 'index'])->name('intermediate.requisitions.index');
         Route::get('/intermediate/resource-requisitions/register', [IntermediateRequisitionController::class, 'create'])->name('intermediate.requisitions.register');
         Route::post('/intermediate/resource-requisitions', [IntermediateRequisitionController::class, 'store'])->name('intermediate.requisitions.store');
         Route::get('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'show'])->name('intermediate.requisitions.show');       

@@ -152,7 +152,7 @@ class CheckUserPermission
         }
 
         // INTERMEDIATE RREQUISITIONS
-        if (in_array($routeName, ['intermediate.requisitions.list', 'intermediate.requisitions.show'])) {
+        if (in_array($routeName, ['intermediate.requisitions.index', 'intermediate.requisitions.show'])) {
             // Only permission 1, 2, 3, and 5 are allowed for these routes
             if (in_array($permission, [1, 2, 3, 5])) {
                 return $next($request);

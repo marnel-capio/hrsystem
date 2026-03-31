@@ -13,15 +13,15 @@ const userPermissions = computed(() => Number(page.props.user_permissions))
 const search = ref(filters.value.search || '')
 
 const doSearch = debounce((value: string) => {
-router.get(
-  '/intermediate/resource-requisitions',
-  { search: value },
-  { preserveState: true, replace: true }
-)
+  router.get(
+    '/intermediate/resource-requisitions',
+    { search: value },
+    { preserveState: true, replace: true }
+  )
 }, 100)
- 
+
 watch(search, (value: string) => {
-doSearch(value)
+  doSearch(value)
 })
 
 const currentPage = computed(() => requisitions.value.current_page)
@@ -42,10 +42,11 @@ const pageNumbers = computed(() => {
 function goToPage(pageNumber: number) {
   router.get(
     '/intermediate/resource-requisitions',
-    { page: pageNumber, search: search.value },
+    { page: pageNumber, search: search.value },  // Pass the search query along with page
     { preserveState: true }
   )
 }
+
 const locationMap: Record<number, string> = {
   1: 'Alabang',
   2: 'Makati',
@@ -64,11 +65,12 @@ function nextBlock() {
 }
 
 const shouldShowPagination = computed(() => requisitionsTotal.value > 20)
+
 function formatDate(dateString: string) {
   if (!dateString) return ''
- 
+
   const date = new Date(dateString)
- 
+
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -101,7 +103,7 @@ function formatDate(dateString: string) {
                 d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
             </svg>
           </span>
-          <input v-model="search" type="text" placeholder="Search by Project Name and Location Assignment"
+          <input v-model="search" type="text" placeholder="Search by Project Name, Location Assignment, Start Date, and Requester"
             class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
         </div>
       </div>
@@ -119,25 +121,33 @@ function formatDate(dateString: string) {
           <table class="ats-table w-full table-auto border-collapse border text-sm">
             <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
-                <th class="border px-3 py-2">Project Name</th>
-                <th class="border px-3 py-2">Project Description</th>
-                <th class="border px-3 py-2">Location Assignment</th>
-                <th class="border px-3 py-2">Start Date</th>
+                <th class="border px-3 py-2 w-50">Project Name</th>
+                <th class="border px-3 py-2 w-50">Project Description</th>
+                <th class="border px-3 py-2 w-20">Location Assignment</th>
+                <th class="border px-3 py-2 w-20">Start Date</th>
+                <th class="border px-3 py-2 w-20">Date Requested</th>
+                <th class="border px-3 py-2">Requested By</th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-zinc-900">
+              <tr v-if="requisitions.data.length === 0">
+                <td colspan="6" class="text-center p-6 text-zinc-500">
+                  No records found
+                </td>
+              </tr>
+
               <tr v-for="requisition in requisitions.data" :key="requisition.id">
                 <td class="border px-3 py-2">
-                  <Link :href="`/intermediate/requisitions/${requisition.id}`" class="table-link">{{ requisition.project?.project_name }}</Link>
+                  <Link :href="`/intermediate/requisitions/${requisition.id}`" class="table-link">
+                    {{ requisition.project?.project_name }}
+                  </Link>
                 </td>
                 <td class="border px-3 py-2">{{ requisition.project_description }}</td>
+                <td class="border px-3 py-2">{{ locationMap[requisition.location_assignment] }}</td>
+                <td class="border px-3 py-2">{{ formatDate(requisition.start_date) }}</td>
+                <td class="border px-3 py-2">{{ formatDate(requisition.created_time) }}</td>
                 <td class="border px-3 py-2">
-                    {{ locationMap[requisition.location_assignment] }}</td>
-                <td class="border px-3 py-2">{{ formatDate (requisition.start_date)}}</td>
-              </tr>
-              <tr v-if="requisitions.data.length === 0">
-                <td colspan="4" class="text-center p-6 text-zinc-500">
-                  No records found
+                  {{ requisition.requested_by?.first_name }} {{ requisition.requested_by?.last_name }}
                 </td>
               </tr>
             </tbody>
@@ -164,6 +174,7 @@ function formatDate(dateString: string) {
 
 <style scoped>
 /* CARD */
+/* CARD */
 .card {
   background: var(--ats-card, white);
   padding: 1rem;
@@ -173,14 +184,55 @@ function formatDate(dateString: string) {
 
 /* TABLE WRAPPER */
 .table-wrapper {
-  overflow-x: hidden;
-  /* remove horizontal scroll */
+  width: 100%; /* Ensure it takes up the full width */
+  overflow-x: hidden; /* No need for horizontal scroll */
+  display: block; /* To allow the table to be scrollable on smaller screens */
+}
+
+/* TABLE STYLES */
+.ats-table {
+  width: 100%; /* Table takes up full width */
+  table-layout: auto; /* Let the browser automatically adjust column widths */
 }
 
 .ats-table th,
 .ats-table td {
   padding-left: 10px;
-  padding-right: 70px;
+  padding-right: 10px;
+  word-wrap: break-word; /* Ensures text wraps in cells */
+  text-overflow: ellipsis; /* Add ellipsis to truncated text */
+  white-space: normal; /* Allow text to wrap */
+}
+
+/* Ensure columns are flexible, adjust widths if needed */
+.ats-table th:nth-child(1),
+.ats-table td:nth-child(1) {
+  min-width: 150px; /* Ensures the column is at least this wide */
+}
+
+.ats-table th:nth-child(2),
+.ats-table td:nth-child(2) {
+  min-width: 200px;
+}
+
+.ats-table th:nth-child(3),
+.ats-table td:nth-child(3) {
+  min-width: 120px;
+}
+
+.ats-table th:nth-child(4),
+.ats-table td:nth-child(4) {
+  min-width: 150px;
+}
+
+.ats-table th:nth-child(5),
+.ats-table td:nth-child(5) {
+  min-width: 150px;
+}
+
+.ats-table th:nth-child(6),
+.ats-table td:nth-child(6) {
+  min-width: 180px;
 }
 
 /* TABLE LINK */
@@ -230,4 +282,12 @@ function formatDate(dateString: string) {
   margin: 0 auto;
   padding: 0 1.5rem;
 }
+
+/* Table cell text truncation or wrapping */
+.ats-table td {
+  white-space: normal;  /* Allow wrapping */
+  overflow: hidden;     /* Prevent overflow */
+  text-overflow: ellipsis; /* Add ellipsis to truncated text */
+}
+
 </style>
