@@ -1,16 +1,16 @@
 <?php
- 
+
 namespace App\Models;
- 
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
- 
+
 class ActionBatchModel extends Model
 {
     protected $table = 'action_batches';
- 
+
     public $timestamps = true;
- 
+
     protected $fillable = [
         'action_batch',
         'target_trainees',
@@ -23,16 +23,16 @@ class ActionBatchModel extends Model
     ];
     const CREATED_AT = 'created_time';
     const UPDATED_AT = 'updated_time';
- 
+
     public function scopeSearch($query, $search)
     {
         if ($search) {
             $query->where('action_batch', 'like', "%{$search}%");
         }
- 
+
         return $query;
     }
- 
+
     public static function getPaginated($search = null, $perPage = 20)
     {
         return self::query()
@@ -79,4 +79,26 @@ class ActionBatchModel extends Model
 
 
     //END OF FUNCTIONS TO USE FOR RS
+
+
+    //FUNCTIONS TO USE FOR ACTION APPLICATIONS
+    public static function getWithTargetLocationAndApplications()
+    {
+    return self::with(['applications.applicant', 'resourceSchedule'])
+        ->orderBy('id', 'desc')
+        ->get();
+    }
+    public function resourceSchedule()
+    {
+        return $this->hasOne(ResourceSchedule::class, 'action_batch_id', 'id');
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(ActionApplication::class, 'action_batch_id', 'id');
+    }
+
+    //END OF FUNCTIONS TO USE FOR ACTION APPLICATIONS
+
+
 }

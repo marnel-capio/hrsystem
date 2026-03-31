@@ -50,11 +50,11 @@ class CheckUserPermission
 
         /*
         |--------------------------------------------------------------------------
-        | Route: /action/schedules/ and /action/batches
+        | Route: /action/schedules/ and /action/batches and applications import
         | Only permission 1, 2, and 3 allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list'])) {
+        if (in_array($routeName, ['action.schedules.index', 'action.schedules.show', 'action.list', 'action.applications.import'])) {
 
             if (in_array($permission, [1, 2, 3])) {
                 return $next($request);
@@ -63,6 +63,28 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
+
+
+                        /*
+        |--------------------------------------------------------------------------
+        | Route: ACTION Applications List
+        | Only permission 1, 2, 3, 5, 6 allowed
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($routeName, ['action.applications.index'])) {
+
+            if (in_array($permission, [1, 2, 3, 5, 6])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+
+
+
+
 
         /*
         |----------------------------------------------------------------------
@@ -131,25 +153,6 @@ class CheckUserPermission
                 return $next($request);
             }
 
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
-
-            return redirect('/dashboard')
-                ->with('error', config('errors.unauthorized.errorMessage'));
-        }
-
-        if (in_array($routeName, ['intermediate.projects.register', 'intermediate.projects.store', 'intermediate.projects.edit', 'intermediate.projects.update'])) {
-            // Only permission 1 or 5 are allowed for these routes
-            if (in_array($permission, [1, 5])) {
-                return $next($request);
-            }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
-
-            return redirect('/dashboard')
-                ->with('error', config('errors.unauthorized.errorMessage'));
-        }
 
         /*
         |----------------------------------------------------------------------

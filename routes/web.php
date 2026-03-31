@@ -8,6 +8,8 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ActionApplicationController;
+use App\Http\Controllers\ApplicationImportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -97,7 +99,17 @@ Route::middleware(['auth'])->group(function () {
         //delete
         Route::delete('/action/schedules/{id}', [ResourceScheduleController::class, 'destroy'])
         ->name('action.schedules.destroy');
-        });            
+        });   
+        
+    // ------------------------
+    // ACTION Applications
+    // ------------------------
+    Route::middleware(['check.permission'])->group(function () {
+        Route::get('/action/applications', [ActionApplicationController::class, 'index'])->name('action.applications.index');
+        });   
+        Route::get('/action/applications', [ApplicationImportController::class, 'create'])->name('action.applications.index');
+        Route::post('/applications/import', [ApplicationImportController::class, 'import'])->name('action.applications.import');    
+
 
     // ------------------------
     // ACTION Batches
