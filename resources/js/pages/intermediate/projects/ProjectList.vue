@@ -94,7 +94,7 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
             <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
                 <th class="border px-3 py-2">Project Name</th>
-                <th class="border px-3 py-2">Remarks</th>
+                <th class="border px-3 py-2">Remarks </th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-zinc-900">
