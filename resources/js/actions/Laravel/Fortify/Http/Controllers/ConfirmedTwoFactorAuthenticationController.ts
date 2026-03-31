@@ -56,4 +56,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 const ConfirmedTwoFactorAuthenticationController = { store }
 
+export default ConfirmedTwoFactorAuthenticationControllerstoreForm
+const ConfirmedTwoFactorAuthenticationController = { store }
+
 export default ConfirmedTwoFactorAuthenticationController

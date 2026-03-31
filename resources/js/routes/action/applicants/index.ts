@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:10
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:10
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:10
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:10
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:10
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:10
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\ActionApplicantController::index
- * @see app/Http/Controllers/ActionApplicantController.php:10
+ * @see app/Http/Controllers/ActionApplicantController.php:14
  * @route '/action/applicants'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -75,6 +75,13 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
                     }),
             method: 'get',
         })
+    
+    index.form = indexForm
+const applicants = {
+    index: Object.assign(index, index),
+}
+
+export default applicants)
     
     index.form = indexForm
 const applicants = {

@@ -101,11 +101,6 @@ return [
         5 => 'Walk-in',
     ],
 
-    'genders' => [
-        1 => 'Male',
-        2 => 'Female',
-    ],
-
     'recruitment_portal_keywords' => ['Indeed', 'Facebook', 'Kalibrr', 'Linkedin', 'Jobstreet'],
 
 
@@ -120,23 +115,6 @@ return [
         'Jobstreet' => 3,
         'Referral (Employee Referral or Applicant Referral)' => 4,
         'Campus Recruitment Activity' => 1,
-    ],
-
-    // Source Mapping (for Recruitment Portals)
-    'source' => [
-        'Indeed' => 2,
-        'Facebook' => 6,
-        'Kalibrr' => 3,
-        'Linkedin' => 5,
-        'Jobstreet' => 7,
-    ],
-
-        // -------------------------
-    // Gender Mapping
-    // -------------------------
-    'gender' => [
-        'male' => 1, 'm' => 1,
-        'female' => 2, 'f' => 2,
     ],
 
     // -------------------------
@@ -156,12 +134,28 @@ return [
         'No Show' => 7,
     ],
 
+    'sTypes' => [
+        'CAMPUS_RECRUITMENT_VALUE' => 1,
+        'ACADEME_PARTNER_VALUE' => 2,
+        'RECRUITMENT_PORTALS_VALUE' => 3,
+        'EMPLOYEE_REFERRAL_VALUE' => 4,
+        "WALK-IN_VALUE" => 5,
+        'CAMPUS_RECRUITMENT_NAME' => 'Campus Recruitment',
+        'ACADEME_PARTNER_NAME' => 'Academe Partner',
+        'RECRUITMENT_PORTALS_NAME' => 'Recruitment Portals',
+        'EMPLOYEE_REFERRAL_NAME' => 'Employee Referral',
+        "WALK-IN_NAME" => 'Walk-in',
+    ],
+
+
     'sources' => [
-        1 => 'University Career Fair',
-        2 => 'Partner School',
-        3 => 'JobStreet',
-        4 => 'LinkedIn',
-        5 => 'Referral',
+        1 => 'Mynimo',
+        2 => 'Indeed',
+        3 => 'Kalibrr',
+        4 => 'FoundIt',
+        5 => 'LinkedIn',
+        6 => 'Facebook',
+        7 => 'Jobstreet'
     ],
 
     'examVenues' => [
@@ -214,5 +208,45 @@ return [
         1 => 'Manila',
         2 => 'Cebu',
     ],
+
+    'source' => [
+        'MYNIMO_VALUE' => 1,
+        'INDEED_VALUE' => 2,
+        'KALIBRR_VALUE' => 3,
+        'FOUNDIT_VALUE' => 4,
+        "LINKEDIN_VALUE" => 5,
+        'FACEBOOK_VALUE' => 6,
+        "JOBSTREET_VALUE" => 7,
+        'MYNIMO_NAME' => 'Mynimo',
+        'INDEED_NAME' => 'Indeed',
+        'KALIBRR_NAME' => 'Kalibrr',
+        'FOUNDIT_NAME' => 'FoundIt',
+        "LINKEDIN_NAME" => 'LinkedIn',
+        'FACEBOOK_NAME' => 'Facebook',
+        "JOBSTREET_NAME" => 'Jobstreet',
+        'Indeed' => 2,
+        'Facebook' => 6,
+        'Kalibrr' => 3,
+        'Linkedin' => 5,
+        'Jobstreet' => 7,
+    ],
+
+    // -------------------------
+    // Gender Options
+    // -------------------------
+    'genders' => [
+        1 => 'Male',
+        2 => 'Female'
+    ],
+
+    'gender' => [
+        'MALE_VALUE' => 1,
+        'FEMALE_VALUE' => 2,
+        'MALE_NAME' => 'Male',
+        'FEMALE_NAME' => 'Female',
+        'male' => 1, 'm' => 1,
+        'female' => 2, 'f' => 2,
+    ],
+
 
 ];

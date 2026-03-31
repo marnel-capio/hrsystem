@@ -41,7 +41,7 @@ class ActionApplicationController extends Controller
         try {
 
         //Test error
-        throw new \Exception('');
+        //throw new \Exception('');
 
             // Prepare data for insertion
             $data = $request->validated();

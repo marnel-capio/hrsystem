@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php
 
 namespace App\Models {
@@ -2844,3 +2845,6 @@ namespace App\Models {
     }
 
 }
+=======
+<?php
+>>>>>>> develop
