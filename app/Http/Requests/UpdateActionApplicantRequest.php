@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Rules\MaxLength;
 use App\Rules\RequiredField;
+use App\Rules\AlphaSpaceDash;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,9 +22,9 @@ class UpdateActionApplicantRequest extends FormRequest
             'source_type' => [new RequiredField, 'numeric'],
             'source' => 'nullable|numeric|required_if:source_type,3',
             'other_source' => ['nullable', 'string', new MaxLength(80), 'required_if:source_type,1,2,4,5'],
-            'last_name' => [new RequiredField, 'string', new MaxLength(80)],
-            'first_name' => [new RequiredField, 'string', new MaxLength(80)],
-            'middle_name' => ['nullable', 'string', new MaxLength(80)],
+            'last_name' => [new RequiredField, 'string', new MaxLength(80), new AlphaSpaceDash],
+            'first_name' => [new RequiredField, 'string', new MaxLength(80), new AlphaSpaceDash],
+            'middle_name' => ['nullable', 'string', new MaxLength(80), new AlphaSpaceDash],
             'email_address' => [new RequiredField, 'email', new MaxLength(80), Rule::unique('action_applicants', 'email_address')->ignore($this->route('id')) ],
             'gender' => [new RequiredField, 'numeric', 'in:1,2'],
             'age' => [new RequiredField, 'numeric', 'min:1', 'max:99'],

@@ -82,7 +82,7 @@ class ActionApplicantController extends Controller
             ]);
 
             // TEMPORARY: force an exception to test the catch block
-            // throw new \Exception('');
+            throw new \Exception('');
 
             $applicant->updateWithRequest($request->validated(), auth()->id());
 
@@ -98,7 +98,7 @@ class ActionApplicantController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            return Inertia::back()->with('error', config('errors.update_failed.errorMessage'));
+            return Inertia::back()->with('error', config('errors.record_updated_failed.errorMessage'));
         }
     }
     

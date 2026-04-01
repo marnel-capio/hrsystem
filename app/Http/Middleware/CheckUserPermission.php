@@ -222,7 +222,6 @@ class CheckUserPermission
         if (in_array($routeName, [
             'action.applicants.register',
             'action.applicants.store',
-            'action.applicants.detail',
             'action.applicants.check-email',
         ])) {
             if (in_array($permission, [
