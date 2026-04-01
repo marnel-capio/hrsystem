@@ -102,10 +102,10 @@ const minGraduationDate = computed(() => {
 });
 
 const rules = {
-    last_name: (val: string) => !!val || 'Last Name is required',
-    first_name: (val: string) => !!val || 'First Name is required',
+    last_name: (val: string) => !!val || 'This is a required field.',
+    first_name: (val: string) => !!val || 'This is a required field.',
     email_address: (val: string) => {
-        if (!val) return 'Email is required';
+        if (!val) return 'This is a required field.';
         if (typeof val !== 'string') return 'The email must be a string';
         if (!val.includes('@') || !val.includes('.')) return "The email must contain '@' and '.'";
         // stricter validation using regex (optional)
@@ -113,10 +113,10 @@ const rules = {
         if (!emailRegex.test(val)) return 'The email must be a valid email address';
         return true;
     },
-    gender: (val: string) => !!val || 'Gender is required',
+    gender: (val: string) => !!val || 'This is a required field.',
     age: (val: string) => /^\d+$/.test(val) || 'Age must be a valid number',
-    school: (val: string) => !!val || 'School is required',
-    degree: (val: string) => !!val || 'Degree is required',
+    school: (val: string) => !!val || 'This is a required field.',
+    degree: (val: string) => !!val || 'This is a required field.',
 };
 
 function validateField(field: keyof typeof rules) {
@@ -130,7 +130,7 @@ function validateAge() {
     const age = Number(form.age); // convert string to number
 
     if (form.age === null || form.age === '') {
-        form.setError('age', 'Age is required');
+        form.setError('age', 'This is a required field.');
     } else if (age < 1) {
         form.setError('age', 'The age field must be at least 1.');
     } else if (age > 99) {
