@@ -55,7 +55,6 @@ class IntermediateRequisitionModel extends Model
                 $q2->where('project_name', 'like', "%{$search}%");
             });
 
-            // Start date search: Check if it's a month name (case-insensitive)
             $searchLower = strtolower($search);
             $months = [
                 'january' => 1,
@@ -77,7 +76,7 @@ class IntermediateRequisitionModel extends Model
                 $month = $months[$searchLower];
                 $q->orWhereMonth('start_date', '=', $month);
             } else {
-                // Otherwise, search by the full date string (YYYY-MM-DD)
+                // Otherwise, search by the full date string (YYYY-MM-DD) or partial date string
                 $q->orWhere('start_date', 'like', "%{$search}%");
             }
 
@@ -93,11 +92,12 @@ class IntermediateRequisitionModel extends Model
                     $q->orWhere('location_assignment', $value);
                 }
             }
+
+            $q->orWhere('resource', 'like', "%{$search}%");
         });
     }
-
-    return $query;
 }
+
 
 // Relationship to projects table
 public function project()
@@ -132,6 +132,7 @@ public function getLocationAssignmentLabelAttribute()
             'id',
             'project_id',
             'project_description',
+            'resource',
             'location_assignment',
             'start_date',
             'created_by',
@@ -139,7 +140,7 @@ public function getLocationAssignmentLabelAttribute()
         ])
         ->with([
             'project:id,project_name',
-            'requestedBy:id,first_name,last_name' // Fix here
+            'requestedBy:id,first_name,last_name' 
         ])
         ->search($search)
         ->orderBy('id', 'desc')
