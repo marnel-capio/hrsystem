@@ -17,7 +17,9 @@ class ActionApplicantController extends Controller
 {
     public function index()
     {
-        $applicants = ActionApplicant::getAllActionApplicants();
+        $applicants = ActionApplicant::with('programmingLanguages')
+                ->orderBy('created_time', 'desc')
+                ->get();
 
         return Inertia::render('action/applicants/Index', [
             'applicants' => $applicants,

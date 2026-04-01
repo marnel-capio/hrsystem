@@ -15,6 +15,11 @@ const props = defineProps<{
         degree: string
         expected_graduation: string
         remarks: string
+        programming_languages?: Array<{
+            id: number
+            program_language: string
+            remarks: string
+        }>
     }>
     flash?: { error?: string }
     userPermissions: number
@@ -54,13 +59,32 @@ const filteredApplicants = computed(() => {
     if (!q) return applicants.value
 
     return applicants.value.filter(a => {
-        return (
-            `${a.first_name} ${a.middle_name} ${a.last_name}`.toLowerCase().includes(q) ||
-            a.email_address.toLowerCase().includes(q) ||
-            a.school.toLowerCase().includes(q) ||
-            a.degree.toLowerCase().includes(q)
-        )
+        const name = `${a.first_name} ${a.middle_name} ${a.last_name}`.toLowerCase()
+        const email = a.email_address.toLowerCase()
+        const school = a.school.toLowerCase()
+        const degree = a.degree.toLowerCase()
+
+        // Only include programming languages in search for permissions 1,2,3
+        let languages = ''
+        if ([1, 2, 3].includes(props.userPermissions)) {
+            languages = (a.programming_languages ?? [])
+                .map(pl => pl.program_language.toLowerCase())
+                .join(' ')
+        }
+
+        return name.includes(q) || email.includes(q) || school.includes(q) || degree.includes(q) || languages.includes(q)
     })
+})
+
+const totalColumns = computed(() => {
+    // Base columns: Name, Email, School, Degree, Expected Graduation, Remarks
+    let cols = 6
+    if (canViewProgrammingLanguages.value) cols += 1
+    return cols
+})
+
+const canViewProgrammingLanguages = computed(() => {
+    return [1, 2, 3].includes(props.userPermissions)
 })
 
 const totalPages = computed(() => Math.ceil(filteredApplicants.value.length / perPage))
@@ -106,6 +130,13 @@ const canCreateApplicant = computed(() => {
     // Only show for permissions 1, 2, 3
     return [1, 2, 3].includes(props.userPermissions);
 })
+
+const searchPlaceholder = computed(() => {
+    if (canViewProgrammingLanguages.value) {
+        return 'Search by name, email, school, degree, or programming language'
+    }
+    return 'Search by name, email, school, or degree'
+})
 </script>
 
 <template>
@@ -137,7 +168,7 @@ const canCreateApplicant = computed(() => {
                                 d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
                         </svg>
                     </span>
-                    <input v-model="searchQuery" type="text" placeholder="Search by name, email, school, degree"
+                    <input v-model="searchQuery" type="text" :placeholder="searchPlaceholder"
                         class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
                 </div>
             </div>
@@ -157,6 +188,9 @@ const canCreateApplicant = computed(() => {
                                 <th class="border px-3 py-2">School</th>
                                 <th class="border px-3 py-2">Degree</th>
                                 <th class="border px-3 py-2">Expected Graduation</th>
+                                <th v-if="canViewProgrammingLanguages" class="border px-3 py-2">
+                                    Programming Languages
+                                </th>
                                 <th class="border px-3 py-2">Remarks</th>
                             </tr>
                         </thead>
@@ -172,6 +206,12 @@ const canCreateApplicant = computed(() => {
                                 <td class="border px-3 py-2">{{ a.school }}</td>
                                 <td class="border px-3 py-2">{{ a.degree }}</td>
                                 <td class="border px-3 py-2">{{ a.expected_graduation }}</td>
+                                <td v-if="canViewProgrammingLanguages" class="border px-3 py-2">
+                                    <div class="remarks-clamp"
+                                        :title="a.programming_languages?.map(pl => pl.program_language).join(', ')">
+                                        {{a.programming_languages?.map(pl => pl.program_language).join(', ') || '—'}}
+                                    </div>
+                                </td>
                                 <td class="border px-3 py-2">
                                     <div class="remarks-clamp" :title="a.remarks">
                                         {{ a.remarks }}
@@ -180,7 +220,7 @@ const canCreateApplicant = computed(() => {
                             </tr>
 
                             <tr v-if="paginatedApplicants.length === 0">
-                                <td colspan="6" class="text-center p-6 text-zinc-500">
+                                <td :colspan="totalColumns" class="text-center p-6 text-zinc-500">
                                     No applicants found.
                                 </td>
                             </tr>
@@ -315,7 +355,9 @@ const canCreateApplicant = computed(() => {
     overflow: hidden;
     text-overflow: ellipsis;
 
-    white-space: normal;      /* ensure wrapping */
-    word-break: break-word;   /* prevent overflow */
+    white-space: normal;
+    /* ensure wrapping */
+    word-break: break-word;
+    /* prevent overflow */
 }
 </style>
