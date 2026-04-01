@@ -212,6 +212,42 @@
 }
 
 /* =========================
+   IMPORT BUTTON
+   ========================= */
+
+.file-input-btn {
+  /* Reset */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  
+  /* Button styling */
+  background: white;
+  color: var(--ats-primary);
+  border: 2px solid var(--ats-primary);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.file-input-btn:hover {
+  background: var(--ats-primary);
+  color: white;
+  border-color: var(--ats-primary);
+  box-shadow: 0 4px 12px rgba(28, 123, 165, 0.3);
+  transform: translateY(-1px);
+}
+
+.file-input-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(28, 123, 165, 0.2);
+}
+
+/* =========================
    CARD
    ========================= */
 .card {

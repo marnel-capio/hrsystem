@@ -3,6 +3,7 @@ import ForgotPasswordController from './ForgotPasswordController'
 import DashboardController from './DashboardController'
 import UserController from './UserController'
 import ResourceScheduleController from './ResourceScheduleController'
+import ApplicationImportController from './ApplicationImportController'
 import ActionBatchController from './ActionBatchController'
 import ActionApplicantController from './ActionApplicantController'
 import IntermediateProjectController from './IntermediateProjectController'
@@ -14,6 +15,7 @@ ForgotPasswordController: Object.assign(ForgotPasswordController, ForgotPassword
 DashboardController: Object.assign(DashboardController, DashboardController),
 UserController: Object.assign(UserController, UserController),
 ResourceScheduleController: Object.assign(ResourceScheduleController, ResourceScheduleController),
+ApplicationImportController: Object.assign(ApplicationImportController, ApplicationImportController),
 ActionBatchController: Object.assign(ActionBatchController, ActionBatchController),
 ActionApplicantController: Object.assign(ActionApplicantController, ActionApplicantController),
 IntermediateProjectController: Object.assign(IntermediateProjectController, IntermediateProjectController),

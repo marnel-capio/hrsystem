@@ -38,35 +38,31 @@ class IntermediateService
     public function update($data, $request)
     {
         $project = IntermediateProjectModel::findOrFail($data['id']);
-        
-        // Store old values for comparison
+
         $oldData = [
             'project_name' => $project->project_name,
             'remarks' => $project->remarks,
         ];
 
-        // Update fields
-        //$project->project_name = strtoupper($data['project_name']);
+        $project->project_name = $data['project_name'];
         $project->remarks = $data['remarks'] ?? null;
-
         $project->updated_by = auth()->user()->id;
         $project->updated_time = now();
 
         $project->save();
 
-        // Log creation
         $activityLines = [];
         $activityLines[] = "Updated remarks for project: {$project->project_name}.";
-        $activityLines[] = 'Details:';
+        $activityLines[] = "Details:";
 
-        $fields = ['remarks'];
+        $fields = ['project_name', 'remarks'];
 
         foreach ($fields as $field) {
-            $oldValue = $oldData[$field] ?? null;
-            $newValue = $project->$field ?? null;
+            $oldValue = $oldData[$field] ?? '[empty]';
+            $newValue = $project->$field ?? '[empty]';
 
-            $oldValueStr = is_bool($oldValue) ? (int) $oldValue : (string) $oldValue;
-            $newValueStr = is_bool($newValue) ? (int) $newValue : (string) $newValue;
+            $oldValueStr = $oldValue === '' ? '[empty]' : $oldValue;
+            $newValueStr = $newValue === '' ? '[empty]' : $newValue;
 
             if ($oldValueStr !== $newValueStr) {
                 $activityLines[] = "{$field}: {$oldValueStr} -> {$newValueStr}";
@@ -78,13 +74,12 @@ class IntermediateService
         DB::table('logs')->insert([
             'module' => 'Intermediate',
             'activity' => $activity,
-            'ip_address' => $request->ip(),
-            'created_by' => auth()->user()->id, 
+            'ip_address' => $request->ip() ?? '0.0.0.0',
+            'created_by' => auth()->user()->id,
             'updated_by' => auth()->user()->id,
-            'create_time' => now(),               
+            'create_time' => now(),
             'update_time' => now(),
         ]);
- 
 
         return $project;
     }
