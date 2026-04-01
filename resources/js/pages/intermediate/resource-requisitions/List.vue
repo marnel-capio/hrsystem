@@ -76,7 +76,9 @@ function formatDate(dateString: string) {
     day: '2-digit'
   })
 }
-
+const canCreateRR = computed(() => {
+  return [1, 5].includes(userPermissions.value); // Use `userPermissions.value` here
+})
 
 </script>
 
@@ -87,26 +89,26 @@ function formatDate(dateString: string) {
       <!-- PAGE HEADER -->
       <div class="page-header">
         <h2 class="page-title">Resource Requisition List</h2>
-        <Link v-if="userPermissions === 1 || userPermissions === 5" :href="`/intermediate/resource-requisitions/register`"
+        <Link v-if="canCreateRR" :href="`/intermediate/resource-requisitions/register`"
           class="!bg-[#1C7BA5] btn-primary">
           Create Resource Requisition
         </Link>
       </div>
 
       <!-- SEARCH -->
-<div class="flex gap-4 mb-4">
-  <div class="relative w-full">
-    <span class="absolute inset-y-0 left-3 flex items-center text-zinc-500">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
-      </svg>
-    </span>
-    <input v-model="search" type="text" placeholder="Search by Project Name, Resources, Location Assignment, Start Date, and Requester"
-      class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
-  </div>
-</div>
+      <div class="flex gap-4 mb-4">
+        <div class="relative w-full">
+          <span class="absolute inset-y-0 left-3 flex items-center text-zinc-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
+            </svg>
+          </span>
+          <input v-model="search" type="text" placeholder="Search by Project Name, Resources, Location Assignment, Start Date, and Requester"
+            class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
+        </div>
+      </div>
 
       <!-- CARD WRAPPER -->
       <div class="card">
@@ -186,7 +188,6 @@ function formatDate(dateString: string) {
 
 <style scoped>
 /* CARD */
-/* CARD */
 .card {
   background: var(--ats-card, white);
   padding: 1rem;
@@ -194,7 +195,6 @@ function formatDate(dateString: string) {
   box-shadow: var(--ats-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
 }
 
-/* CARD */
 .card {
   background: var(--ats-card, white);
   padding: 1rem;
@@ -202,14 +202,12 @@ function formatDate(dateString: string) {
   box-shadow: var(--ats-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
 }
 
-/* TABLE WRAPPER */
 .table-wrapper {
   width: 100%; 
   overflow-x: hidden;
   display: block;
 }
 
-/* TABLE STYLES */
 .ats-table {
   width: 100%; 
   table-layout: auto; 
@@ -267,8 +265,6 @@ function formatDate(dateString: string) {
   width: 100%;
 }
 
-
-/* TABLE LINK */
 .table-link {
   color: var(--ats-accent, #1C7BA5);
   font-weight: 500;
@@ -279,7 +275,6 @@ function formatDate(dateString: string) {
   text-decoration: underline;
 }
 
-/* PAGE HEADER */
 .page-header {
   display: flex;
   align-items: center;
@@ -293,7 +288,6 @@ function formatDate(dateString: string) {
   color: var(--ats-text);
 }
 
-/* BUTTON */
 .btn-primary {
   background: var(--ats-primary, #1C7BA5);
   color: #fff;
@@ -309,7 +303,6 @@ function formatDate(dateString: string) {
   background: var(--ats-accent, #165a80);
 }
 
-/* PAGE CONTENT */
 .page-content {
   max-width: 1175px;
   margin: 0 auto;

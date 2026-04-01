@@ -141,7 +141,6 @@ class CheckUserPermission
 
 
         // INTERMEDIATE PROJECTS
-        // INTERMEDIATE
         if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
             // Only permission 1, 2, 3, and 5 are allowed for these routes
             if (in_array($permission, [1, 2, 3, 5])) {
@@ -163,28 +162,21 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
+
+
+        
         // INTERMEDIATE RREQUISITIONS
-        if (in_array($routeName, ['intermediate.requisitions.index', 'intermediate.requisitions.show'])) {
-            // Only permission 1, 2, 3, and 5 are allowed for these routes
-            if (in_array($permission, [1, 2, 3, 5])) {
+        if (in_array($routeName, [
+            'intermediate.requisitions.index',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+            ])) {
                 return $next($request);
             }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
-
-            return redirect('/dashboard')
-                ->with('error', config('errors.unauthorized.errorMessage'));
-        }
-
-        if (in_array($routeName, ['intermediate.requisitions.register', 'intermediate.requisitions.store', 'intermediate.requisitions.edit', 'intermediate.requisitions.update'])) {
-            // Only permission 1 or 5 are allowed for these routes
-            if (in_array($permission, [1, 5])) {
-                return $next($request);
-            }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
 
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));

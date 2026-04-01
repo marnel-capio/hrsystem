@@ -14,27 +14,27 @@ use Illuminate\Support\Facades\DB;
 class IntermediateRequisitionController extends Controller
 {
     protected $intermediateService;
- 
+
     public function __construct(IntermediateService $intermediateService)
     {
         $this->intermediateService = $intermediateService;
     }
 
     public function index(Request $request)
-{
-    $user = Auth::user();
-    $search = $request->input('search'); 
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
 
-    $requisitions = IntermediateRequisitionModel::getPaginated($search, perPage: 20);
-    $requisitionsTotal = IntermediateRequisitionModel::search($search)->count();
+        $requisitions = IntermediateRequisitionModel::getPaginated($search, perPage: 20);
+        $requisitionsTotal = IntermediateRequisitionModel::search($search)->count();
 
-    return Inertia::render('intermediate/resource-requisitions/List', [
-        'requisitions' => $requisitions,
-        'filters' => [
-            'search' => $search,
-        ],
-        'requisitions_total' => $requisitionsTotal,
-        'user_permissions' => $user->permissions,
-    ]);
-}
+        return Inertia::render('intermediate/resource-requisitions/List', [
+            'requisitions' => $requisitions,
+            'filters' => [
+                'search' => $search,
+            ],
+            'requisitions_total' => $requisitionsTotal,
+            'user_permissions' => $user->permissions,
+        ]);
+    }
 }
