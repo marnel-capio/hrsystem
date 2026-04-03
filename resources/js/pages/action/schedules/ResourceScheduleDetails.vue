@@ -389,10 +389,12 @@ editForm.wbs = wbsPayload;
     </h3>
     
     <!-- Description -->
-    <p class="text-zinc-700 dark:text-zinc-700 text-center mb-6">
-      Are you sure you want to delete <strong>"{{ schedule.batch_name }}"</strong>?<br>
-      This action cannot be undone.
-    </p>
+<p class="text-zinc-700 dark:text-zinc-700 text-center mb-6">
+  Are you sure you want to delete <strong>"{{ schedule.batch_name }}"</strong>?<br>
+  This action cannot be undone. <br>
+    <span class="text-[0.7rem]">This action will send an email notifying all HR managers and recruiters.</span><br>
+
+</p>
     
     <!-- Buttons -->
     <div class="flex gap-3">
