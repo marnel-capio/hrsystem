@@ -1,9 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
- * @route '/action/applications/import'
+ * @see app/Http/Controllers/ApplicationImportController.php:46
+ * @route '/applications/import'
  */
 export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: importMethod.url(options),
@@ -12,13 +11,13 @@ export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post
 
 importMethod.definition = {
     methods: ["post"],
-    url: '/action/applications/import',
+    url: '/applications/import',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
- * @route '/action/applications/import'
+ * @see app/Http/Controllers/ApplicationImportController.php:46
+ * @route '/applications/import'
  */
 importMethod.url = (options?: RouteQueryOptions) => {
     return importMethod.definition.url + queryParams(options)
@@ -26,8 +25,8 @@ importMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
- * @route '/action/applications/import'
+ * @see app/Http/Controllers/ApplicationImportController.php:46
+ * @route '/applications/import'
  */
 importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: importMethod.url(options),
@@ -36,8 +35,8 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
- * @route '/action/applications/import'
+ * @see app/Http/Controllers/ApplicationImportController.php:46
+ * @route '/applications/import'
  */
     const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: importMethod.url(options),
@@ -46,8 +45,8 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
- * @route '/action/applications/import'
+ * @see app/Http/Controllers/ApplicationImportController.php:46
+ * @route '/applications/import'
  */
         importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: importMethod.url(options),

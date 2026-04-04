@@ -111,41 +111,38 @@ class ActionApplicant extends Model
 
 
     /**
-     * Get eligible applicants for a specific batch (STATIC METHOD - CORRECT)
+     * Get eligible applicants for a specific batch
      */
-    public static function getEligibleApplicantsForBatch($batchId)
-    {
-        return self::select(
-                'action_applicants.id',
-                DB::raw("CONCAT(action_applicants.first_name, ' ', action_applicants.last_name, ' (', action_applicants.email_address, ')') as full_name")
-            )
-            // Exclude applicants who already applied for this batch
-            ->whereNotExists(function($query) use ($batchId) {
-                $query->select(DB::raw(1))
-                    ->from('action_applicant_applications')
-                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
-                    ->where('action_applicant_applications.action_batch_id', $batchId);
-            })
-            // Exclude applicants with failed applications in last 6 months
-            ->whereNotExists(function($query) {
-                $query->select(DB::raw(1))
-                    ->from('action_applicant_applications')
-                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
-                    ->where('action_applicant_applications.created_time', '>=', now()->subDays(180))
-                    ->where(function($q) {
-                        $q->whereIn('action_applicant_applications.exam_application_status', [6, 7])
-                          ->orWhere('action_applicant_applications.initial_interview_result', 3)
-                          ->orWhere('action_applicant_applications.final_interview_result', 3)
-                          ->orWhereIn('action_applicant_applications.job_offer_status', [4, 5, 6]);
-                    });
-            })
-            ->orderBy('action_applicants.last_name')
-            ->orderBy('action_applicants.first_name')
-            ->get()
-            ->pluck('full_name', 'id')
-            ->toArray();
-    }
-
+public static function getEligibleApplicantsForBatch($batchId)
+{
+    return self::select(
+            'action_applicants.id as value',
+            'action_applicants.age',
+            'action_applicants.degree',
+            DB::raw("CONCAT(action_applicants.first_name, ' ', action_applicants.last_name, ' (', action_applicants.email_address, ')') as label")
+        )
+        ->whereNotExists(function ($query) use ($batchId) {
+            $query->select(DB::raw(1))
+                ->from('action_applicant_applications')
+                ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                ->where('action_applicant_applications.action_batch_id', $batchId);
+        })
+        ->whereNotExists(function ($query) {
+            $query->select(DB::raw(1))
+                ->from('action_applicant_applications')
+                ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                ->where('action_applicant_applications.created_time', '>=', now()->subDays(180))
+                ->where(function ($q) {
+                    $q->whereIn('action_applicant_applications.exam_application_status', [6, 7])
+                        ->orWhere('action_applicant_applications.initial_interview_result', 3)
+                        ->orWhere('action_applicant_applications.final_interview_result', 3)
+                        ->orWhereIn('action_applicant_applications.job_offer_status', [4, 5, 6]);
+                });
+        })
+        ->orderBy('action_applicants.last_name')
+        ->orderBy('action_applicants.first_name')
+        ->get();
+}
 
     /**
      * Relationships

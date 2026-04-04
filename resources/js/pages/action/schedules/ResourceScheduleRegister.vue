@@ -280,7 +280,7 @@ watch(() => form.action_batch_id, (newId) => {
             <!-- Target Trainees -->
             <div>
               <label class="text-sm font-semibold">Target Trainees</label>
-              <input v-model="form.target_trainees" type="number" placeholder="Selected Batch Name will fill this field" class="w-full bg-zinc-50 border rounded-lg p-2.5"  disabled/>
+              <input v-model="form.target_trainees" type="number" placeholder="Auto-filled from batch name" class="w-full bg-zinc-50 border rounded-lg p-2.5"  disabled/>
               <p v-if="form.errors.target_trainees" class="text-red-600 text-xs mt-1">
                 {{ form.errors.target_trainees }}
               </p>
@@ -289,7 +289,7 @@ watch(() => form.action_batch_id, (newId) => {
             <!-- Date of Deployment -->
             <div>
               <label class="text-sm font-semibold">Date of Deployment</label>
-              <input v-model="form.deployment_date" readonly placeholder="Selected Batch Name will fill this field" class="w-full bg-zinc-50 border rounded-lg p-2.5"  />
+              <input v-model="form.deployment_date" readonly placeholder="Auto-filled from batch name" class="w-full bg-zinc-50 border rounded-lg p-2.5"  />
               <p v-if="form.errors.deployment_date" class="text-red-600 text-xs mt-1">
                 {{ form.errors.deployment_date }}
               </p>

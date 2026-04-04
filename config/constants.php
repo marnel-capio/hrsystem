@@ -182,12 +182,10 @@ return [
 
     'examApplicationStatuses' => [
         1 => 'Pending',
-        2 => '1st Priority (Passed)',
         3 => '2nd Priority (P2)',
         4 => 'Done',
         5 => 'Passed',
         6 => 'Failed',
-        7 => 'No Show',
     ],
 
     'interviewResults' => [
@@ -251,6 +249,80 @@ return [
         'male' => 1, 'm' => 1,
         'female' => 2, 'f' => 2,
     ],
+
+    'application_result_map' => [
+
+        'exam' => [
+            1 => 1, // Pending  -> Pending
+            2 => 2, // 1st Priority (Passed) -> Passed
+            3 => 2, // 2nd Priority (P2) -> Passed
+            4 => 1, // Done -> Pending
+            5 => 2, // Passed -> Passed
+            6 => 3, // Failed -> Failed
+        ],
+
+        'initial_interview' => [
+            1 => 1, // Pending -> Pending
+            2 => 1, // Done -> Pending
+            3 => 2, // Passed -> Passed
+            4 => 2, // P2 -> Passed
+            5 => 3, // Failed -> Failed
+        ],
+
+        'final_interview' => [
+            1 => 1, // Pending -> Pending
+            2 => 1, // Done -> Pending
+            3 => 2, // Passed -> Passed
+            4 => 2, // P2 -> Passed
+            5 => 3, // Failed -> Failed
+        ],
+    ],
+
+    'application_score_rules' => [
+    'exam' => [
+        'young_it' => [
+            'passed' => ['attp' => 60, 'git' => 6, 'prg' => 30],
+            'p2'     => ['attp' => 55, 'git' => 5, 'prg' => 20],
+        ],
+        'young_other' => [
+            'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+            'p2'     => ['attp' => 55, 'git' => 5, 'prg' => 20],
+        ],
+        'adult' => [
+            'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+        ],
+    ],
+
+    'initial_interview' => [
+        'passed_min' => 2.0,
+        'p2_min'     => 2.5,
+        'failed_min' => 4.0,
+    ],
+
+    ],
+
+    'tech_degree_patterns' => [
+    'bs information technology',
+    'bachelor of science in information technology',
+    'bachelor of science major in information technology',
+    'information technology',
+    'bsit',
+    'it',
+
+    'bs computer science',
+    'bachelor of science in computer science',
+    'bachelor of science major in computer science',
+    'computer science',
+    'bscs',
+    'cs',
+
+    'bs computer engineering',
+    'bachelor of science in computer engineering',
+    'bachelor of science major in computer engineering',
+    'computer engineering',
+    'bsce',
+    'cpe',
+],
 
 
 ];
