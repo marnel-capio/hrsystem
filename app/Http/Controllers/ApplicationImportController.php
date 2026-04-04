@@ -10,6 +10,7 @@ use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Carbon\Carbon;
 
 class ApplicationImportController extends Controller
 {
@@ -124,7 +125,7 @@ foreach ($rows as $rowIndex => $row) {
 
         $config = config('constants');
         $recruitmentPortalKeywords = $config['recruitment_portal_keywords'];
-        $sourceMap = $config['source'];
+        $sourceMap = $config['source_map'];
 
         $rawSource = trim($row['From what recruitment channel have you applied for this job?']);
         \Log::info('Source value:', ['rawSource' => $rawSource]);
@@ -181,11 +182,12 @@ foreach ($rows as $rowIndex => $row) {
                 ->first()
             : null;
 
-        $exam_application_status = null;
+        $exam_application_status = $examApplicationStatusFromExcel;
         $initial_interview_application_status = null;
         $failedExamStatuses = [6,7];
         $failedInitialStatuses = [5];
-        $sixMonthsAgo = now()->subMonths(6);
+        $currentRowTime = Carbon::parse($createdTime);
+        $sixMonthsAgo = $currentRowTime->copy()->subMonths(6);
 
         if (!$existingApplicant) {
             // New applicant
@@ -200,18 +202,20 @@ foreach ($rows as $rowIndex => $row) {
                         in_array($lastApplication->initial_interview_application_status, $failedInitialStatuses);
 
             if ($isFailed && $lastAppTime > $sixMonthsAgo) {
-                $skippedApplicants[] = "{$name} - Last failed app <6mo, skipping";
+                $skippedApplicants[] = "{$name} - Failed within last 6 months, cannot reapply yet.";
                 DB::rollBack();
                 continue;
             } elseif ($isFailed && $lastAppTime <= $sixMonthsAgo) {
                 // New application, no statuses
             } elseif (!$isFailed && $lastAppTime > $sixMonthsAgo) {
-                $exam_application_status = 5;
                 $initial_interview_application_status = 1;
-            } else {
-                $exam_application_status = 1;
             }
         }
+
+        \Log::info('Exam status mapping', [
+    'rawExamStatus' => $rawExamStatus,
+    'mapped' => $examApplicationStatusFromExcel,
+]);
 
         // -------------------------
         // CREATE APPLICATION
@@ -228,6 +232,11 @@ foreach ($rows as $rowIndex => $row) {
 
         DB::commit();
         $importedApplicants[] = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
+
+        \Log::info('Saving application', [
+    'name' => $name,
+    'exam_application_status' => $exam_application_status,
+]);
 
     } catch (\Exception $e) {
         DB::rollBack();

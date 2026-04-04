@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ApplicationImportController::index
- * @see app/Http/Controllers/ApplicationImportController.php:16
+ * @see app/Http/Controllers/ApplicationImportController.php:17
  * @route '/action/applications'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::index
- * @see app/Http/Controllers/ApplicationImportController.php:16
+ * @see app/Http/Controllers/ApplicationImportController.php:17
  * @route '/action/applications'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::index
- * @see app/Http/Controllers/ApplicationImportController.php:16
+ * @see app/Http/Controllers/ApplicationImportController.php:17
  * @route '/action/applications'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ApplicationImportController::index
- * @see app/Http/Controllers/ApplicationImportController.php:16
+ * @see app/Http/Controllers/ApplicationImportController.php:17
  * @route '/action/applications'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\ApplicationImportController::index
- * @see app/Http/Controllers/ApplicationImportController.php:16
+ * @see app/Http/Controllers/ApplicationImportController.php:17
  * @route '/action/applications'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\ApplicationImportController::index
- * @see app/Http/Controllers/ApplicationImportController.php:16
+ * @see app/Http/Controllers/ApplicationImportController.php:17
  * @route '/action/applications'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\ApplicationImportController::index
- * @see app/Http/Controllers/ApplicationImportController.php:16
+ * @see app/Http/Controllers/ApplicationImportController.php:17
  * @route '/action/applications'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
+ * @see app/Http/Controllers/ApplicationImportController.php:46
  * @route '/applications/import'
  */
 export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -94,7 +94,7 @@ importMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
+ * @see app/Http/Controllers/ApplicationImportController.php:46
  * @route '/applications/import'
  */
 importMethod.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ importMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
+ * @see app/Http/Controllers/ApplicationImportController.php:46
  * @route '/applications/import'
  */
 importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -113,7 +113,7 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
+ * @see app/Http/Controllers/ApplicationImportController.php:46
  * @route '/applications/import'
  */
     const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -123,7 +123,7 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:45
+ * @see app/Http/Controllers/ApplicationImportController.php:46
  * @route '/applications/import'
  */
         importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

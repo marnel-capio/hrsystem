@@ -106,7 +106,7 @@ return [
     ],
 
     // Source Mapping (for Recruitment Portals)
-    'source' => [
+    'source_map' => [
         'Indeed' => 2,
         'Facebook' => 6,
         'Kalibrr' => 3,
@@ -120,28 +120,18 @@ return [
 
 
     // -------------------------
-    // Gender Mapping
-    // -------------------------
-    'gender' => [
-        'male' => 1, 'm' => 1,
-        'female' => 2, 'f' => 2,
-    ],
-
-    // -------------------------
     // Exam Status Mapping
     // -------------------------
     'exam_status' => [
         'pending' => 1,
-        'passed'  => 2,
-        'failed'  => 3,
-        'p2'      => 4,
-        'p3'      => 5,
-        'withdrew' => 6,
-        'no show' => 7,
-        'PASSED'  => 2,
-        'FAILED'  => 3,
-        'Withdrew'=> 6,
-        'No Show' => 7,
+        'p1'  => 2,
+        'p2'  => 3,
+        'done' => 4,
+        'passed' => 5,
+        'failed' => 6,
+        'no show' => 6,
+        'withdrew' => 6
+        
     ],
 
 
@@ -207,6 +197,9 @@ return [
         'FEMALE_VALUE' => 2,
         'MALE_NAME' => 'Male',
         'FEMALE_NAME' => 'Female',
+        'male' => 1, 'm' => 1,
+        'female' => 2, 'f' => 2,
+        'Male' => 1, 'Female' => 2,
     ],
 
 
