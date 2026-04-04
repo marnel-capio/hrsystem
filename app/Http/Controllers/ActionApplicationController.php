@@ -7,13 +7,29 @@ use App\Models\ActionApplicant;
 use App\Models\ActionApplication;
 use App\Models\ActionBatchModel;
 use App\Models\Log;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ActionApplicationController extends Controller
 {
+    /**
+     * Display a listing of the applications.
+     */
+public function index()
+{
+    $search = request('search', '');
+
+    $applications = ActionApplication::listPageData($search);
+    $actionBatches = ActionBatchModel::getWithTargetLocationAndApplications();
+
+    return inertia('action/applications/ActionApplicationList', [
+        'applications'    => $applications,
+        'actionBatches'   => $actionBatches,
+        'filters'         => ['search' => $search],
+        'userPermissions' => auth()->user()->permissions,
+    ]);
+}
 
     /**
      * Show the form for creating a new application.
@@ -39,14 +55,8 @@ class ActionApplicationController extends Controller
         DB::beginTransaction();
 
         try {
-
-        //Test error
-        //throw new \Exception('');
-
-            // Prepare data for insertion
             $data = $request->validated();
 
-            // Handle file uploads
             if ($request->hasFile('upload_resume')) {
                 $data['upload_resume'] = $this->uploadFile($request->file('upload_resume'), 'resumes');
             }
@@ -59,7 +69,7 @@ class ActionApplicationController extends Controller
 
             $application = ActionApplication::createApplication($data);
             $user = Auth::user();
-            // Create log entry
+
             Log::createLog(
                 'ACTION',
                 "Application for {$application->applicant->email_address} registered successfully.",
@@ -97,7 +107,6 @@ class ActionApplicationController extends Controller
     /**
      * Get eligible applicants for a specific batch
      */
-
     public function getApplicantsForBatch($batchId)
     {
         try {
@@ -114,7 +123,6 @@ class ActionApplicationController extends Controller
         }
     }
 
-
     /**
      * Handle file upload
      */
@@ -122,6 +130,7 @@ class ActionApplicationController extends Controller
     {
         $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs("uploads/{$directory}", $filename, 'public');
+
         return $path;
     }
 }

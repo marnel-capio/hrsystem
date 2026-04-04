@@ -101,6 +101,15 @@ return [
         5 => 'Walk-in',
     ],
 
+        // Source Mapping (for Recruitment Portals)
+    'source_map' => [
+        'Indeed' => 2,
+        'Facebook' => 6,
+        'Kalibrr' => 3,
+        'Linkedin' => 5,
+        'Jobstreet' => 7,
+    ],
+
     'recruitment_portal_keywords' => ['Indeed', 'Facebook', 'Kalibrr', 'Linkedin', 'Jobstreet'],
 
 
@@ -224,11 +233,6 @@ return [
         "LINKEDIN_NAME" => 'LinkedIn',
         'FACEBOOK_NAME' => 'Facebook',
         "JOBSTREET_NAME" => 'Jobstreet',
-        'Indeed' => 2,
-        'Facebook' => 6,
-        'Kalibrr' => 3,
-        'Linkedin' => 5,
-        'Jobstreet' => 7,
     ],
 
     // -------------------------
