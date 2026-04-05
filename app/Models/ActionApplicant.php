@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ActionApplicant extends Model
 {
@@ -15,9 +16,23 @@ class ActionApplicant extends Model
     public $timestamps = false; // we use created_time / updated_time
 
     protected $fillable = [
-        'first_name',
+        'source_type',
+        'source',
+        'other_source',
         'last_name',
+        'first_name',
+        'middle_name',
         'email_address',
+        'gender',
+        'age',
+        'school',
+        'degree',
+        'others_degree',
+        'expected_graduation',
+        'awards_recognition',
+        'other_examination_certificate',
+        'thesis_project',
+        'extra_curricular',
         'contact_number',
         'address',
         'created_by',

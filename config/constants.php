@@ -131,16 +131,14 @@ return [
     // -------------------------
     'exam_status' => [
         'pending' => 1,
-        'passed'  => 2,
-        'failed'  => 3,
-        'p2'      => 4,
-        'p3'      => 5,
-        'withdrew' => 6,
-        'no show' => 7,
-        'PASSED'  => 2,
-        'FAILED'  => 3,
-        'Withdrew'=> 6,
-        'No Show' => 7,
+        'p1'  => 2,
+        'p2'  => 3,
+        'done' => 4,
+        'passed' => 5,
+        'failed' => 6,
+        'no show' => 6,
+        'withdrew' => 6
+        
     ],
 
     'sTypes' => [
@@ -248,6 +246,7 @@ return [
         'FEMALE_NAME' => 'Female',
         'male' => 1, 'm' => 1,
         'female' => 2, 'f' => 2,
+        'Male' => 1, 'Female' => 2,
     ],
 
     'application_result_map' => [
