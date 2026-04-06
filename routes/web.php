@@ -12,6 +12,7 @@ use App\Http\Controllers\ActionApplicationController;
 use App\Http\Controllers\ApplicationImportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
 
 /**
  * Web Routes
@@ -46,6 +47,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
+    //action-applicants proglang list
+        Route::get('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'index']);
+
+        //action-applicants proglang add api
+        Route::post('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'store']);
+
+        //action-applicants proglang edit api
+        Route::put('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'update']);
+
+        //action-applicants proglang delete single api
+        Route::delete('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'destroy']);
+
+        //action-applicants proglang delete bulk api
+        Route::post('/action/applicants/{applicantId}/languages/bulk-delete', [ActionApplicantProgrammingLanguageController::class, 'bulkDelete']);
 });
 
     // Update user
@@ -150,14 +165,29 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/applicants/register', [ActionApplicantController::class, 'create'])
                 ->name('action.applicants.register');
 
+        //action-applicants register api
         Route::post('/action/applicants', [ActionApplicantController::class, 'store'])
                 ->name('action.applicants.store');
 
+        //action-applicants email checker api
         Route::post('/action/applicants/check-email', [ActionApplicantController::class, 'checkEmail'])
                 ->name('action.applicants.check-email');
 
+        //action-applicants detail 
         Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
                 ->name('action.applicants.detail');
+
+        //action-applicants edit
+        Route::get('/action/applicants/{id}/edit', [ActionApplicantController::class, 'edit'])
+                ->name('action.applicants.edit');
+
+        
+
+        //action-applicants update api
+        Route::put('/action/applicants/{id}/update', [ActionApplicantController::class, 'update'])
+                ->name('action.applicants.update');
+
+        
     });
 
 

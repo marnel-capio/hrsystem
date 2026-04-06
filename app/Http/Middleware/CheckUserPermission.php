@@ -209,6 +209,11 @@ class CheckUserPermission
             }
         }
 
+        /*
+        |----------------------------------------------------------------------
+        | Route: /action/applicants
+        |----------------------------------------------------------------------
+        */
         if (in_array($routeName, ['action.applicants.index'])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
@@ -232,8 +237,48 @@ class CheckUserPermission
         if (in_array($routeName, [
             'action.applicants.register',
             'action.applicants.store',
-            'action.applicants.detail',
             'action.applicants.check-email',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        /*
+        |----------------------------------------------------------------------
+        | Route: /action/applicants/{id}
+        |----------------------------------------------------------------------
+        */
+        if ($routeName === 'action.applicants.detail') {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        /*
+        |----------------------------------------------------------------------
+        | Route: /action/applicants/{id}/edit, CRUD ProgLang, Update
+        |----------------------------------------------------------------------
+        */
+        if (in_array($routeName, [
+            'action.applicants.edit',
+            'action.applicants.update',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
