@@ -287,4 +287,9 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
+    dashboard.form = dashboardForm               }
+                    }),
+            method: 'get',
+        })
+    
     dashboard.form = dashboardForm

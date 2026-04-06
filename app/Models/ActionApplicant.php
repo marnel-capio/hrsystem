@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class ActionApplicant extends Model
@@ -33,7 +33,8 @@ class ActionApplicant extends Model
         'other_examination_certificate',
         'thesis_project',
         'extra_curricular',
-        'remarks',
+        'contact_number',
+        'address',
         'created_by',
         'created_time',
         'updated_by',
@@ -128,11 +129,6 @@ class ActionApplicant extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function applications()
-    {
-        return $this->hasMany(ActionApplication::class, 'action_applicant_id');
-    }
-
     public function programmingLanguages()
     {
         return $this->hasMany(ActionApplicantProgrammingLanguage::class, 'action_applicant_id', 'id');
@@ -187,6 +183,56 @@ class ActionApplicant extends Model
         $this->updated_time = now();
 
         return $this->save();
+
+    }
+
+    /**
+     * Get eligible applicants for a specific batch
+     */
+    public static function getEligibleApplicantsForBatch($batchId)
+    {
+        return self::select(
+                'action_applicants.id as value',
+                'action_applicants.age',
+                'action_applicants.degree',
+                DB::raw("CONCAT(action_applicants.first_name, ' ', action_applicants.last_name, ' (', action_applicants.email_address, ')') as label")
+            )
+            ->whereNotExists(function ($query) use ($batchId) {
+                $query->select(DB::raw(1))
+                    ->from('action_applicant_applications')
+                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                    ->where('action_applicant_applications.action_batch_id', $batchId);
+            })
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('action_applicant_applications')
+                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                    ->where('action_applicant_applications.created_time', '>=', now()->subDays(180))
+                    ->where(function ($q) {
+                        $q->whereIn('action_applicant_applications.exam_application_status', [6, 7])
+                            ->orWhere('action_applicant_applications.initial_interview_result', 3)
+                            ->orWhere('action_applicant_applications.final_interview_result', 3)
+                            ->orWhereIn('action_applicant_applications.job_offer_status', [4, 5, 6]);
+                    });
+            })
+            ->orderBy('action_applicants.last_name')
+            ->orderBy('action_applicants.first_name')
+            ->get();
+    }
+
+    /**
+     * Relationships
+     */
+    public function applications()
+    {
+        return $this->hasMany(ActionApplication::class, 'action_applicant_id', 'id');
+    }
+
+    public function latestApplication()
+    {
+        return $this->hasOne(ActionApplication::class, 'action_applicant_id', 'id')
+            ->latest('created_time');
+
     }
 
     /**
@@ -196,7 +242,7 @@ class ActionApplicant extends Model
     {
         $data['created_time'] = now();
         $data['updated_time'] = now();
-        $data['created_by'] = Auth::id();  
+        $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
         return self::create($data);
