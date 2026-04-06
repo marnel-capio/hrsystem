@@ -141,7 +141,7 @@ const canCreateRR = computed(() => {
 
               <tr v-for="requisition in requisitions.data" :key="requisition.id">
                 <td class="border px-3 py-2">
-                  <Link :href="`/intermediate/requisitions/${requisition.id}`" class="table-link">
+                  <Link :href="`/intermediate/resource-requisitions/${requisition.id}`" class="table-link">
                     {{ requisition.project?.project_name }}
                   </Link>
                 </td>

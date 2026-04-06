@@ -37,4 +37,13 @@ class IntermediateRequisitionController extends Controller
             'user_permissions' => $user->permissions,
         ]);
     }
+
+    public function show($id)
+    {
+        $requisition = IntermediateRequisitionModel::findOrFail($id);
+        return Inertia::render('intermediate/resource-requisitions/Detail', [
+            'requisition' => $requisition,
+            'user_permissions' => auth()->user()->permissions,
+        ]);
+    }
 }
