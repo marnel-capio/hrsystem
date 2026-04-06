@@ -228,7 +228,14 @@ class ActionApplicant extends Model
         $applicant = self::where('email_address', $email)->first();
 
         if ($applicant) {
-            return $applicant->updateApplicant($data);
+            // During update, exclude source-related fields
+            $updateData = array_diff_key($data, array_flip([
+                'source_type',
+                'source', 
+                'other_source'
+            ]));
+            
+            return $applicant->updateApplicant($updateData);
         }
 
         return self::createApplicant($data);

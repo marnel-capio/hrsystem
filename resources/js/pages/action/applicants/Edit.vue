@@ -193,7 +193,7 @@ watch(
                     <!-- Source Fields -->
                     <div class="form-group">
                         <label>Source Type</label>
-                        <select v-model="form.source_type">
+                        <select v-model="form.source_type" disabled>
                             <option disabled value="">Select Source Type</option>
                             <option v-for="type in sourceTypes" :key="type.value" :value="type.value">{{ type.label }}
                             </option>
@@ -204,20 +204,16 @@ watch(
                     <div class="form-row">
                         <div class="form-group half">
                             <label>Source</label>
-                            <select v-model="form.source" :disabled="isSourceDisabled">
+                            <select v-model="form.source" disabled>
                                 <option disabled value="">Select Source</option>
                                 <option v-for="s in sources" :key="s.value" :value="s.value">{{ s.label }}</option>
                             </select>
-                            <span v-if="!isSourceDisabled && form.errors.source" class="error">{{ form.errors.source
-                            }}</span>
                         </div>
 
                         <div class="form-group half">
                             <label>Other Source</label>
                             <input type="text" v-model="form.other_source" placeholder="Specify other source"
-                                :disabled="isOtherSourceDisabled" />
-                            <span v-if="!isOtherSourceDisabled && form.errors.other_source" class="error">{{
-                                form.errors.other_source }}</span>
+                                disabled />
                         </div>
                     </div>
 
@@ -298,7 +294,7 @@ watch(
                         <label>Awards / Recognition</label>
                         <textarea v-model="form.awards_recognition" placeholder="Awards or recognition"></textarea>
                         <span v-if="form.errors.awards_recognition" class="error">{{ form.errors.awards_recognition
-                        }}</span>
+                            }}</span>
                     </div>
 
                     <div class="form-group">
@@ -318,7 +314,7 @@ watch(
                         <label>Extra Curricular</label>
                         <textarea v-model="form.extra_curricular"></textarea>
                         <span v-if="form.errors.extra_curricular" class="error">{{ form.errors.extra_curricular
-                        }}</span>
+                            }}</span>
                     </div>
 
                     <div class="form-group">

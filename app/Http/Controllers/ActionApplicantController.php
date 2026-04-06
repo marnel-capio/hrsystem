@@ -84,7 +84,7 @@ class ActionApplicantController extends Controller
             ]);
 
             // TEMPORARY: force an exception to test the catch block
-            throw new \Exception('');
+            // throw new \Exception('');
 
             $applicant->updateWithRequest($request->validated(), auth()->id());
 
