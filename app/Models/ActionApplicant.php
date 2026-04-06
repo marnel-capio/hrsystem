@@ -55,8 +55,7 @@ class ActionApplicant extends Model
         'source' => '',
     ];
 
-    public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source, $other_source, $createdTime, $updatedTime)
-    {
+    public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source,$other_source, $createdTime, $updatedTime) {
         $nameParts = explode(',', $row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
         $last = trim($nameParts[0] ?? '');
         $first = isset($nameParts[1]) ? trim(explode(' ', trim($nameParts[1]))[0]) : '';
@@ -64,15 +63,17 @@ class ActionApplicant extends Model
 
         $email = trim($row['Email Address'] ?? '');
 
-        return self::updateOrCreate(
-            ['email_address' => $email],
-            [
+        $applicant = self::where('email_address', $email)->first();
+
+        if (!$applicant) {
+            return self::create([
                 'source_type' => $source_type,
                 'source' => $source,
                 'other_source' => $other_source,
                 'last_name' => $last,
                 'first_name' => $first,
                 'middle_name' => $middle,
+                'email_address' => $email,
                 'gender' => $gender,
                 'age' => (int)($row['Age'] ?? 0),
                 'school' => trim($row['School '] ?? ''),
@@ -84,11 +85,31 @@ class ActionApplicant extends Model
                 'thesis_project' => trim($row['Thesis Project'] ?? ''),
                 'extra_curricular' => substr(trim($row['Extra-curricular Activities'] ?? ''), 0, 255),
                 'created_by' => Auth::id(),
-                'created_time' => now(),
+                'created_time' => $createdTime,
                 'updated_by' => Auth::id(),
-                'updated_time' => now(),
-            ]
-        );
+                'updated_time' => $updatedTime,
+            ]);
+        }
+
+        $applicant->update([
+            'last_name' => $last,
+            'first_name' => $first,
+            'middle_name' => $middle,
+            'gender' => $gender,
+            'age' => (int)($row['Age'] ?? 0),
+            'school' => trim($row['School '] ?? ''),
+            'degree' => trim($row["Bachelor's Degree"] ?? ''),
+            'others_degree' => trim($row["If others, please indicate below.\nWrite NA if not applicable (if degree is among the choices from previous question)"] ?? ''),
+            'expected_graduation' => trim($row['Year of Expected Graduation'] ?? ''),
+            'awards_recognition' => trim($row['Awards/ Recognition '] ?? ''),
+            'other_examination_certificate' => trim($row['Other Examinations/ Certifications taken'] ?? ''),
+            'thesis_project' => trim($row['Thesis Project'] ?? ''),
+            'extra_curricular' => substr(trim($row['Extra-curricular Activities'] ?? ''), 0, 255),
+            'updated_by' => Auth::id(),
+            'updated_time' => $updatedTime,
+        ]);
+
+        return $applicant;
     }
 
     public static function getAllActionApplicants()
