@@ -127,18 +127,18 @@ Route::prefix('action/applications')->name('action.applications.')->group(functi
     Route::post('/{applicationId}/interviews/{interviewId}/decision', [ActionApplicationController::class, 'submitInterviewDecision'])
         ->name('interviews.decision');
 
-Route::post(
-    '/{applicationId}/interviews/bulk-update-schedule',
-    [ActionApplicationController::class, 'bulkUpdateInterviewSchedule']
-)->name('interviews.bulk-update-schedule');
+    Route::post(
+        '/{applicationId}/interviews/bulk-update-schedule',
+        [ActionApplicationController::class, 'bulkUpdateInterviewSchedule']
+    )->name('interviews.bulk-update-schedule');
 
-Route::post(
-    '/{application}/send-notification',
-    [ActionApplicationController::class, 'sendNotification']
-)->name('send-notification');
+    Route::post(
+        '/{application}/send-notification',
+        [ActionApplicationController::class, 'sendNotification']
+    )->name('send-notification');
 
-Route::get('/{id}/print', [ActionApplicationController::class, 'print'])
-    ->name('print');
+    Route::get('/{id}/print', [ActionApplicationController::class, 'print'])
+        ->name('print');
 
 });
 

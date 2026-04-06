@@ -231,126 +231,7 @@ return [
         "JOBSTREET_NAME" => 'Jobstreet',
     ],
 
-    // -------------------------
-    // Gender Options
-    // -------------------------
-    'genders' => [
-        1 => 'Male',
-        2 => 'Female'
-    ],
 
-    'gender' => [
-        'MALE_VALUE' => 1,
-        'FEMALE_VALUE' => 2,
-        'MALE_NAME' => 'Male',
-        'FEMALE_NAME' => 'Female',
-        'male' => 1, 'm' => 1,
-        'female' => 2, 'f' => 2,
-        'Male' => 1, 'Female' => 2,
-    ],
-
-    'application_result_map' => [
-
-        'exam' => [
-            1 => 1, // Pending  -> Pending
-            2 => 2, // 1st Priority (Passed) -> Passed
-            3 => 2, // 2nd Priority (P2) -> Passed
-            4 => 1, // Done -> Pending
-            5 => 2, // Passed -> Passed
-            6 => 3, // Failed -> Failed
-        ],
-
-        'initial_interview' => [
-            1 => 1, // Pending -> Pending
-            2 => 1, // Done -> Pending
-            3 => 2, // Passed -> Passed
-            4 => 2, // P2 -> Passed
-            5 => 3, // Failed -> Failed
-        ],
-
-        'final_interview' => [
-            1 => 1, // Pending -> Pending
-            2 => 1, // Done -> Pending
-            3 => 2, // Passed -> Passed
-            4 => 2, // P2 -> Passed
-            5 => 3, // Failed -> Failed
-        ],
-    ],
-
-    'application_score_rules' => [
-    'exam' => [
-        'young_it' => [
-            'passed' => ['attp' => 60, 'git' => 6, 'prg' => 30],
-            'p2'     => ['attp' => 55, 'git' => 5, 'prg' => 20],
-        ],
-        'young_other' => [
-            'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
-            'p2'     => ['attp' => 55, 'git' => 5, 'prg' => 20],
-        ],
-        'adult' => [
-            'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
-        ],
-    ],
-
-    'initial_interview' => [
-        'passed_min' => 2.0,
-        'p2_min'     => 2.5,
-        'failed_min' => 4.0,
-    ],
-
-    ],
-
-    'tech_degree_patterns' => [
-    'bs information technology',
-    'bachelor of science in information technology',
-    'bachelor of science major in information technology',
-    'information technology',
-    'bsit',
-    'it',
-
-    'bs computer science',
-    'bachelor of science in computer science',
-    'bachelor of science major in computer science',
-    'computer science',
-    'bscs',
-    'cs',
-
-    'bs computer engineering',
-    'bachelor of science in computer engineering',
-    'bachelor of science major in computer engineering',
-    'computer engineering',
-    'bsce',
-    'cpe',
-],
-
-'interview_types' => [
-    'exam' => 1,
-    'initial' => 2,
-    'final' => 3,
-],
-
-'interview_assignment_status' => [
-    'pending_approval' => 1,
-    'approved' => 2,
-    'declined' => 3,
-    'completed' => 4,
-],
-
-'application_results' => [
-    'pending' => 1,
-    'passed' => 2,
-    'failed' => 3,
-],
-
-'interview_type_labels' => [
-    1 => 'Exam',
-    2 => 'Initial Interview',
-    3 => 'Final Interview',
-],
-
-// -------------------------
-// Action Application Fields
-// -------------------------
 
 'action_application_stage_fields' => [
     'exam' => [
@@ -434,6 +315,125 @@ return [
 
     'remarks' => 'Remarks',
 ],
+
+    // -------------------------
+    // Gender Options
+    // -------------------------
+    'genders' => [
+        1 => 'Male',
+        2 => 'Female'
+    ],
+
+    'gender' => [
+        'MALE_VALUE' => 1,
+        'FEMALE_VALUE' => 2,
+        'MALE_NAME' => 'Male',
+        'FEMALE_NAME' => 'Female',
+        'male' => 1, 'm' => 1,
+        'female' => 2, 'f' => 2,
+        'Male' => 1, 'Female' => 2,
+    ],
+
+    'tech_degree_patterns' => [
+    'bs information technology',
+    'bachelor of science in information technology',
+    'bachelor of science major in information technology',
+    'information technology',
+    'bsit',
+    'it',
+
+    'bs computer science',
+    'bachelor of science in computer science',
+    'bachelor of science major in computer science',
+    'computer science',
+    'bscs',
+    'cs',
+
+    'bs computer engineering',
+    'bachelor of science in computer engineering',
+    'bachelor of science major in computer engineering',
+    'computer engineering',
+    'bsce',
+    'cpe',
+],
+
+'interview_types' => [
+    'exam' => 1,
+    'initial' => 2,
+    'final' => 3,
+],
+
+'interview_assignment_status' => [
+    'pending_approval' => 1,
+    'approved' => 2,
+    'declined' => 3,
+    'completed' => 4,
+],
+
+'application_results' => [
+    'pending' => 1,
+    'passed' => 2,
+    'failed' => 3,
+],
+
+'interview_type_labels' => [
+    1 => 'Exam',
+    2 => 'Initial Interview',
+    3 => 'Final Interview',
+],
+
+
+    'application_result_map' => [
+        'exam' => [
+            1 => 1, // Pending  -> Pending
+            2 => 2, // 1st Priority (Passed) -> Passed
+            3 => 2, // 2nd Priority (P2) -> Passed
+            4 => 1, // Done -> Pending
+            5 => 2, // Passed -> Passed
+            6 => 3, // Failed -> Failed
+        ],
+
+        'initial_interview' => [
+            1 => 1, // Pending -> Pending
+            2 => 1, // Done -> Pending
+            3 => 2, // Passed -> Passed
+            4 => 2, // P2 -> Passed
+            5 => 3, // Failed -> Failed
+        ],
+
+        'final_interview' => [
+            1 => 1, // Pending -> Pending
+            2 => 1, // Done -> Pending
+            3 => 2, // Passed -> Passed
+            4 => 2, // P2 -> Passed
+            5 => 3, // Failed -> Failed
+        ],
+    ],
+
+    'application_score_rules' => [
+    'exam' => [
+        'young_it' => [
+            'passed' => ['attp' => 60, 'git' => 6, 'prg' => 30],
+            'p2'     => ['attp' => 55, 'git' => 5, 'prg' => 20],
+        ],
+        'young_other' => [
+            'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+            'p2'     => ['attp' => 55, 'git' => 5, 'prg' => 20],
+        ],
+        'adult' => [
+            'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+        ],
+    ],
+
+    'initial_interview' => [
+        'passed_min' => 2.0,
+        'p2_min'     => 2.5,
+        'failed_min' => 4.0,
+    ],
+
+    ],
+
+
 
 
 ];

@@ -14,6 +14,14 @@ return [3, 5, 6].includes(userPermissions.value) &&
        interview.status === 1
     }
 
+const bulkEditScheduleErrors = ref({
+    selectedInterviewers: '',
+    scheduledDate: '',
+})
+
+const notificationErrors = ref({
+    type: '',
+})
 
 const showAcceptDeclineModal = ref(false)
 const acceptDeclineSubmitting = ref(false)
@@ -27,8 +35,11 @@ const bulkEditScheduledDate = ref('')
 const bulkEditingSchedule = ref(false)
 
 const openBulkEditScheduleModal = () => {
+    bulkEditScheduleErrors.value.selectedInterviewers = ''
+    bulkEditScheduleErrors.value.scheduledDate = ''
+
     if (selectedInterviewers.value.length === 0) {
-        showToast('Please select at least one interviewer', 'error')
+        bulkEditScheduleErrors.value.selectedInterviewers = 'This is a required field.'
         return
     }
 
@@ -37,15 +48,22 @@ const openBulkEditScheduleModal = () => {
 }
 
 const submitBulkEditSchedule = async () => {
+    bulkEditScheduleErrors.value.selectedInterviewers = ''
+    bulkEditScheduleErrors.value.scheduledDate = ''
+
+    let hasError = false
+
     if (selectedInterviewers.value.length === 0) {
-        showToast('Please select at least one interviewer', 'error')
-        return
+        bulkEditScheduleErrors.value.selectedInterviewers = 'This is a required field.'
+        hasError = true
     }
 
     if (!bulkEditScheduledDate.value) {
-        showToast('Please select a scheduled date', 'error')
-        return
+        bulkEditScheduleErrors.value.scheduledDate = 'This is a required field.'
+        hasError = true
     }
+
+    if (hasError) return
 
     bulkEditingSchedule.value = true
 
@@ -63,6 +81,8 @@ const submitBulkEditSchedule = async () => {
         selectedInterviewers.value = []
         selectAll.value = false
         bulkEditScheduledDate.value = ''
+        bulkEditScheduleErrors.value.selectedInterviewers = ''
+        bulkEditScheduleErrors.value.scheduledDate = ''
 
         showToast(
             response.data.message || 'Selected interview schedules updated successfully!',
@@ -79,6 +99,7 @@ const submitBulkEditSchedule = async () => {
         bulkEditingSchedule.value = false
     }
 }
+
 const openAcceptDeclineModal = (interview: any) => {
     acceptDeclineInterviewer.value = interview
     acceptDeclineDecision.value = ''
@@ -391,8 +412,10 @@ if (!bulkAddPlannedDate.value) {
 }
 
 const sendNotification = async () => {
+    notificationErrors.value.type = ''
+
     if (!notification.value.type) {
-        showToast('Please select an email action', 'error')
+        notificationErrors.value.type = 'This is a required field.'
         return
     }
 
@@ -420,11 +443,10 @@ const sendNotification = async () => {
 
         showNotificationModal.value = false
         notification.value.type = ''
+        notificationErrors.value.type = ''
 
         showToast(response.data.message || 'Email sent successfully.', 'success')
     } catch (error: any) {
-        console.error('Send notification failed:', error?.response?.data || error)
-
         showToast(
             error?.response?.data?.error ||
             error?.response?.data?.message ||
@@ -1238,58 +1260,72 @@ watch(errorMessage, (newVal) => {
 </div>
 
           <!--  EDIT MODAL -->
-           <div v-if="showBulkEditScheduleModal" class="fixed inset-0 z-50 flex items-center justify-center">
+<div v-if="showBulkEditScheduleModal" class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showBulkEditScheduleModal = false"></div>
 
     <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-        <h3 class="text-xl font-bold mb-2">Edit Schedule</h3>
+        <h3 class="text-xl font-bold mb-2">Bulk Edit Schedule</h3>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
             Update the schedule of checked interviewers
         </p>
 
         <div class="space-y-4">
-<div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Selected Interviewers
-    </label>
 
-    <div class="bg-gray-50 dark:bg-zinc-800 rounded-lg px-3 py-3">
-        <div v-if="selectedInterviewDetails.length > 0" class="space-y-2">
-            <div
-                v-for="interview in selectedInterviewDetails"
-                :key="interview.id"
-                class="flex items-center justify-between gap-3 text-sm border-b border-gray-200 dark:border-zinc-700 last:border-b-0 pb-2 last:pb-0"
-            >
-                <div>
-                    <div class="font-medium text-gray-900 dark:text-gray-100">
-                        {{ interview.name }}
+            <!-- Selected Interviewers -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Selected Interviewers
+                </label>
+
+                <div class="bg-gray-50 dark:bg-zinc-800 rounded-lg px-3 py-3">
+                    <div v-if="selectedInterviewDetails.length > 0" class="space-y-2">
+                        <div
+                            v-for="interview in selectedInterviewDetails"
+                            :key="interview.id"
+                            class="flex items-center justify-between gap-3 text-sm border-b border-gray-200 dark:border-zinc-700 last:border-b-0 pb-2 last:pb-0"
+                        >
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">
+                                    {{ interview.name }}
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ interview.role_label || '-' }} • {{ getStageLabel(interview.interview_type) }}
+                                </div>
+                            </div>
+
+                            <div class="text-xs text-gray-500 dark:text-gray-400 text-right">
+                                {{ formatDateTime(interview.scheduled_date) }}
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ interview.role_label || '-' }} • {{ getStageLabel(interview.interview_type) }}
+
+                    <div v-else class="text-sm text-gray-500">
+                        No interviewers selected.
                     </div>
                 </div>
 
-                <div class="text-xs text-gray-500 dark:text-gray-400 text-right">
-                    {{ formatDateTime(interview.scheduled_date) }}
-                </div>
+                <!-- INLINE ERROR -->
+                <p v-if="bulkEditScheduleErrors.selectedInterviewers" class="mt-1 text-sm text-red-600">
+                    {{ bulkEditScheduleErrors.selectedInterviewers }}
+                </p>
             </div>
-        </div>
 
-        <div v-else class="text-sm text-gray-500">
-            No interviewers selected.
-        </div>
-    </div>
-</div>
-
+            <!-- Scheduled Date -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     New Scheduled Date
                 </label>
+
                 <input
                     type="datetime-local"
                     v-model="bulkEditScheduledDate"
                     class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800"
                 />
+
+                <!-- INLINE ERROR -->
+                <p v-if="bulkEditScheduleErrors.scheduledDate" class="mt-1 text-sm text-red-600">
+                    {{ bulkEditScheduleErrors.scheduledDate }}
+                </p>
             </div>
         </div>
 
@@ -1303,7 +1339,7 @@ watch(errorMessage, (newVal) => {
 
             <button
                 @click="submitBulkEditSchedule"
-                :disabled="bulkEditingSchedule || selectedInterviewers.length === 0"
+                :disabled="bulkEditingSchedule"
                 class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
             >
                 <span v-if="!bulkEditingSchedule">Update Schedule</span>
@@ -1441,35 +1477,41 @@ watch(errorMessage, (newVal) => {
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- LEFT SIDE: EMAIL ACTION -->
+<div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        Available Email Action
+    </label>
+
+    <div v-if="availableNotificationOptions.length === 0"
+        class="border border-dashed border-gray-300 dark:border-zinc-700 rounded-lg p-4 text-sm text-gray-500">
+        No email actions are currently available for this application.
+    </div>
+
+    <div v-else class="space-y-3">
+        <label
+            v-for="option in availableNotificationOptions"
+            :key="option.value"
+            class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 cursor-pointer"
+        >
+            <input
+                type="radio"
+                :value="option.value"
+                v-model="notification.type"
+                class="mt-1"
+            />
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Available Email Action
-                </label>
-
-                <div v-if="availableNotificationOptions.length === 0"
-                    class="border border-dashed border-gray-300 dark:border-zinc-700 rounded-lg p-4 text-sm text-gray-500">
-                    No email actions are currently available for this application.
-                </div>
-
-                <div v-else class="space-y-3">
-                    <label
-                        v-for="option in availableNotificationOptions"
-                        :key="option.value"
-                        class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 cursor-pointer"
-                    >
-                        <input
-                            type="radio"
-                            :value="option.value"
-                            v-model="notification.type"
-                            class="mt-1"
-                        />
-                        <div>
-                            <div class="font-medium">{{ option.label }}</div>
-                            <div class="text-xs text-gray-500">{{ option.description }}</div>
-                        </div>
-                    </label>
-                </div>
+                <div class="font-medium">{{ option.label }}</div>
+                <div class="text-xs text-gray-500">{{ option.description }}</div>
             </div>
+        </label>
+    </div>
+
+    <!-- INLINE ERROR -->
+    <p v-if="notificationErrors.type" class="mt-2 text-sm text-red-600">
+        {{ notificationErrors.type }}
+    </p>
+</div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
