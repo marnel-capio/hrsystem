@@ -1,6 +1,8 @@
+import applications from './applications'
 import projects from './projects'
 const intermediate = {
-    projects: Object.assign(projects, projects),
+    applications: Object.assign(applications, applications),
+projects: Object.assign(projects, projects),
 }
 
 export default intermediate

@@ -10,6 +10,7 @@ use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActionApplicationController;
 use App\Http\Controllers\ApplicationImportController;
+use App\Http\Controllers\IntermediateApplicationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -45,6 +46,9 @@ Route::middleware(['auth'])->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
+
+    Route::get('/intermediate/applications', [IntermediateApplicationController::class, 'index'])
+    ->name('intermediate.applications.index');
 
 });
 
