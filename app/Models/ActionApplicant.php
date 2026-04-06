@@ -194,6 +194,59 @@ public static function getEligibleApplicantsForBatch($batchId)
             ->latest('created_time');
     }
 
+    // functions used for applications
+    public function resolveExamCategory(): string
+{
+    $age = (int) $this->age;
+
+    if ($age >= 25) {
+        return 'adult';
+    }
+
+    $rawDegree = !empty($this->others_degree)
+        ? $this->others_degree
+        : $this->degree;
+
+    $normalizedDegree = static::normalizeDegree((string) $rawDegree);
+
+    return static::isTechDegree($normalizedDegree) ? 'young_it' : 'young_other';
+}
+
+public static function normalizeDegree(string $degree): string
+{
+    $degree = strtolower(trim($degree));
+    $degree = preg_replace('/[^a-z0-9\s]/', ' ', $degree);
+    $degree = preg_replace('/\s+/', ' ', $degree);
+
+    return $degree;
+}
+
+public static function isTechDegree(string $degree): bool
+{
+    $patterns = config('constants.tech_degree_patterns', []);
+
+    foreach ($patterns as $pattern) {
+        $normalizedPattern = static::normalizeDegree((string) $pattern);
+
+        if ($normalizedPattern === '') {
+            continue;
+        }
+
+        if (in_array($normalizedPattern, ['it', 'cs', 'cpe', 'bsit', 'bscs', 'bsce'], true)) {
+            if (preg_match('/\b' . preg_quote($normalizedPattern, '/') . '\b/', $degree)) {
+                return true;
+            }
+            continue;
+        }
+
+        if (str_contains($degree, $normalizedPattern)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
     /**
      * Create a new applicant
      */

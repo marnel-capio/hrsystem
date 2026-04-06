@@ -78,4 +78,22 @@ class ActionApplicationInterview extends Model
 
         return $this;
     }
+
+public function toDisplayArray(): array
+{
+    $interviewer = $this->interviewer;
+
+    return [
+        'id' => $this->id,
+        'interviewer_id' => $this->interviewer_id,
+        'name' => $interviewer?->full_name ?: 'N/A',
+        'email_address' => $interviewer?->email_address,
+        'pending_approval_notified_at' => $this->pending_approval_notified_at,
+        'role_label' => $interviewer?->role_label ?? 'N/A',
+        'interview_type' => (int) $this->interview_type,
+        'scheduled_date' => $this->scheduled_date,
+        'status' => (int) ($this->status ?? config('constants.interview_assignment_status.pending_approval')),
+        'decline_reason' => $this->decline_reason,
+    ];
+}
 }

@@ -138,7 +138,7 @@ return [
         'failed' => 6,
         'no show' => 6,
         'withdrew' => 6
-        
+
     ],
 
     'sTypes' => [
@@ -321,6 +321,118 @@ return [
     'computer engineering',
     'bsce',
     'cpe',
+],
+
+'interview_types' => [
+    'exam' => 1,
+    'initial' => 2,
+    'final' => 3,
+],
+
+'interview_assignment_status' => [
+    'pending_approval' => 1,
+    'approved' => 2,
+    'declined' => 3,
+    'completed' => 4,
+],
+
+'application_results' => [
+    'pending' => 1,
+    'passed' => 2,
+    'failed' => 3,
+],
+
+'interview_type_labels' => [
+    1 => 'Exam',
+    2 => 'Initial Interview',
+    3 => 'Final Interview',
+],
+
+// -------------------------
+// Action Application Fields
+// -------------------------
+
+'action_application_stage_fields' => [
+    'exam' => [
+        'exam_plan_date',
+        'exam_actual_date',
+        'exam_venue',
+        'exam_atpp_result',
+        'exam_git_result',
+        'exam_prg_result',
+        'exam_result',
+        'exam_application_status',
+        'exam_remarks',
+    ],
+    'initial_interview' => [
+        'initial_interview_plan_date',
+        'initial_interview_actual_date',
+        'initial_interview_venue',
+        'initial_interview_final',
+        'initial_interview_result',
+        'initial_interview_application_status',
+        'initial_interview_remarks',
+    ],
+    'final_interview' => [
+        'final_interview_date',
+        'final_interview_sf',
+        'final_interview_ib',
+        'final_interview_rv',
+        'final_interview_ma',
+        'final_interview_final',
+        'final_interview_result',
+        'final_interview_application_status',
+        'final_interview_remarks',
+    ],
+    'job_offer' => [
+        'job_offer_schedule',
+        'job_offer_status',
+        'job_offer_remarks',
+    ],
+    'general' => [
+        'remarks',
+    ],
+    'documents' => [
+        'upload_resume',
+        'upload_tor',
+        'upload_pic',
+    ],
+],
+
+'action_application_field_labels' => [
+    'exam_plan_date' => 'Exam Plan Date',
+    'exam_actual_date' => 'Exam Actual Date',
+    'exam_venue' => 'Exam Venue',
+    'exam_atpp_result' => 'Exam ATPP Result',
+    'exam_git_result' => 'Exam GIT Result',
+    'exam_prg_result' => 'Exam PRG Result',
+    'exam_result' => 'Exam Result',
+    'exam_application_status' => 'Exam Application Status',
+    'exam_remarks' => 'Exam Remarks',
+
+    'initial_interview_plan_date' => 'Initial Interview Plan Date',
+    'initial_interview_actual_date' => 'Initial Interview Actual Date',
+    'initial_interview_venue' => 'Initial Interview Venue',
+    'initial_interview_final' => 'Initial Interview Final Score',
+    'initial_interview_result' => 'Initial Interview Result',
+    'initial_interview_application_status' => 'Initial Interview Status',
+    'initial_interview_remarks' => 'Initial Interview Remarks',
+
+    'final_interview_date' => 'Final Interview Date',
+    'final_interview_sf' => 'Final Interview SF',
+    'final_interview_ib' => 'Final Interview IB',
+    'final_interview_rv' => 'Final Interview RV',
+    'final_interview_ma' => 'Final Interview MA',
+    'final_interview_final' => 'Final Interview Final Score',
+    'final_interview_result' => 'Final Interview Result',
+    'final_interview_application_status' => 'Final Interview Status',
+    'final_interview_remarks' => 'Final Interview Remarks',
+
+    'job_offer_schedule' => 'Job Offer Schedule',
+    'job_offer_status' => 'Job Offer Status',
+    'job_offer_remarks' => 'Job Offer Remarks',
+
+    'remarks' => 'Remarks',
 ],
 
 

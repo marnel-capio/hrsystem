@@ -3,22 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterActionApplicationRequest;
+use App\Http\Requests\UpdateActionApplicationRequest;
+use App\Http\Requests\SendActionApplicationNotificationRequest;
+use App\Http\Requests\BulkUpdateActionInterviewScheduleRequest;
+use App\Http\Requests\BulkAddActionInterviewsRequest;
+use App\Http\Requests\SubmitActionInterviewDecisionRequest;
+use App\Mail\ActionJobOfferScheduledMail;
+use App\Mail\ActionApplicantFailedMail;
+use App\Mail\ActionApplicantScheduledMail;
+use App\Mail\ActionInterviewerPendingApprovalMail;
 use App\Models\ActionApplicant;
 use App\Models\ActionApplication;
+use App\Models\ActionApplicationInterview;
 use App\Models\ActionBatchModel;
 use App\Models\Log;
-use Illuminate\Support\Facades\Log as LaravelLog;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
-use Illuminate\Http\Request;
-use App\Models\ActionApplicationInterview;
-use App\Models\User;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ActionInterviewerPendingApprovalMail;
-use App\Mail\ActionApplicantScheduledMail;
-use App\Mail\ActionInterviewerApprovedMail;
-use App\Mail\ActionApplicantFailedMail;
+use Inertia\Inertia;
 
 class ActionApplicationController extends Controller
 {
@@ -29,12 +32,9 @@ class ActionApplicationController extends Controller
     {
         $search = request('search', '');
 
-        $applications = ActionApplication::listPageData($search);
-        $actionBatches = ActionBatchModel::getWithTargetLocationAndApplications();
-
-        return inertia('action/applications/ActionApplicationList', [
-            'applications'    => $applications,
-            'actionBatches'   => $actionBatches,
+        return Inertia::render('action/applications/ActionApplicationList', [
+            'applications'    => ActionApplication::listPageData($search),
+            'actionBatches'   => ActionBatchModel::getWithTargetLocationAndApplications(),
             'filters'         => ['search' => $search],
             'userPermissions' => auth()->user()->permissions,
         ]);
@@ -45,21 +45,16 @@ class ActionApplicationController extends Controller
      */
     public function create()
     {
-        return Inertia::render('action/applications/ActionApplicationRegister', [
-            'actionBatches'        => ActionBatchModel::pluck('action_batch', 'id')->toArray(),
-            'examVenues'           => config('constants.examVenues'),
-            'examResults'          => config('constants.examResults'),
-            'examStatuses'         => config('constants.examApplicationStatuses'),
-            'interviewResults'     => config('constants.interviewResults'),
-            'interviewAppStatuses' => config('constants.applicationStatuses'),
-            'jobOfferStatuses'     => config('constants.jobOfferStatuses'),
-            'applicationResultMap' => config('constants.application_result_map'),
-            'applicationScoreRules'=> config('constants.application_score_rules'),
-        ]);
+        return Inertia::render('action/applications/ActionApplicationRegister', array_merge(
+            [
+                'actionBatches' => ActionBatchModel::pluck('action_batch', 'id')->toArray(),
+            ],
+            $this->applicationFormOptions()
+        ));
     }
 
     /**
-     * Store newly created application
+     * Store newly created application.
      */
     public function store(RegisterActionApplicationRequest $request)
     {
@@ -67,19 +62,8 @@ class ActionApplicationController extends Controller
 
         try {
             $data = $request->validated();
-            $data = $this->normalizeComputedFields($data);
-
-            if ($request->hasFile('upload_resume')) {
-                $data['upload_resume'] = $this->uploadFile($request->file('upload_resume'), 'resumes');
-            }
-
-            if ($request->hasFile('upload_tor')) {
-                $data['upload_tor'] = $this->uploadFile($request->file('upload_tor'), 'tors');
-            }
-
-            if ($request->hasFile('upload_pic')) {
-                $data['upload_pic'] = $this->uploadFile($request->file('upload_pic'), 'pictures');
-            }
+            $data = ActionApplication::normalizeComputedFields($data);
+            $data = $this->handleUploads($request, $data);
 
             $application = ActionApplication::createApplication($data);
             $user = Auth::user();
@@ -95,12 +79,10 @@ class ActionApplicationController extends Controller
             return redirect()
                 ->route('action.applications.show', $application->id)
                 ->with('success', config('errors.record_created_successfully.errorMessage'));
-
         } catch (\Illuminate\Validation\ValidationException $e) {
-        DB::rollBack();
-        throw $e;
-
-        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
             DB::rollBack();
 
             return redirect()
@@ -113,1140 +95,634 @@ class ActionApplicationController extends Controller
     /**
      * Display the specified application.
      */
+    public function show($id)
+    {
+        $application = ActionApplication::with([
+            'applicant',
+            'batch',
+            'interviews.interviewer',
+        ])->findOrFail($id);
 
+        $interviews = $application->interviews
+            ->map(fn ($interview) => $interview->toDisplayArray())
+            ->values();
 
-public function show($id)
-{
-    $application = ActionApplication::with([
-        'applicant',
-        'batch',
-        'interviews.interviewer',
-    ])->findOrFail($id);
+        $availableInterviewers = User::query()
+            ->select([
+                'id',
+                'first_name',
+                'last_name',
+                'middle_name',
+                'position',
+                'permissions',
+                'email_address',
+            ])
+            ->actionInterviewers()
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get()
+            ->map(fn ($user) => $user->toInterviewerOption())
+            ->values();
 
-    $positions = config('constants.positions');
-
-    $interviews = $application->interviews->map(function ($row) use ($positions) {
-        $interviewer = $row->interviewer;
-
-return [
-    'id' => $row->id,
-    'interviewer_id' => $row->interviewer_id,
-    'name' => $interviewer
-        ? trim($interviewer->first_name . ' ' . $interviewer->last_name)
-        : 'N/A',
-    'email_address' => $interviewer?->email_address,
-    'pending_approval_notified_at' => $row->pending_approval_notified_at,
-    'role_label' => $interviewer ? match ((int) $interviewer->permissions) {
-        config('constants.HR_ADMIN_PERMISSION.value') => 'HR Admin',
-        config('constants.HR_RECRUITER_PERMISSION.value') => 'HR Recruiter',
-        config('constants.BU_MANAGER_PERMISSION.value') => 'BU Manager',
-        config('constants.INTERVIEWER_PERMISSION.value') => 'Interviewer',
-        default => 'User',
-    } : 'N/A',
-    'interview_type' => (int) $row->interview_type,
-    'scheduled_date' => $row->scheduled_date,
-    'status' => (int) ($row->status ?? 1),
-];
-    })->values();
-
-$availableInterviewers = User::query()
-    ->select([
-        'id',
-        'first_name',
-        'last_name',
-        'middle_name',
-        'position',
-        'permissions',
-        'email_address',
-    ])
-    ->whereIn('permissions', [
-        config('constants.HR_RECRUITER_PERMISSION.value'),
-        config('constants.BU_MANAGER_PERMISSION.value'),
-        config('constants.INTERVIEWER_PERMISSION.value'),
-    ])
-    ->orderBy('last_name')
-    ->orderBy('first_name')
-    ->get()
-    ->map(function ($user) {
-    return [
-        'id' => $user->id,
-        'name' => trim($user->first_name . ' ' . $user->last_name),
-        'role_label' => match ((int) $user->permissions) {
-            config('constants.HR_ADMIN_PERMISSION.value') => 'HR Admin',
-            config('constants.HR_RECRUITER_PERMISSION.value') => 'HR Recruiter',
-            config('constants.BU_MANAGER_PERMISSION.value') => 'BU Manager',
-            config('constants.INTERVIEWER_PERMISSION.value') => 'Interviewer',
-            default => 'User',
-        },
-        'position' => $user->position,
-        'permissions' => (int) $user->permissions,
-        'email_address' => $user->email_address,
-    ];
-})
-    ->values();
-
-    return Inertia::render('action/applications/ActionApplicationDetail', [
-        'application' => $application,
-
-        'examVenues' => config('constants.examVenues'),
-        'examResults' => config('constants.examResults'),
-        'examStatuses' => config('constants.examApplicationStatuses'),
-        'interviewResults' => config('constants.interviewResults'),
-        'interviewStatuses' => config('constants.applicationStatuses'),
-        'jobOfferStatuses' => config('constants.jobOfferStatuses'),
-
-        'interviews' => $interviews,
-        'availableInterviewers' => $availableInterviewers,
-        'user_permissions' => auth()->user()->permissions,
-        'user_id' => auth()->id(),
-    ]);
-}
-public function edit($id)
-{
-    $application = ActionApplication::with([
-        'applicant',
-        'batch',
-        'interviews',
-    ])->findOrFail($id);
-
-    $user = auth()->user();
-    $permission = (int) $user->permissions;
-
-    $fullAccessPermissions = [
-        config('constants.HR_ADMIN_PERMISSION.value'),
-        config('constants.HR_MANAGER_PERMISSION.value'),
-        config('constants.HR_RECRUITER_PERMISSION.value'),
-    ];
-
-    $editableStages = [
-        'exam' => false,
-        'initial_interview' => false,
-        'final_interview' => false,
-        'job_offer' => false,
-        'general' => false,
-        'documents' => false,
-    ];
-
-    if (in_array($permission, $fullAccessPermissions, true)) {
-        $editableStages = [
-            'exam' => true,
-            'initial_interview' => true,
-            'final_interview' => true,
-            'job_offer' => true,
-            'general' => true,
-            'documents' => true,
-        ];
-    } else {
-        $approvedAssignments = $application->interviews
-            ->where('interviewer_id', auth()->id())
-            ->where('status', 2);
-
-        foreach ($approvedAssignments as $assignment) {
-            if ((int) $assignment->interview_type === 1) {
-                $editableStages['exam'] = true;
-            }
-
-            if ((int) $assignment->interview_type === 2) {
-                $editableStages['initial_interview'] = true;
-            }
-
-            if ((int) $assignment->interview_type === 3) {
-                $editableStages['final_interview'] = true;
-            }
-        }
+        return Inertia::render('action/applications/ActionApplicationDetail', array_merge(
+            [
+                'application' => $application,
+                'interviews' => $interviews,
+                'availableInterviewers' => $availableInterviewers,
+                'user_permissions' => auth()->user()->permissions,
+                'user_id' => auth()->id(),
+            ],
+            $this->applicationFormOptions()
+        ));
     }
 
-    if (!in_array(true, $editableStages, true)) {
-        abort(403, 'You are not allowed to edit this application.');
-    }
+    /**
+     * Show the form for editing the specified application.
+     */
+    public function edit($id)
+    {
+        $application = ActionApplication::with([
+            'applicant',
+            'batch',
+            'interviews',
+        ])->findOrFail($id);
 
-    return Inertia::render('action/applications/ActionApplicationEdit', [
-        'application' => $application,
-        'examVenues' => config('constants.examVenues'),
-        'examResults' => config('constants.examResults'),
-        'examStatuses' => config('constants.examApplicationStatuses'),
-        'interviewResults' => config('constants.interviewResults'),
-        'interviewAppStatuses' => config('constants.applicationStatuses'),
-        'jobOfferStatuses' => config('constants.jobOfferStatuses'),
-        'applicationResultMap' => config('constants.application_result_map'),
-        'applicationScoreRules' => config('constants.application_score_rules'),
-        'editableStages' => $editableStages,
-        'user_permissions' => $permission,
-        'user_id' => auth()->id(),
-    ]);
-}
+        $user = auth()->user();
+        $permission = (int) $user->permissions;
+        $editableStages = $application->getEditableStagesFor($user);
 
-public function update(Request $request, $id)
-{
-    $application = ActionApplication::with('interviews')->findOrFail($id);
-    $application->load('applicant');
-
-    $originalData = $application->toArray();
-
-    $validated = $request->validate([
-        'exam_plan_date' => 'nullable|date',
-        'exam_actual_date' => 'nullable|date',
-        'exam_venue' => 'nullable|integer',
-        'exam_atpp_result' => 'nullable|numeric',
-        'exam_git_result' => 'nullable|numeric',
-        'exam_prg_result' => 'nullable|numeric',
-        'exam_result' => 'nullable|integer',
-        'exam_application_status' => 'nullable|integer',
-        'exam_remarks' => 'nullable|string',
-
-        'initial_interview_plan_date' => 'nullable|date',
-        'initial_interview_actual_date' => 'nullable|date',
-        'initial_interview_venue' => 'nullable|integer',
-        'initial_interview_final' => 'nullable|numeric',
-        'initial_interview_result' => 'nullable|integer',
-        'initial_interview_application_status' => 'nullable|integer',
-        'initial_interview_remarks' => 'nullable|string',
-
-        'final_interview_date' => 'nullable|date',
-        'final_interview_sf' => 'nullable|numeric',
-        'final_interview_ib' => 'nullable|numeric',
-        'final_interview_rv' => 'nullable|numeric',
-        'final_interview_ma' => 'nullable|numeric',
-        'final_interview_final' => 'nullable|numeric',
-        'final_interview_result' => 'nullable|integer',
-        'final_interview_application_status' => 'nullable|integer',
-        'final_interview_remarks' => 'nullable|string',
-
-        'job_offer_schedule' => 'nullable|date',
-        'job_offer_status' => 'nullable|integer',
-        'job_offer_remarks' => 'nullable|string',
-        'remarks' => 'nullable|string',
-
-        'upload_resume' => 'nullable',
-        'upload_tor' => 'nullable',
-        'upload_pic' => 'nullable',
-    ]);
-
-    if ($request->hasFile('upload_resume')) {
-        $validated['upload_resume'] = $this->uploadFile($request->file('upload_resume'), 'resumes');
-    } elseif ($request->input('upload_resume') === '') {
-        $validated['upload_resume'] = null;
-    }
-
-    if ($request->hasFile('upload_tor')) {
-        $validated['upload_tor'] = $this->uploadFile($request->file('upload_tor'), 'tors');
-    } elseif ($request->input('upload_tor') === '') {
-        $validated['upload_tor'] = null;
-    }
-
-    if ($request->hasFile('upload_pic')) {
-        $validated['upload_pic'] = $this->uploadFile($request->file('upload_pic'), 'pictures');
-    } elseif ($request->input('upload_pic') === '') {
-        $validated['upload_pic'] = null;
-    }
-
-    $fullAccessPermissions = [
-        config('constants.HR_ADMIN_PERMISSION.value'),
-        config('constants.HR_MANAGER_PERMISSION.value'),
-        config('constants.HR_RECRUITER_PERMISSION.value'),
-    ];
-
-    $permission = (int) auth()->user()->permissions;
-
-    $editableStages = [
-        'exam' => false,
-        'initial_interview' => false,
-        'final_interview' => false,
-        'job_offer' => false,
-        'general' => false,
-        'documents' => false,
-    ];
-
-    if (in_array($permission, $fullAccessPermissions, true)) {
-        $editableStages = [
-            'exam' => true,
-            'initial_interview' => true,
-            'final_interview' => true,
-            'job_offer' => true,
-            'general' => true,
-            'documents' => true,
-        ];
-    } else {
-        $approvedAssignments = $application->interviews
-            ->where('interviewer_id', auth()->id())
-            ->where('status', 2);
-
-        foreach ($approvedAssignments as $assignment) {
-            if ((int) $assignment->interview_type === 1) {
-                $editableStages['exam'] = true;
-            }
-
-            if ((int) $assignment->interview_type === 2) {
-                $editableStages['initial_interview'] = true;
-            }
-
-            if ((int) $assignment->interview_type === 3) {
-                $editableStages['final_interview'] = true;
-            }
-        }
-    }
-
-    if (!in_array(true, $editableStages, true)) {
-        abort(403, 'You are not allowed to update this application.');
-    }
-
-    $stageFields = [
-        'exam' => [
-            'exam_plan_date',
-            'exam_actual_date',
-            'exam_venue',
-            'exam_atpp_result',
-            'exam_git_result',
-            'exam_prg_result',
-            'exam_result',
-            'exam_application_status',
-            'exam_remarks',
-        ],
-        'initial_interview' => [
-            'initial_interview_plan_date',
-            'initial_interview_actual_date',
-            'initial_interview_venue',
-            'initial_interview_final',
-            'initial_interview_result',
-            'initial_interview_application_status',
-            'initial_interview_remarks',
-        ],
-        'final_interview' => [
-            'final_interview_date',
-            'final_interview_sf',
-            'final_interview_ib',
-            'final_interview_rv',
-            'final_interview_ma',
-            'final_interview_final',
-            'final_interview_result',
-            'final_interview_application_status',
-            'final_interview_remarks',
-        ],
-        'job_offer' => [
-            'job_offer_schedule',
-            'job_offer_status',
-            'job_offer_remarks',
-        ],
-        'general' => [
-            'remarks',
-        ],
-        'documents' => [
-            'upload_resume',
-            'upload_tor',
-            'upload_pic',
-        ],
-    ];
-
-    if (!in_array($permission, $fullAccessPermissions, true)) {
-        $allowedFields = [];
-
-        foreach ($stageFields as $stage => $fields) {
-            if ($editableStages[$stage]) {
-                $allowedFields = array_merge($allowedFields, $fields);
-            }
+        if (!in_array(true, $editableStages, true)) {
+            abort(403, 'You are not allowed to edit this application.');
         }
 
-        $validated = array_intersect_key($validated, array_flip($allowedFields));
+        return Inertia::render('action/applications/ActionApplicationEdit', array_merge(
+            [
+                'application' => $application,
+                'editableStages' => $editableStages,
+                'user_permissions' => $permission,
+                'user_id' => auth()->id(),
+            ],
+            $this->applicationFormOptions()
+        ));
     }
 
-    $validated = $this->normalizeComputedFields(array_merge($application->toArray(), $validated));
+    /**
+     * Update the specified application.
+     */
+    public function update(UpdateActionApplicationRequest $request, $id)
+    {
+        $application = ActionApplication::with(['interviews', 'applicant'])->findOrFail($id);
+        $originalData = $application->toArray();
 
-    $application->update($validated);
-    $this->syncInterviewStatusesFromStageResults($application);
+        $validated = $request->validated();
+        $validated = $this->handleUploads($request, $validated, true);
 
-    $application->refresh();
-    $application->load('applicant');
+        $permission = (int) auth()->user()->permissions;
+        $editableStages = $application->getEditableStagesFor(auth()->user());
 
-    $fieldsToTrack = [
-        'exam_plan_date',
-        'exam_actual_date',
-        'exam_venue',
-        'exam_atpp_result',
-        'exam_git_result',
-        'exam_prg_result',
-        'exam_result',
-        'exam_application_status',
-        'exam_remarks',
-        'initial_interview_plan_date',
-        'initial_interview_actual_date',
-        'initial_interview_venue',
-        'initial_interview_final',
-        'initial_interview_result',
-        'initial_interview_application_status',
-        'initial_interview_remarks',
-        'final_interview_date',
-        'final_interview_sf',
-        'final_interview_ib',
-        'final_interview_rv',
-        'final_interview_ma',
-        'final_interview_final',
-        'final_interview_result',
-        'final_interview_application_status',
-        'final_interview_remarks',
-        'job_offer_schedule',
-        'job_offer_status',
-        'job_offer_remarks',
-        'remarks',
-    ];
-
-    $detailLines = [];
-
-    foreach ($fieldsToTrack as $field) {
-        $oldValue = $originalData[$field] ?? null;
-        $newValue = $application->{$field} ?? null;
-
-        $oldText = ($oldValue === null || $oldValue === '') ? '-' : (string) $oldValue;
-        $newText = ($newValue === null || $newValue === '') ? '-' : (string) $newValue;
-
-        if ($oldText !== $newText) {
-            $detailLines[] = $field . ': ' . $oldText . ' -> ' . $newText;
-        }
-    }
-
-    $activity = 'Updated ACTION Application: ' .
-        ($application->applicant->first_name ?? '') . ' ' .
-        ($application->applicant->last_name ?? '') . ".\n" .
-        "Details:\n" .
-        implode("\n", $detailLines);
-
-    Log::createLog(
-        'ACTION',
-        $activity,
-        auth()->id()
-    );
-
-    return redirect()
-        ->route('action.applications.show', $application->id)
-        ->with('success', config('errors.record_updated_successfully.errorMessage'));
-}
-
-public function print($id)
-{
-    $application = ActionApplication::with([
-        'applicant',
-        'batch',
-        'interviews.interviewer',
-    ])->findOrFail($id);
-
-    $interviews = $application->interviews->map(function ($row) {
-        $interviewer = $row->interviewer;
-
-        return [
-            'id' => $row->id,
-            'name' => $interviewer
-                ? trim($interviewer->first_name . ' ' . $interviewer->last_name)
-                : 'N/A',
-            'email_address' => $interviewer?->email_address,
-            'role_label' => $interviewer ? match ((int) $interviewer->permissions) {
-                config('constants.HR_ADMIN_PERMISSION.value') => 'HR Admin',
-                config('constants.HR_RECRUITER_PERMISSION.value') => 'HR Recruiter',
-                config('constants.BU_MANAGER_PERMISSION.value') => 'BU Manager',
-                config('constants.INTERVIEWER_PERMISSION.value') => 'Interviewer',
-                default => 'User',
-            } : 'N/A',
-            'interview_type' => (int) $row->interview_type,
-            'scheduled_date' => $row->scheduled_date,
-            'status' => (int) ($row->status ?? 1),
-            'decline_reason' => $row->decline_reason,
-        ];
-    })->values();
-
-    return view('action.applications.print', [
-        'application' => $application,
-        'interviews' => $interviews,
-        'examVenues' => config('constants.examVenues'),
-    ]);
-}
-
-public function sendNotification(Request $request, $applicationId)
-{
-    $request->validate([
-        'type' => ['required', 'string', 'in:interviewer_pending_approval,applicant_scheduled,applicant_failed'],
-    ]);
-
-    $application = ActionApplication::with([
-        'applicant',
-        'batch',
-        'interviews.interviewer',
-    ])->findOrFail($applicationId);
-
-    $link = url("/action/applications/{$application->id}");
-
-    try {
-        switch ($request->type) {
-            case 'interviewer_pending_approval':
-                $pendingInterviews = $application->interviews
-    ->where('status', 1)
-    ->filter(fn ($interview) => is_null($interview->pending_approval_notified_at));
-
-                if ($pendingInterviews->isEmpty()) {
-                    return response()->json([
-                        'message' => 'No pending approval interviewers found.',
-                    ], 422);
-                }
-
-foreach ($pendingInterviews as $interview) {
-    if (!optional($interview->interviewer)->email_address) {
-        continue;
-    }
-
-    Mail::to($interview->interviewer->email_address)->send(
-        new ActionInterviewerPendingApprovalMail($application, $interview, $link)
-    );
-
-
-
-    $interview->update([
-        'pending_approval_notified_at' => now(),
-        'updated_by' => auth()->id(),
-        'updated_time' => now(),
-    ]);
-
-    usleep(9000000); // 9 second delay
-}
-                break;
-
-            case 'applicant_scheduled':
-                $approvedInterviews = $application->interviews->where('status', 2);
-
-                if ($approvedInterviews->isEmpty()) {
-                    return response()->json([
-                        'message' => 'No approved interview schedules found.',
-                    ], 422);
-                }
-
-                if (empty(optional($application->applicant)->email_address)) {
-                    return response()->json([
-                        'message' => 'Applicant email address is missing.',
-                    ], 422);
-                }
-
-                Mail::to($application->applicant->email_address)->send(
-                    new ActionApplicantScheduledMail($application, $approvedInterviews->values(), $link)
-                );
-                break;
-
-            case 'applicant_failed':
-                $failedStage = null;
-
-                if ((int) $application->final_interview_result === 3) {
-                    $failedStage = 'Final Interview';
-                } elseif ((int) $application->initial_interview_result === 3) {
-                    $failedStage = 'Initial Interview';
-                } elseif ((int) $application->exam_result === 3) {
-                    $failedStage = 'Exam';
-                }
-
-                if (!$failedStage) {
-                    return response()->json([
-                        'message' => 'This application does not have a failed stage yet.',
-                    ], 422);
-                }
-
-                if (empty(optional($application->applicant)->email_address)) {
-                    return response()->json([
-                        'message' => 'Applicant email address is missing.',
-                    ], 422);
-                }
-
-                Mail::to($application->applicant->email_address)->send(
-                    new ActionApplicantFailedMail($application, $failedStage, $link)
-                );
-                break;
+        if (!in_array(true, $editableStages, true)) {
+            abort(403, 'You are not allowed to update this application.');
         }
 
-        //LOG START
-        $recipientList = [];
+        if (!in_array($permission, config('constants.full_edit_permissions', []), true)) {
+            $validated = $this->filterValidatedFieldsByEditableStages($validated, $editableStages);
+        }
 
-if ($request->type === 'interviewer_pending_approval') {
-    $recipientList = $pendingInterviews
-        ->map(function ($interview) {
-            $name = trim(
-                (optional($interview->interviewer)->first_name ?? '') . ' ' .
-                (optional($interview->interviewer)->last_name ?? '')
-            );
+        $validated = ActionApplication::normalizeComputedFields(
+            array_merge($application->toArray(), $validated)
+        );
 
-            return $name !== '' ? $name : (optional($interview->interviewer)->email_address ?? 'Unknown');
-        })
+        $application->updateApplication($validated);
+        $application->syncInterviewStatusesFromStageResults();
+
+        $application->refresh();
+        $application->load('applicant');
+
+        $detailLines = $this->buildApplicationUpdateDetailLines($originalData, $application);
+
+        $activity = 'Updated ACTION Application: ' .
+            ($application->applicant->first_name ?? '') . ' ' .
+            ($application->applicant->last_name ?? '') . ".\n" .
+            "Details:\n" .
+            implode("\n", $detailLines);
+
+        Log::createLog(
+            'ACTION',
+            $activity,
+            auth()->id()
+        );
+
+        return redirect()
+            ->route('action.applications.show', $application->id)
+            ->with('success', config('errors.record_updated_successfully.errorMessage'));
+    }
+
+    public function print($id)
+    {
+        $application = ActionApplication::with([
+            'applicant',
+            'batch',
+            'interviews.interviewer',
+        ])->findOrFail($id);
+
+        $interviews = $application->interviews
+            ->map(fn ($interview) => $interview->toDisplayArray())
+            ->values();
+
+        return view('action.applications.print', [
+            'application' => $application,
+            'interviews' => $interviews,
+            'examVenues' => config('constants.examVenues'),
+        ]);
+    }
+
+    public function sendNotification(SendActionApplicationNotificationRequest $request, $applicationId)
+    {
+        $application = ActionApplication::with([
+            'applicant',
+            'batch',
+            'interviews.interviewer',
+        ])->findOrFail($applicationId);
+
+        $link = url("/action/applications/{$application->id}");
+
+        try {
+            switch ($request->type) {
+                case 'interviewer_pending_approval':
+                    $pendingInterviews = $application->interviews
+                        ->where('status', config('constants.interview_assignment_status.pending_approval'))
+                        ->filter(fn ($interview) => is_null($interview->pending_approval_notified_at));
+
+                    if ($pendingInterviews->isEmpty()) {
+                        return response()->json([
+                            'message' => 'No pending approval interviewers found.',
+                        ], 422);
+                    }
+
+                    foreach ($pendingInterviews as $interview) {
+                        if (!optional($interview->interviewer)->email_address) {
+                            continue;
+                        }
+
+                        Mail::to($interview->interviewer->email_address)->send(
+                            new ActionInterviewerPendingApprovalMail($application, $interview, $link)
+                        );
+
+                        $interview->update([
+                            'pending_approval_notified_at' => now(),
+                            'updated_by' => auth()->id(),
+                            'updated_time' => now(),
+                        ]);
+
+                        usleep(9000000); // 9 seconds delay bc of mailtrap limit
+                    }
+
+                    break;
+
+                case 'applicant_scheduled':
+                    $approvedInterviews = $application->interviews
+                        ->where('status', config('constants.interview_assignment_status.approved'));
+
+                    if ($approvedInterviews->isEmpty()) {
+                        return response()->json([
+                            'message' => 'No approved interview schedules found.',
+                        ], 422);
+                    }
+
+                    if (empty(optional($application->applicant)->email_address)) {
+                        return response()->json([
+                            'message' => 'Applicant email address is missing.',
+                        ], 422);
+                    }
+
+                    Mail::to($application->applicant->email_address)->send(
+                        new ActionApplicantScheduledMail($application, $approvedInterviews->values(), $link)
+                    );
+
+                    break;
+
+                case 'applicant_failed':
+                    $failedStage = null;
+
+                    if ((int) $application->final_interview_result === config('constants.application_results.failed')) {
+                        $failedStage = 'Final Interview';
+                    } elseif ((int) $application->initial_interview_result === config('constants.application_results.failed')) {
+                        $failedStage = 'Initial Interview';
+                    } elseif ((int) $application->exam_result === config('constants.application_results.failed')) {
+                        $failedStage = 'Exam';
+                    }
+
+                    if (!$failedStage) {
+                        return response()->json([
+                            'message' => 'This application does not have a failed stage yet.',
+                        ], 422);
+                    }
+
+                    if (empty(optional($application->applicant)->email_address)) {
+                        return response()->json([
+                            'message' => 'Applicant email address is missing.',
+                        ], 422);
+                    }
+
+                    Mail::to($application->applicant->email_address)->send(
+                        new ActionApplicantFailedMail($application, $failedStage, $link)
+                    );
+
+                    case 'hr_recruiters_job_offer':
+    if (empty($application->job_offer_schedule)) {
+        return response()->json([
+            'message' => 'No scheduled job offer found.',
+        ], 422);
+    }
+
+    $hrRecruiters = User::hrRecruiters();
+
+    $emails = $hrRecruiters
+        ->pluck('email_address')
         ->filter()
         ->values()
         ->all();
-}
 
-if (in_array($request->type, ['applicant_scheduled', 'applicant_failed'], true)) {
-    $applicantName = trim(
-        (optional($application->applicant)->first_name ?? '') . ' ' .
-        (optional($application->applicant)->last_name ?? '')
+    if (empty($emails)) {
+        return response()->json([
+            'message' => 'No HR recruiters found.',
+        ], 422);
+    }
+
+    Mail::to($emails)->send(
+        new ActionJobOfferScheduledMail($application, $link)
     );
 
-    $recipientList = [
-        $applicantName !== '' ? $applicantName : (optional($application->applicant)->email_address ?? 'Unknown')
-    ];
-}
+    break;
 
-Log::createLog(
-    'ACTION',
-    'Sent ' . $request->type . ' email/s to ' . implode(', ', $recipientList) .
-    ' for application of ' .
-    ($application->applicant->first_name ?? '') . ' ' .
-    ($application->applicant->last_name ?? '') . '.',
-    auth()->id()
-);
-
-//LOG END
-
-        return response()->json([
-            'message' => config('errors.email_sent_success.errorMessage'),
-        ]);
-    } catch (\Exception $e) {
-    \Log::error('ACTION sendNotification failed', [
-        'message' => $e->getMessage(),
-        'file' => $e->getFile(),
-        'line' => $e->getLine(),
-        'trace' => $e->getTraceAsString(),
-    ]);
-
-    return response()->json([
-        'message' => config('errors.email_sent_failed.errorMessage'),
-        'error' => $e->getMessage(),
-        'file' => $e->getFile(),
-        'line' => $e->getLine(),
-    ], 500);
-}
-}
-
-private function syncInterviewStatusesFromStageResults(ActionApplication $application): void
-{
-    // Initial Interview stage = interview_type 2
-    if (in_array((int) $application->initial_interview_result, [2, 3], true)) {
-        ActionApplicationInterview::where('action_application_id', $application->id)
-            ->where('interview_type', 2)
-            ->where('status', '!=', 3) // keep declined rows as Declined
-            ->update([
-                'status' => 4,
-                'updated_by' => auth()->id(),
-                'updated_time' => now(),
-            ]);
-    }
-
-    // Final Interview stage = interview_type 3
-    if (in_array((int) $application->final_interview_result, [2, 3], true)) {
-        ActionApplicationInterview::where('action_application_id', $application->id)
-            ->where('interview_type', 3)
-            ->where('status', '!=', 3) // keep declined rows as Declined
-            ->update([
-                'status' => 4,
-                'updated_by' => auth()->id(),
-                'updated_time' => now(),
-            ]);
-    }
-}
-
-public function bulkUpdateInterviewSchedule(Request $request, $applicationId)
-{
-    $request->validate([
-        'interview_ids' => ['required', 'array', 'min:1'],
-        'interview_ids.*' => ['required', 'integer'],
-        'scheduled_date' => ['required', 'date'],
-    ]);
-
-    $application = ActionApplication::with('applicant')->findOrFail($applicationId);
-
-    DB::beginTransaction();
-
-    try {
-        $interviewsToUpdate = ActionApplicationInterview::where('action_application_id', $application->id)
-            ->whereIn('id', $request->interview_ids)
-            ->get();
-
-        $oldScheduleMap = [];
-
-        foreach ($interviewsToUpdate as $interview) {
-            $oldScheduleMap[$interview->id] = $interview->scheduled_date;
-        }
-
-        foreach ($interviewsToUpdate as $interview) {
-            $updateData = [
-                'scheduled_date' => $request->scheduled_date,
-                'updated_by' => auth()->id(),
-                'updated_time' => now(),
-            ];
-
-            // If previously declined, reset to Pending Approval
-            if ((int) $interview->status === 3) {
-                $updateData['status'] = 1;
-                $updateData['decline_reason'] = null;
-                $updateData['pending_approval_notified_at'] = null;
+                    break;
             }
 
-            $interview->update($updateData);
+            $recipientList = [];
+
+            if ($request->type === 'interviewer_pending_approval') {
+                $recipientList = $pendingInterviews
+                    ->map(function ($interview) {
+                        $interviewer = $interview->interviewer;
+
+                        return $interviewer?->full_name ?: ($interviewer?->email_address ?? 'Unknown');
+                    })
+                    ->filter()
+                    ->values()
+                    ->all();
+            }
+
+            if (in_array($request->type, ['applicant_scheduled', 'applicant_failed'], true)) {
+                $recipientList = [
+                    $application->applicant?->full_name ?: ($application->applicant?->email_address ?? 'Unknown')
+                ];
+            }
+
+            Log::createLog(
+                'ACTION',
+                'Sent ' . $request->type . ' email/s to ' . implode(', ', $recipientList) .
+                ' for application of ' .
+                ($application->applicant->first_name ?? '') . ' ' .
+                ($application->applicant->last_name ?? '') . '.',
+                auth()->id()
+            );
+
+            return response()->json([
+                'message' => config('errors.email_sent_success.errorMessage'),
+            ]);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'message' => config('errors.email_sent_failed.errorMessage'),
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }
+    }
+
+    public function bulkUpdateInterviewSchedule(BulkUpdateActionInterviewScheduleRequest $request, $applicationId)
+    {
+        $application = ActionApplication::with('applicant')->findOrFail($applicationId);
+
+        DB::beginTransaction();
+
+        try {
+            $interviewsToUpdate = ActionApplicationInterview::where('action_application_id', $application->id)
+                ->whereIn('id', $request->interview_ids)
+                ->get();
+
+            $oldScheduleMap = $interviewsToUpdate
+                ->pluck('scheduled_date', 'id')
+                ->toArray();
+
+            foreach ($interviewsToUpdate as $interview) {
+                $updateData = [
+                    'scheduled_date' => $request->scheduled_date,
+                    'updated_by' => auth()->id(),
+                    'updated_time' => now(),
+                ];
+
+                if ((int) $interview->status === config('constants.interview_assignment_status.declined')) {
+                    $updateData['status'] = config('constants.interview_assignment_status.pending_approval');
+                    $updateData['decline_reason'] = null;
+                    $updateData['pending_approval_notified_at'] = null;
+                }
+
+                $interview->update($updateData);
+            }
+
+            $rows = ActionApplicationInterview::with('interviewer')
+                ->where('action_application_id', $application->id)
+                ->orderBy('id')
+                ->get();
+
+            DB::commit();
+
+            $detailLines = [];
+
+            foreach ($interviewsToUpdate as $interview) {
+                $oldDate = $oldScheduleMap[$interview->id] ?? '-';
+                $detailLines[] = ($oldDate ?: '-') . ' -> ' . ($request->scheduled_date ?: '-');
+            }
+
+            Log::createLog(
+                'ACTION',
+                'Updated ' . $interviewsToUpdate->count() .
+                ' interviewer(s) for application of ' .
+                ($application->applicant->first_name ?? '') . ' ' .
+                ($application->applicant->last_name ?? '') . ".\n" .
+                "Details:\n" .
+                implode("\n", $detailLines),
+                auth()->id()
+            );
+
+            $interviews = $rows
+                ->map(fn ($interview) => $interview->toDisplayArray())
+                ->values();
+
+            return response()->json([
+                'message' => 'Selected interview schedules updated successfully.',
+                'interviews' => $interviews,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to update selected interview schedules.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function bulkAddInterviews(BulkAddActionInterviewsRequest $request, $id)
+    {
+        $application = ActionApplication::findOrFail($id);
+
+        DB::beginTransaction();
+
+        try {
+            $existingRows = DB::table('action_application_interviews')
+                ->where('action_application_id', $application->id)
+                ->where('interview_type', $request->interview_type)
+                ->whereIn('interviewer_id', $request->interviewer_ids)
+                ->get()
+                ->keyBy('interviewer_id');
+
+            foreach ($request->interviewer_ids as $interviewerId) {
+                $existing = $existingRows->get($interviewerId);
+
+                if ($existing) {
+                    DB::table('action_application_interviews')
+                        ->where('id', $existing->id)
+                        ->update([
+                            'scheduled_date' => $request->scheduled_date,
+                            'status' => config('constants.interview_assignment_status.pending_approval'),
+                            'decline_reason' => null,
+                            'pending_approval_notified_at' => null,
+                            'updated_by' => auth()->id(),
+                            'updated_time' => now(),
+                        ]);
+                } else {
+                    DB::table('action_application_interviews')->insert([
+                        'action_application_id' => $application->id,
+                        'interviewer_id' => $interviewerId,
+                        'interview_type' => $request->interview_type,
+                        'scheduled_date' => $request->scheduled_date,
+                        'status' => config('constants.interview_assignment_status.pending_approval'),
+                        'decline_reason' => null,
+                        'created_by' => auth()->id(),
+                        'created_time' => now(),
+                        'updated_by' => auth()->id(),
+                        'updated_time' => now(),
+                    ]);
+                }
+            }
+
+            $rows = ActionApplicationInterview::with('interviewer')
+                ->where('action_application_id', $application->id)
+                ->orderBy('id')
+                ->get();
+
+            if ($rows->isEmpty()) {
+                throw new \RuntimeException('No interview rows were found after insert.');
+            }
+
+            DB::commit();
+
+            $interviews = $rows
+                ->map(fn ($interview) => $interview->toDisplayArray())
+                ->values();
+
+            Log::createLog(
+                'ACTION',
+                'Added ' . count($request->interviewer_ids) .
+                ' pending interviewer/conductor(s) to application #' . $application->id,
+                auth()->id()
+            );
+
+            return response()->json([
+                'message' => 'Interviewer(s) added successfully.',
+                'interviews' => $interviews,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to add interviewer(s).',
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ], 500);
+        }
+    }
+
+    public function submitInterviewDecision(SubmitActionInterviewDecisionRequest $request, $applicationId, $interviewId)
+    {
+        $interview = ActionApplicationInterview::where('action_application_id', $applicationId)
+            ->findOrFail($interviewId);
+
+        if (!in_array((int) auth()->user()->permissions, [
+            config('constants.HR_RECRUITER_PERMISSION.value'),
+            config('constants.BU_MANAGER_PERMISSION.value'),
+            config('constants.INTERVIEWER_PERMISSION.value'),
+        ], true)) {
+            abort(403, 'Only assigned recruiters, BU managers, or interviewers can submit a decision.');
         }
 
-        $rows = DB::table('action_application_interviews')
-            ->leftJoin('users', 'action_application_interviews.interviewer_id', '=', 'users.id')
-            ->where('action_application_interviews.action_application_id', $application->id)
-            ->orderBy('action_application_interviews.id')
-            ->get([
-                'action_application_interviews.id',
-                'action_application_interviews.interviewer_id',
-                'action_application_interviews.interview_type',
-                'action_application_interviews.scheduled_date',
-                'action_application_interviews.status',
-                'users.first_name',
-                'users.last_name',
-                'users.position',
-                'users.permissions',
-                'users.email_address',
-                'action_application_interviews.pending_approval_notified_at',
-            ]);
+        if ((int) $interview->interviewer_id !== (int) auth()->id()) {
+            abort(403, 'You are not assigned to this interview.');
+        }
 
-        DB::commit();
+        $interview->update([
+            'status' => $request->decision === 'accept'
+                ? config('constants.interview_assignment_status.approved')
+                : config('constants.interview_assignment_status.declined'),
+            'decline_reason' => $request->decision === 'decline' ? $request->reason : null,
+            'updated_by' => auth()->id(),
+            'updated_time' => now(),
+        ]);
 
-        $detailLines = [];
+        $application = ActionApplication::with('applicant')->findOrFail($applicationId);
 
-        foreach ($interviewsToUpdate as $interview) {
-            $oldDate = $oldScheduleMap[$interview->id] ?? '-';
-            $detailLines[] = ($oldDate ?: '-') . ' -> ' . ($request->scheduled_date ?: '-');
+        $interviewerName = auth()->user()->full_name;
+
+        $activity = 'Interviewer ' . $interviewerName . ' ' .
+            ($request->decision === 'accept' ? 'accepted' : 'declined') .
+            ' assignment for application of ' .
+            ($application->applicant->first_name ?? '') . ' ' .
+            ($application->applicant->last_name ?? '') . '.';
+
+        if ($request->decision === 'decline' && filled($request->reason)) {
+            $activity .= "\nReason: " . $request->reason;
         }
 
         Log::createLog(
             'ACTION',
-            'Updated ' . $interviewsToUpdate->count() .
-            ' interviewer(s) for application of ' .
-            ($application->applicant->first_name ?? '') . ' ' .
-            ($application->applicant->last_name ?? '') . ".\n" .
-            "Details:\n" .
-            implode("\n", $detailLines),
+            $activity,
             auth()->id()
         );
 
-        $interviews = $rows->map(function ($row) {
-            return [
-                'id' => $row->id,
-                'interviewer_id' => $row->interviewer_id,
-                'name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')) ?: 'N/A',
-                'email_address' => $row->email_address ?? null,
-                'pending_approval_notified_at' => $row->pending_approval_notified_at,
-                'role_label' => match ((int) $row->permissions) {
-                    config('constants.HR_ADMIN_PERMISSION.value') => 'HR Admin',
-                    config('constants.HR_RECRUITER_PERMISSION.value') => 'HR Recruiter',
-                    config('constants.BU_MANAGER_PERMISSION.value') => 'BU Manager',
-                    config('constants.INTERVIEWER_PERMISSION.value') => 'Interviewer',
-                    default => 'User',
-                },
-                'interview_type' => (int) $row->interview_type,
-                'scheduled_date' => $row->scheduled_date,
-                'status' => (int) ($row->status ?? 1),
-            ];
-        })->values();
-
         return response()->json([
-            'message' => 'Selected interview schedules updated successfully.',
-            'interviews' => $interviews,
+            'message' => 'Decision submitted successfully.',
         ]);
-    } catch (\Throwable $e) {
-        DB::rollBack();
-
-        return response()->json([
-            'message' => 'Failed to update selected interview schedules.',
-            'error' => $e->getMessage(),
-        ], 500);
     }
-}
-
-public function bulkAddInterviews(Request $request, $id)
-{
-    $request->validate([
-        'interviewer_ids' => ['required', 'array', 'min:1'],
-        'interviewer_ids.*' => ['required', 'integer', 'exists:users,id'],
-        'interview_type' => ['required', 'integer', 'in:1,2,3'],
-        'scheduled_date' => ['required', 'date'],
-    ]);
-
-    $application = ActionApplication::findOrFail($id);
-    $positions = config('constants.positions');
-
-    DB::beginTransaction();
-
-    try {
-        foreach ($request->interviewer_ids as $interviewerId) {
-            $existing = DB::table('action_application_interviews')
-                ->where('action_application_id', $application->id)
-                ->where('interviewer_id', $interviewerId)
-                ->where('interview_type', $request->interview_type)
-                ->first();
-
-            if ($existing) {
-                DB::table('action_application_interviews')
-                    ->where('id', $existing->id)
-                    ->update([
-    'scheduled_date' => $request->scheduled_date,
-    'status' => 1,
-    'decline_reason' => null,
-    'pending_approval_notified_at' => null,
-    'updated_by' => auth()->id(),
-    'updated_time' => now(),
-]);
-            } else {
-                DB::table('action_application_interviews')->insert([
-                    'action_application_id' => $application->id,
-                    'interviewer_id' => $interviewerId,
-                    'interview_type' => $request->interview_type,
-                    'scheduled_date' => $request->scheduled_date,
-                    'status' => 1,
-                    'decline_reason' => null,
-                    'created_by' => auth()->id(),
-                    'created_time' => now(),
-                    'updated_by' => auth()->id(),
-                    'updated_time' => now(),
-                ]);
-
-                LaravelLog::info("Inserted interviewer ID: {$interviewerId}");
-            }
-        }
-
-$rows = DB::table('action_application_interviews')
-    ->leftJoin('users', 'action_application_interviews.interviewer_id', '=', 'users.id')
-    ->where('action_application_interviews.action_application_id', $application->id)
-    ->orderBy('action_application_interviews.id')
-    ->get([
-        'action_application_interviews.id',
-        'action_application_interviews.interviewer_id',
-        'action_application_interviews.interview_type',
-        'action_application_interviews.scheduled_date',
-        'action_application_interviews.status',
-        'action_application_interviews.pending_approval_notified_at',
-        'users.first_name',
-        'users.last_name',
-        'users.position',
-        'users.permissions',
-        'users.email_address',
-    ]);
-
-            LaravelLog::info('Rows after insert:', $rows->toArray());
-
-        if ($rows->isEmpty()) {
-            throw new \RuntimeException('No interview rows were found after insert.');
-        }
-
-        DB::commit();
-
-$interviews = $rows->map(function ($row) {
-    return [
-        'id' => $row->id,
-        'interviewer_id' => $row->interviewer_id,
-        'name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')) ?: 'N/A',
-        'email_address' => $row->email_address ?? null,
-        'pending_approval_notified_at' => $row->pending_approval_notified_at,
-        'role_label' => match ((int) $row->permissions) {
-            config('constants.HR_ADMIN_PERMISSION.value') => 'HR Admin',
-            config('constants.HR_RECRUITER_PERMISSION.value') => 'HR Recruiter',
-            config('constants.BU_MANAGER_PERMISSION.value') => 'BU Manager',
-            config('constants.INTERVIEWER_PERMISSION.value') => 'Interviewer',
-            default => 'User',
-        },
-        'interview_type' => (int) $row->interview_type,
-        'scheduled_date' => $row->scheduled_date,
-        'status' => (int) ($row->status ?? 1),
-    ];
-})->values();
-
-Log::createLog(
-    'ACTION',
-    'Added ' . count($request->interviewer_ids) .
-    ' pending interviewer/conductor(s) to application #' . $application->id,
-    auth()->id()
-);
-
-        return response()->json([
-            'message' => 'Interviewer(s) added successfully.',
-            'interviews' => $interviews,
-        ]);
-} catch (\Throwable $e) {
-    DB::rollBack();
-
-    return response()->json([
-        'message' => 'Failed to add interviewer(s).',
-        'error' => $e->getMessage(),
-        'line' => $e->getLine(),
-        'file' => $e->getFile(),
-    ], 500);
-}
-}
-
-public function submitInterviewDecision(Request $request, $applicationId, $interviewId)
-{
-    $request->validate([
-        'decision' => ['required', 'in:accept,decline'],
-        'reason' => ['nullable', 'string', 'max:1024'],
-    ]);
-
-    $interview = ActionApplicationInterview::where('action_application_id', $applicationId)
-        ->findOrFail($interviewId);
-
-if (!in_array((int) auth()->user()->permissions, [
-    config('constants.HR_RECRUITER_PERMISSION.value'),
-    config('constants.BU_MANAGER_PERMISSION.value'),
-    config('constants.INTERVIEWER_PERMISSION.value'),
-], true)) {
-    abort(403, 'Only assigned recruiters, BU managers, or interviewers can submit a decision.');
-}
-
-    if ((int) $interview->interviewer_id !== (int) auth()->id()) {
-        abort(403, 'You are not assigned to this interview.');
-    }
-
-    if ($request->decision === 'decline' && !filled($request->reason)) {
-        return response()->json([
-            'message' => 'Reason is required when declining.'
-        ], 422);
-    }
-
-$interview->update([
-    'status' => $request->decision === 'accept' ? 2 : 3,
-    'decline_reason' => $request->decision === 'decline' ? $request->reason : null,
-    'updated_by' => auth()->id(),
-    'updated_time' => now(),
-]);
-
-//LOG START
-$application = ActionApplication::with('applicant')->findOrFail($applicationId);
-
-$interviewerName = trim(
-    (auth()->user()->first_name ?? '') . ' ' .
-    (auth()->user()->last_name ?? '')
-);
-
-$activity = 'Interviewer ' . $interviewerName . ' ' .
-    ($request->decision === 'accept' ? 'accepted' : 'declined') .
-    ' assignment for application of ' .
-    ($application->applicant->first_name ?? '') . ' ' .
-    ($application->applicant->last_name ?? '') . '.';
-
-if ($request->decision === 'decline' && filled($request->reason)) {
-    $activity .= "\nReason: " . $request->reason;
-}
-
-Log::createLog(
-    'ACTION',
-    $activity,
-    auth()->id()
-);
-//LOG END
-
-    return response()->json([
-        'message' => 'Decision submitted successfully.',
-    ]);
-}
 
     /**
-     * Get eligible applicants for a specific batch
+     * Get eligible applicants for a specific batch.
      */
     public function getApplicantsForBatch($batchId)
     {
         try {
-            \LaravelLog::info('Getting eligible applicants for batch: ' . $batchId);
-
             $eligibleApplicants = ActionApplicant::getEligibleApplicantsForBatch($batchId);
-
-            \LaravelLog::info('Found ' . count($eligibleApplicants) . ' eligible applicants');
-
             return response()->json($eligibleApplicants->values());
-        } catch (\Exception $e) {
-            \Log::error('Error getting eligible applicants: ' . $e->getMessage());
+        } catch (\Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Handle file upload
+     * Shared options for application pages.
      */
-    private function uploadFile($file, $directory)
+    private function applicationFormOptions(): array
     {
-        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs("uploads/{$directory}", $filename, 'public');
-
-        return $path;
+        return [
+            'examVenues' => config('constants.examVenues'),
+            'examResults' => config('constants.examResults'),
+            'examStatuses' => config('constants.examApplicationStatuses'),
+            'interviewResults' => config('constants.interviewResults'),
+            'interviewStatuses' => config('constants.applicationStatuses'),
+            'interviewAppStatuses' => config('constants.applicationStatuses'),
+            'jobOfferStatuses' => config('constants.jobOfferStatuses'),
+            'applicationResultMap' => config('constants.application_result_map'),
+            'applicationScoreRules' => config('constants.application_score_rules'),
+        ];
     }
 
-    private function normalizeComputedFields(array $data): array
+    /**
+     * Handle uploads for create/update.
+     */
+    private function handleUploads($request, array $data, bool $allowNullReset = false): array
     {
-        $applicant = ActionApplicant::find($data['action_applicant_id'] ?? null);
+        $uploadDirectories = [
+            'upload_resume' => 'resumes',
+            'upload_tor' => 'tors',
+            'upload_pic' => 'pictures',
+        ];
 
-        if (!$applicant) {
-            return $data;
-        }
-
-        if (
-            $this->hasValue($data, 'exam_atpp_result') &&
-            $this->hasValue($data, 'exam_git_result') &&
-            $this->hasValue($data, 'exam_prg_result')
-        ) {
-            $data['exam_application_status'] = $this->computeExamApplicationStatus(
-                (float) $data['exam_atpp_result'],
-                (float) $data['exam_git_result'],
-                (float) $data['exam_prg_result'],
-                $applicant
-            );
-        } elseif ($this->hasValue($data, 'exam_plan_date')) {
-            $data['exam_application_status'] = 1; // Pending
-        } else {
-            $data['exam_application_status'] = null;
-        }
-
-        $data['exam_result'] = $this->hasValue($data, 'exam_application_status')
-            ? $this->mapResultFromStatus('exam', (int) $data['exam_application_status'])
-            : null;
-
-        if ($this->hasValue($data, 'initial_interview_final')) {
-            $data['initial_interview_application_status'] = $this->computeInitialInterviewApplicationStatus(
-                (float) $data['initial_interview_final']
-            );
-        } elseif ($this->hasValue($data, 'initial_interview_plan_date')) {
-            $data['initial_interview_application_status'] = 1; // Pending
-        } else {
-            $data['initial_interview_application_status'] = null;
-        }
-
-        $data['initial_interview_result'] = $this->hasValue($data, 'initial_interview_application_status')
-            ? $this->mapResultFromStatus('initial_interview', (int) $data['initial_interview_application_status'])
-            : null;
-
-        if (!$this->hasValue($data, 'final_interview_application_status') && $this->hasValue($data, 'final_interview_date')) {
-            $data['final_interview_application_status'] = 1; // Pending
-        }
-
-        $data['final_interview_result'] = $this->hasValue($data, 'final_interview_application_status')
-            ? $this->mapResultFromStatus('final_interview', (int) $data['final_interview_application_status'])
-            : null;
-
-        if (!$this->hasValue($data, 'job_offer_status') && $this->hasValue($data, 'job_offer_schedule')) {
-            $data['job_offer_status'] = 1; // Pending
+        foreach ($uploadDirectories as $field => $directory) {
+            if ($request->hasFile($field)) {
+                $data[$field] = $this->uploadFile($request->file($field), $directory);
+            } elseif ($allowNullReset && $request->input($field) === '') {
+                $data[$field] = null;
+            }
         }
 
         return $data;
     }
 
-    private function computeExamApplicationStatus(
-        float $attp,
-        float $git,
-        float $prg,
-        ActionApplicant $applicant
-    ): int {
-        $rules = config('constants.application_score_rules.exam');
-        $category = $this->resolveExamCategory($applicant);
-        $categoryRules = $rules[$category] ?? [];
+    /**
+     * Filter allowed fields based on editable stages.
+     */
+private function filterValidatedFieldsByEditableStages(array $validated, array $editableStages): array
+{
+    $stageFields = config('constants.action_application_stage_fields', []);
+    $allowedFieldMap = [];
 
-        $passed = $categoryRules['passed'] ?? null;
-        $p2 = $categoryRules['p2'] ?? null;
-
-        if (
-            $passed &&
-            $attp >= $passed['attp'] &&
-            $git >= $passed['git'] &&
-            $prg >= $passed['prg']
-        ) {
-            return 5; // Passed
+    foreach ($editableStages as $stage => $isEditable) {
+        if (!$isEditable || empty($stageFields[$stage])) {
+            continue;
         }
 
-        if (
-            $p2 &&
-            $attp >= $p2['attp'] &&
-            $git >= $p2['git'] &&
-            $prg >= $p2['prg']
-        ) {
-            return 3; // 2nd Priority (P2)
+        foreach ($stageFields[$stage] as $field) {
+            $allowedFieldMap[$field] = true;
         }
-
-        return 6; // Failed
     }
 
-    private function computeInitialInterviewApplicationStatus(float $score): int
-    {
-        $rules = config('constants.application_score_rules.initial_interview');
+    return array_intersect_key($validated, $allowedFieldMap);
+}
 
-        $failedMin = (float) ($rules['failed_min'] ?? 4.0);
-        $p2Min = (float) ($rules['p2_min'] ?? 2.5);
-        $passedMin = (float) ($rules['passed_min'] ?? 2.0);
+    /**
+     * Build detailed update log lines.
+     */
+private function buildApplicationUpdateDetailLines(array $originalData, ActionApplication $application): array
+{
+    $stageFields = config('constants.action_application_stage_fields', []);
+    $labels = config('constants.action_application_field_labels', []);
 
-        if ($score >= $failedMin) {
-            return 5; // Failed
+    // Flatten all stage fields into one unique list
+    $fieldsToTrack = array_values(array_unique(array_merge(
+        ...array_values($stageFields)
+    )));
+
+    $detailLines = [];
+
+    foreach ($fieldsToTrack as $field) {
+        $oldValue = $originalData[$field] ?? null;
+        $newValue = $application->getAttribute($field);
+
+        $oldText = blank($oldValue) ? '-' : (string) $oldValue;
+        $newText = blank($newValue) ? '-' : (string) $newValue;
+
+        if ($oldText === $newText) {
+            continue;
         }
 
-        if ($score >= $p2Min) {
-            return 4; // P2
-        }
+        $label = $labels[$field] ?? $field;
 
-        if ($score >= $passedMin) {
-            return 3; // Passed
-        }
-
-        return 2; // Done
+        $detailLines[] = "{$label}: {$oldText} -> {$newText}";
     }
 
-    private function mapResultFromStatus(string $type, int $status): ?int
+    return $detailLines;
+}
+
+    /**
+     * Handle file upload.
+     */
+    private function uploadFile($file, $directory)
     {
-        $map = config("constants.application_result_map.{$type}", []);
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-        return $map[$status] ?? null;
-    }
-
-    private function resolveExamCategory(ActionApplicant $applicant): string
-    {
-        $age = (int) $applicant->age;
-
-        if ($age >= 25) {
-            return 'adult';
-        }
-
-        $rawDegree = !empty($applicant->others_degree)
-            ? $applicant->others_degree
-            : $applicant->degree;
-
-        $normalizedDegree = $this->normalizeDegree((string) $rawDegree);
-
-        return $this->isTechDegree($normalizedDegree) ? 'young_it' : 'young_other';
-    }
-
-    private function normalizeDegree(string $degree): string
-    {
-        $degree = strtolower(trim($degree));
-        $degree = preg_replace('/[^a-z0-9\s]/', ' ', $degree);
-        $degree = preg_replace('/\s+/', ' ', $degree);
-
-        return $degree;
-    }
-
-    private function isTechDegree(string $degree): bool
-    {
-        $patterns = config('constants.tech_degree_patterns', []);
-
-        foreach ($patterns as $pattern) {
-            $normalizedPattern = $this->normalizeDegree((string) $pattern);
-
-            if ($normalizedPattern === '') {
-                continue;
-            }
-
-            if (in_array($normalizedPattern, ['it', 'cs', 'cpe', 'bsit', 'bscs', 'bsce'], true)) {
-                if (preg_match('/\b' . preg_quote($normalizedPattern, '/') . '\b/', $degree)) {
-                    return true;
-                }
-                continue;
-            }
-
-            if (str_contains($degree, $normalizedPattern)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function hasValue(array $data, string $key): bool
-    {
-        return array_key_exists($key, $data)
-            && $data[$key] !== null
-            && $data[$key] !== '';
+        return $file->storeAs("uploads/{$directory}", $filename, 'public');
     }
 }

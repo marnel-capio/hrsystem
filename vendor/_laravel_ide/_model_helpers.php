@@ -2878,6 +2878,8 @@ namespace App\Models {
      * @property-read mixed $password
      * @property-read mixed $position_label
      * @property-read mixed $permission_label
+     * @property-read mixed $role_label
+     * @property-read mixed $full_name
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
      * @property-read int|null $notifications_count
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereId($value)
@@ -2897,6 +2899,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User query()
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User actionInterviewers() {@see App\Models\User::scopeActionInterviewers()}
      * @method static mixed select($columns)
      * @method static mixed selectSub($query, $as)
      * @method static mixed selectExpression($expression, $as)

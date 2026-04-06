@@ -143,6 +143,10 @@ const toggleSelectAll = () => {
     }
 }
 
+const hasScheduledJobOffer = computed(() => {
+    return !!application.value?.job_offer_schedule
+})
+
 watch(selectedInterviewers, (newVal) => {
     selectAll.value = newVal.length === interviews.value.length && interviews.value.length > 0
 })
@@ -199,7 +203,7 @@ const formatDateTime = (dateString: string | null) => {
 
 const formatScore = (score: number | null) => {
     if (score === null || score === undefined) return '-'
-    return `${score}%`
+    return `${score}`
 }
 
 const getFileUrl = (filename: string | null) => {
@@ -320,6 +324,23 @@ const openBulkAddModal = () => {
     interviewerSearch.value = ''
     bulkAddStage.value = '1'
     showBulkAddModal.value = true
+}
+
+const showDeclineReasonModal = ref(false)
+const selectedDeclinedInterview = ref<any>(null)
+
+const canViewDeclineReason = (interview: any) => {
+    return Number(interview.status) === 3 && !!String(interview.decline_reason || '').trim()
+}
+
+const openDeclineReasonModal = (interview: any) => {
+    selectedDeclinedInterview.value = interview
+    showDeclineReasonModal.value = true
+}
+
+const closeDeclineReasonModal = () => {
+    showDeclineReasonModal.value = false
+    selectedDeclinedInterview.value = null
 }
 
 const submitBulkAdd = async () => {
@@ -474,8 +495,8 @@ const availableNotificationOptions = computed(() => {
     if (pendingApprovalInterviewers.value.length > 0) {
         options.push({
             value: 'interviewer_pending_approval',
-            label: 'Send pending approval to interviewers or exam conductors',
-            description: 'Notify assigned interviewers or conductors that they need to approve or decline their schedule.',
+            label: 'Send pending approval to interviewer(s)',
+            description: 'Notify assigned interviewer(s) that they need to approve or decline their schedule.',
         })
     }
 
@@ -483,7 +504,7 @@ const availableNotificationOptions = computed(() => {
         options.push({
             value: 'applicant_scheduled',
             label: 'Send applicant interview schedule',
-            description: 'Notify the applicant about their approved interview or exam schedule.',
+            description: 'Notify the applicant about approved interview schedule(s).',
         })
     }
 
@@ -492,6 +513,14 @@ const availableNotificationOptions = computed(() => {
             value: 'applicant_failed',
             label: `Send applicant failed notification (${failedStageLabel.value})`,
             description: `Notify the applicant that they did not pass the ${failedStageLabel.value}.`,
+        })
+    }
+
+    if (hasScheduledJobOffer.value) {
+        options.push({
+            value: 'hr_recruiters_job_offer',
+            label: 'Notify all HR recruiters of scheduled job offer',
+            description: 'Send the scheduled job offer details to all HR recruiters.',
         })
     }
 
@@ -537,6 +566,18 @@ const notificationPreview = computed(() => {
                 ],
                 summary: `This email tells the applicant that they did not pass the ${failedStageLabel.value}.`,
             }
+            case 'hr_recruiters_job_offer':
+    return {
+        subject: '【HR System】Scheduled Job Offer',
+        recipients: [
+            {
+                name: 'All HR Recruiters',
+                email: 'HR Recruiter distribution',
+                extra: formatDateTime(application.value?.job_offer_schedule),
+            }
+        ],
+        summary: `This email notifies all HR recruiters that a job offer has been scheduled for ${applicantFullName.value}.`,
+    }
 
         default:
             return null
@@ -623,14 +664,28 @@ const submitAcceptDecline = async () => {
             }
         )
 
+        interviews.value = interviews.value.map((interview: any) => {
+            if (interview.id !== acceptDeclineInterviewer.value.id) {
+                return interview
+            }
+
+            return {
+                ...interview,
+                status: acceptDeclineDecision.value === 'accept' ? 2 : 3,
+                decline_reason: acceptDeclineDecision.value === 'decline'
+                    ? acceptDeclineReason.value
+                    : null,
+            }
+        })
+
         showAcceptDeclineModal.value = false
+
         showToast(
             acceptDeclineDecision.value === 'accept'
                 ? 'Interview assignment accepted successfully!'
                 : 'Interview assignment declined. HR will be notified.',
             'success'
         )
-
     } catch (error: any) {
         showToast(error?.response?.data?.message || 'Failed to submit decision', 'error')
     } finally {
@@ -704,14 +759,6 @@ watch(errorMessage, (newVal) => {
                       <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
                           ACTION Application Details
                       </h1>
-                      <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                          Batch: {{ application.batch?.action_batch || 'N/A' }} |
-                          Status:
-                          <span :class="['inline-flex ml-1 px-2 py-0.5 text-xs font-semibold rounded-full',
-                              getOverallStatusColor()]">
-                              {{ getOverallStatus() }}
-                          </span>
-                      </p>
                   </div>
                   <div class="flex gap-3">
                       <button @click="downloadApplication" class="btn-primary">
@@ -1008,14 +1055,16 @@ watch(errorMessage, (newVal) => {
                 <p class="text-xs text-gray-500 mt-1">Manage interviewers and exam conductors assigned to this application</p>
             </div>
 
-            <div class="flex gap-2" v-if="canManageInterviewers">
+<div class="flex gap-2" v-if="canManageInterviewers">
     <button @click="openBulkAddModal" class="btn-bulk-add">
+        <Plus class="w-4 h-4" />
         Add
     </button>
 
     <button
         @click="openBulkEditScheduleModal"
-        class="px-3 py-2 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 transition"
+        :disabled="selectedInterviewers.length === 0"
+        :class="['btn-bulk-edit', selectedInterviewers.length === 0 && 'opacity-50 cursor-not-allowed']"
     >
         Edit Schedule
     </button>
@@ -1031,7 +1080,7 @@ watch(errorMessage, (newVal) => {
                     <th class="px-4 py-3 text-left w-10" v-if="canManageInterviewers">
                         <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" class="rounded border-gray-300" />
                     </th>
-                    <th class="px-4 py-3 text-left font-semibold">Interviewer</th>
+                    <th class="px-4 py-3 text-left font-semibold">Interviewer/Conductor</th>
                     <th class="px-4 py-3 text-left font-semibold">Role</th>
                     <th class="px-4 py-3 text-left font-semibold">Stage</th>
                     <th class="px-4 py-3 text-left font-semibold">Scheduled Date</th>
@@ -1073,17 +1122,28 @@ watch(errorMessage, (newVal) => {
                         </span>
                     </td>
 
-                    <td class="px-4 py-3">
-<button
-    v-if="canAcceptDecline(interview)"
-    @click="openAcceptDeclineModal(interview)"
-    class="inline-flex w-8 h-8 items-center justify-center rounded-md text-green-600 hover:text-green-800 hover:bg-green-50 transition"
-    style="width: 90px;"
-    title="Accept/Decline"
->
-    <CheckCircle class="w-4 h-4" />
-</button>
-                    </td>
+<td class="px-4 py-3">
+    <div class="flex items-center gap-2">
+        <button
+            v-if="canAcceptDecline(interview)"
+            @click="openAcceptDeclineModal(interview)"
+            class="inline-flex items-center justify-center rounded-md text-green-600 hover:text-green-800 hover:bg-green-50 transition px-1 py-2"
+            title="Accept/Decline"
+        >
+            <CheckCircle class="w-4 h-4 mr-1" />
+            Respond
+        </button>
+
+        <button
+            v-if="canViewDeclineReason(interview)"
+            @click="openDeclineReasonModal(interview)"
+            class="inline-flex items-center justify-center rounded-md text-red-600 hover:text-red-800 hover:bg-red-50 transition px-1 py-2 text-sm font-sm"
+            title="View Reason for Decline"
+        >
+            View Reason
+        </button>
+    </div>
+</td>
                 </tr>
 
                 <tr v-if="interviews.length === 0">
@@ -1109,12 +1169,80 @@ watch(errorMessage, (newVal) => {
               </div>
           </div>
 
-          <!-- BULK EDIT MODAL -->
+          <!-- DECLINE REASON MODAL -->
+<div v-if="showDeclineReasonModal" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeDeclineReasonModal"></div>
+
+    <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold mb-2">Reason for Decline</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            Decline details for this interview assignment
+        </p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Interviewer
+                </label>
+                <input
+                    type="text"
+                    :value="selectedDeclinedInterview?.name || '-'"
+                    disabled
+                    class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100"
+                />
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Stage
+                </label>
+                <input
+                    type="text"
+                    :value="getStageLabel(selectedDeclinedInterview?.interview_type)"
+                    disabled
+                    class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100"
+                />
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Scheduled Date
+                </label>
+                <input
+                    type="text"
+                    :value="formatDateTime(selectedDeclinedInterview?.scheduled_date)"
+                    disabled
+                    class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100"
+                />
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Decline Reason
+                </label>
+                <div class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-3 bg-zinc-50 dark:bg-zinc-800 text-sm whitespace-pre-wrap">
+                    {{ selectedDeclinedInterview?.decline_reason || '-' }}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+            <button
+                @click="closeDeclineReasonModal"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
+            >
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+          <!--  EDIT MODAL -->
            <div v-if="showBulkEditScheduleModal" class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showBulkEditScheduleModal = false"></div>
 
     <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-        <h3 class="text-xl font-bold mb-2">Bulk Edit Schedule</h3>
+        <h3 class="text-xl font-bold mb-2">Edit Schedule</h3>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
             Update the schedule of checked interviewers
         </p>
@@ -1410,6 +1538,40 @@ watch(errorMessage, (newVal) => {
   </template>
 
   <style scoped>
+  .btn-bulk-add {
+    background-color: #2563eb;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.btn-bulk-add:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-bulk-edit {
+    background-color: #059669;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.btn-bulk-edit:hover:not(:disabled) {
+    background-color: #047857;
+}
+
   .btn-primary {
   display: inline-block;
   width: auto;
