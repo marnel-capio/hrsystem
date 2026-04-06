@@ -714,8 +714,7 @@ watch(errorMessage, (newVal) => {
                       </p>
                   </div>
                   <div class="flex gap-3">
-                      <button @click="downloadApplication" class="btn-download">
-                          <Download class="w-4 h-4" />
+                      <button @click="downloadApplication" class="btn-primary">
                           Print or Save as PDF
                       </button>
                       <button v-if="canNotify" @click="showNotificationModal = true" class="btn-send">
@@ -858,15 +857,15 @@ watch(errorMessage, (newVal) => {
                                   <tr class="border">
                                       <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
                                       <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(application.exam_result_label, 'exam')]">
-                                              {{ getExamResultLabel(application.exam_result) || '-' }}
-                                          </span>
+                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamResultLabel(application.exam_result))]">
+    {{ getExamResultLabel(application.exam_result) || '-' }}
+</span>
                                       </td>
                                       <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
                                       <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(application.exam_application_status_label, 'status')]">
-                                              {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
-                                          </span>
+                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamApplicationStatusLabel(application.exam_application_status))]">
+    {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
+</span>
                                       </td>
                                   </tr>
                               </tbody>
@@ -901,15 +900,15 @@ watch(errorMessage, (newVal) => {
                                   <tr class="border">
                                       <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
                                       <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(application.initial_interview_result_label, 'interview')]">
-                                              {{ getInterviewResultLabel(application.initial_interview_result) || '-' }}
-                                          </span>
+<span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.initial_interview_result))]">
+    {{ getInterviewResultLabel(application.initial_interview_result) || '-' }}
+</span>
                                       </td>
                                       <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
                                       <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(application.initial_interview_application_status_label, 'status')]">
-                                              {{ getInterviewApplicationStatusLabel(application.initial_interview_application_status) || '-' }}
-                                          </span>
+                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.initial_interview_application_status))]">
+    {{ getInterviewApplicationStatusLabel(application.initial_interview_application_status) || '-' }}
+</span>
                                       </td>
                                   </tr>
                               </tbody>
@@ -950,15 +949,15 @@ watch(errorMessage, (newVal) => {
                                   <tr class="border">
                                       <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
                                       <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(application.final_interview_result_label, 'interview')]">
-                                              {{ getInterviewResultLabel(application.final_interview_result) || '-' }}
-                                          </span>
+<span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.final_interview_result))]">
+    {{ getInterviewResultLabel(application.final_interview_result) || '-' }}
+</span>
                                       </td>
                                       <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
                                       <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(application.final_interview_application_status_label, 'status')]">
-                                              {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
-                                          </span>
+<span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.final_interview_application_status))]">
+    {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
+</span>
                                       </td>
                                   </tr>
                               </tbody>
@@ -983,9 +982,9 @@ watch(errorMessage, (newVal) => {
                                       <td class="px-3 py-2 border">{{ formatDateTime(application.job_offer_schedule) }}</td>
                                       <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Status</td>
                                       <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(application.job_offer_status_label, 'jobOffer')]">
-                                              {{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}
-                                          </span>
+                                         <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getJobOfferStatusLabel(application.job_offer_status))]">
+    {{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}
+</span>
                                       </td>
                                   </tr>
 
@@ -1412,10 +1411,14 @@ watch(errorMessage, (newVal) => {
 
   <style scoped>
   .btn-primary {
-    padding: 0.5rem 1rem;
+  display: inline-block;
+  width: auto;
+  font-weight: 600;
+    padding: 0.25rem 0.75rem;
     background-color: var(--ats-primary);
     color: #fff;
     border-radius: 5px;
+    font-size: 16px;
   }
   .btn-danger {
     padding: 0.5rem 1rem;

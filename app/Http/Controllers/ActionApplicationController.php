@@ -279,8 +279,9 @@ public function edit($id)
 public function update(Request $request, $id)
 {
     $application = ActionApplication::with('interviews')->findOrFail($id);
-    $user = auth()->user();
-    $permission = (int) $user->permissions;
+    $application->load('applicant');
+
+    $originalData = $application->toArray();
 
     $validated = $request->validate([
         'exam_plan_date' => 'nullable|date',
@@ -344,6 +345,8 @@ public function update(Request $request, $id)
         config('constants.HR_MANAGER_PERMISSION.value'),
         config('constants.HR_RECRUITER_PERMISSION.value'),
     ];
+
+    $permission = (int) auth()->user()->permissions;
 
     $editableStages = [
         'exam' => false,
@@ -450,6 +453,67 @@ public function update(Request $request, $id)
 
     $application->update($validated);
     $this->syncInterviewStatusesFromStageResults($application);
+
+    $application->refresh();
+    $application->load('applicant');
+
+    $fieldsToTrack = [
+        'exam_plan_date',
+        'exam_actual_date',
+        'exam_venue',
+        'exam_atpp_result',
+        'exam_git_result',
+        'exam_prg_result',
+        'exam_result',
+        'exam_application_status',
+        'exam_remarks',
+        'initial_interview_plan_date',
+        'initial_interview_actual_date',
+        'initial_interview_venue',
+        'initial_interview_final',
+        'initial_interview_result',
+        'initial_interview_application_status',
+        'initial_interview_remarks',
+        'final_interview_date',
+        'final_interview_sf',
+        'final_interview_ib',
+        'final_interview_rv',
+        'final_interview_ma',
+        'final_interview_final',
+        'final_interview_result',
+        'final_interview_application_status',
+        'final_interview_remarks',
+        'job_offer_schedule',
+        'job_offer_status',
+        'job_offer_remarks',
+        'remarks',
+    ];
+
+    $detailLines = [];
+
+    foreach ($fieldsToTrack as $field) {
+        $oldValue = $originalData[$field] ?? null;
+        $newValue = $application->{$field} ?? null;
+
+        $oldText = ($oldValue === null || $oldValue === '') ? '-' : (string) $oldValue;
+        $newText = ($newValue === null || $newValue === '') ? '-' : (string) $newValue;
+
+        if ($oldText !== $newText) {
+            $detailLines[] = $field . ': ' . $oldText . ' -> ' . $newText;
+        }
+    }
+
+    $activity = 'Updated ACTION Application: ' .
+        ($application->applicant->first_name ?? '') . ' ' .
+        ($application->applicant->last_name ?? '') . ".\n" .
+        "Details:\n" .
+        implode("\n", $detailLines);
+
+    Log::createLog(
+        'ACTION',
+        $activity,
+        auth()->id()
+    );
 
     return redirect()
         ->route('action.applications.show', $application->id)
@@ -591,6 +655,46 @@ foreach ($pendingInterviews as $interview) {
                 break;
         }
 
+        //LOG START
+        $recipientList = [];
+
+if ($request->type === 'interviewer_pending_approval') {
+    $recipientList = $pendingInterviews
+        ->map(function ($interview) {
+            $name = trim(
+                (optional($interview->interviewer)->first_name ?? '') . ' ' .
+                (optional($interview->interviewer)->last_name ?? '')
+            );
+
+            return $name !== '' ? $name : (optional($interview->interviewer)->email_address ?? 'Unknown');
+        })
+        ->filter()
+        ->values()
+        ->all();
+}
+
+if (in_array($request->type, ['applicant_scheduled', 'applicant_failed'], true)) {
+    $applicantName = trim(
+        (optional($application->applicant)->first_name ?? '') . ' ' .
+        (optional($application->applicant)->last_name ?? '')
+    );
+
+    $recipientList = [
+        $applicantName !== '' ? $applicantName : (optional($application->applicant)->email_address ?? 'Unknown')
+    ];
+}
+
+Log::createLog(
+    'ACTION',
+    'Sent ' . $request->type . ' email/s to ' . implode(', ', $recipientList) .
+    ' for application of ' .
+    ($application->applicant->first_name ?? '') . ' ' .
+    ($application->applicant->last_name ?? '') . '.',
+    auth()->id()
+);
+
+//LOG END
+
         return response()->json([
             'message' => config('errors.email_sent_success.errorMessage'),
         ]);
@@ -646,7 +750,7 @@ public function bulkUpdateInterviewSchedule(Request $request, $applicationId)
         'scheduled_date' => ['required', 'date'],
     ]);
 
-    $application = ActionApplication::findOrFail($applicationId);
+    $application = ActionApplication::with('applicant')->findOrFail($applicationId);
 
     DB::beginTransaction();
 
@@ -654,6 +758,12 @@ public function bulkUpdateInterviewSchedule(Request $request, $applicationId)
         $interviewsToUpdate = ActionApplicationInterview::where('action_application_id', $application->id)
             ->whereIn('id', $request->interview_ids)
             ->get();
+
+        $oldScheduleMap = [];
+
+        foreach ($interviewsToUpdate as $interview) {
+            $oldScheduleMap[$interview->id] = $interview->scheduled_date;
+        }
 
         foreach ($interviewsToUpdate as $interview) {
             $updateData = [
@@ -663,56 +773,72 @@ public function bulkUpdateInterviewSchedule(Request $request, $applicationId)
             ];
 
             // If previously declined, reset to Pending Approval
-if ((int) $interview->status === 3) {
-    $updateData['status'] = 1;
-    $updateData['decline_reason'] = null;
-    $updateData['pending_approval_notified_at'] = null;
-}
+            if ((int) $interview->status === 3) {
+                $updateData['status'] = 1;
+                $updateData['decline_reason'] = null;
+                $updateData['pending_approval_notified_at'] = null;
+            }
 
             $interview->update($updateData);
         }
 
-        $positions = config('constants.positions');
-
-$rows = DB::table('action_application_interviews')
-    ->leftJoin('users', 'action_application_interviews.interviewer_id', '=', 'users.id')
-    ->where('action_application_interviews.action_application_id', $application->id)
-    ->orderBy('action_application_interviews.id')
-    ->get([
-        'action_application_interviews.id',
-        'action_application_interviews.interviewer_id',
-        'action_application_interviews.interview_type',
-        'action_application_interviews.scheduled_date',
-        'action_application_interviews.status',
-        'users.first_name',
-        'users.last_name',
-        'users.position',
-        'users.permissions',
-        'users.email_address',
-        'action_application_interviews.pending_approval_notified_at',
-    ]);
+        $rows = DB::table('action_application_interviews')
+            ->leftJoin('users', 'action_application_interviews.interviewer_id', '=', 'users.id')
+            ->where('action_application_interviews.action_application_id', $application->id)
+            ->orderBy('action_application_interviews.id')
+            ->get([
+                'action_application_interviews.id',
+                'action_application_interviews.interviewer_id',
+                'action_application_interviews.interview_type',
+                'action_application_interviews.scheduled_date',
+                'action_application_interviews.status',
+                'users.first_name',
+                'users.last_name',
+                'users.position',
+                'users.permissions',
+                'users.email_address',
+                'action_application_interviews.pending_approval_notified_at',
+            ]);
 
         DB::commit();
 
-$interviews = $rows->map(function ($row) {
-    return [
-        'id' => $row->id,
-        'interviewer_id' => $row->interviewer_id,
-        'name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')) ?: 'N/A',
-        'email_address' => $row->email_address ?? null,
-        'pending_approval_notified_at' => $row->pending_approval_notified_at,
-        'role_label' => match ((int) $row->permissions) {
-            config('constants.HR_ADMIN_PERMISSION.value') => 'HR Admin',
-            config('constants.HR_RECRUITER_PERMISSION.value') => 'HR Recruiter',
-            config('constants.BU_MANAGER_PERMISSION.value') => 'BU Manager',
-            config('constants.INTERVIEWER_PERMISSION.value') => 'Interviewer',
-            default => 'User',
-        },
-        'interview_type' => (int) $row->interview_type,
-        'scheduled_date' => $row->scheduled_date,
-        'status' => (int) ($row->status ?? 1),
-    ];
-})->values();
+        $detailLines = [];
+
+        foreach ($interviewsToUpdate as $interview) {
+            $oldDate = $oldScheduleMap[$interview->id] ?? '-';
+            $detailLines[] = ($oldDate ?: '-') . ' -> ' . ($request->scheduled_date ?: '-');
+        }
+
+        Log::createLog(
+            'ACTION',
+            'Updated ' . $interviewsToUpdate->count() .
+            ' interviewer(s) for application of ' .
+            ($application->applicant->first_name ?? '') . ' ' .
+            ($application->applicant->last_name ?? '') . ".\n" .
+            "Details:\n" .
+            implode("\n", $detailLines),
+            auth()->id()
+        );
+
+        $interviews = $rows->map(function ($row) {
+            return [
+                'id' => $row->id,
+                'interviewer_id' => $row->interviewer_id,
+                'name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')) ?: 'N/A',
+                'email_address' => $row->email_address ?? null,
+                'pending_approval_notified_at' => $row->pending_approval_notified_at,
+                'role_label' => match ((int) $row->permissions) {
+                    config('constants.HR_ADMIN_PERMISSION.value') => 'HR Admin',
+                    config('constants.HR_RECRUITER_PERMISSION.value') => 'HR Recruiter',
+                    config('constants.BU_MANAGER_PERMISSION.value') => 'BU Manager',
+                    config('constants.INTERVIEWER_PERMISSION.value') => 'Interviewer',
+                    default => 'User',
+                },
+                'interview_type' => (int) $row->interview_type,
+                'scheduled_date' => $row->scheduled_date,
+                'status' => (int) ($row->status ?? 1),
+            ];
+        })->values();
 
         return response()->json([
             'message' => 'Selected interview schedules updated successfully.',
@@ -730,10 +856,6 @@ $interviews = $rows->map(function ($row) {
 
 public function bulkAddInterviews(Request $request, $id)
 {
-    LaravelLog::info('--- BULK ADD HIT ---');
-LaravelLog::info('DB name: ' . DB::connection()->getDatabaseName());
-LaravelLog::info('Payload:', $request->all());
-
     $request->validate([
         'interviewer_ids' => ['required', 'array', 'min:1'],
         'interviewer_ids.*' => ['required', 'integer', 'exists:users,id'],
@@ -829,6 +951,13 @@ $interviews = $rows->map(function ($row) {
     ];
 })->values();
 
+Log::createLog(
+    'ACTION',
+    'Added ' . count($request->interviewer_ids) .
+    ' pending interviewer/conductor(s) to application #' . $application->id,
+    auth()->id()
+);
+
         return response()->json([
             'message' => 'Interviewer(s) added successfully.',
             'interviews' => $interviews,
@@ -879,6 +1008,31 @@ $interview->update([
     'updated_by' => auth()->id(),
     'updated_time' => now(),
 ]);
+
+//LOG START
+$application = ActionApplication::with('applicant')->findOrFail($applicationId);
+
+$interviewerName = trim(
+    (auth()->user()->first_name ?? '') . ' ' .
+    (auth()->user()->last_name ?? '')
+);
+
+$activity = 'Interviewer ' . $interviewerName . ' ' .
+    ($request->decision === 'accept' ? 'accepted' : 'declined') .
+    ' assignment for application of ' .
+    ($application->applicant->first_name ?? '') . ' ' .
+    ($application->applicant->last_name ?? '') . '.';
+
+if ($request->decision === 'decline' && filled($request->reason)) {
+    $activity .= "\nReason: " . $request->reason;
+}
+
+Log::createLog(
+    'ACTION',
+    $activity,
+    auth()->id()
+);
+//LOG END
 
     return response()->json([
         'message' => 'Decision submitted successfully.',

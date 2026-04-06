@@ -589,7 +589,6 @@ function submit() {
         <div class="page-container">
             <div class="page-header">
                 <h2 class="page-title">Edit ACTION Application</h2>
-                <p class="page-description">Editing application for {{ application.applicant?.last_name }}, {{ application.applicant?.first_name }}</p>
             </div>
 
             <div class="form-wrapper">
