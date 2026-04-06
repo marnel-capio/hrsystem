@@ -168,6 +168,7 @@ class CheckUserPermission
         // INTERMEDIATE RREQUISITIONS
         if (in_array($routeName, [
             'intermediate.requisitions.index',
+            'intermediate.requisitions.show',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
@@ -183,12 +184,10 @@ class CheckUserPermission
         }
 
         if (in_array($routeName, [
-            'intermediate.requisitions.show',
+            'intermediate.requisitions.register',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
-                config('constants.HR_MANAGER_PERMISSION.value'),
-                config('constants.HR_RECRUITER_PERMISSION.value'),
                 config('constants.BU_MANAGER_PERMISSION.value'),
             ])) {
                 return $next($request);

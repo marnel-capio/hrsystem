@@ -77,7 +77,7 @@ function formatDate(dateString: string) {
   })
 }
 const canCreateRR = computed(() => {
-  return [1, 5].includes(userPermissions.value); // Use `userPermissions.value` here
+  return [1, 5].includes(userPermissions.value);
 })
 
 </script>
