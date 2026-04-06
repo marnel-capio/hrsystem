@@ -5,7 +5,6 @@ import UserController from './UserController'
 import ResourceScheduleController from './ResourceScheduleController'
 import ActionBatchController from './ActionBatchController'
 import ActionApplicantController from './ActionApplicantController'
-import IntermediateProjectController from './IntermediateProjectController'
 import LogController from './LogController'
 import Settings from './Settings'
 const Controllers = {
@@ -16,7 +15,6 @@ UserController: Object.assign(UserController, UserController),
 ResourceScheduleController: Object.assign(ResourceScheduleController, ResourceScheduleController),
 ActionBatchController: Object.assign(ActionBatchController, ActionBatchController),
 ActionApplicantController: Object.assign(ActionApplicantController, ActionApplicantController),
-IntermediateProjectController: Object.assign(IntermediateProjectController, IntermediateProjectController),
 LogController: Object.assign(LogController, LogController),
 Settings: Object.assign(Settings, Settings),
 }

@@ -124,23 +124,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-    // ------------------------
-    // Intermediate Projects
-    // ------------------------
-    Route::middleware(['auth', 'check.permission'])->group(function () {
-        Route::get('/intermediate/projects', [IntermediateProjectController::class, 'index'])->name('intermediate.projects.list');
-        Route::get('/intermediate/projects/register', [IntermediateProjectController::class, 'create'])->name('intermediate.projects.register');
-        Route::post('/intermediate/projects', [IntermediateProjectController::class, 'store'])->name('intermediate.projects.store');
-        Route::get('/intermediate/projects/{id}', [IntermediateProjectController::class, 'show'])->name('intermediate.projects.show');       
-        Route::get('/intermediate/projects/{id}/edit', [IntermediateProjectController::class, 'edit'])->name('intermediate.projects.edit');        
-        Route::post('/intermediate/projects/{id}/update', [IntermediateProjectController::class, 'update'])->name('intermediate.projects.update');
-    });
-
 
     // Logs
     // ------------------------
     Route::middleware(['auth', 'check.permission'])->group(function () {
-     Route::get('/logs', [LogController::class, 'index'])->name('log.logs.index');
+     Route::get('/log', [LogController::class, 'index'])->name('log.logs.index');
 
     });
 // ------------------------
