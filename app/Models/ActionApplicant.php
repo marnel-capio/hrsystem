@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class ActionApplicant extends Model
@@ -33,7 +33,8 @@ class ActionApplicant extends Model
         'other_examination_certificate',
         'thesis_project',
         'extra_curricular',
-        'remarks',
+        'contact_number',
+        'address',
         'created_by',
         'created_time',
         'updated_by',
@@ -54,8 +55,7 @@ class ActionApplicant extends Model
         'source' => '',
     ];
 
-    public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source, $other_source, $createdTime, $updatedTime)
-    {
+    public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source,$other_source, $createdTime, $updatedTime) {
         $nameParts = explode(',', $row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
         $last = trim($nameParts[0] ?? '');
         $first = isset($nameParts[1]) ? trim(explode(' ', trim($nameParts[1]))[0]) : '';
@@ -63,15 +63,17 @@ class ActionApplicant extends Model
 
         $email = trim($row['Email Address'] ?? '');
 
-        return self::updateOrCreate(
-            ['email_address' => $email],
-            [
+        $applicant = self::where('email_address', $email)->first();
+
+        if (!$applicant) {
+            return self::create([
                 'source_type' => $source_type,
                 'source' => $source,
                 'other_source' => $other_source,
                 'last_name' => $last,
                 'first_name' => $first,
                 'middle_name' => $middle,
+                'email_address' => $email,
                 'gender' => $gender,
                 'age' => (int)($row['Age'] ?? 0),
                 'school' => trim($row['School '] ?? ''),
@@ -83,11 +85,31 @@ class ActionApplicant extends Model
                 'thesis_project' => trim($row['Thesis Project'] ?? ''),
                 'extra_curricular' => substr(trim($row['Extra-curricular Activities'] ?? ''), 0, 255),
                 'created_by' => Auth::id(),
-                'created_time' => now(),
+                'created_time' => $createdTime,
                 'updated_by' => Auth::id(),
-                'updated_time' => now(),
-            ]
-        );
+                'updated_time' => $updatedTime,
+            ]);
+        }
+
+        $applicant->update([
+            'last_name' => $last,
+            'first_name' => $first,
+            'middle_name' => $middle,
+            'gender' => $gender,
+            'age' => (int)($row['Age'] ?? 0),
+            'school' => trim($row['School '] ?? ''),
+            'degree' => trim($row["Bachelor's Degree"] ?? ''),
+            'others_degree' => trim($row["If others, please indicate below.\nWrite NA if not applicable (if degree is among the choices from previous question)"] ?? ''),
+            'expected_graduation' => trim($row['Year of Expected Graduation'] ?? ''),
+            'awards_recognition' => trim($row['Awards/ Recognition '] ?? ''),
+            'other_examination_certificate' => trim($row['Other Examinations/ Certifications taken'] ?? ''),
+            'thesis_project' => trim($row['Thesis Project'] ?? ''),
+            'extra_curricular' => substr(trim($row['Extra-curricular Activities'] ?? ''), 0, 255),
+            'updated_by' => Auth::id(),
+            'updated_time' => $updatedTime,
+        ]);
+
+        return $applicant;
     }
 
     public static function getAllActionApplicants()
@@ -123,6 +145,117 @@ class ActionApplicant extends Model
             });
     }
 
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function programmingLanguages()
+    {
+        return $this->hasMany(ActionApplicantProgrammingLanguage::class, 'action_applicant_id', 'id');
+    }
+
+    public function updateWithRequest(array $data, ?int $userId = null)
+    {
+        // Handle source / other_source logic first
+        $sourceType = (int) ($data['source_type'] ?? $this->source_type);
+
+        if ($sourceType === 3) {
+            $this->source = $data['source'] ?? null;
+            $this->other_source = $data['other_source'] ?? null; // keep if provided
+        } elseif (in_array($sourceType, [1, 2, 4, 5])) {
+            $this->other_source = $data['other_source'] ?? null;
+            $this->source = null;
+        } else {
+            $this->source = $data['source'] ?? null;
+            $this->other_source = $data['other_source'] ?? null;
+        }
+
+        // Mass assignment for fillable fields (except created_by / created_time)
+        $fieldsToUpdate = [
+            'source_type',
+            'source',
+            'other_source',
+            'last_name',
+            'first_name',
+            'middle_name',
+            'email_address',
+            'gender',
+            'age',
+            'school',
+            'degree',
+            'others_degree',
+            'expected_graduation',
+            'awards_recognition',
+            'other_examination_certificate',
+            'thesis_project',
+            'extra_curricular',
+            'remarks',
+        ];
+
+        foreach ($fieldsToUpdate as $field) {
+            if (isset($data[$field])) {
+                $this->$field = $data[$field];
+            }
+        }
+
+        // Update audit fields
+        $this->updated_by = $userId;
+        $this->updated_time = now();
+
+        return $this->save();
+
+    }
+
+    /**
+     * Get eligible applicants for a specific batch
+     */
+    public static function getEligibleApplicantsForBatch($batchId)
+    {
+        return self::select(
+                'action_applicants.id as value',
+                'action_applicants.age',
+                'action_applicants.degree',
+                DB::raw("CONCAT(action_applicants.first_name, ' ', action_applicants.last_name, ' (', action_applicants.email_address, ')') as label")
+            )
+            ->whereNotExists(function ($query) use ($batchId) {
+                $query->select(DB::raw(1))
+                    ->from('action_applicant_applications')
+                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                    ->where('action_applicant_applications.action_batch_id', $batchId);
+            })
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('action_applicant_applications')
+                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                    ->where('action_applicant_applications.created_time', '>=', now()->subDays(180))
+                    ->where(function ($q) {
+                        $q->whereIn('action_applicant_applications.exam_application_status', [6, 7])
+                            ->orWhere('action_applicant_applications.initial_interview_result', 3)
+                            ->orWhere('action_applicant_applications.final_interview_result', 3)
+                            ->orWhereIn('action_applicant_applications.job_offer_status', [4, 5, 6]);
+                    });
+            })
+            ->orderBy('action_applicants.last_name')
+            ->orderBy('action_applicants.first_name')
+            ->get();
+    }
+
+    /**
+     * Relationships
+     */
+    public function applications()
+    {
+        return $this->hasMany(ActionApplication::class, 'action_applicant_id', 'id');
+    }
+
+    public function latestApplication()
+    {
+        return $this->hasOne(ActionApplication::class, 'action_applicant_id', 'id')
+            ->latest('created_time');
+
+    }
+
     /**
      * Create a new applicant
      */
@@ -130,7 +263,7 @@ class ActionApplicant extends Model
     {
         $data['created_time'] = now();
         $data['updated_time'] = now();
-        $data['created_by'] = Auth::id();  
+        $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
         return self::create($data);
@@ -162,7 +295,14 @@ class ActionApplicant extends Model
         $applicant = self::where('email_address', $email)->first();
 
         if ($applicant) {
-            return $applicant->updateApplicant($data);
+            // During update, exclude source-related fields
+            $updateData = array_diff_key($data, array_flip([
+                'source_type',
+                'source', 
+                'other_source'
+            ]));
+            
+            return $applicant->updateApplicant($updateData);
         }
 
         return self::createApplicant($data);
