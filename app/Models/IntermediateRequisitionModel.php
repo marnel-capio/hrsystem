@@ -18,7 +18,6 @@ class IntermediateRequisitionModel extends Model
         'person_to_replace',
         'location_assignment',
         'project_id',
-        'project_description',
         'business_unit',
         'resource',
         'practice',
@@ -99,6 +98,10 @@ class IntermediateRequisitionModel extends Model
         return $this->belongsTo(IntermediateProjectModel::class, 'project_id');
     }
 
+    public function getProjectDescriptionAttribute()
+    {
+        return $this->project ? $this->project->project_description : null;
+    }
 
     public function requestedBy()
     {
@@ -125,16 +128,15 @@ class IntermediateRequisitionModel extends Model
             ->select([
                 'id',
                 'project_id',
-                'project_description',
                 'resource',
                 'location_assignment',
                 'start_date',
                 'created_by',
-                'created_time'
+                'created_time',
             ])
             ->with([
-                'project:id,project_name',
-                'requestedBy:id,first_name,last_name'
+                'project:id,project_name,project_description',
+                'requestedBy:id,first_name,last_name',
             ])
             ->search($search)
             ->orderBy('id', 'desc')

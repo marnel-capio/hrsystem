@@ -145,7 +145,7 @@ const canCreateRR = computed(() => {
                     {{ requisition.project?.project_name }}
                   </Link>
                 </td>
-                <td class="border px-3 py-2">{{ requisition.project_description }}</td>
+                <td class="border px-3 py-2">{{ requisition.project?.project_description }}</td>
                 <td class="border px-3 py-2">
                   <div class="flex flex-wrap gap-1">
                     <span
