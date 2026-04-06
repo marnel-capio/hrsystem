@@ -1,5 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
-import interviews from './interviews'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicationController::index
  * @see app/Http/Controllers/ActionApplicationController.php:28
@@ -309,61 +308,6 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     
     show.form = showForm
 /**
-* @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:46
- * @route '/action/applications/import'
- */
-export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: importMethod.url(options),
-    method: 'post',
-})
-
-importMethod.definition = {
-    methods: ["post"],
-    url: '/action/applications/import',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:46
- * @route '/action/applications/import'
- */
-importMethod.url = (options?: RouteQueryOptions) => {
-    return importMethod.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:46
- * @route '/action/applications/import'
- */
-importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: importMethod.url(options),
-    method: 'post',
-})
-
-    /**
-* @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:46
- * @route '/action/applications/import'
- */
-    const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: importMethod.url(options),
-        method: 'post',
-    })
-
-            /**
-* @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:46
- * @route '/action/applications/import'
- */
-        importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: importMethod.url(options),
-            method: 'post',
-        })
-    
-    importMethod.form = importMethodForm
-/**
 * @see \App\Http\Controllers\ActionApplicationController::edit
  * @see app/Http/Controllers/ActionApplicationController.php:204
  * @route '/action/applications/{id}/edit'
@@ -545,26 +489,26 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     
     update.form = updateForm
 /**
-* @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
+* @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
  * @see app/Http/Controllers/ActionApplicationController.php:891
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
-export const eligibleApplicants = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: eligibleApplicants.url(args, options),
+export const getApplicantsForBatch = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getApplicantsForBatch.url(args, options),
     method: 'get',
 })
 
-eligibleApplicants.definition = {
+getApplicantsForBatch.definition = {
     methods: ["get","head"],
     url: '/action/applications/eligible-applicants/{batchId}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
+* @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
  * @see app/Http/Controllers/ActionApplicationController.php:891
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
-eligibleApplicants.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
+getApplicantsForBatch.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { batchId: args }
     }
@@ -582,56 +526,56 @@ eligibleApplicants.url = (args: { batchId: string | number } | [batchId: string 
                         batchId: args.batchId,
                 }
 
-    return eligibleApplicants.definition.url
+    return getApplicantsForBatch.definition.url
             .replace('{batchId}', parsedArgs.batchId.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
+* @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
  * @see app/Http/Controllers/ActionApplicationController.php:891
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
-eligibleApplicants.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: eligibleApplicants.url(args, options),
+getApplicantsForBatch.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getApplicantsForBatch.url(args, options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
+* @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
  * @see app/Http/Controllers/ActionApplicationController.php:891
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
-eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: eligibleApplicants.url(args, options),
+getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getApplicantsForBatch.url(args, options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
+* @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
  * @see app/Http/Controllers/ActionApplicationController.php:891
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
-    const eligibleApplicantsForm = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: eligibleApplicants.url(args, options),
+    const getApplicantsForBatchForm = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: getApplicantsForBatch.url(args, options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
+* @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
  * @see app/Http/Controllers/ActionApplicationController.php:891
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
-        eligibleApplicantsForm.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: eligibleApplicants.url(args, options),
+        getApplicantsForBatchForm.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: getApplicantsForBatch.url(args, options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
+* @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
  * @see app/Http/Controllers/ActionApplicationController.php:891
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
-        eligibleApplicantsForm.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: eligibleApplicants.url(args, {
+        getApplicantsForBatchForm.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: getApplicantsForBatch.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -640,7 +584,7 @@ eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string
             method: 'get',
         })
     
-    eligibleApplicants.form = eligibleApplicantsForm
+    getApplicantsForBatch.form = getApplicantsForBatchForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::checkEligibility
  * @see app/Http/Controllers/ActionApplicationController.php:0
@@ -696,6 +640,300 @@ checkEligibility.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =
         })
     
     checkEligibility.form = checkEligibilityForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:731
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+export const bulkAddInterviews = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkAddInterviews.url(args, options),
+    method: 'post',
+})
+
+bulkAddInterviews.definition = {
+    methods: ["post"],
+    url: '/action/applications/{id}/interviews/bulk-add',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:731
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+bulkAddInterviews.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return bulkAddInterviews.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:731
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+bulkAddInterviews.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkAddInterviews.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:731
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+    const bulkAddInterviewsForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: bulkAddInterviews.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:731
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+        bulkAddInterviewsForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: bulkAddInterviews.url(args, options),
+            method: 'post',
+        })
+    
+    bulkAddInterviews.form = bulkAddInterviewsForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+export const bulkDeleteInterviews = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkDeleteInterviews.url(args, options),
+    method: 'post',
+})
+
+bulkDeleteInterviews.definition = {
+    methods: ["post"],
+    url: '/action/applications/{applicationId}/interviews/bulk-delete',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+bulkDeleteInterviews.url = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { applicationId: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    applicationId: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        applicationId: args.applicationId,
+                }
+
+    return bulkDeleteInterviews.definition.url
+            .replace('{applicationId}', parsedArgs.applicationId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+bulkDeleteInterviews.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkDeleteInterviews.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+    const bulkDeleteInterviewsForm = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: bulkDeleteInterviews.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+        bulkDeleteInterviewsForm.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: bulkDeleteInterviews.url(args, options),
+            method: 'post',
+        })
+    
+    bulkDeleteInterviews.form = bulkDeleteInterviewsForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:848
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+export const submitInterviewDecision = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: submitInterviewDecision.url(args, options),
+    method: 'post',
+})
+
+submitInterviewDecision.definition = {
+    methods: ["post"],
+    url: '/action/applications/{applicationId}/interviews/{interviewId}/decision',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:848
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+submitInterviewDecision.url = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+                    applicationId: args[0],
+                    interviewId: args[1],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        applicationId: args.applicationId,
+                                interviewId: args.interviewId,
+                }
+
+    return submitInterviewDecision.definition.url
+            .replace('{applicationId}', parsedArgs.applicationId.toString())
+            .replace('{interviewId}', parsedArgs.interviewId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:848
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+submitInterviewDecision.post = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: submitInterviewDecision.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:848
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+    const submitInterviewDecisionForm = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: submitInterviewDecision.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:848
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+        submitInterviewDecisionForm.post = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: submitInterviewDecision.url(args, options),
+            method: 'post',
+        })
+    
+    submitInterviewDecision.form = submitInterviewDecisionForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:641
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+export const bulkUpdateInterviewSchedule = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkUpdateInterviewSchedule.url(args, options),
+    method: 'post',
+})
+
+bulkUpdateInterviewSchedule.definition = {
+    methods: ["post"],
+    url: '/action/applications/{applicationId}/interviews/bulk-update-schedule',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:641
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+bulkUpdateInterviewSchedule.url = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { applicationId: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    applicationId: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        applicationId: args.applicationId,
+                }
+
+    return bulkUpdateInterviewSchedule.definition.url
+            .replace('{applicationId}', parsedArgs.applicationId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:641
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+bulkUpdateInterviewSchedule.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkUpdateInterviewSchedule.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:641
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+    const bulkUpdateInterviewScheduleForm = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: bulkUpdateInterviewSchedule.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:641
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+        bulkUpdateInterviewScheduleForm.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: bulkUpdateInterviewSchedule.url(args, options),
+            method: 'post',
+        })
+    
+    bulkUpdateInterviewSchedule.form = bulkUpdateInterviewScheduleForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::sendNotification
  * @see app/Http/Controllers/ActionApplicationController.php:497
@@ -867,19 +1105,6 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
         })
     
     print.form = printForm
-const applications = {
-    index: Object.assign(index, index),
-create: Object.assign(create, create),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-import: Object.assign(importMethod, importMethod),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-eligibleApplicants: Object.assign(eligibleApplicants, eligibleApplicants),
-checkEligibility: Object.assign(checkEligibility, checkEligibility),
-interviews: Object.assign(interviews, interviews),
-sendNotification: Object.assign(sendNotification, sendNotification),
-print: Object.assign(print, print),
-}
+const ActionApplicationController = { index, create, store, show, edit, update, getApplicantsForBatch, checkEligibility, bulkAddInterviews, bulkDeleteInterviews, submitInterviewDecision, bulkUpdateInterviewSchedule, sendNotification, print }
 
-export default applications
+export default ActionApplicationController
