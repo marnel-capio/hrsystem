@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResourceScheduleNotificationMail;
 use App\Models\User;
+use App\Mail\ResourceScheduleDeletedMail;
 
 class ResourceScheduleController extends Controller
 {
@@ -206,26 +207,74 @@ class ResourceScheduleController extends Controller
         }
     }
 
-    public function destroy($id)
-    {
-        $schedule = ResourceSchedule::findOrFail($id);
+public function destroy($id)
+{
+    $schedule = ResourceSchedule::with('actionBatch')->findOrFail($id);
 
+    $actionBatchName = $schedule->actionBatch->action_batch ?? '';
+    $targetLocation = $schedule->target_location == 1 ? 'Manila' : 'Cebu';
+    $deploymentDate = $schedule->deployment_date;
+    $emails = $this->getDeleteNotificationEmails();
+
+    try {
+        DB::beginTransaction();
+
+        Log::createLog('ResourceSchedules', "Deleted resource schedule for {$actionBatchName}", $schedule->id);
+
+        $schedule->delete();
+
+        DB::commit();
+
+        // Mail should not block redirect
+    if (!empty($emails)) {
         try {
-            DB::beginTransaction();
-
-            $actionBatchName = $schedule->actionBatch->action_batch ?? '';
-
-            Log::createLog('ResourceSchedules', "Deleted resource schedule for {$actionBatchName}", $schedule->id);
-
-            $schedule->delete();
-
-            DB::commit();
-
-            return redirect()->route('action.schedules.index')
-                             ->with('success', config('errors.record_deleted_successfully.errorMessage'));
+            Mail::to($emails)->send(new ResourceScheduleDeletedMail(
+                $actionBatchName,
+                $targetLocation,
+                $deploymentDate
+            ));
         } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', config('errors.record_deleted_failed.errorMessage'));
+            \Log::info('Resource schedule delete mail failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
         }
     }
+
+    return redirect()->route('action.schedules.index')
+        ->with('success', config('errors.record_deleted_successfully.errorMessage'));
+        
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        \Log::info('Resource schedule delete failed', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+
+        return back()->with('error', config('errors.record_deleted_failed.errorMessage'));
+    }
+
+    
+}
+
+    private function getDeleteNotificationEmails(): array
+{
+    $permissionIds = [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+        config('constants.HR_MANAGER_PERMISSION.value'),
+        config('constants.HR_RECRUITER_PERMISSION.value'),
+    ];
+
+    return User::query()
+        ->whereIn('permissions', $permissionIds)
+        ->whereNotNull('email_address')
+        ->pluck('email_address')
+        ->filter()
+        ->unique()
+        ->values()
+        ->toArray();
+}
 }   
