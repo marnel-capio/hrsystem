@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ActionApplication extends Model
 {
     use HasFactory;
 
     protected $table = 'action_applicant_applications';
+
     protected $primaryKey = 'id';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -78,10 +80,10 @@ class ActionApplication extends Model
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('action_applicants.first_name', 'like', "%{$search}%")
-                    ->orWhere('action_applicants.last_name', 'like', "%{$search}%")
-                    ->orWhere('action_batches.action_batch', 'like', "%{$search}%")
-                    ->orWhereRaw("COALESCE(resource_schedules.target_location, '') LIKE ?", ["%{$search}%"])
-                    ->orWhere('action_applicant_applications.id', 'like', "%{$search}%");
+                        ->orWhere('action_applicants.last_name', 'like', "%{$search}%")
+                        ->orWhere('action_batches.action_batch', 'like', "%{$search}%")
+                        ->orWhereRaw("COALESCE(resource_schedules.target_location, '') LIKE ?", ["%{$search}%"])
+                        ->orWhere('action_applicant_applications.id', 'like', "%{$search}%");
                 });
             })
             ->orderBy('action_applicant_applications.created_time', 'desc')
@@ -109,6 +111,7 @@ class ActionApplication extends Model
         $data['updated_time'] = now();
         $data['updated_by'] = Auth::id();
         $this->update($data);
+
         return $this;
     }
 
@@ -125,27 +128,27 @@ class ActionApplication extends Model
         return $this->belongsTo(ActionBatchModel::class, 'action_batch_id', 'id');
     }
 
-    //functions from list
+    // functions from list
     public static function updateOrCreateFromRow($applicantId, $batchId, array $row, $exam_application_status, $exam_plan_date, $updatedTime, $targetLocation = null, $createdTime = null)
-{
-    $createdTime = $createdTime ?? $updatedTime;
+    {
+        $createdTime = $createdTime ?? $updatedTime;
 
-    return self::updateOrCreate(
-        [
-            'action_applicant_id' => $applicantId,
-            'action_batch_id' => $batchId,
-        ],
-        [
-            'upload_resume' => trim($row['Upload your updated resume'] ?? ''),
-            'exam_application_status' => $exam_application_status,
-            'exam_plan_date' => $exam_plan_date,
-            'created_by' => Auth::id(),
-            'created_time' => now(),
-            'source_date' => $createdTime,
-            'updated_by' => Auth::id(),
-            'updated_time' => now(),
-            'trainees_from' => $targetLocation,
-        ]
-    );
-}
+        return self::updateOrCreate(
+            [
+                'action_applicant_id' => $applicantId,
+                'action_batch_id' => $batchId,
+            ],
+            [
+                'upload_resume' => trim($row['Upload your updated resume'] ?? ''),
+                'exam_application_status' => $exam_application_status,
+                'exam_plan_date' => $exam_plan_date,
+                'created_by' => Auth::id(),
+                'created_time' => now(),
+                'source_date' => $createdTime,
+                'updated_by' => Auth::id(),
+                'updated_time' => now(),
+                'trainees_from' => $targetLocation,
+            ]
+        );
+    }
 }

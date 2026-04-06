@@ -336,7 +336,6 @@ const getStageLabel = (stage: number) => {
         </div>
     </AppLayout>
 </template>
-
 <style scoped>
 /* CARD */
 .card {

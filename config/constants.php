@@ -156,13 +156,13 @@ return [
 
 
     'sources' => [
-        1 => 'Mynimo',
-        2 => 'Indeed',
-        3 => 'Kalibrr',
-        4 => 'FoundIt',
-        5 => 'LinkedIn',
+        1 => 'University Career Fair',
+        2 => 'Partner School',
+        3 => 'JobStreet',
+        4 => 'LinkedIn',
+        5 => 'Referral',
         6 => 'Facebook',
-        7 => 'Jobstreet'
+        7 => 'Jobstreet',
     ],
 
     'examVenues' => [
