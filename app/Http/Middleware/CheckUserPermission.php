@@ -8,8 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckUserPermission
 {
+
+
     public function handle(Request $request, Closure $next): Response
     {
+
+
         $user = auth()->user();
 
         if (! $user) {
@@ -20,6 +24,12 @@ class CheckUserPermission
         $routeName = optional($request->route())->getName();
         $routeId = $request->route('id');
         $routePath = $request->path();
+
+        logger([
+    'user_id' => optional(auth()->user())->id,
+    'permission' => optional(auth()->user())->permissions,
+    'routeName' => $routeName,
+]);
 
         if ($request->is('action/applications') && $request->isMethod('post')) {
             if (in_array($permission, [
@@ -62,29 +72,56 @@ class CheckUserPermission
         | Only HR Admin & HR Manager allowedintermediate.projects.lis
         |----------------------------------------------------------------------
         */
-        if (in_array($routeName, [
-            'user.index',
-            'user.register',
-            'user.store',
-            'action.schedules.register',
-            'action.schedules.store',
-            'action.schedules.edit',
-            'action.schedules.update',
-            'action.create',
-            'action.show',
-            'action.schedules.notify',
-            'action.schedules.destroy',
-        ])) {
-            if (in_array($permission, [
-                config('constants.HR_ADMIN_PERMISSION.value'),
-                config('constants.HR_MANAGER_PERMISSION.value'),
-            ])) {
-                return $next($request);
-            }
+if (in_array($routeName, [
+    'user.index',
+    'user.register',
+    'user.store',
+])) {
+    if (in_array($permission, [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+        config('constants.HR_MANAGER_PERMISSION.value'),
+    ])) {
+        return $next($request);
+    }
 
-            return redirect('/dashboard')
-                ->with('error', config('errors.unauthorized.errorMessage'));
-        }
+    return redirect('/dashboard')
+        ->with('error', config('errors.unauthorized.errorMessage'));
+}
+
+if (in_array($routeName, [
+    'action.schedules.index',
+    'action.schedules.show',
+])) {
+    if (in_array($permission, [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+        config('constants.HR_MANAGER_PERMISSION.value'),
+        config('constants.HR_RECRUITER_PERMISSION.value'),
+    ])) {
+        return $next($request);
+    }
+
+    return redirect('/dashboard')
+        ->with('error', config('errors.unauthorized.errorMessage'));
+}
+
+if (in_array($routeName, [
+    'action.schedules.register',
+    'action.schedules.store',
+    'action.schedules.edit',
+    'action.schedules.update',
+    'action.schedules.notify',
+    'action.schedules.destroy',
+])) {
+    if (in_array($permission, [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+        config('constants.HR_MANAGER_PERMISSION.value'),
+    ])) {
+        return $next($request);
+    }
+
+    return redirect('/dashboard')
+        ->with('error', config('errors.unauthorized.errorMessage'));
+}
 
         /*
         |--------------------------------------------------------------------------

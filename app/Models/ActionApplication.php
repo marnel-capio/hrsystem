@@ -311,8 +311,11 @@ public function getEditableStagesFor(User $user): array
     }
 
     $approvedAssignments = $this->interviews
-        ->where('interviewer_id', $user->id)
-        ->where('status', config('constants.interview_assignment_status.approved'));
+    ->where('interviewer_id', $user->id)
+    ->whereIn('status', [
+        config('constants.interview_assignment_status.approved'),
+        config('constants.interview_assignment_status.completed'),
+    ]);
 
     foreach ($approvedAssignments as $assignment) {
         if ((int) $assignment->interview_type === config('constants.interview_types.exam')) {

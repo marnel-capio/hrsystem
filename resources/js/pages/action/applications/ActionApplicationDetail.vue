@@ -313,14 +313,20 @@ const getStatusBadgeColor = (status: string | null) => {
 }
 
 const getOverallStatus = () => {
-    if (application.value.job_offer_status === 3) return 'Hired'
-    if (application.value.job_offer_status === 4) return 'Offer Declined'
+    const jobStatus = Number(application.value.job_offer_status)
+
+    if (jobStatus === 3) return 'Hired'
+    if (jobStatus === 4) return 'Offer Declined'
+    if (jobStatus === 5) return 'Offer Withdrawn'
+    if (jobStatus === 6) return 'Offer Retracted'
+
     if (application.value.final_interview_result === 2) return 'Passed Final Interview'
     if (application.value.final_interview_result === 3) return 'Failed Final Interview'
     if (application.value.initial_interview_result === 2) return 'Passed Initial Interview'
     if (application.value.initial_interview_result === 3) return 'Failed Initial Interview'
     if (application.value.exam_result === 2) return 'Passed Exam'
     if (application.value.exam_result === 3) return 'Failed Exam'
+
     return 'In Progress'
 }
 
@@ -836,9 +842,15 @@ watch(errorMessage, (newVal) => {
                   <div class="col-span-1">
                       <div class="text-white px-5 py-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center h-full"
                           style="background-color: #2f359e;">
-                          <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-3">
-                              <User class="w-10 h-10 text-blue-600" />
-                          </div>
+<div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-3 overflow-hidden">
+    <img
+        v-if="application.upload_pic"
+        :src="getFileUrl(application.upload_pic) || ''"
+        alt="Applicant Photo"
+        class="w-full h-full object-cover"
+    />
+    <User v-else class="w-10 h-10 text-blue-600" />
+</div>
                           <h2 class="text-2xl font-extrabold tracking-wide drop-shadow">
                               {{ application.applicant.last_name }}, {{ application.applicant.first_name }}
                           </h2>

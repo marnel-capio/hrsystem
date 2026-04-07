@@ -158,46 +158,80 @@
     <div class="box">
         <table>
             <tr>
-                <td class="label">Full Name</td>
+                <td class="label">Applicant Name</td>
                 <td>
                     {{ $applicant->last_name ?? '' }},
                     {{ $applicant->first_name ?? '' }}
                     {{ $applicant->middle_name ?? '' }}
                 </td>
-
                 <td class="label">Email Address</td>
                 <td>{{ $applicant->email_address ?? '-' }}</td>
             </tr>
-
             <tr>
                 <td class="label">Contact Number</td>
                 <td>{{ $applicant->contact_number ?? '-' }}</td>
-
+                <td class="label">Gender</td>
+                <td>
+                    {{ match((int) ($applicant->gender ?? 0)) {
+                        1 => 'Male',
+                        2 => 'Female',
+                        default => '-',
+                    } }}
+                </td>
+            </tr>
+            <tr>
                 <td class="label">Age</td>
                 <td>{{ $applicant->age ?? '-' }}</td>
+                <td class="label">School</td>
+                <td>{{ $applicant->school ?? '-' }}</td>
             </tr>
-
             <tr>
                 <td class="label">Degree</td>
                 <td>{{ $applicant->degree ?? '-' }}</td>
-
                 <td class="label">Other Degree</td>
-                <td>{{ $applicant->others_degree ?? '-' }}</td>
+                <td>{{ $applicant->others_degree ?: '-' }}</td>
             </tr>
-
             <tr>
-                <td class="label">School</td>
-                <td>{{ $applicant->school ?? '-' }}</td>
-
-                <td class="label">Course</td>
-                <td>{{ $applicant->course ?? '-' }}</td>
+                <td class="label">Expected Graduation</td>
+                <td>{{ $applicant->expected_graduation ?? '-' }}</td>
+                <td class="label">Address</td>
+                <td>{{ $applicant->address ?? '-' }}</td>
             </tr>
-
+            <tr>
+                <td class="label">Source Type</td>
+                <td>
+                    {{ match((int) ($applicant->source_type ?? 0)) {
+                        1 => 'Campus Recruitment',
+                        2 => 'Academe Partner',
+                        3 => 'Recruitment Portals',
+                        4 => 'Employee Referral',
+                        5 => 'Walk-in',
+                        default => '-',
+                    } }}
+                </td>
+                <td class="label">Source</td>
+                <td>{{ $applicant->other_source ?: ($applicant->source ?? '-') }}</td>
+            </tr>
+            <tr>
+                <td class="label">Awards / Recognition</td>
+                <td colspan="3">{{ $applicant->awards_recognition ?: '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Other Examinations / Certifications</td>
+                <td colspan="3">{{ $applicant->other_examination_certificate ?: '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Thesis / Project</td>
+                <td colspan="3">{{ $applicant->thesis_project ?: '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Extra-curricular Activities</td>
+                <td colspan="3">{{ $applicant->extra_curricular ?: '-' }}</td>
+            </tr>
             <tr>
                 <td class="label">Batch</td>
                 <td>{{ $application->batch->action_batch ?? '-' }}</td>
-
-                <td class="label">Application Status</td>
+                <td class="label">General Remarks</td>
                 <td>{{ $application->remarks ?: '-' }}</td>
             </tr>
         </table>
