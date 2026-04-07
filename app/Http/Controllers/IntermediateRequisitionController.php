@@ -38,6 +38,11 @@ class IntermediateRequisitionController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        return Inertia::render('intermediate/resource-requisitions/Register');
+    }
+
     public function show($id)
     {
         $requisition = IntermediateRequisitionModel::findOrFail($id);
