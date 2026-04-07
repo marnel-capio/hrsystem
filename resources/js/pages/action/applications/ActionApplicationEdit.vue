@@ -800,8 +800,10 @@ function submit() {
 
     <div class="form-field">
         <label class="field-label">Exam Comments</label>
-        <textarea v-model="form.exam_remarks" rows="3" class="form-textarea" :disabled="!editableStages.exam"></textarea>
-    </div>
+<textarea v-model="form.exam_remarks" rows="3" class="form-textarea" :disabled="!editableStages.exam"></textarea>
+<span v-if="form.errors.exam_remarks" class="error-message">
+    {{ form.errors.exam_remarks }}
+</span>    </div>
 </div>
 
                         <!-- Initial Interview Section -->
@@ -856,8 +858,10 @@ function submit() {
 
     <div class="form-field">
         <label class="field-label">Initial Interview Comments</label>
-        <textarea v-model="form.initial_interview_remarks" rows="3" class="form-textarea" :disabled="!editableStages.initial_interview"></textarea>
-    </div>
+<textarea v-model="form.initial_interview_remarks" rows="3" class="form-textarea" :disabled="!editableStages.initial_interview"></textarea>
+<span v-if="form.errors.initial_interview_remarks" class="error-message">
+    {{ form.errors.initial_interview_remarks }}
+</span>    </div>
 </div>
 
                         <!-- Final Interview Section -->
@@ -916,8 +920,10 @@ function submit() {
 
     <div class="form-field">
         <label class="field-label">Final Interview Comments</label>
-        <textarea v-model="form.final_interview_remarks" rows="3" class="form-textarea" :disabled="!editableStages.final_interview"></textarea>
-    </div>
+<textarea v-model="form.final_interview_remarks" rows="3" class="form-textarea" :disabled="!editableStages.final_interview"></textarea>
+<span v-if="form.errors.final_interview_remarks" class="error-message">
+    {{ form.errors.final_interview_remarks }}
+</span>    </div>
 </div>
 
                         <!-- Job Offer Section -->
@@ -942,8 +948,10 @@ function submit() {
 
     <div class="form-field">
         <label class="field-label">Job Offer Comments</label>
-        <textarea v-model="form.job_offer_remarks" rows="3" class="form-textarea" :disabled="!editableStages.job_offer"></textarea>
-    </div>
+<textarea v-model="form.job_offer_remarks" rows="3" class="form-textarea" :disabled="!editableStages.job_offer"></textarea>
+<span v-if="form.errors.job_offer_remarks" class="error-message">
+    {{ form.errors.job_offer_remarks }}
+</span>    </div>
 </div>
 
                         <!-- Additional Information Section -->
@@ -954,8 +962,10 @@ function submit() {
 
     <div class="form-field">
         <label class="field-label">General Remarks</label>
-        <textarea v-model="form.remarks" rows="3" class="form-textarea" :disabled="!editableStages.general"></textarea>
-    </div>
+<textarea v-model="form.remarks" rows="3" class="form-textarea" :disabled="!editableStages.general"></textarea>
+<span v-if="form.errors.remarks" class="error-message">
+    {{ form.errors.remarks }}
+</span>    </div>
 </div>
 
                         <!-- Form Actions -->

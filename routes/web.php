@@ -104,6 +104,7 @@ Route::middleware(['auth'])->group(function () {
         // ------------------------
         // ACTION APPLICATIONS
         // ------------------------
+        Route::middleware(['auth', 'check.permission'])->group(function () {
 Route::prefix('action/applications')->name('action.applications.')->group(function () {
     Route::get('/', [ActionApplicationController::class, 'index'])->name('index');
     Route::get('/register', [ActionApplicationController::class, 'create'])->name('create');
@@ -140,6 +141,7 @@ Route::prefix('action/applications')->name('action.applications.')->group(functi
     Route::get('/{id}/print', [ActionApplicationController::class, 'print'])
         ->name('print');
 
+});
 });
 
 

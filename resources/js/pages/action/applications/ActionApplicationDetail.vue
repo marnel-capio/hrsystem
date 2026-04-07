@@ -85,7 +85,7 @@ const submitBulkEditSchedule = async () => {
         bulkEditScheduleErrors.value.scheduledDate = ''
 
         showToast(
-            response.data.message || 'Selected interview schedules updated successfully!',
+            response.data.message || 'Record updated successfully!',
             'success'
         )
     } catch (error: any) {
@@ -397,7 +397,7 @@ if (!bulkAddPlannedDate.value) {
         bulkAddScheduledDate.value = ''
         bulkAddStage.value = '1'
 
-        showToast(response.data.message || 'Interviewer(s) added successfully!', 'success')
+        showToast(response.data.message || 'Record updated successfully.', 'success')
     } catch (error: any) {
         console.error('Bulk add failed:', error?.response || error)
         showToast(
@@ -705,7 +705,7 @@ const submitAcceptDecline = async () => {
         showToast(
             acceptDeclineDecision.value === 'accept'
                 ? 'Interview assignment accepted successfully!'
-                : 'Interview assignment declined. HR will be notified.',
+                : 'Interview assignment declined.',
             'success'
         )
     } catch (error: any) {
@@ -766,12 +766,14 @@ watch(errorMessage, (newVal) => {
               </div>
           </div>
 
-          <div
-    v-if="showToastMessage"
-    class="fixed top-4 right-4 z-[9999] px-4 py-3 rounded-lg shadow-lg text-white"
-    :class="toastType === 'success' ? 'bg-green-600' : 'bg-red-600'"
->
-    {{ toastMessage }}
+<div v-if="showToastMessage" class="full-width-alert">
+  <div
+    class="alert-banner"
+    :class="toastType === 'success' ? 'alert-success-banner' : 'alert-error-banner'"
+  >
+    <div class="alert-body">{{ toastMessage }}</div>
+    <button type="button" class="close-btn" @click="showToastMessage = false">×</button>
+  </div>
 </div>
 
           <div class="flex flex-1 flex-col gap-6 p-8 bg-zinc-50/50 dark:bg-zinc-950 min-h-screen">

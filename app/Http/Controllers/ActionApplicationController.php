@@ -328,6 +328,8 @@ class ActionApplicationController extends Controller
                         new ActionApplicantFailedMail($application, $failedStage, $link)
                     );
 
+                    break;
+
                     case 'hr_recruiters_job_offer':
     if (empty($application->job_offer_schedule)) {
         return response()->json([
@@ -358,19 +360,37 @@ class ActionApplicationController extends Controller
                     break;
             }
 
-            $recipientList = [];
+$recipientList = [];
 
-            if ($request->type === 'interviewer_pending_approval') {
-                $recipientList = $pendingInterviews
-                    ->map(function ($interview) {
-                        $interviewer = $interview->interviewer;
+if ($request->type === 'interviewer_pending_approval') {
+    $recipientList = $pendingInterviews
+        ->map(function ($interview) {
+            $interviewer = $interview->interviewer;
 
-                        return $interviewer?->full_name ?: ($interviewer?->email_address ?? 'Unknown');
-                    })
-                    ->filter()
-                    ->values()
-                    ->all();
-            }
+            return $interviewer?->full_name ?: ($interviewer?->email_address ?? 'Unknown');
+        })
+        ->filter()
+        ->values()
+        ->all();
+}
+
+if (in_array($request->type, ['applicant_scheduled', 'applicant_failed'], true)) {
+    $recipientList = [
+        $application->applicant?->full_name ?: ($application->applicant?->email_address ?? 'Unknown')
+    ];
+}
+
+if ($request->type === 'hr_recruiters_job_offer') {
+    $hrRecruiters = User::hrRecruiters(); // re-fetch here
+
+    $recipientList = $hrRecruiters
+        ->map(function ($user) {
+            return $user->full_name ?: ($user->email_address ?? 'Unknown');
+        })
+        ->filter()
+        ->values()
+        ->all();
+}
 
             if (in_array($request->type, ['applicant_scheduled', 'applicant_failed'], true)) {
                 $recipientList = [

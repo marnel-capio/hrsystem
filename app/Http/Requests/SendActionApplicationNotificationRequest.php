@@ -13,9 +13,13 @@ class SendActionApplicationNotificationRequest extends FormRequest
     }
 
     public function rules(): array
-    {
-        return [
-            'type' => ['required', 'string', 'in:interviewer_pending_approval,applicant_scheduled,applicant_failed'],
-        ];
-    }
+{
+    return [
+        'type' => [
+            'required',
+            'string',
+            'in:interviewer_pending_approval,applicant_scheduled,applicant_failed,hr_recruiters_job_offer',
+        ],
+    ];
+}
 }
