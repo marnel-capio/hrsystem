@@ -371,7 +371,7 @@ class ApplicationImportController extends Controller
         $imported = [];
         $skipped = [];
         $failed = [];
-        \Loga::debug($rows[0]);
+        // \Log::debug($rows[0]);
 
         foreach ($rows as $index => $row) {
             // Skip empty rows
