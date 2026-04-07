@@ -14,9 +14,15 @@ return [3, 5, 6].includes(userPermissions.value) &&
        interview.status === 1
     }
 
+
 const bulkEditScheduleErrors = ref({
     selectedInterviewers: '',
     scheduledDate: '',
+})
+
+const acceptDeclineErrors = ref({
+    decision: '',
+    reason: '',
 })
 
 const notificationErrors = ref({
@@ -104,6 +110,8 @@ const openAcceptDeclineModal = (interview: any) => {
     acceptDeclineInterviewer.value = interview
     acceptDeclineDecision.value = ''
     acceptDeclineReason.value = ''
+    acceptDeclineErrors.value.decision = ''
+    acceptDeclineErrors.value.reason = ''
     showAcceptDeclineModal.value = true
 }
 
@@ -483,8 +491,10 @@ const pendingApprovalInterviewers = computed(() => {
     )
 })
 
-const approvedInterviewers = computed(() => {
-    return interviews.value.filter((i: any) => Number(i.status) === 2)
+const allInterviewersApproved = computed(() => {
+    if (interviews.value.length === 0) return false
+
+    return interviews.value.every((i: any) => Number(i.status) === 2)
 })
 
 const failedStage = computed(() => {
@@ -522,13 +532,13 @@ const availableNotificationOptions = computed(() => {
         })
     }
 
-    if (approvedInterviewers.value.length > 0) {
-        options.push({
-            value: 'applicant_scheduled',
-            label: 'Send applicant interview schedule',
-            description: 'Notify the applicant about approved interview schedule(s).',
-        })
-    }
+if (allInterviewersApproved.value) {
+    options.push({
+        value: 'applicant_scheduled',
+        label: 'Send applicant interview/exam schedule',
+        description: 'Notify the applicant about approved interview/exam schedule(s).',
+    })
+}
 
     if (failedStage.value) {
         options.push({
@@ -573,7 +583,7 @@ const notificationPreview = computed(() => {
                         extra: 'Applicant',
                     }
                 ],
-                summary: `This email tells the applicant that their interview schedule has been confirmed. Only approved interview schedules will be included.`,
+                summary: `This email tells the applicant that their schedule has been confirmed. Only approved schedules will be included.`,
             }
 
         case 'applicant_failed':
@@ -640,7 +650,7 @@ const notificationPreviewMap = computed(() => {
                 email: i.email_address || '',
                 extra: `${stageLabel(i.interview_type)} • ${formatDateTime(i.scheduled_date)}`,
             })),
-            summary: `This email confirms to approved interviewers that their interview schedule for ${applicantFullName.value} has been finalized.`,
+            summary: `This email confirms to approved interviewers that their schedule for ${applicantFullName.value} has been finalized.`,
         },
 
         applicant_failed: {
@@ -664,16 +674,37 @@ const selectedNotificationPreviews = computed(() => {
         .filter(Boolean)
 })
 
+
+    watch(acceptDeclineReason, (newVal) => {
+    if (newVal.trim()) {
+        acceptDeclineErrors.value.reason = ''
+    }
+})
+
+watch(acceptDeclineDecision, () => {
+    acceptDeclineErrors.value.decision = ''
+    if (acceptDeclineDecision.value !== 'decline') {
+        acceptDeclineErrors.value.reason = ''
+    }
+})
+
 const submitAcceptDecline = async () => {
+    acceptDeclineErrors.value.decision = ''
+    acceptDeclineErrors.value.reason = ''
+
+    let hasError = false
+
     if (!acceptDeclineDecision.value) {
-        showToast('Please select Accept or Decline', 'error')
-        return
+        acceptDeclineErrors.value.decision = 'This field is required.'
+        hasError = true
     }
 
     if (acceptDeclineDecision.value === 'decline' && !acceptDeclineReason.value.trim()) {
-        showToast('Please provide a reason for declining', 'error')
-        return
+        acceptDeclineErrors.value.reason = 'This field is required.'
+        hasError = true
     }
+
+    if (hasError) return
 
     acceptDeclineSubmitting.value = true
 
@@ -701,6 +732,8 @@ const submitAcceptDecline = async () => {
         })
 
         showAcceptDeclineModal.value = false
+        acceptDeclineErrors.value.decision = ''
+        acceptDeclineErrors.value.reason = ''
 
         showToast(
             acceptDeclineDecision.value === 'accept'
@@ -1446,17 +1479,34 @@ watch(errorMessage, (newVal) => {
                           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Date</label>
                           <input type="text" :value="formatDateTime(acceptDeclineInterviewer?.scheduled_date)" disabled class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100" />
                       </div>
-                      <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Decision</label>
-                          <div class="flex gap-4">
-                              <label class="flex items-center gap-2"><input type="radio" v-model="acceptDeclineDecision" value="accept" class="rounded-full border-gray-300" /><span>Accept</span></label>
-                              <label class="flex items-center gap-2"><input type="radio" v-model="acceptDeclineDecision" value="decline" class="rounded-full border-gray-300" /><span>Decline</span></label>
-                          </div>
-                      </div>
-                      <div v-if="acceptDeclineDecision === 'decline'">
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for Declining</label>
-                          <textarea v-model="acceptDeclineReason" rows="3" class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white" placeholder="Please provide reason for declining..."></textarea>
-                      </div>
+<div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Decision</label>
+    <div class="flex gap-4">
+        <label class="flex items-center gap-2">
+            <input type="radio" v-model="acceptDeclineDecision" value="accept" class="rounded-full border-gray-300" />
+            <span>Accept</span>
+        </label>
+        <label class="flex items-center gap-2">
+            <input type="radio" v-model="acceptDeclineDecision" value="decline" class="rounded-full border-gray-300" />
+            <span>Decline</span>
+        </label>
+    </div>
+    <p v-if="acceptDeclineErrors.decision" class="mt-1 text-sm text-red-600">
+        {{ acceptDeclineErrors.decision }}
+    </p>
+</div>
+<div v-if="acceptDeclineDecision === 'decline'">
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for Declining</label>
+    <textarea
+        v-model="acceptDeclineReason"
+        rows="3"
+        class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white"
+        placeholder="Please provide reason for declining..."
+    ></textarea>
+    <p v-if="acceptDeclineErrors.reason" class="mt-1 text-sm text-red-600">
+        {{ acceptDeclineErrors.reason }}
+    </p>
+</div>
                   </div>
 
                   <div class="flex gap-3 mt-6">

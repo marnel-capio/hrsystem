@@ -150,17 +150,24 @@ class ActionApplication extends Model
         return $data;
     }
 
+
     if (
         static::hasValue($data, 'exam_atpp_result') &&
         static::hasValue($data, 'exam_git_result') &&
         static::hasValue($data, 'exam_prg_result')
     ) {
-        $data['exam_application_status'] = static::computeExamApplicationStatus(
-            (float) $data['exam_atpp_result'],
-            (float) $data['exam_git_result'],
-            (float) $data['exam_prg_result'],
-            $applicant
-        );
+$computedExamStatus = static::computeExamApplicationStatus(
+    (float) $data['exam_atpp_result'],
+    (float) $data['exam_git_result'],
+    (float) $data['exam_prg_result'],
+    $applicant
+);
+
+logger([
+    'computed_exam_application_status' => $computedExamStatus,
+]);
+
+$data['exam_application_status'] = $computedExamStatus;
     } elseif (static::hasValue($data, 'exam_plan_date')) {
         $data['exam_application_status'] = config('constants.exam_status.pending');
     } else {
@@ -216,7 +223,13 @@ protected static function computeExamApplicationStatus(
 
     $passed = $categoryRules['passed'] ?? null;
     $p2 = $categoryRules['p2'] ?? null;
-
+logger([
+    'category' => $category,
+    'attp' => $attp,
+    'git' => $git,
+    'prg' => $prg,
+    'rules' => config('constants.application_score_rules.exam'),
+]);
     if (
         $passed &&
         $attp >= $passed['attp'] &&

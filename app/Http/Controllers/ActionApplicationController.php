@@ -282,27 +282,36 @@ class ActionApplicationController extends Controller
 
                     break;
 
-                case 'applicant_scheduled':
-                    $approvedInterviews = $application->interviews
-                        ->where('status', config('constants.interview_assignment_status.approved'));
+            case 'applicant_scheduled':
+                $allInterviews = $application->interviews;
 
-                    if ($approvedInterviews->isEmpty()) {
-                        return response()->json([
-                            'message' => 'No approved interview schedules found.',
-                        ], 422);
-                    }
+                if ($allInterviews->isEmpty()) {
+                    return response()->json([
+                        'message' => 'No interview schedules found.',
+                    ], 422);
+                }
 
-                    if (empty(optional($application->applicant)->email_address)) {
-                        return response()->json([
-                            'message' => 'Applicant email address is missing.',
-                        ], 422);
-                    }
+                $hasUnapproved = $allInterviews->contains(function ($interview) {
+                    return (int) $interview->status !== config('constants.interview_assignment_status.approved');
+                });
 
-                    Mail::to($application->applicant->email_address)->send(
-                        new ActionApplicantScheduledMail($application, $approvedInterviews->values(), $link)
-                    );
+                if ($hasUnapproved) {
+                    return response()->json([
+                        'message' => 'Applicant schedule email can only be sent after all assigned interviewers have approved.',
+                    ], 422);
+                }
 
-                    break;
+                if (empty(optional($application->applicant)->email_address)) {
+                    return response()->json([
+                        'message' => 'Applicant email address is missing.',
+                    ], 422);
+                }
+
+                Mail::to($application->applicant->email_address)->send(
+                    new ActionApplicantScheduledMail($application, $allInterviews->values(), $link)
+                );
+
+                break;
 
                 case 'applicant_failed':
                     $failedStage = null;

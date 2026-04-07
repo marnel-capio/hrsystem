@@ -153,29 +153,56 @@
         <div class="muted">Generated on {{ now()->format('F d, Y h:i A') }}</div>
     </div>
 
-    <div class="section">
-        <div class="section-title">Applicant Basic Information</div>
-        <div class="box">
-            <table>
-                <tr>
-                    <td class="label">Applicant Name</td>
-                    <td>{{ $applicant->last_name ?? '' }}, {{ $applicant->first_name ?? '' }} {{ $applicant->middle_name ?? '' }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Email Address</td>
-                    <td>{{ $applicant->email_address ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Batch</td>
-                    <td>{{ $application->batch->action_batch ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label">General Remarks</td>
-                    <td>{{ $application->remarks ?: '-' }}</td>
-                </tr>
-            </table>
-        </div>
+<div class="section">
+    <div class="section-title">Applicant Information</div>
+    <div class="box">
+        <table>
+            <tr>
+                <td class="label">Full Name</td>
+                <td>
+                    {{ $applicant->last_name ?? '' }},
+                    {{ $applicant->first_name ?? '' }}
+                    {{ $applicant->middle_name ?? '' }}
+                </td>
+
+                <td class="label">Email Address</td>
+                <td>{{ $applicant->email_address ?? '-' }}</td>
+            </tr>
+
+            <tr>
+                <td class="label">Contact Number</td>
+                <td>{{ $applicant->contact_number ?? '-' }}</td>
+
+                <td class="label">Age</td>
+                <td>{{ $applicant->age ?? '-' }}</td>
+            </tr>
+
+            <tr>
+                <td class="label">Degree</td>
+                <td>{{ $applicant->degree ?? '-' }}</td>
+
+                <td class="label">Other Degree</td>
+                <td>{{ $applicant->others_degree ?? '-' }}</td>
+            </tr>
+
+            <tr>
+                <td class="label">School</td>
+                <td>{{ $applicant->school ?? '-' }}</td>
+
+                <td class="label">Course</td>
+                <td>{{ $applicant->course ?? '-' }}</td>
+            </tr>
+
+            <tr>
+                <td class="label">Batch</td>
+                <td>{{ $application->batch->action_batch ?? '-' }}</td>
+
+                <td class="label">Application Status</td>
+                <td>{{ $application->remarks ?: '-' }}</td>
+            </tr>
+        </table>
     </div>
+</div>
 
     <div class="section">
         <div class="section-title">Exam Details</div>
