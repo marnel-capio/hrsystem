@@ -8,19 +8,28 @@ const loading = ref(false)
 
 const form = ref({
   project_name: '',
+  project_description: '',
   remarks: '',
   processing: false,
 })
 
 const maxProjectNameLength = 20
+const maxDescriptionLength = 1024
 const maxRemarksLength = 1024
 
 
 const projectNameError = ref('')
+const descriptionError = ref('')
 const remarksError = ref('')
 
 const validateProjectName = () => {
   projectNameError.value = form.value.project_name.length > maxProjectNameLength
+    ? 'This field exceeds the maximum allowed length.'
+    : ''
+}
+
+const validateDescription = () => {
+  descriptionError.value = form.value.project_description.length > maxDescriptionLength
     ? 'This field exceeds the maximum allowed length.'
     : ''
 }
@@ -34,6 +43,7 @@ const validateRemarks = () => {
 const submit = () => {
   // Clear frontend validation errors
   projectNameError.value = ''
+  descriptionError.value = ''
   remarksError.value = ''
 
   form.value.processing = true
@@ -73,6 +83,25 @@ const submit = () => {
             {{ projectNameError }}
           </span>
           <span v-if="page.props.errors?.project_name" class="text-red-600 text-xs mt-1"> {{ page.props.errors.project_name }} </span>
+        </div>
+      </div>
+
+      <!-- Project Description -->
+      <div class="grid grid-cols-2 gap-4 mt-5">
+        <div class="flex flex-col col-span-2">
+          <label class="text-xs font-semibold mb-1">Project Description</label>
+
+          <textarea
+            v-model="form.project_description"
+            @input="validateDescription"
+            rows="6"
+            placeholder="Remarks"
+            class="border p-2 rounded w-full"
+          />
+          <span v-if="descriptionError" class="text-red-600 text-xs mt-1">
+            {{ descriptionError }}
+          </span>
+          <span v-if="page.props.errors?.project_description" class="text-red-600 text-xs mt-1"> {{ page.props.errors.project_description }} </span>
         </div>
       </div>
 
