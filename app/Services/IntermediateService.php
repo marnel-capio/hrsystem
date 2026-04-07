@@ -12,7 +12,7 @@ class IntermediateService
         $project = new IntermediateProjectModel();
  
         $project->project_name = $data['project_name'];
-        $project->project_description = $data['project_description'];
+        $project->project_description = $data['project_description'] ?? null;
         $project->remarks = $data['remarks'] ?? null;
  
         $project->created_by = auth()->user()->id;
@@ -46,6 +46,7 @@ class IntermediateService
         ];
 
         $project->project_name = $data['project_name'];
+        $project->project_description = $data['project_description']?? null;
         $project->remarks = $data['remarks'] ?? null;
         $project->updated_by = auth()->user()->id;
         $project->updated_time = now();
@@ -53,10 +54,10 @@ class IntermediateService
         $project->save();
 
         $activityLines = [];
-        $activityLines[] = "Updated remarks for project: {$project->project_name}.";
+        $activityLines[] = "Updated project {$project->project_name}.";
         $activityLines[] = "Details:";
 
-        $fields = ['project_name', 'remarks'];
+        $fields = ['project_name', 'project_description', 'remarks'];
 
         foreach ($fields as $field) {
             $oldValue = $oldData[$field] ?? '[empty]';
