@@ -198,7 +198,11 @@ class ActionApplication extends Model
     }
 
     return $data;
+
+
 }
+
+
 
 protected static function computeExamApplicationStatus(
     float $attp,

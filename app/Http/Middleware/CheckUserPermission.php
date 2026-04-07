@@ -93,26 +93,30 @@ class CheckUserPermission
         |--------------------------------------------------------------------------
         */
         if (in_array($routeName, [
-            'action.schedules.index',
-            'action.schedules.show',
-            'action.list',
             'action.applications.import',
             'action.applications.create',
             'action.applications.store',
             'action.applications.eligible-applicants',
             'action.applications.check-eligibility',
             'action.applications.send-notification',
-
-            // interview assignment routes
             'action.applications.interviews.bulk-add',
             'action.applications.interviews.bulk-delete',
-            'action.applications.interviews.decision',
             'action.applications.interviews.bulk-update-schedule',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
                 config('constants.HR_MANAGER_PERMISSION.value'),
                 config('constants.HR_RECRUITER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+        }
+
+        if ($routeName === 'action.applications.interviews.decision') {
+            if (in_array($permission, [
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
             ])) {
                 return $next($request);
             }

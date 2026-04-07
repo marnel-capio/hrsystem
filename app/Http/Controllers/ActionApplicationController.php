@@ -485,7 +485,7 @@ if ($request->type === 'hr_recruiters_job_offer') {
                 ->values();
 
             return response()->json([
-                'message' => 'Selected interview schedules updated successfully.',
+                'message' => 'Record updated successfully.',
                 'interviews' => $interviews,
             ]);
         } catch (\Throwable $e) {

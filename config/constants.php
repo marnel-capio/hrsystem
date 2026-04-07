@@ -389,6 +389,7 @@ return [
     'information technology',
     'bsit',
     'it',
+    'bs it',
 
     'bs computer science',
     'bachelor of science in computer science',
@@ -396,15 +397,16 @@ return [
     'computer science',
     'bscs',
     'cs',
+    'bs cs',
 
     'bs computer engineering',
     'bachelor of science in computer engineering',
     'bachelor of science major in computer engineering',
     'computer engineering',
-    'bsce',
+    'bscpe',
     'cpe',
+    'bs cpe',
 ],
-
 'interview_types' => [
     'exam' => 1,
     'initial' => 2,
@@ -532,28 +534,7 @@ return [
 
     ],
 
-    'tech_degree_patterns' => [
-    'bs information technology',
-    'bachelor of science in information technology',
-    'bachelor of science major in information technology',
-    'information technology',
-    'bsit',
-    'it',
 
-    'bs computer science',
-    'bachelor of science in computer science',
-    'bachelor of science major in computer science',
-    'computer science',
-    'bscs',
-    'cs',
-
-    'bs computer engineering',
-    'bachelor of science in computer engineering',
-    'bachelor of science major in computer engineering',
-    'computer engineering',
-    'bsce',
-    'cpe',
-],
 
 
 
