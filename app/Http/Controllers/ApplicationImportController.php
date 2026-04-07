@@ -43,6 +43,7 @@ class ApplicationImportController extends Controller
         ]);
         }
 
+
     public function import(ImportApplicationsRequest $request)
     {
 

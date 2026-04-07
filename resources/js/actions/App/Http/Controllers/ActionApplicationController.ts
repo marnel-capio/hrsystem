@@ -1,151 +1,73 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
- * @route '/applicant-applications'
- */
-const index3cd56028c4738f0b4d6738833cc85f37 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index3cd56028c4738f0b4d6738833cc85f37.url(options),
-    method: 'get',
-})
-
-index3cd56028c4738f0b4d6738833cc85f37.definition = {
-    methods: ["get","head"],
-    url: '/applicant-applications',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
- * @route '/applicant-applications'
- */
-index3cd56028c4738f0b4d6738833cc85f37.url = (options?: RouteQueryOptions) => {
-    return index3cd56028c4738f0b4d6738833cc85f37.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
- * @route '/applicant-applications'
- */
-index3cd56028c4738f0b4d6738833cc85f37.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index3cd56028c4738f0b4d6738833cc85f37.url(options),
-    method: 'get',
-})
-/**
-* @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
- * @route '/applicant-applications'
- */
-index3cd56028c4738f0b4d6738833cc85f37.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index3cd56028c4738f0b4d6738833cc85f37.url(options),
-    method: 'head',
-})
-
-    /**
-* @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
- * @route '/applicant-applications'
- */
-    const index3cd56028c4738f0b4d6738833cc85f37Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: index3cd56028c4738f0b4d6738833cc85f37.url(options),
-        method: 'get',
-    })
-
-            /**
-* @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
- * @route '/applicant-applications'
- */
-        index3cd56028c4738f0b4d6738833cc85f37Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index3cd56028c4738f0b4d6738833cc85f37.url(options),
-            method: 'get',
-        })
-            /**
-* @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
- * @route '/applicant-applications'
- */
-        index3cd56028c4738f0b4d6738833cc85f37Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index3cd56028c4738f0b4d6738833cc85f37.url({
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    index3cd56028c4738f0b4d6738833cc85f37.form = index3cd56028c4738f0b4d6738833cc85f37Form
-    /**
-* @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
+ * @see app/Http/Controllers/ActionApplicationController.php:31
  * @route '/action/applications'
  */
-const index9ce877a72747144a9d75602d24f5c705 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index9ce877a72747144a9d75602d24f5c705.url(options),
+export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
     method: 'get',
 })
 
-index9ce877a72747144a9d75602d24f5c705.definition = {
+index.definition = {
     methods: ["get","head"],
     url: '/action/applications',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
+ * @see app/Http/Controllers/ActionApplicationController.php:31
  * @route '/action/applications'
  */
-index9ce877a72747144a9d75602d24f5c705.url = (options?: RouteQueryOptions) => {
-    return index9ce877a72747144a9d75602d24f5c705.definition.url + queryParams(options)
+index.url = (options?: RouteQueryOptions) => {
+    return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
+ * @see app/Http/Controllers/ActionApplicationController.php:31
  * @route '/action/applications'
  */
-index9ce877a72747144a9d75602d24f5c705.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index9ce877a72747144a9d75602d24f5c705.url(options),
+index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
+ * @see app/Http/Controllers/ActionApplicationController.php:31
  * @route '/action/applications'
  */
-index9ce877a72747144a9d75602d24f5c705.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index9ce877a72747144a9d75602d24f5c705.url(options),
+index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index.url(options),
     method: 'head',
 })
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
+ * @see app/Http/Controllers/ActionApplicationController.php:31
  * @route '/action/applications'
  */
-    const index9ce877a72747144a9d75602d24f5c705Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: index9ce877a72747144a9d75602d24f5c705.url(options),
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
         method: 'get',
     })
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
+ * @see app/Http/Controllers/ActionApplicationController.php:31
  * @route '/action/applications'
  */
-        index9ce877a72747144a9d75602d24f5c705Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index9ce877a72747144a9d75602d24f5c705.url(options),
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::index
- * @see app/Http/Controllers/ActionApplicationController.php:19
+ * @see app/Http/Controllers/ActionApplicationController.php:31
  * @route '/action/applications'
  */
-        index9ce877a72747144a9d75602d24f5c705Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: index9ce877a72747144a9d75602d24f5c705.url({
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -154,160 +76,76 @@ index9ce877a72747144a9d75602d24f5c705.head = (options?: RouteQueryOptions): Rout
             method: 'get',
         })
     
-    index9ce877a72747144a9d75602d24f5c705.form = index9ce877a72747144a9d75602d24f5c705Form
-
-export const index = {
-    '/applicant-applications': index3cd56028c4738f0b4d6738833cc85f37,
-    '/action/applications': index9ce877a72747144a9d75602d24f5c705,
-}
-
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
- * @route '/applicant-applications/create'
- */
-const createcb294fac78ec4bfac63fdc028bd134cb = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: createcb294fac78ec4bfac63fdc028bd134cb.url(options),
-    method: 'get',
-})
-
-createcb294fac78ec4bfac63fdc028bd134cb.definition = {
-    methods: ["get","head"],
-    url: '/applicant-applications/create',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
- * @route '/applicant-applications/create'
- */
-createcb294fac78ec4bfac63fdc028bd134cb.url = (options?: RouteQueryOptions) => {
-    return createcb294fac78ec4bfac63fdc028bd134cb.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
- * @route '/applicant-applications/create'
- */
-createcb294fac78ec4bfac63fdc028bd134cb.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: createcb294fac78ec4bfac63fdc028bd134cb.url(options),
-    method: 'get',
-})
-/**
-* @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
- * @route '/applicant-applications/create'
- */
-createcb294fac78ec4bfac63fdc028bd134cb.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: createcb294fac78ec4bfac63fdc028bd134cb.url(options),
-    method: 'head',
-})
-
-    /**
-* @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
- * @route '/applicant-applications/create'
- */
-    const createcb294fac78ec4bfac63fdc028bd134cbForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: createcb294fac78ec4bfac63fdc028bd134cb.url(options),
-        method: 'get',
-    })
-
-            /**
-* @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
- * @route '/applicant-applications/create'
- */
-        createcb294fac78ec4bfac63fdc028bd134cbForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: createcb294fac78ec4bfac63fdc028bd134cb.url(options),
-            method: 'get',
-        })
-            /**
-* @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
- * @route '/applicant-applications/create'
- */
-        createcb294fac78ec4bfac63fdc028bd134cbForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: createcb294fac78ec4bfac63fdc028bd134cb.url({
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    createcb294fac78ec4bfac63fdc028bd134cb.form = createcb294fac78ec4bfac63fdc028bd134cbForm
-    /**
-* @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
+ * @see app/Http/Controllers/ActionApplicationController.php:49
  * @route '/action/applications/register'
  */
-const createce0773631ba011be5f08c8d41c5e9559 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: createce0773631ba011be5f08c8d41c5e9559.url(options),
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 
-createce0773631ba011be5f08c8d41c5e9559.definition = {
+create.definition = {
     methods: ["get","head"],
     url: '/action/applications/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
+ * @see app/Http/Controllers/ActionApplicationController.php:49
  * @route '/action/applications/register'
  */
-createce0773631ba011be5f08c8d41c5e9559.url = (options?: RouteQueryOptions) => {
-    return createce0773631ba011be5f08c8d41c5e9559.definition.url + queryParams(options)
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
+ * @see app/Http/Controllers/ActionApplicationController.php:49
  * @route '/action/applications/register'
  */
-createce0773631ba011be5f08c8d41c5e9559.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: createce0773631ba011be5f08c8d41c5e9559.url(options),
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
+ * @see app/Http/Controllers/ActionApplicationController.php:49
  * @route '/action/applications/register'
  */
-createce0773631ba011be5f08c8d41c5e9559.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: createce0773631ba011be5f08c8d41c5e9559.url(options),
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
     method: 'head',
 })
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
+ * @see app/Http/Controllers/ActionApplicationController.php:49
  * @route '/action/applications/register'
  */
-    const createce0773631ba011be5f08c8d41c5e9559Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: createce0773631ba011be5f08c8d41c5e9559.url(options),
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
         method: 'get',
     })
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
+ * @see app/Http/Controllers/ActionApplicationController.php:49
  * @route '/action/applications/register'
  */
-        createce0773631ba011be5f08c8d41c5e9559Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: createce0773631ba011be5f08c8d41c5e9559.url(options),
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::create
- * @see app/Http/Controllers/ActionApplicationController.php:37
+ * @see app/Http/Controllers/ActionApplicationController.php:49
  * @route '/action/applications/register'
  */
-        createce0773631ba011be5f08c8d41c5e9559Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: createce0773631ba011be5f08c8d41c5e9559.url({
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -316,247 +154,83 @@ createce0773631ba011be5f08c8d41c5e9559.head = (options?: RouteQueryOptions): Rou
             method: 'get',
         })
     
-    createce0773631ba011be5f08c8d41c5e9559.form = createce0773631ba011be5f08c8d41c5e9559Form
-
-export const create = {
-    '/applicant-applications/create': createcb294fac78ec4bfac63fdc028bd134cb,
-    '/action/applications/register': createce0773631ba011be5f08c8d41c5e9559,
-}
-
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
- * @route '/applicant-applications'
- */
-const store3cd56028c4738f0b4d6738833cc85f37 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store3cd56028c4738f0b4d6738833cc85f37.url(options),
-    method: 'post',
-})
-
-store3cd56028c4738f0b4d6738833cc85f37.definition = {
-    methods: ["post"],
-    url: '/applicant-applications',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
- * @route '/applicant-applications'
- */
-store3cd56028c4738f0b4d6738833cc85f37.url = (options?: RouteQueryOptions) => {
-    return store3cd56028c4738f0b4d6738833cc85f37.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
- * @route '/applicant-applications'
- */
-store3cd56028c4738f0b4d6738833cc85f37.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store3cd56028c4738f0b4d6738833cc85f37.url(options),
-    method: 'post',
-})
-
-    /**
-* @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
- * @route '/applicant-applications'
- */
-    const store3cd56028c4738f0b4d6738833cc85f37Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: store3cd56028c4738f0b4d6738833cc85f37.url(options),
-        method: 'post',
-    })
-
-            /**
-* @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
- * @route '/applicant-applications'
- */
-        store3cd56028c4738f0b4d6738833cc85f37Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: store3cd56028c4738f0b4d6738833cc85f37.url(options),
-            method: 'post',
-        })
-    
-    store3cd56028c4738f0b4d6738833cc85f37.form = store3cd56028c4738f0b4d6738833cc85f37Form
-    /**
-* @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
+ * @see app/Http/Controllers/ActionApplicationController.php:62
  * @route '/action/applications'
  */
-const store9ce877a72747144a9d75602d24f5c705 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store9ce877a72747144a9d75602d24f5c705.url(options),
+export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store.url(options),
     method: 'post',
 })
 
-store9ce877a72747144a9d75602d24f5c705.definition = {
+store.definition = {
     methods: ["post"],
     url: '/action/applications',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
+ * @see app/Http/Controllers/ActionApplicationController.php:62
  * @route '/action/applications'
  */
-store9ce877a72747144a9d75602d24f5c705.url = (options?: RouteQueryOptions) => {
-    return store9ce877a72747144a9d75602d24f5c705.definition.url + queryParams(options)
+store.url = (options?: RouteQueryOptions) => {
+    return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
+ * @see app/Http/Controllers/ActionApplicationController.php:62
  * @route '/action/applications'
  */
-store9ce877a72747144a9d75602d24f5c705.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store9ce877a72747144a9d75602d24f5c705.url(options),
+store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store.url(options),
     method: 'post',
 })
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
+ * @see app/Http/Controllers/ActionApplicationController.php:62
  * @route '/action/applications'
  */
-    const store9ce877a72747144a9d75602d24f5c705Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: store9ce877a72747144a9d75602d24f5c705.url(options),
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
         method: 'post',
     })
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::store
- * @see app/Http/Controllers/ActionApplicationController.php:55
+ * @see app/Http/Controllers/ActionApplicationController.php:62
  * @route '/action/applications'
  */
-        store9ce877a72747144a9d75602d24f5c705Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: store9ce877a72747144a9d75602d24f5c705.url(options),
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
             method: 'post',
         })
     
-    store9ce877a72747144a9d75602d24f5c705.form = store9ce877a72747144a9d75602d24f5c705Form
-
-export const store = {
-    '/applicant-applications': store3cd56028c4738f0b4d6738833cc85f37,
-    '/action/applications': store9ce877a72747144a9d75602d24f5c705,
-}
-
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
- * @route '/applicant-applications/{id}'
- */
-const showdd3ed03cf65e040ef0d900001fba1366 = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: showdd3ed03cf65e040ef0d900001fba1366.url(args, options),
-    method: 'get',
-})
-
-showdd3ed03cf65e040ef0d900001fba1366.definition = {
-    methods: ["get","head"],
-    url: '/applicant-applications/{id}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
- * @route '/applicant-applications/{id}'
- */
-showdd3ed03cf65e040ef0d900001fba1366.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { id: args }
-    }
-
-    
-    if (Array.isArray(args)) {
-        args = {
-                    id: args[0],
-                }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-                        id: args.id,
-                }
-
-    return showdd3ed03cf65e040ef0d900001fba1366.definition.url
-            .replace('{id}', parsedArgs.id.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
- * @route '/applicant-applications/{id}'
- */
-showdd3ed03cf65e040ef0d900001fba1366.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: showdd3ed03cf65e040ef0d900001fba1366.url(args, options),
-    method: 'get',
-})
-/**
-* @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
- * @route '/applicant-applications/{id}'
- */
-showdd3ed03cf65e040ef0d900001fba1366.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: showdd3ed03cf65e040ef0d900001fba1366.url(args, options),
-    method: 'head',
-})
-
-    /**
-* @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
- * @route '/applicant-applications/{id}'
- */
-    const showdd3ed03cf65e040ef0d900001fba1366Form = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: showdd3ed03cf65e040ef0d900001fba1366.url(args, options),
-        method: 'get',
-    })
-
-            /**
-* @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
- * @route '/applicant-applications/{id}'
- */
-        showdd3ed03cf65e040ef0d900001fba1366Form.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: showdd3ed03cf65e040ef0d900001fba1366.url(args, options),
-            method: 'get',
-        })
-            /**
-* @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
- * @route '/applicant-applications/{id}'
- */
-        showdd3ed03cf65e040ef0d900001fba1366Form.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: showdd3ed03cf65e040ef0d900001fba1366.url(args, {
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    showdd3ed03cf65e040ef0d900001fba1366.form = showdd3ed03cf65e040ef0d900001fba1366Form
-    /**
-* @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/{id}'
  */
-const showc3ad6b3b435c15606ae7b57cb12445ea = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: showc3ad6b3b435c15606ae7b57cb12445ea.url(args, options),
+export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
     method: 'get',
 })
 
-showc3ad6b3b435c15606ae7b57cb12445ea.definition = {
+show.definition = {
     methods: ["get","head"],
     url: '/action/applications/{id}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/{id}'
  */
-showc3ad6b3b435c15606ae7b57cb12445ea.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { id: args }
     }
@@ -574,56 +248,56 @@ showc3ad6b3b435c15606ae7b57cb12445ea.url = (args: { id: string | number } | [id:
                         id: args.id,
                 }
 
-    return showc3ad6b3b435c15606ae7b57cb12445ea.definition.url
+    return show.definition.url
             .replace('{id}', parsedArgs.id.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/{id}'
  */
-showc3ad6b3b435c15606ae7b57cb12445ea.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: showc3ad6b3b435c15606ae7b57cb12445ea.url(args, options),
+show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/{id}'
  */
-showc3ad6b3b435c15606ae7b57cb12445ea.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: showc3ad6b3b435c15606ae7b57cb12445ea.url(args, options),
+show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: show.url(args, options),
     method: 'head',
 })
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/{id}'
  */
-    const showc3ad6b3b435c15606ae7b57cb12445eaForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: showc3ad6b3b435c15606ae7b57cb12445ea.url(args, options),
+    const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
         method: 'get',
     })
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/{id}'
  */
-        showc3ad6b3b435c15606ae7b57cb12445eaForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: showc3ad6b3b435c15606ae7b57cb12445ea.url(args, options),
+        showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::show
- * @see app/Http/Controllers/ActionApplicationController.php:107
+ * @see app/Http/Controllers/ActionApplicationController.php:101
  * @route '/action/applications/{id}'
  */
-        showc3ad6b3b435c15606ae7b57cb12445eaForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: showc3ad6b3b435c15606ae7b57cb12445ea.url(args, {
+        showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -632,71 +306,191 @@ showc3ad6b3b435c15606ae7b57cb12445ea.head = (args: { id: string | number } | [id
             method: 'get',
         })
     
-    showc3ad6b3b435c15606ae7b57cb12445ea.form = showc3ad6b3b435c15606ae7b57cb12445eaForm
-
-export const show = {
-    '/applicant-applications/{id}': showdd3ed03cf65e040ef0d900001fba1366,
-    '/action/applications/{id}': showc3ad6b3b435c15606ae7b57cb12445ea,
-}
-
+    show.form = showForm
 /**
-* @see \App\Http\Controllers\ActionApplicationController::checkUnique
- * @see app/Http/Controllers/ActionApplicationController.php:0
- * @route '/applicant-applications/check-unique'
+* @see \App\Http\Controllers\ActionApplicationController::edit
+ * @see app/Http/Controllers/ActionApplicationController.php:145
+ * @route '/action/applications/{id}/edit'
  */
-export const checkUnique = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: checkUnique.url(options),
-    method: 'post',
+export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(args, options),
+    method: 'get',
 })
 
-checkUnique.definition = {
-    methods: ["post"],
-    url: '/applicant-applications/check-unique',
-} satisfies RouteDefinition<["post"]>
+edit.definition = {
+    methods: ["get","head"],
+    url: '/action/applications/{id}/edit',
+} satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ActionApplicationController::checkUnique
- * @see app/Http/Controllers/ActionApplicationController.php:0
- * @route '/applicant-applications/check-unique'
+* @see \App\Http\Controllers\ActionApplicationController::edit
+ * @see app/Http/Controllers/ActionApplicationController.php:145
+ * @route '/action/applications/{id}/edit'
  */
-checkUnique.url = (options?: RouteQueryOptions) => {
-    return checkUnique.definition.url + queryParams(options)
+edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return edit.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ActionApplicationController::checkUnique
- * @see app/Http/Controllers/ActionApplicationController.php:0
- * @route '/applicant-applications/check-unique'
+* @see \App\Http\Controllers\ActionApplicationController::edit
+ * @see app/Http/Controllers/ActionApplicationController.php:145
+ * @route '/action/applications/{id}/edit'
  */
-checkUnique.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: checkUnique.url(options),
-    method: 'post',
+edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(args, options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\ActionApplicationController::edit
+ * @see app/Http/Controllers/ActionApplicationController.php:145
+ * @route '/action/applications/{id}/edit'
+ */
+edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: edit.url(args, options),
+    method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\ActionApplicationController::checkUnique
- * @see app/Http/Controllers/ActionApplicationController.php:0
- * @route '/applicant-applications/check-unique'
+* @see \App\Http\Controllers\ActionApplicationController::edit
+ * @see app/Http/Controllers/ActionApplicationController.php:145
+ * @route '/action/applications/{id}/edit'
  */
-    const checkUniqueForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: checkUnique.url(options),
+    const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::edit
+ * @see app/Http/Controllers/ActionApplicationController.php:145
+ * @route '/action/applications/{id}/edit'
+ */
+        editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::edit
+ * @see app/Http/Controllers/ActionApplicationController.php:145
+ * @route '/action/applications/{id}/edit'
+ */
+        editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::update
+ * @see app/Http/Controllers/ActionApplicationController.php:175
+ * @route '/action/applications/{id}'
+ */
+export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: update.url(args, options),
+    method: 'put',
+})
+
+update.definition = {
+    methods: ["put"],
+    url: '/action/applications/{id}',
+} satisfies RouteDefinition<["put"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::update
+ * @see app/Http/Controllers/ActionApplicationController.php:175
+ * @route '/action/applications/{id}'
+ */
+update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return update.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::update
+ * @see app/Http/Controllers/ActionApplicationController.php:175
+ * @route '/action/applications/{id}'
+ */
+update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: update.url(args, options),
+    method: 'put',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::update
+ * @see app/Http/Controllers/ActionApplicationController.php:175
+ * @route '/action/applications/{id}'
+ */
+    const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
         method: 'post',
     })
 
             /**
-* @see \App\Http\Controllers\ActionApplicationController::checkUnique
- * @see app/Http/Controllers/ActionApplicationController.php:0
- * @route '/applicant-applications/check-unique'
+* @see \App\Http\Controllers\ActionApplicationController::update
+ * @see app/Http/Controllers/ActionApplicationController.php:175
+ * @route '/action/applications/{id}'
  */
-        checkUniqueForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: checkUnique.url(options),
+        updateForm.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
             method: 'post',
         })
     
-    checkUnique.form = checkUniqueForm
+    update.form = updateForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:119
+ * @see app/Http/Controllers/ActionApplicationController.php:646
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 export const getApplicantsForBatch = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -711,7 +505,7 @@ getApplicantsForBatch.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:119
+ * @see app/Http/Controllers/ActionApplicationController.php:646
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 getApplicantsForBatch.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -739,7 +533,7 @@ getApplicantsForBatch.url = (args: { batchId: string | number } | [batchId: stri
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:119
+ * @see app/Http/Controllers/ActionApplicationController.php:646
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 getApplicantsForBatch.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -748,7 +542,7 @@ getApplicantsForBatch.get = (args: { batchId: string | number } | [batchId: stri
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:119
+ * @see app/Http/Controllers/ActionApplicationController.php:646
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -758,7 +552,7 @@ getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: str
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:119
+ * @see app/Http/Controllers/ActionApplicationController.php:646
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
     const getApplicantsForBatchForm = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -768,7 +562,7 @@ getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: str
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:119
+ * @see app/Http/Controllers/ActionApplicationController.php:646
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         getApplicantsForBatchForm.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -777,7 +571,7 @@ getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: str
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:119
+ * @see app/Http/Controllers/ActionApplicationController.php:646
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         getApplicantsForBatchForm.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -846,6 +640,471 @@ checkEligibility.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =
         })
     
     checkEligibility.form = checkEligibilityForm
-const ActionApplicationController = { index, create, store, show, checkUnique, getApplicantsForBatch, checkEligibility }
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:510
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+export const bulkAddInterviews = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkAddInterviews.url(args, options),
+    method: 'post',
+})
+
+bulkAddInterviews.definition = {
+    methods: ["post"],
+    url: '/action/applications/{id}/interviews/bulk-add',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:510
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+bulkAddInterviews.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return bulkAddInterviews.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:510
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+bulkAddInterviews.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkAddInterviews.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:510
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+    const bulkAddInterviewsForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: bulkAddInterviews.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkAddInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:510
+ * @route '/action/applications/{id}/interviews/bulk-add'
+ */
+        bulkAddInterviewsForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: bulkAddInterviews.url(args, options),
+            method: 'post',
+        })
+    
+    bulkAddInterviews.form = bulkAddInterviewsForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+export const bulkDeleteInterviews = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkDeleteInterviews.url(args, options),
+    method: 'post',
+})
+
+bulkDeleteInterviews.definition = {
+    methods: ["post"],
+    url: '/action/applications/{applicationId}/interviews/bulk-delete',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+bulkDeleteInterviews.url = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { applicationId: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    applicationId: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        applicationId: args.applicationId,
+                }
+
+    return bulkDeleteInterviews.definition.url
+            .replace('{applicationId}', parsedArgs.applicationId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+bulkDeleteInterviews.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkDeleteInterviews.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+    const bulkDeleteInterviewsForm = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: bulkDeleteInterviews.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkDeleteInterviews
+ * @see app/Http/Controllers/ActionApplicationController.php:0
+ * @route '/action/applications/{applicationId}/interviews/bulk-delete'
+ */
+        bulkDeleteInterviewsForm.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: bulkDeleteInterviews.url(args, options),
+            method: 'post',
+        })
+    
+    bulkDeleteInterviews.form = bulkDeleteInterviewsForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:592
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+export const submitInterviewDecision = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: submitInterviewDecision.url(args, options),
+    method: 'post',
+})
+
+submitInterviewDecision.definition = {
+    methods: ["post"],
+    url: '/action/applications/{applicationId}/interviews/{interviewId}/decision',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:592
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+submitInterviewDecision.url = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+                    applicationId: args[0],
+                    interviewId: args[1],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        applicationId: args.applicationId,
+                                interviewId: args.interviewId,
+                }
+
+    return submitInterviewDecision.definition.url
+            .replace('{applicationId}', parsedArgs.applicationId.toString())
+            .replace('{interviewId}', parsedArgs.interviewId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:592
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+submitInterviewDecision.post = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: submitInterviewDecision.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:592
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+    const submitInterviewDecisionForm = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: submitInterviewDecision.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
+ * @see app/Http/Controllers/ActionApplicationController.php:592
+ * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
+ */
+        submitInterviewDecisionForm.post = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: submitInterviewDecision.url(args, options),
+            method: 'post',
+        })
+    
+    submitInterviewDecision.form = submitInterviewDecisionForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:436
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+export const bulkUpdateInterviewSchedule = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkUpdateInterviewSchedule.url(args, options),
+    method: 'post',
+})
+
+bulkUpdateInterviewSchedule.definition = {
+    methods: ["post"],
+    url: '/action/applications/{applicationId}/interviews/bulk-update-schedule',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:436
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+bulkUpdateInterviewSchedule.url = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { applicationId: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    applicationId: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        applicationId: args.applicationId,
+                }
+
+    return bulkUpdateInterviewSchedule.definition.url
+            .replace('{applicationId}', parsedArgs.applicationId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:436
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+bulkUpdateInterviewSchedule.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: bulkUpdateInterviewSchedule.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:436
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+    const bulkUpdateInterviewScheduleForm = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: bulkUpdateInterviewSchedule.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::bulkUpdateInterviewSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:436
+ * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
+ */
+        bulkUpdateInterviewScheduleForm.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: bulkUpdateInterviewSchedule.url(args, options),
+            method: 'post',
+        })
+    
+    bulkUpdateInterviewSchedule.form = bulkUpdateInterviewScheduleForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::sendNotification
+ * @see app/Http/Controllers/ActionApplicationController.php:242
+ * @route '/action/applications/{application}/send-notification'
+ */
+export const sendNotification = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: sendNotification.url(args, options),
+    method: 'post',
+})
+
+sendNotification.definition = {
+    methods: ["post"],
+    url: '/action/applications/{application}/send-notification',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::sendNotification
+ * @see app/Http/Controllers/ActionApplicationController.php:242
+ * @route '/action/applications/{application}/send-notification'
+ */
+sendNotification.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { application: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    application: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        application: args.application,
+                }
+
+    return sendNotification.definition.url
+            .replace('{application}', parsedArgs.application.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::sendNotification
+ * @see app/Http/Controllers/ActionApplicationController.php:242
+ * @route '/action/applications/{application}/send-notification'
+ */
+sendNotification.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: sendNotification.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::sendNotification
+ * @see app/Http/Controllers/ActionApplicationController.php:242
+ * @route '/action/applications/{application}/send-notification'
+ */
+    const sendNotificationForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: sendNotification.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::sendNotification
+ * @see app/Http/Controllers/ActionApplicationController.php:242
+ * @route '/action/applications/{application}/send-notification'
+ */
+        sendNotificationForm.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: sendNotification.url(args, options),
+            method: 'post',
+        })
+    
+    sendNotification.form = sendNotificationForm
+/**
+* @see \App\Http\Controllers\ActionApplicationController::print
+ * @see app/Http/Controllers/ActionApplicationController.php:223
+ * @route '/action/applications/{id}/print'
+ */
+export const print = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: print.url(args, options),
+    method: 'get',
+})
+
+print.definition = {
+    methods: ["get","head"],
+    url: '/action/applications/{id}/print',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::print
+ * @see app/Http/Controllers/ActionApplicationController.php:223
+ * @route '/action/applications/{id}/print'
+ */
+print.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return print.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ActionApplicationController::print
+ * @see app/Http/Controllers/ActionApplicationController.php:223
+ * @route '/action/applications/{id}/print'
+ */
+print.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: print.url(args, options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\ActionApplicationController::print
+ * @see app/Http/Controllers/ActionApplicationController.php:223
+ * @route '/action/applications/{id}/print'
+ */
+print.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: print.url(args, options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\ActionApplicationController::print
+ * @see app/Http/Controllers/ActionApplicationController.php:223
+ * @route '/action/applications/{id}/print'
+ */
+    const printForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: print.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::print
+ * @see app/Http/Controllers/ActionApplicationController.php:223
+ * @route '/action/applications/{id}/print'
+ */
+        printForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: print.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ActionApplicationController::print
+ * @see app/Http/Controllers/ActionApplicationController.php:223
+ * @route '/action/applications/{id}/print'
+ */
+        printForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: print.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    print.form = printForm
+const ActionApplicationController = { index, create, store, show, edit, update, getApplicantsForBatch, checkEligibility, bulkAddInterviews, bulkDeleteInterviews, submitInterviewDecision, bulkUpdateInterviewSchedule, sendNotification, print }
 
 export default ActionApplicationController
