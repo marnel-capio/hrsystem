@@ -842,7 +842,7 @@ watch(errorMessage, (newVal) => {
                   <div class="col-span-1">
                       <div class="text-white px-5 py-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center h-full"
                           style="background-color: #2f359e;">
-<div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-3 overflow-hidden">
+<div class="w-30 h-30 bg-white rounded-full flex items-center justify-center mb-3 overflow-hidden">
     <img
         v-if="application.upload_pic"
         :src="getFileUrl(application.upload_pic) || ''"
