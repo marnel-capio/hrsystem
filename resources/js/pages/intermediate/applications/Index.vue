@@ -222,7 +222,7 @@ const getStageLabel = (stage: number) => {
                     <h3 class="text-lg font-semibold mb-4">Upload Applications from Google Forms</h3>
                     <!-- File Input -->
                     <label class="block text-sm font-medium mb-1 mt-6">Choose File (.xlsx or .csv)</label>
-                    <input type="file" accept=".xlsx,.csv" @change="onImportFileChange"
+                    <input ref="fileInput" type="file" accept=".xlsx,.csv" @change="onImportFileChange"
                         class="file-input-btn w-full mb-1" />
                     <p v-if="importError" class="text-red-600 text-xs mt-1">
                         {{ importError }}

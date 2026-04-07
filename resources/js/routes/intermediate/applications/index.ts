@@ -77,8 +77,64 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
     
     index.form = indexForm
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importMethod.url(options),
+    method: 'post',
+})
+
+importMethod.definition = {
+    methods: ["post"],
+    url: '/intermediate/applications/import',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+importMethod.url = (options?: RouteQueryOptions) => {
+    return importMethod.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importMethod.url(options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+    const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: importMethod.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+        importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: importMethod.url(options),
+            method: 'post',
+        })
+    
+    importMethod.form = importMethodForm
 const applications = {
     index: Object.assign(index, index),
+import: Object.assign(importMethod, importMethod),
 }
 
 export default applications

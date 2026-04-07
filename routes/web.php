@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
 
+
 /**
  * Web Routes
  */
@@ -51,6 +52,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/intermediate/applications', [IntermediateApplicationController::class, 'index'])
     ->name('intermediate.applications.index');
+
+     // Import intermediate applicants (matches your Vue router.post)
+    Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
+        ->name('intermediate.applications.import');
 
 
     //action-applicants proglang list

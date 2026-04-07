@@ -12,6 +12,7 @@ class IntermediateApplicant extends Model
     use HasFactory;
 
     protected $table = 'intermediate_applicants';
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
@@ -57,7 +58,6 @@ class IntermediateApplicant extends Model
         'registered_date' => 'datetime',
         'created_time' => 'datetime',
         'updated_time' => 'datetime',
-        'birthdate' => 'date',
         'age' => 'integer',
         'gender' => 'integer',
         'source_type' => 'integer',
@@ -201,5 +201,10 @@ class IntermediateApplicant extends Model
             $applicant->updated_by = auth()->id() ?? 1;
             $applicant->updated_time = now();
         });
+    }
+
+    public function workExperiences()
+    {
+        return $this->hasMany(IntermediateApplicationWorkExperience::class, 'intermediate_applicant_id');
     }
 }
