@@ -178,6 +178,67 @@ $payload = [
             });
     }
 
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function programmingLanguages()
+    {
+        return $this->hasMany(ActionApplicantProgrammingLanguage::class, 'action_applicant_id', 'id');
+    }
+
+    public function updateWithRequest(array $data, ?int $userId = null)
+    {
+        // Handle source / other_source logic first
+        $sourceType = (int) ($data['source_type'] ?? $this->source_type);
+
+        if ($sourceType === 3) {
+            $this->source = $data['source'] ?? null;
+            $this->other_source = $data['other_source'] ?? null; // keep if provided
+        } elseif (in_array($sourceType, [1, 2, 4, 5])) {
+            $this->other_source = $data['other_source'] ?? null;
+            $this->source = null;
+        } else {
+            $this->source = $data['source'] ?? null;
+            $this->other_source = $data['other_source'] ?? null;
+        }
+
+        // Mass assignment for fillable fields (except created_by / created_time)
+        $fieldsToUpdate = [
+            'source_type',
+            'source',
+            'other_source',
+            'last_name',
+            'first_name',
+            'middle_name',
+            'email_address',
+            'gender',
+            'age',
+            'school',
+            'degree',
+            'others_degree',
+            'expected_graduation',
+            'awards_recognition',
+            'other_examination_certificate',
+            'thesis_project',
+            'extra_curricular',
+            'remarks',
+        ];
+
+        foreach ($fieldsToUpdate as $field) {
+            if (isset($data[$field])) {
+                $this->$field = $data[$field];
+            }
+        }
+
+        // Update audit fields
+        $this->updated_by = $userId;
+        $this->updated_time = now();
+
+        return $this->save();
+
+    }
 
     /**
      * Get eligible applicants for a specific batch
@@ -319,7 +380,14 @@ public static function isTechDegree(string $degree): bool
         $applicant = self::where('email_address', $email)->first();
 
         if ($applicant) {
-            return $applicant->updateApplicant($data);
+            // During update, exclude source-related fields
+            $updateData = array_diff_key($data, array_flip([
+                'source_type',
+                'source',
+                'other_source'
+            ]));
+
+            return $applicant->updateApplicant($updateData);
         }
 
         return self::createApplicant($data);

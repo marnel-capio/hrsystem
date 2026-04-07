@@ -12,6 +12,7 @@ use App\Http\Controllers\ActionApplicationController;
 use App\Http\Controllers\ApplicationImportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
 
 /**
  * Web Routes
@@ -46,6 +47,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
+    //action-applicants proglang list
+        Route::get('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'index']);
+
+        //action-applicants proglang add api
+        Route::post('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'store']);
+
+        //action-applicants proglang edit api
+        Route::put('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'update']);
+
+        //action-applicants proglang delete single api
+        Route::delete('/action/applicants/{applicantId}/languages/{langId}', [ActionApplicantProgrammingLanguageController::class, 'destroy']);
+
+        //action-applicants proglang delete bulk api
+        Route::post('/action/applicants/{applicantId}/languages/bulk-delete', [ActionApplicantProgrammingLanguageController::class, 'bulkDelete']);
 });
 
     // Update user
@@ -105,41 +120,41 @@ Route::middleware(['auth'])->group(function () {
         // ACTION APPLICATIONS
         // ------------------------
         Route::middleware(['auth', 'check.permission'])->group(function () {
-Route::prefix('action/applications')->name('action.applications.')->group(function () {
-    Route::get('/', [ActionApplicationController::class, 'index'])->name('index');
-    Route::get('/register', [ActionApplicationController::class, 'create'])->name('create');
-    Route::post('/', [ActionApplicationController::class, 'store'])->name('store');
-    Route::get('/{id}', [ActionApplicationController::class, 'show'])->name('show');
-    Route::post('/import', [ApplicationImportController::class, 'import'])->name('import');
-    Route::get('/{id}/edit', [ActionApplicationController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [ActionApplicationController::class, 'update'])->name('update');
+            Route::prefix('action/applications')->name('action.applications.')->group(function () {
+            Route::get('/', [ActionApplicationController::class, 'index'])->name('index');
+            Route::get('/register', [ActionApplicationController::class, 'create'])->name('create');
+            Route::post('/', [ActionApplicationController::class, 'store'])->name('store');
+            Route::get('/{id}', [ActionApplicationController::class, 'show'])->name('show');
+            Route::post('/import', [ApplicationImportController::class, 'import'])->name('import');
+            Route::get('/{id}/edit', [ActionApplicationController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [ActionApplicationController::class, 'update'])->name('update');
 
-    Route::get('/eligible-applicants/{batchId}', [ActionApplicationController::class, 'getApplicantsForBatch'])
-        ->name('eligible-applicants');
-    Route::post('/check-eligibility', [ActionApplicationController::class, 'checkEligibility'])
-        ->name('check-eligibility');
+            Route::get('/eligible-applicants/{batchId}', [ActionApplicationController::class, 'getApplicantsForBatch'])
+                ->name('eligible-applicants');
+            Route::post('/check-eligibility', [ActionApplicationController::class, 'checkEligibility'])
+                ->name('check-eligibility');
 
-    Route::post('/{id}/interviews/bulk-add', [ActionApplicationController::class, 'bulkAddInterviews'])
-        ->name('interviews.bulk-add');
+            Route::post('/{id}/interviews/bulk-add', [ActionApplicationController::class, 'bulkAddInterviews'])
+                ->name('interviews.bulk-add');
 
-    Route::post('/{applicationId}/interviews/bulk-delete', [ActionApplicationController::class, 'bulkDeleteInterviews'])
-        ->name('interviews.bulk-delete');
+            Route::post('/{applicationId}/interviews/bulk-delete', [ActionApplicationController::class, 'bulkDeleteInterviews'])
+                ->name('interviews.bulk-delete');
 
-    Route::post('/{applicationId}/interviews/{interviewId}/decision', [ActionApplicationController::class, 'submitInterviewDecision'])
-        ->name('interviews.decision');
+            Route::post('/{applicationId}/interviews/{interviewId}/decision', [ActionApplicationController::class, 'submitInterviewDecision'])
+                ->name('interviews.decision');
 
-    Route::post(
-        '/{applicationId}/interviews/bulk-update-schedule',
-        [ActionApplicationController::class, 'bulkUpdateInterviewSchedule']
-    )->name('interviews.bulk-update-schedule');
+            Route::post(
+                '/{applicationId}/interviews/bulk-update-schedule',
+                [ActionApplicationController::class, 'bulkUpdateInterviewSchedule']
+            )->name('interviews.bulk-update-schedule');
 
-    Route::post(
-        '/{application}/send-notification',
-        [ActionApplicationController::class, 'sendNotification']
-    )->name('send-notification');
+            Route::post(
+                '/{application}/send-notification',
+                [ActionApplicationController::class, 'sendNotification']
+            )->name('send-notification');
 
-    Route::get('/{id}/print', [ActionApplicationController::class, 'print'])
-        ->name('print');
+            Route::get('/{id}/print', [ActionApplicationController::class, 'print'])
+                ->name('print');
 
 });
 });
@@ -169,14 +184,29 @@ Route::prefix('action/applications')->name('action.applications.')->group(functi
         Route::get('/action/applicants/register', [ActionApplicantController::class, 'create'])
                 ->name('action.applicants.register');
 
+        //action-applicants register api
         Route::post('/action/applicants', [ActionApplicantController::class, 'store'])
                 ->name('action.applicants.store');
 
+        //action-applicants email checker api
         Route::post('/action/applicants/check-email', [ActionApplicantController::class, 'checkEmail'])
                 ->name('action.applicants.check-email');
 
+        //action-applicants detail
         Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
                 ->name('action.applicants.detail');
+
+        //action-applicants edit
+        Route::get('/action/applicants/{id}/edit', [ActionApplicantController::class, 'edit'])
+                ->name('action.applicants.edit');
+
+
+
+        //action-applicants update api
+        Route::put('/action/applicants/{id}/update', [ActionApplicantController::class, 'update'])
+                ->name('action.applicants.update');
+
+
     });
 
 

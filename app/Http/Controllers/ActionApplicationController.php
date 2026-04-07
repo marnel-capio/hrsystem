@@ -32,9 +32,12 @@ class ActionApplicationController extends Controller
     {
         $search = request('search', '');
 
-        return Inertia::render('action/applications/ActionApplicationList', [
-            'applications'    => ActionApplication::listPageData($search),
-            'actionBatches'   => ActionBatchModel::getWithTargetLocationAndApplications(),
+        $applications = ActionApplication::listPageData($search);
+        $actionBatches = ActionBatchModel::getWithTargetLocationAndApplications();
+
+        return inertia('action/applications/ActionApplicationList', [
+            'applications'    => $applications,
+            'actionBatches'   => $actionBatches,
             'filters'         => ['search' => $search],
             'userPermissions' => auth()->user()->permissions,
         ]);

@@ -138,7 +138,6 @@ return [
         'failed' => 6,
         'no show' => 6,
         'withdrew' => 6
-
     ],
 
     'sTypes' => [
@@ -156,13 +155,62 @@ return [
 
 
     'sources' => [
-        1 => 'Mynimo',
-        2 => 'Indeed',
-        3 => 'Kalibrr',
-        4 => 'FoundIt',
-        5 => 'LinkedIn',
+        1 => 'University Career Fair',
+        2 => 'Partner School',
+        3 => 'JobStreet',
+        4 => 'LinkedIn',
+        5 => 'Referral',
         6 => 'Facebook',
-        7 => 'Jobstreet'
+        7 => 'Jobstreet',
+    ],
+
+    'examVenues' => [
+        1 => 'Gmeet',
+        2 => 'Zoom',
+        3 => 'USJ-R Basak',
+        4 => 'AdDU',
+    ],
+
+    'examResults' => [
+        1 => 'Pending',
+        2 => 'Passed',
+        3 => 'Failed',
+    ],
+
+    'examApplicationStatuses' => [
+        1 => 'Pending',
+        3 => '2nd Priority (P2)',
+        4 => 'Done',
+        5 => 'Passed',
+        6 => 'Failed',
+    ],
+
+    'interviewResults' => [
+        1 => 'Pending',
+        2 => 'Passed',
+        3 => 'Failed',
+    ],
+
+    'applicationStatuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Passed',
+        4 => 'P2',
+        5 => 'Failed',
+    ],
+
+    'jobOfferStatuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Accept',
+        4 => 'Decline',
+        5 => 'Withdraw',
+        6 => 'Retracted',
+    ],
+
+    'traineesFrom' => [
+        1 => 'Manila',
+        2 => 'Cebu',
     ],
 
     'examVenues' => [
@@ -432,6 +480,80 @@ return [
     ],
 
     ],
+
+    'application_result_map' => [
+
+        'exam' => [
+            1 => 1, // Pending  -> Pending
+            2 => 2, // 1st Priority (Passed) -> Passed
+            3 => 2, // 2nd Priority (P2) -> Passed
+            4 => 1, // Done -> Pending
+            5 => 2, // Passed -> Passed
+            6 => 3, // Failed -> Failed
+        ],
+
+        'initial_interview' => [
+            1 => 1, // Pending -> Pending
+            2 => 1, // Done -> Pending
+            3 => 2, // Passed -> Passed
+            4 => 2, // P2 -> Passed
+            5 => 3, // Failed -> Failed
+        ],
+
+        'final_interview' => [
+            1 => 1, // Pending -> Pending
+            2 => 1, // Done -> Pending
+            3 => 2, // Passed -> Passed
+            4 => 2, // P2 -> Passed
+            5 => 3, // Failed -> Failed
+        ],
+    ],
+
+    'application_score_rules' => [
+    'exam' => [
+        'young_it' => [
+            'passed' => ['attp' => 60, 'git' => 6, 'prg' => 30],
+            'p2'     => ['attp' => 55, 'git' => 5, 'prg' => 20],
+        ],
+        'young_other' => [
+            'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+            'p2'     => ['attp' => 55, 'git' => 5, 'prg' => 20],
+        ],
+        'adult' => [
+            'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+        ],
+    ],
+
+    'initial_interview' => [
+        'passed_min' => 2.0,
+        'p2_min'     => 2.5,
+        'failed_min' => 4.0,
+    ],
+
+    ],
+
+    'tech_degree_patterns' => [
+    'bs information technology',
+    'bachelor of science in information technology',
+    'bachelor of science major in information technology',
+    'information technology',
+    'bsit',
+    'it',
+
+    'bs computer science',
+    'bachelor of science in computer science',
+    'bachelor of science major in computer science',
+    'computer science',
+    'bscs',
+    'cs',
+
+    'bs computer engineering',
+    'bachelor of science in computer engineering',
+    'bachelor of science major in computer engineering',
+    'computer engineering',
+    'bsce',
+    'cpe',
+],
 
 
 
