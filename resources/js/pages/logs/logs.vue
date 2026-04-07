@@ -4,11 +4,16 @@ import { ref, computed, watch } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Inertia } from '@inertiajs/inertia';
 import { type BreadcrumbItem } from '@/types';
+import Multiselect from 'vue-multiselect';
+
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Logs', href: '#' },
 ];
 
+components: {
+  Multiselect
+}
 const page = usePage();
 
 const props = defineProps<{
@@ -24,7 +29,9 @@ const props = defineProps<{
     search: string;
   };
   userPermissions: number;
-  users: Array<{ created_by: number, name: string }>; // Pass the list of users here
+  users: Array<{ created_by: number, name: string }>;
+  modules: Array<string>;
+
 }>();
 
 const selectedDate = ref<string>('');
@@ -119,7 +126,6 @@ const filteredLogs = computed(() => {
 
   let data = props.logs;
 
-  // Apply the Date filter if it's enabled
   if (showDateFilter.value && date) {
     data = data.filter((log) => {
       const logDate = new Date(log.create_time).toLocaleDateString();
@@ -127,7 +133,6 @@ const filteredLogs = computed(() => {
     });
   }
 
-  // Apply the Module filter if it's enabled
   if (showModuleFilter.value && module) {
     data = data.filter(log => log.module?.toLowerCase().trim() === module);  
   }
@@ -136,7 +141,6 @@ const filteredLogs = computed(() => {
     data = data.filter(log => log.created_by_name?.toLowerCase().trim() === created_by);  
   }
 
-  // Apply the Search filter
   if (search) {
     data = data.filter(log =>
       log.activity?.toLowerCase().includes(search) ||
@@ -188,6 +192,7 @@ function formatActivitySummary(activity: string) {
   const detailsIndex = activity.indexOf('Details:');
   return detailsIndex === -1 ? activity : activity.substring(0, detailsIndex).trim();
 }
+console.log(props.modules); 
 
 </script>
 

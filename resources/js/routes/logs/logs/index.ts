@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\LogController::index
- * @see app/Http/Controllers/LogController.php:12
- * @route '/log'
+ * @see app/Http/Controllers/LogController.php:14
+ * @route '/logs'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -11,13 +11,13 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/log',
+    url: '/logs',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\LogController::index
- * @see app/Http/Controllers/LogController.php:12
- * @route '/log'
+ * @see app/Http/Controllers/LogController.php:14
+ * @route '/logs'
  */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
@@ -25,8 +25,8 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\LogController::index
- * @see app/Http/Controllers/LogController.php:12
- * @route '/log'
+ * @see app/Http/Controllers/LogController.php:14
+ * @route '/logs'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -34,8 +34,8 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\LogController::index
- * @see app/Http/Controllers/LogController.php:12
- * @route '/log'
+ * @see app/Http/Controllers/LogController.php:14
+ * @route '/logs'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
@@ -44,8 +44,8 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\LogController::index
- * @see app/Http/Controllers/LogController.php:12
- * @route '/log'
+ * @see app/Http/Controllers/LogController.php:14
+ * @route '/logs'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: index.url(options),
@@ -54,8 +54,8 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\LogController::index
- * @see app/Http/Controllers/LogController.php:12
- * @route '/log'
+ * @see app/Http/Controllers/LogController.php:14
+ * @route '/logs'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url(options),
@@ -63,8 +63,8 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\LogController::index
- * @see app/Http/Controllers/LogController.php:12
- * @route '/log'
+ * @see app/Http/Controllers/LogController.php:14
+ * @route '/logs'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url({

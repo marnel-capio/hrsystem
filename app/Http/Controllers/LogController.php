@@ -5,16 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\LogModel;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+
 
 class LogController extends Controller
 {
     public function index(Request $request)
 {
-    // Fetch logs
     $logs = LogModel::listPageData();
 
-    // Fetch users' full names, excluding those with empty first_name or last_name
     $users = DB::table('logs')
         ->select(
             'logs.created_by', 
@@ -29,14 +29,16 @@ class LogController extends Controller
         ->orderBy('full_name')
         ->get();
 
-    // Fetch distinct modules from the logs table
     $modules = DB::table('logs')->distinct()->pluck('module');
 
-    return inertia('log/logs', [
+    Log::info($modules);
+
+    return inertia('logs/logs', [
         'logs' => $logs,
         'userPermissions' => auth()->user()->permissions,
         'users' => $users,
-        'modules' => $modules,  // Send the distinct modules to the frontend
-    ]);
+        'modules' => $modules,
+    ]
+    );
 }
 }

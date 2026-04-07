@@ -128,7 +128,7 @@ Route::middleware(['auth'])->group(function () {
     // Logs
     // ------------------------
     Route::middleware(['auth', 'check.permission'])->group(function () {
-     Route::get('/log', [LogController::class, 'index'])->name('log.logs.index');
+     Route::get('/logs', [LogController::class, 'index'])->name('logs.logs.index');
 
     });
 // ------------------------

@@ -1,6 +1,6 @@
 import logs from './logs'
-const log = {
+const logsNamespace = {
     logs: Object.assign(logs, logs),
 }
 
-export default log
+export default logsNamespace

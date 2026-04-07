@@ -152,7 +152,7 @@ class CheckUserPermission
         }
 
         // Logs
-        if (in_array($routeName, ['log.logs.index'])) {
+        if (in_array($routeName, ['logs.logs.index'])) {
             if (in_array($permission, [1])) {
                 return $next($request);
             }
