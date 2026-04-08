@@ -73,70 +73,137 @@ class IntermediateApplicantImportService
         return $result;
     }
 
-    /**
-     * PERFECT Logic - 6 MONTHS FROM registered_date
-     */
     private function handleApplicantEligibility(array $row, string $email, string $fullName, int $rowIndex): array
     {
         $applicant = IntermediateApplicant::where('email_address', $email)->first();
 
+        // NO APPLICANT → Create new ====== /
         if (! $applicant) {
             return $this->createNewApplicant($row, $fullName);
         }
 
-        // **6-MONTH RULE: Use registered_date**
-        $sixMonthsAgo = Carbon::now()->subMonths(6);
-        $isRegistrationRecent = $applicant->registered_date >= $sixMonthsAgo;
+        // Parse + Update profile FIRST (always)
+        $parsedData = $this->parseApplicantData($row);
+        $applicant->update(array_merge($parsedData['applicant'], [
+            'updated_by' => Auth::id(),
+            'updated_time' => now(),
+        ]));
 
-        // **LATEST APP for status checks**
+        //  Get Excel timestamp
+        $excelTimestamp = isset($row['Timestamp'])
+            ? $this->parseExcelDate($row['Timestamp'])
+            : null;
+
+        //  Safe date handling
+        $registeredDate = $applicant->registered_date
+            ? Carbon::parse($applicant->registered_date)
+            : null;
+
+        //  Compare: Excel timestamp vs registered_date
+        $isRecent = $registeredDate && $excelTimestamp
+            ? $excelTimestamp->lte($registeredDate->copy()->addMonths(6))
+            : false;
+
+        //  Get latest application
         $latestApp = $applicant->applications()
             ->latest('created_time')
-            ->first(['id', 'exam_status', 'hr_interview_status', 'created_time']);
+            ->first();
+
+        $examStatus = $latestApp?->exam_status ?? null;
 
         \Log::info("Eligibility Debug [{$fullName}]:", [
-            'registered_date' => $applicant->registered_date,
-            'within_6mo_reg' => $isRegistrationRecent,
-            'latest_app_exists' => $latestApp !== null,
-            'latest_app_date' => $latestApp?->created_time,
+            'registered_date' => $registeredDate,
+            'is_recent' => $isRecent,
+            'exam_status' => $examStatus,
         ]);
 
-        // **CASE 0**: registered_date > 6 months → Update profile + NEW app
-        if (! $isRegistrationRecent) {
-            $parsedData = $this->parseApplicantData($row);
+        // =========================================================
+        //  CASE 1: REGISTERED > 6 MONTHS (DEFAULT → NEW APP)
+        // =========================================================
+        if (! $isRecent) {
 
-            $applicant->update(array_merge($parsedData['applicant'], [
-                'remarks' => 'Profile updated - Registration expired (>6mo)',
+            // exam_status = 5 → stage 1
+            if ($examStatus == 5) {
+                return $this->createAppWithSync($applicant, $row, $fullName, 1, 'Reg >6mo + Exam=5');
+            }
+
+            // exam_status = 3 or 4 → stage 2
+            if (in_array($examStatus, [3, 4])) {
+                return $this->createAppWithSync($applicant, $row, $fullName, 2, 'Reg >6mo + Exam=3/4');
+            }
+
+            //  DEFAULT (Reg >6mo)
+            return $this->createAppWithSync($applicant, $row, $fullName, 1, 'Reg >6mo Default');
+        }
+
+        // =========================================================
+        //  CASE 2: REGISTERED ≤ 6 MONTHS
+        // =========================================================
+
+        //  No latest app → create new (safe fallback)
+        if (! $latestApp) {
+            return $this->createAppWithSync($applicant, $row, $fullName, 1, 'Recent Reg - No App');
+        }
+
+        // exam_status = 5 → update latest app (stage 1) and reset exam_status
+        if ($examStatus == 5 && $latestApp) {
+            $latestApp->update([
+                'application_stage' => 1,    // set stage 1
+                'exam_status' => null,       // reset exam_status
+                'remarks' => 'Recent Reg - Exam=5',
                 'updated_by' => Auth::id(),
                 'updated_time' => now(),
-            ]));
+            ]);
 
-            $this->createNewApplication($applicant, $row, $fullName, 1, 'New app - Registration expired (>6mo)');
+            // Sync work experiences
             $this->syncWorkExperiences($applicant, $row);
 
-            return ['success' => "{$fullName} (UPDATED PROFILE + NEW APP - Reg >6mo)"];
+            return [
+                'success' => "{$fullName} (UPDATED PROFILE + UPDATED APP stage 1 - Exam=5, exam_status reset)",
+            ];
         }
 
-        // **REGISTRATION RECENT (≤6mo)** - Check latest app status
-        if (! $latestApp) {
-            // No apps = treat as fresh
-            return $this->updateEligibleApplicant($applicant, $row, $fullName);
+        // exam_status = 3 or 4 → update latest app (stage 3) instead of creating new app
+        if (in_array($examStatus, [3, 4]) && $latestApp) {
+            // Update latest application
+            $latestApp->update([
+                'application_stage' => 3,                  // stage 3
+                'remarks' => 'Recent Reg - Exam=3/4',      // remark
+                'updated_by' => Auth::id(),
+                'updated_time' => now(),
+            ]);
+
+            // Sync work experiences after update
+            $this->syncWorkExperiences($applicant, $row);
+
+            return [
+                'success' => "{$fullName} (UPDATED PROFILE + UPDATED LATEST APP stage 3 - Exam=3/4)",
+            ];
         }
 
-        $examStatus = $latestApp->exam_status ?? 0;
-        $hrStatus = $latestApp->hr_interview_status ?? 0;
+        //  DEFAULT (Recent) → update latest app
+        $latestApp->update([
+            'remarks' => 'Recent Reg - Default update',
+            'updated_by' => Auth::id(),
+            'updated_time' => now(),
+        ]);
 
-        // CASE 1: exam_status=5 (recent registration)
-        if ($examStatus == 5) {
-            return $this->updateLatestAppStatus($applicant, $row, $fullName, 1, null, 'Exam passed - Recent reg');
-        }
+        return $this->successWithSync("{$fullName} (UPDATED PROFILE + UPDATED LATEST APP - Default)", $applicant, $row);
+    }
 
-        // CASE 2: hr_status=3 or 4 (recent registration)
-        elseif (in_array($hrStatus, [3, 4])) {
-            return $this->updateLatestAppStatus($applicant, $row, $fullName, 3, 'HR Interview ready');
-        }
+    private function createAppWithSync($applicant, $row, $fullName, $stage, $reason)
+    {
+        $this->createNewApplication($applicant, $row, $fullName, $stage, $reason);
+        $this->syncWorkExperiences($applicant, $row);
 
-        // DEFAULT: Update profile (recent reg, other status)
-        return $this->updateEligibleApplicant($applicant, $row, $fullName);
+        return ['success' => "{$fullName} (UPDATED PROFILE + NEW APP stage {$stage} - {$reason})"];
+    }
+
+    private function successWithSync($message, $applicant, $row)
+    {
+        $this->syncWorkExperiences($applicant, $row);
+
+        return ['success' => $message];
     }
 
     /**
@@ -230,6 +297,7 @@ class IntermediateApplicantImportService
                 'school_graduated_from' => $row['School Graduated from'] ?? null,
                 'course' => $row['Course/Degree taken'] ?? null,
                 'year_attended' => $row['Inclusive Year Attended'] ?? null,
+                'others' => $row['Others'] ?? null,
                 'spouse_details' => $row['SPOUSE'] ?? null,
                 'children' => is_numeric($row['CHILDREN']) ? (int) $row['CHILDREN'] : 0,
                 'father_details' => $row['FATHER'] ?? null,
@@ -266,9 +334,6 @@ class IntermediateApplicantImportService
             'answer_q2' => $this->mapYesNo($row['Please answer the following questions below: [Do any of your friends or relatives, other than a spouse, work in AWS>]'] ?? null),
             'answer_q3' => $this->mapYesNo($row['Please answer the following questions below: [Have you worked in AWS before?]'] ?? null),
             'answer_q4' => $this->mapYesNo($row['Please answer the following questions below: [Will you travel if the job requires it?]'] ?? null),
-            'answer_q5' => $this->mapYesNo($row['Please answer the following questions below: [Will you work overtime if needed?]'] ?? null),
-            'answer_q6' => $this->mapYesNo($row['Please answer the following questions below: [Have you been convicted of a crime?]'] ?? null),
-            'answer_q7' => $this->mapYesNo($row['Please answer the following questions below: [Do you have any physical illness or impairments?]'] ?? null),
         ]);
     }
 
@@ -292,7 +357,7 @@ class IntermediateApplicantImportService
                     'employer' => $row[$block[0]] ?? null,
                     'company_address' => $row[$block[1]] ?? null,
                     'job_title' => $row[$block[2]] ?? null,
-                    'date_employed' => $this->parseExcelDate($row[$block[3]] ?? null),
+                    'date_employed' => $row[$block[3]] ?? null,
                     'work_description' => $row[$block[4]] ?? null,
                     'salary' => $row[$block[5]] ?? null,
                     'reason_for_leaving' => $row[$block[6]] ?? null,
@@ -401,5 +466,31 @@ class IntermediateApplicantImportService
         }
 
         return $cleaned;
+    }
+
+    protected function parseContactNumber($number)
+    {
+        if (empty($number)) {
+            return null;
+        }
+
+        // Remove spaces and non-numeric characters except '+'
+        $number = preg_replace('/[^\d\+]/', '', $number);
+
+        // If it starts with '0', replace it with '+63'
+        if (preg_match('/^0(\d{9})$/', $number, $matches)) {
+            $number = '+63'.$matches[1];
+        }
+        // If it starts with '9' and is 10 digits, assume missing leading 0
+        elseif (preg_match('/^9(\d{9})$/', $number)) {
+            $number = '+63'.$number;
+        }
+        // If it already starts with +63, leave as is
+        elseif (! preg_match('/^\+63\d{9}$/', $number)) {
+            // If not matching any valid format, return null
+            return null;
+        }
+
+        return $number;
     }
 }

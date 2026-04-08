@@ -1127,6 +1127,11 @@ namespace App\Models {
      * @property float|null $exam_prg_result
      * @property float|null $exam_git_result
      * @property float|null $exam_atpp_result
+     * @property \Illuminate\Support\Carbon|null $pending_approval_notified_at
+     * @property string|null $decline_reason
+     * @property bool $status
+     * @property string|null $actual_date
+     * @property \Illuminate\Support\Carbon|null $scheduled_date
      * @property bool|null $interview_type
      * @property mixed $action_application_id
      * @property mixed $interviewer_id
@@ -1137,6 +1142,11 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereInterviewerId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereActionApplicationId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereInterviewType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereScheduledDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereActualDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereDeclineReason($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview wherePendingApprovalNotifiedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereExamAtppResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereExamGitResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereExamPrgResult($value)
@@ -2172,7 +2182,6 @@ namespace App\Models {
      * @property string|null $address
      * @property integer $age
      * @property string $birthdate
-     * @property integer $gender
      * @property string|null $middle_name
      * @property string $first_name
      * @property string $last_name
@@ -2203,7 +2212,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereLastName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereFirstName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereMiddleName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereGender($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereBirthdate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereAge($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereAddress($value)
@@ -2591,9 +2599,6 @@ namespace App\Models {
      * @property string|null $work_preference
      * @property string|null $desired_salary_range
      * @property \Illuminate\Support\Carbon|null $availability_date
-     * @property integer|null $answer_q7
-     * @property integer|null $answer_q6
-     * @property integer|null $answer_q5
      * @property integer|null $answer_q4
      * @property integer|null $answer_q3
      * @property integer|null $answer_q2
@@ -2625,9 +2630,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ2($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ3($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ4($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ5($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ6($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ7($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAvailabilityDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereDesiredSalaryRange($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereWorkPreference($value)
