@@ -487,10 +487,4 @@ edit: Object.assign(edit, edit),
 update: Object.assign(update, update),
 }
 
-export default batches store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-}
-
 export default batches

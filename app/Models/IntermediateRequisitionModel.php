@@ -27,6 +27,7 @@ class IntermediateRequisitionModel extends Model
         'required_skills',
         'preferred_skilss',
         'role',
+        'expected_salary_range',
         'remarks',
         'created_by',
         'created_time',

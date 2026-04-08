@@ -24,6 +24,7 @@ const form = ref({
   required_skills: '',
   preferred_skills: '',
   role: '',
+  expected_salary_range: '',
   remarks: '',
   project_description: '', 
   processing: false,
@@ -32,12 +33,6 @@ const form = ref({
 const projects = ref([]) 
 const selectedProject = ref(null) 
 
-const engagementTypeError = ref('')
-const sourcingTypeError = ref('')
-const requestTypeError = ref('')
-const replacementDueToError = ref('')
-const personToReplaceError = ref('')
-const locationAssignmentError = ref('')
 const startDateError = ref('')
 
 const today = new Date().toISOString().slice(0, 10)
@@ -64,13 +59,6 @@ const updateProjectDescription = (projectId: string) => {
 }
 
 const submit = () => {
-  // Clear frontend validation errors
-  engagementTypeError.value = ''
-  sourcingTypeError.value = ''
-  requestTypeError.value = ''
-  replacementDueToError.value = ''
-  personToReplaceError.value = ''
-  locationAssignmentError.value = ''
   startDateError.value = ''
 
   form.value.processing = true
@@ -108,36 +96,36 @@ const submit = () => {
         <!-- Engagement Type -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1">Engagement Type</label>
-          <select v-model="form.engagement_type" @change="validateEngagementType" class="border p-2 rounded w-full">
+          <select v-model="form.engagement_type"  class="border p-2 rounded w-full">
             <option disabled value="">Select Engagement Type</option>
             <option value="1">Permanent</option>
             <option value="2">Temporary (Consultant)</option>
             <option value="3">OJT</option>
           </select>
-          <span v-if="engagementTypeError" class="text-red-600 text-sm mt-1">{{ engagementTypeError }}</span>
+          <span class="text-red-600 text-sm mt-1">{{  }}</span>
         </div>
 
         <!-- Sourcing Type -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1">Sourcing Type</label>
-          <select v-model="form.sourcing_type" @change="validateSourcingType" class="border p-2 rounded w-full">
+          <select v-model="form.sourcing_type"  class="border p-2 rounded w-full">
             <option disabled value="">Select Sourcing Type</option>
             <option value="1">Internal</option>
             <option value="2">External</option>
             <option value="3">Either</option>
           </select>
-          <span v-if="sourcingTypeError" class="text-red-600 text-sm mt-1">{{ sourcingTypeError }}</span>
+          <span  class="text-red-600 text-sm mt-1">{{  }}</span>
         </div>
 
         <!-- Request Type -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1">Request Type</label>
-          <select v-model="form.request_type" @change="validateRequestType" class="border p-2 rounded w-full">
+          <select v-model="form.request_type" class="border p-2 rounded w-full">
             <option disabled value="">Select Request Type</option>
             <option value="1">New Requirement</option>
             <option value="2">Replacement</option>
           </select>
-          <span v-if="requestTypeError" class="text-red-600 text-sm mt-1">{{ requestTypeError }}</span>
+          <span class="text-red-600 text-sm mt-1">{{  }}</span>
         </div>
       </div>
 
@@ -146,14 +134,14 @@ const submit = () => {
         <!-- If Replacement, Due To -->
         <div class="flex flex-col w-full">
           <label class="text-sm font-semibold mb-1">If Replacement, Due To</label>
-          <select v-model="form.replacement_due_to" @change="validateReplacementDueTo" class="border p-2 rounded w-full" :disabled="form.request_type !== '2'" :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}">
+          <select v-model="form.replacement_due_to" class="border p-2 rounded w-full" :disabled="form.request_type !== '2'" :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}">
             <option disabled value="">Select Reason</option>
             <option value="1">Promotion</option>
             <option value="2">Attrition</option>
             <option value="3">Backfill</option>
             <option value="4">Transfer</option>
           </select>
-          <span v-if="replacementDueToError" class="text-red-600 text-sm mt-1">{{ replacementDueToError }}</span>
+          <span class="text-red-600 text-sm mt-1">{{  }}</span>
         </div>
 
         <!-- Person to Replace -->
@@ -161,20 +149,20 @@ const submit = () => {
           <label class="text-sm font-semibold mb-1">Person to Replace</label>
           <input
             v-model="form.person_to_replace"
-            @input="validatePersonToReplace"
+            
             type="text"
             placeholder="Person to Replace"
             class="border p-2 rounded w-full"
             :disabled="form.request_type !== '2'"
             :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}"
           />
-          <span v-if="personToReplaceError" class="text-red-600 text-sm mt-1">{{ personToReplaceError }}</span>
+          <span class="text-red-600 text-sm mt-1">{{  }}</span>
         </div>
 
         <!-- Location Assignment -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 w-full">Location Assignment</label>
-          <select v-model="form.location_assignment" @change="validateLocationAssignment" class="border p-2 rounded w-full">
+          <select v-model="form.location_assignment"  class="border p-2 rounded w-full">
             <option disabled value="">Select Location</option>
             <option value="1">Alabang</option>
             <option value="2">Makati</option>
@@ -183,7 +171,7 @@ const submit = () => {
             <option value="5">China</option>
             <option value="6">Other</option> <!-- Added "Other" option -->
           </select>
-          <span v-if="locationAssignmentError" class="text-red-600 text-sm mt-1">{{ locationAssignmentError }}</span>
+          <span class="text-red-600 text-sm mt-1">{{  }}</span>
         </div>
 
         <!-- Custom Location Input -->
@@ -316,20 +304,20 @@ const submit = () => {
         </div>
 
         <!-- Expected Salary/Billing Range-->
-        <div class="grid grid-cols-2 gap-5 mt-5">
-            <div class="flex flex-col col-span-2">
+        <div v-if="form.engagement_type === '2'" class="grid grid-cols-2 gap-5 mt-5">
+          <div class="flex flex-col col-span-2">
             <label class="text-xs font-semibold mb-1"> Expected Salary/Billing Range</label>
-            <input v-model="form.remarks" rows="6" class="border p-2 rounded w-full" placeholder="Please write Billing range if Temporary resource">
-            </div>
+            <input v-model="form.expected_salary_range" rows="6" class="border p-2 rounded w-full" placeholder="Please write Billing range if Temporary resource">
+          </div>
         </div>
 
         <!-- Designated Interviewer(s) from BU-->
-        <div class="grid grid-cols-2 gap-5 mt-5">
+        <!-- <div class="grid grid-cols-2 gap-5 mt-5">
             <div class="flex flex-col col-span-2">
             <label class="text-xs font-semibold mb-1"> Designated Interviewer(s) from BU</label>
             <textarea v-model="form.interviewers" rows="6" class="border p-2 rounded w-full" placeholder=" Designated Interviewer(s) from BU"></textarea>
             </div>
-        </div>
+        </div> -->
 
         <!-- Remarks -->
         <div class="grid grid-cols-2 gap-5 mt-5">
