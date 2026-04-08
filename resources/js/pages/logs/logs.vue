@@ -11,6 +11,8 @@ const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Logs', href: '#' },
 ];
 
+const hoveredLogRef = ref<HTMLElement | null>(null);
+const hovered = ref(false); 
 components: {
   Multiselect
 }
@@ -101,16 +103,30 @@ watch(selectedUser, (newUser) => {
 
 const detailsRef = ref<HTMLElement | null>(null);
 
-function showDetails(log: any) {
+function showDetails(log: any, event: MouseEvent) {
   if (selectedLog.value?.id === log.id) {
-    selectedLog.value = null; 
+    selectedLog.value = null;
   } else {
-    selectedLog.value = log; 
+    selectedLog.value = log;
   }
+  
+  hoveredLogRef.value = event.currentTarget as HTMLElement;
+  
   setTimeout(() => {
     detailsRef.value?.scrollIntoView({ behavior: 'smooth' });
   }, 100);
 }
+
+const tooltipStyles = computed(() => {
+  if (hoveredLogRef.value) {
+    const rect = hoveredLogRef.value.getBoundingClientRect();
+    return {
+      top: `${rect.bottom + window.scrollY + 8}px`,
+      left: `${rect.left + window.scrollX}px`,  
+    };
+  }
+  return {};
+});
 
 function highlightText(text: string): string {
   if (!searchQuery.value.trim()) return text; 
@@ -310,29 +326,32 @@ console.log(props.modules);
                   <th class="border px-3 py-2">IP Address</th>
                 </tr>
               </thead>
+                <tbody class="bg-white dark:bg-zinc-900">
+                  <tr
+                    v-for="log in paginatedLogs"
+                    :key="log.id"
+                    :class="[ selectedLog?.id === log.id ? 'bg-blue-50 dark:bg-zinc-800' : '', 'hover:bg-blue-100 dark:hover:bg-zinc-700' ]"
+                  >
+                    <td class="border px-3 py-2">{{ formatTableDate(log.create_time) }}</td>
 
-              <tbody class="bg-white dark:bg-zinc-900">
-                <tr
-                  v-for="log in paginatedLogs"
-                  :key="log.id"
-                  :class="[ selectedLog?.id === log.id ? 'bg-blue-50 dark:bg-zinc-800' : '', 'hover:bg-blue-100 dark:hover:bg-zinc-700' ]"
-                >
-                  <td class="border px-3 py-2">{{ formatTableDate(log.create_time) }}</td>
-                  <td
-                    class="border px-3 py-2 cursor-pointer"
-                    @click="showDetails(log)">
-                    {{ formatActivitySummary(log.activity) }}
-                  </td>
+                    <!-- Activity Summary Cell with Hover Event -->
+                    <td
+                      class="border px-3 py-2 cursor-pointer"
+                      @mouseover="showDetails(log, $event)"
+                      @mouseleave="selectedLog = null"
+                    >
+                      {{ formatActivitySummary(log.activity) }}
+                    </td>
 
-                  <td class="border px-3 py-2" v-html="highlightText(log.created_by_name)"></td>
-                  <td class="border px-3 py-2">{{ formatTableDate(log.ip_address) }}</td>
-                </tr>
+                    <td class="border px-3 py-2" v-html="highlightText(log.created_by_name)"></td>
+                    <td class="border px-3 py-2">{{ formatTableDate(log.ip_address) }}</td>
+                  </tr>
 
-                <tr v-if="paginatedLogs.length === 0">
-                  <td colspan="4" class="text-center p-6 text-zinc-500">
-                    No logs found.
-                  </td>
-                </tr>
+                  <tr v-if="paginatedLogs.length === 0">
+                    <td colspan="4" class="text-center p-6 text-zinc-500">
+                      No logs found.
+                    </td>
+                  </tr>
               </tbody>
             </table>
           </div>
@@ -354,49 +373,26 @@ console.log(props.modules);
             class="px-3 py-2 border rounded cursor-pointer"
             :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''">{{ pageNumber }} </span>
 
-      <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer">
-        Next
-      </span>
-    </div>
+          <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer">
+            Next
+          </span>
+        </div>
 
-    <!-- DETAILS -->
-    <div v-if="selectedLog" ref="detailsRef" class="card mt-6">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold">Log Details</h3>
-
-        <button
-          @click="selectedLog = null"
-          class="!px-4 !py-2 !text-xs !bg-[#1C7BA5] text-white !rounded !hover:bg-[#1C7BA5]-200 !flex items-center !justify-center !w-15 !h-7"
+        <!-- Tooltip for Log Details -->
+        <div
+          v-if="selectedLog"
+          class="tooltip absolute z-50 p-4 bg-white dark:bg-zinc-900 border rounded shadow-md text-sm w-80"
+          :style="tooltipStyles"
         >
-          Close
-        </button>
-      </div>
-
-      <div class="log-details-container">
-        <div class="log-details-left">
-          <div><strong>Creation Date</strong></div>
-          <div>{{ formatDetailDate(selectedLog.create_time) }}</div>
-          <div><strong>Created by</strong></div>
-          <div>{{ selectedLog.created_by_name }}</div>
-
-          <div><strong>Module</strong></div>
-          <div>{{ selectedLog.module }}</div>
-          <div><strong>IP address</strong></div>
-          <div>{{ selectedLog.ip_address }}</div>
+          <div><strong>Creation Date:</strong> {{ formatDetailDate(selectedLog.create_time) }}</div>
+          <div><strong>Created by:</strong> {{ selectedLog.created_by_name }}</div>
+          <div><strong>Module:</strong> {{ selectedLog.module }}</div>
+          <div><strong>IP Address:</strong> {{ selectedLog.ip_address }}</div>
+          <div><strong>Activity:</strong> {{ selectedLog.activity }}</div>
         </div>
 
-        <div class="activity-wrapper">
-          <div class="activity-title">Activity</div>
-          <div class="activity-content">
-            {{ selectedLog.activity }}
-          </div>
-        </div>
       </div>
     </div>
-  </div>
-</div>
-```
-
   </AppLayout>
 </template>
 
@@ -473,4 +469,6 @@ cursor: pointer;
   word-break: break-word;
   cursor: pointer;
 }
+
+
 </style>
