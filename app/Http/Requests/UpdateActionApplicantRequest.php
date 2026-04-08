@@ -31,7 +31,7 @@ class UpdateActionApplicantRequest extends FormRequest
             'school' => [new RequiredField, 'string', new MaxLength(80)],
             'degree' => [new RequiredField, 'string', new MaxLength(80)],
             'others_degree' => ['nullable', 'string', new MaxLength(80)],
-            'expected_graduation' => [new RequiredField, 'date'],
+            'expected_graduation' => [new RequiredField,],
             'awards_recognition' => ['nullable', 'string', new MaxLength(1024)],
             'other_examination_certificate' => ['nullable', 'string', new MaxLength(1024)],
             'thesis_project' => ['nullable', 'string', new MaxLength(1024)],

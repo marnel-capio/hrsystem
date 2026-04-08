@@ -117,6 +117,13 @@ const rules = {
     age: (val: string) => /^\d+$/.test(val) || 'Age must be a valid number',
     school: (val: string) => !!val || 'This is a required field.',
     degree: (val: string) => !!val || 'This is a required field.',
+    expected_graduation: (val: string) => {
+        const currentYear = new Date().getFullYear();
+        if (!val || val.trim() === '') return 'Expected Graduation Year is required';
+        const year = Number(val);
+        if (isNaN(year)) return 'Expected Graduation Year must be numeric';
+        return true;
+    },
 };
 
 function validateField(field: keyof typeof rules) {
@@ -165,7 +172,7 @@ watch(
     },
     { immediate: true, deep: true }
 )
-
+watch(() => form.expected_graduation, () => validateField('expected_graduation'));
 </script>
 
 <template>
@@ -282,11 +289,10 @@ watch(
 
                     <!-- Expected Graduation -->
                     <div class="form-group">
-                        <label>Expected Graduation</label>
-                        <input type="date" v-model="form.expected_graduation" />
-                        <span v-if="form.errors.expected_graduation" class="error">
-                            {{ form.errors.expected_graduation }}
-                        </span>
+                        <label>Expected Graduation (Year)</label>
+                        <input type="text" v-model="form.expected_graduation" placeholder="YYYY" />
+                        <span v-if="form.errors.expected_graduation" class="error">{{ form.errors.expected_graduation
+                        }}</span>
                     </div>
 
                     <!-- Achievements / Remarks -->
