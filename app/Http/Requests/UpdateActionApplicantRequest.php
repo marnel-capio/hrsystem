@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\AlphaSpaceDash;
 use App\Rules\MaxLength;
 use App\Rules\RequiredField;
-use App\Rules\AlphaSpaceDash;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,14 +24,24 @@ class UpdateActionApplicantRequest extends FormRequest
             'other_source' => ['nullable', 'string', new MaxLength(80), 'required_if:source_type,1,2,4,5'],
             'last_name' => [new RequiredField, 'string', new MaxLength(80), new AlphaSpaceDash],
             'first_name' => [new RequiredField, 'string', new MaxLength(80), new AlphaSpaceDash],
-            'middle_name' => ['nullable', 'string', new MaxLength(80), new AlphaSpaceDash],
-            'email_address' => [new RequiredField, 'email', new MaxLength(80), Rule::unique('action_applicants', 'email_address')->ignore($this->route('id')) ],
+            'middle_name' => [
+                'nullable',
+                'string',
+                new MaxLength(80),
+                function ($attribute, $value, $fail) {
+                    // Allow letters, spaces, and periods
+                    if (! preg_match('/^[A-Za-z\s\.]+$/', $value)) {
+                        $fail('Only letters, spaces, hyphens, and period are allowed.');
+                    }
+                },
+            ],
+            'email_address' => [new RequiredField, 'email', new MaxLength(80), Rule::unique('action_applicants', 'email_address')->ignore($this->route('id'))],
             'gender' => [new RequiredField, 'numeric', 'in:1,2'],
             'age' => [new RequiredField, 'numeric', 'min:1', 'max:99'],
             'school' => [new RequiredField, 'string', new MaxLength(80)],
             'degree' => [new RequiredField, 'string', new MaxLength(80)],
             'others_degree' => ['nullable', 'string', new MaxLength(80)],
-            'expected_graduation' => [new RequiredField,],
+            'expected_graduation' => [new RequiredField],
             'awards_recognition' => ['nullable', 'string', new MaxLength(1024)],
             'other_examination_certificate' => ['nullable', 'string', new MaxLength(1024)],
             'thesis_project' => ['nullable', 'string', new MaxLength(1024)],
