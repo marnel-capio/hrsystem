@@ -18,11 +18,22 @@ const form = ref({
 const targetTraineesError = ref('')
 const remarksError = ref('')
 const targetDateError = ref('')
+const lastBatchTargetDate = page.props.lastBatchTargetDate || null
+
 
 // Constants for validation
 const maxTargetTrainees = 100  
 const maxRemarksLength = 1024 
 const today = new Date().toISOString().slice(0, 10)  
+
+const getMinTargetDate = () => {
+  if (lastBatchTargetDate) {
+    const lastBatchDate = new Date(lastBatchTargetDate)
+    lastBatchDate.setMonth(lastBatchDate.getMonth() + 0)  
+    return lastBatchDate.toISOString().slice(0, 7)  
+  }
+  return today 
+}
 
 const validateTargetTrainees = () => {
   targetTraineesError.value = form.value.target_trainees && form.value.target_trainees > maxTargetTrainees
@@ -111,6 +122,7 @@ const submit = () => {
             @input="validateTargetDate"
             placeholder="Target Start Date"
             class="border p-2 rounded w-full"
+            :min="getMinTargetDate()" 
           />
           <span v-if="page.props.errors?.target_date" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.target_date }}
