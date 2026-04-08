@@ -25,6 +25,7 @@ class IntermediateRequest extends FormRequest
                     ? Rule::unique('projects', 'project_name')->ignore($projectId)
                     : Rule::unique('projects', 'project_name'),
             ],
+            'project_description' => 'nullable|string|max:1024',
             'remarks' => 'nullable|string|max:1024',
         ];
     }
@@ -35,6 +36,7 @@ class IntermediateRequest extends FormRequest
             'project_name.unique' => config('errors.project_name_unique.errorMessage'),
             'project_name.required' => config('errors.field_required.errorMessage'),
             'project_name.max' => config('errors.max_length_exceeded.errorMessage'),
+            'project_description.max' => config('errors.max_length_exceeded.errorMessage'),
             'remarks.max' => config('errors.max_length_exceeded.errorMessage'),
         ];
     }

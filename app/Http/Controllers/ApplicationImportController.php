@@ -10,6 +10,7 @@ use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Carbon\Carbon;
 
 class ApplicationImportController extends Controller
 {
@@ -42,6 +43,7 @@ class ApplicationImportController extends Controller
         ]);
         }
 
+
     public function import(ImportApplicationsRequest $request)
     {
 
@@ -65,7 +67,6 @@ class ApplicationImportController extends Controller
         $skippedApplicants = [];
         $failedApplicants = [];
         $now = now()->format('Y-m-d H:i:s');
-        $sixMonthsAgo = now()->subMonths(6);
 
 foreach ($rows as $rowIndex => $row) {
     if (empty(array_filter($row))) {
@@ -124,7 +125,7 @@ foreach ($rows as $rowIndex => $row) {
 
         $config = config('constants');
         $recruitmentPortalKeywords = $config['recruitment_portal_keywords'];
-        $sourceMap = $config['source'];
+        $sourceMap = $config['source_map'];
 
         $rawSource = trim($row['From what recruitment channel have you applied for this job?']);
         \Log::info('Source value:', ['rawSource' => $rawSource]);
@@ -177,15 +178,16 @@ foreach ($rows as $rowIndex => $row) {
         $existingApplicant = ActionApplicant::where('email_address', $email)->first();
         $lastApplication = $existingApplicant
             ? ActionApplication::where('action_applicant_id', $existingApplicant->id)
-                ->orderBy('created_time', 'desc')
+                ->orderBy('source_date', 'desc')
                 ->first()
             : null;
 
-        $exam_application_status = null;
+        $exam_application_status = $examApplicationStatusFromExcel;
         $initial_interview_application_status = null;
         $failedExamStatuses = [6,7];
         $failedInitialStatuses = [5];
-        $sixMonthsAgo = now()->subMonths(6);
+        $currentRowTime = Carbon::parse($createdTime);
+        $sixMonthsAgo = $currentRowTime->copy()->subMonths(6);
 
         if (!$existingApplicant) {
             // New applicant
@@ -194,24 +196,26 @@ foreach ($rows as $rowIndex => $row) {
             );
         } elseif ($lastApplication) {
             $applicant = $existingApplicant;
-            $lastAppTime = $lastApplication->created_time;
+            $lastAppTime = Carbon::parse($lastApplication->source_date);
 
             $isFailed = in_array($lastApplication->exam_application_status, $failedExamStatuses) ||
                         in_array($lastApplication->initial_interview_application_status, $failedInitialStatuses);
 
             if ($isFailed && $lastAppTime > $sixMonthsAgo) {
-                $skippedApplicants[] = "{$name} - Last failed app <6mo, skipping";
+                $skippedApplicants[] = "{$name} - Failed within last 6 months, cannot reapply yet.";
                 DB::rollBack();
                 continue;
             } elseif ($isFailed && $lastAppTime <= $sixMonthsAgo) {
                 // New application, no statuses
             } elseif (!$isFailed && $lastAppTime > $sixMonthsAgo) {
-                $exam_application_status = 5;
                 $initial_interview_application_status = 1;
-            } else {
-                $exam_application_status = 1;
             }
         }
+
+        \Log::info('Exam status mapping', [
+    'rawExamStatus' => $rawExamStatus,
+    'mapped' => $examApplicationStatusFromExcel,
+]);
 
         // -------------------------
         // CREATE APPLICATION
@@ -223,16 +227,33 @@ foreach ($rows as $rowIndex => $row) {
             $exam_application_status,
             $exam_plan_date,
             now()->format('Y-m-d H:i:s'),
-            $createdTime // <-- Excel timestamp used here
+            $batchTargetLocation,
+            $createdTime
         );
 
         DB::commit();
         $importedApplicants[] = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        $failedApplicants[] = mb_convert_encoding("{$name} - Excel row contains invalid data", 'UTF-8', 'UTF-8');
-    }
+        \Log::info('Saving application', [
+    'name' => $name,
+    'exam_application_status' => $exam_application_status,
+]);
+
+} catch (\Throwable $e) {
+    DB::rollBack();
+
+    \Log::error('Application import failed', [
+        'row' => $rowIndex + 2,
+        'name' => $name,
+        'email' => $row['Email Address'] ?? null,
+        'source' => $row['From what recruitment channel have you applied for this job?'] ?? null,
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+    ]);
+
+    $failedApplicants[] = "{$name} - " . $e->getMessage();
+}
 }
         // -------------------------
         // Prepare messages that show on screen & logging
