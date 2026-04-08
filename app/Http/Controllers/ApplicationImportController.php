@@ -411,13 +411,13 @@ class ApplicationImportController extends Controller
                         'last_name' => $lastName,
                         'address' => $row['Address'] ?? null,
                         'contact_no' => $row['Contact Number'] ?? null,
-                        'birthdate' => $row['Birthday'] ?? null,
+                        'birthdate' => $this->parseBirthday($row['Birthday'] ?? null),
                         'age' => $row['Age'] ?? null,
                         'school_graduated_from' => $row['School Graduated from'] ?? null,
                         'course' => $row['Course/Degree taken'] ?? null,
                         'year_attended' => $row['Inclusive Year Attended'] ?? null,
                         'spouse_details' => $row['SPOUSE'] ?? null,
-                        'children' => is_numeric($row['CHILDREN']) ? (int)$row['CHILDREN'] : 0,
+                        'children' => is_numeric($row['CHILDREN']) ? (int) $row['CHILDREN'] : 0,
                         'father_details' => $row['FATHER'] ?? null,
                         'mother_details' => $row['MOTHER'] ?? null,
                         'sibling_details' => $row['SIBLING/S'] ?? null,
@@ -462,9 +462,9 @@ class ApplicationImportController extends Controller
                 $applicant->workExperiences()->update(['is_deleted' => 1]);
 
                 $workBlocks = [
-                    ['Employer (Company Name)', 'Company Address', 'Job Title', 'Dates Employed', 'Work Description/ Responsibilities', 'Salary', 'Reason for Leaving', 'Name of Supervisor/Team Lead and Contact Number'],
-                    ['Employer (Company Name)2', 'Company Address2', 'Job Title2', 'Dates Employed2', 'Work Description/ Responsibilities2', 'Salary2', 'Reason for Leaving2', 'Name of Supervisor/Team Lead and Contact Number2'],
-                    ['Employer (Company Name)3', 'Company Address3', 'Job Title3', 'Dates Employed3', 'Work Description/ Responsibilities3', 'Salary3', 'Reason for Leaving3', 'Name of Supervisor/Team Lead and Contact Number3'],
+                    ['1. Employer (Company Name)', '1. Company Address', '1. Job Title', '1. Dates Employed', '1. Work Description/ Responsibilities', '1. Salary', '1. Reason for Leaving', '1. Name of Supervisor/Team Lead and Contact Number'],
+                    ['2. Employer (Company Name)', '2. Company Address', '2. Job Title', '2. Dates Employed', '2. Work Description/ Responsibilities', '2. Salary', '2. Reason for Leaving', '2. Name of Supervisor/Team Lead and Contact Number'],
+                    ['3. Employer (Company Name)', '3. Company Address', '3. Job Title', '3. Dates Employed', '3. Work Description/ Responsibilities', '3. Salary', '3. Reason for Leaving', '3. Name of Supervisor/Team Lead and Contact Number'],
                 ];
 
                 foreach ($workBlocks as $block) {
@@ -576,5 +576,31 @@ class ApplicationImportController extends Controller
         } catch (\Throwable $e) {
             return null;
         }
+    }
+
+    protected function parseBirthday($rawDate)
+    {
+        if (! $rawDate) {
+            return null;
+        }
+
+        // Remove the first 6 characters
+        $cleaned = substr($rawDate, 6);
+
+        // Replace 年 and 月 with '-', remove 日
+        $cleaned = str_replace(['年', '月'], '-', $cleaned);
+        $cleaned = str_replace('日', '', $cleaned);
+
+        // Optionally, ensure proper zero padding for month/day
+        $parts = explode('-', $cleaned);
+        if (count($parts) === 3) {
+            $year = $parts[0];
+            $month = str_pad($parts[1], 2, '0', STR_PAD_LEFT);
+            $day = str_pad($parts[2], 2, '0', STR_PAD_LEFT);
+
+            return "$year-$month-$day";
+        }
+
+        return $cleaned;
     }
 }
