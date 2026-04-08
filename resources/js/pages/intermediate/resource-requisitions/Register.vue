@@ -14,7 +14,7 @@ const form = ref({
   person_to_replace: '',
   location_assignment: '',
   custom_location: '', 
-  project_id: '', 
+  project_id: '',
   business_unit: '',
   resource: '',
   practice: '',
@@ -42,33 +42,6 @@ const startDateError = ref('')
 
 const today = new Date().toISOString().slice(0, 10)
 
-const validateEngagementType = () => {
-  engagementTypeError.value = !form.value.engagement_type ? 'This field is required.' : ''
-}
-
-const validateSourcingType = () => {
-  sourcingTypeError.value = !form.value.sourcing_type ? 'This field is required.' : ''
-}
-
-const validateRequestType = () => {
-  requestTypeError.value = !form.value.request_type ? 'This field is required.' : ''
-}
-
-const validateReplacementDueTo = () => {
-  replacementDueToError.value = form.value.request_type === '2' && !form.value.replacement_due_to
-    ? 'This field is required when replacement is selected.'
-    : ''
-}
-
-const validatePersonToReplace = () => {
-  personToReplaceError.value = form.value.request_type === '2' && !form.value.person_to_replace
-    ? 'Please provide the person to replace.'
-    : ''
-}
-
-const validateLocationAssignment = () => {
-  locationAssignmentError.value = !form.value.location_assignment ? 'This field is required.' : ''
-}
 
 const validateStartDate = () => {
   startDateError.value = form.value.start_date && form.value.start_date <= today
@@ -76,11 +49,10 @@ const validateStartDate = () => {
     : ''
 }
 
-// Fetch projects from the backend
 onMounted(async () => {
   const response = await fetch('/projects');
   const data = await response.json();
-  projects.value = data; // Store projects in the reactive variable
+  projects.value = data;
 });
 
 // Update project description when a project is selected

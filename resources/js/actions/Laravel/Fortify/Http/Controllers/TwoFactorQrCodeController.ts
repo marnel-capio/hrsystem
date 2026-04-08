@@ -79,4 +79,10 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     show.form = showForm
 const TwoFactorQrCodeController = { show }
 
+export default TwoFactorQrCodeControllert',
+        })
+    
+    show.form = showForm
+const TwoFactorQrCodeController = { show }
+
 export default TwoFactorQrCodeController
