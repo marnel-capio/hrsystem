@@ -341,6 +341,20 @@ public function hasAnyEditableStageFor(User $user): bool
 
 public function syncInterviewStatusesFromStageResults(): void
 {
+    if (in_array((int) $this->exam_result, [
+        config('constants.application_results.passed'),
+        config('constants.application_results.failed'),
+    ], true)) {
+        ActionApplicationInterview::where('action_application_id', $this->id)
+            ->where('interview_type', config('constants.interview_types.exam'))
+            ->where('status', '!=', config('constants.interview_assignment_status.declined'))
+            ->update([
+                'status' => config('constants.interview_assignment_status.completed'),
+                'updated_by' => auth()->id(),
+                'updated_time' => now(),
+            ]);
+    }
+
     if (in_array((int) $this->initial_interview_result, [
         config('constants.application_results.passed'),
         config('constants.application_results.failed'),

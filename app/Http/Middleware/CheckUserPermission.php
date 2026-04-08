@@ -154,6 +154,7 @@ if (in_array($routeName, [
                 config('constants.HR_RECRUITER_PERMISSION.value'),
                 config('constants.BU_MANAGER_PERMISSION.value'),
                 config('constants.INTERVIEWER_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
             ])) {
                 return $next($request);
             }

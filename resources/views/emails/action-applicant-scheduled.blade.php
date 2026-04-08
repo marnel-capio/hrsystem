@@ -4,14 +4,29 @@
 @php
     $applicantName = trim($application->applicant->first_name . ' ' . $application->applicant->last_name);
 
-    $stageNames = $approvedInterviews->map(function ($interview) {
-        return match((int) $interview->interview_type) {
-            1 => 'exam',
-            2 => 'initial interview',
-            3 => 'final interview',
-            default => 'assessment',
-        };
-    })->unique()->values();
+    $uniqueSchedules = $approvedInterviews
+        ->map(function ($interview) {
+            $stageLabel = match((int) $interview->interview_type) {
+                1 => 'Exam',
+                2 => 'Initial Interview',
+                3 => 'Final Interview',
+                default => 'Assessment',
+            };
+
+            return [
+                'stage' => $stageLabel,
+                'datetime' => \Carbon\Carbon::parse($interview->scheduled_date)->format('F d, Y h:i A'),
+                'key' => (int) $interview->interview_type . '|' . \Carbon\Carbon::parse($interview->scheduled_date)->format('Y-m-d H:i:s'),
+            ];
+        })
+        ->unique('key')
+        ->values();
+
+    $stageNames = $uniqueSchedules
+        ->pluck('stage')
+        ->map(fn ($stage) => strtolower($stage))
+        ->unique()
+        ->values();
 
     if ($stageNames->count() === 1) {
         $intro = match($stageNames->first()) {
@@ -36,22 +51,9 @@
 </p>
 
 <ul style="font-size: 16px; line-height: 1.6;">
-    @foreach ($approvedInterviews as $interview)
+    @foreach ($uniqueSchedules as $schedule)
         <li>
-            @switch((int) $interview->interview_type)
-                @case(1)
-                    Exam
-                    @break
-                @case(2)
-                    Initial Interview
-                    @break
-                @case(3)
-                    Final Interview
-                    @break
-                @default
-                    Assessment
-            @endswitch
-            — {{ \Carbon\Carbon::parse($interview->scheduled_date)->format('F d, Y h:i A') }}
+            {{ $schedule['stage'] }} — {{ $schedule['datetime'] }}
         </li>
     @endforeach
 </ul>
