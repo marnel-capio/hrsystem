@@ -6,8 +6,8 @@ use App\Http\Requests\ImportApplicationsRequest;
 use App\Models\ActionApplicant;
 use App\Models\ActionApplication;
 use App\Models\ActionBatchModel;
-use App\Models\IntermediateApplicant;
 use App\Models\Log;
+use App\Services\IntermediateApplicantImportService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -360,247 +360,18 @@ class ApplicationImportController extends Controller
 
     public function importIntermediateApplicants(Request $request)
     {
-        // Validate uploaded file
         $request->validate([
             'file' => 'required|file|mimes:xlsx,csv,xls',
         ]);
 
         $file = $request->file('file');
-        $rows = $this->parseFileIntermediate($file);
+        $importService = new IntermediateApplicantImportService;
 
-        $imported = [];
-        $skipped = [];
-        $failed = [];
-        // \Log::debug($rows[0]);
+        $results = $importService->processFileImport($file);
 
-        foreach ($rows as $index => $row) {
-            // Skip empty rows
-            if (empty(array_filter($row))) {
-                $skipped[] = 'Row '.($index + 2).' - Empty row';
-
-                continue;
-            }
-
-            $email = trim($row['Email Address'] ?? '');
-            $fullName = trim($row['Name (Last Name, Given Name, Middle Name)'] ?? '');
-
-            if (empty($email) || empty($fullName)) {
-                $skipped[] = 'Row '.($index + 2).' - Missing email or name';
-
-                continue;
-            }
-
-            // -------------------------
-            // 1. PARSE NAME
-            // -------------------------
-            $nameParts = array_map('trim', explode(',', $fullName));
-            $lastName = $nameParts[0] ?? null;
-            $firstName = $nameParts[1] ?? null;
-            $middleName = $nameParts[2] ?? null;
-
-            DB::beginTransaction();
-            try {
-                // -------------------------
-                // 2. CREATE OR UPDATE APPLICANT
-                // -------------------------
-                $applicant = IntermediateApplicant::updateOrCreate(
-                    ['email_address' => $email],
-                    [
-                        'first_name' => $firstName,
-                        'middle_name' => $middleName,
-                        'last_name' => $lastName,
-                        'address' => $row['Address'] ?? null,
-                        'contact_no' => $row['Contact Number'] ?? null,
-                        'birthdate' => $this->parseBirthday($row['Birthday'] ?? null),
-                        'age' => $row['Age'] ?? null,
-                        'school_graduated_from' => $row['School Graduated from'] ?? null,
-                        'course' => $row['Course/Degree taken'] ?? null,
-                        'year_attended' => $row['Inclusive Year Attended'] ?? null,
-                        'spouse_details' => $row['SPOUSE'] ?? null,
-                        'children' => is_numeric($row['CHILDREN']) ? (int) $row['CHILDREN'] : 0,
-                        'father_details' => $row['FATHER'] ?? null,
-                        'mother_details' => $row['MOTHER'] ?? null,
-                        'sibling_details' => $row['SIBLING/S'] ?? null,
-                        'emergency_contact_name' => $row['Person to notify in case of emergency:'] ?? null,
-                        'emergency_contact_number' => $row['Contact Details'] ?? null,
-                        'emergency_contact_address' => $row['Address'] ?? null,
-                        'registered_date' => $this->parseExcelDate($row['Timestamp'] ?? null),
-                        'registered_by' => auth()->id(),
-                    ]
-                );
-
-                // -------------------------
-                // 3. APPLICATION HISTORY
-                // -------------------------
-                $applicant->applications()->create([
-                    'position' => $row['Position you are applying for'] ?? null,
-                    'application_stage' => 1, // New
-                    'fy_week' => 1,
-                    'availability_date' => $this->parseExcelDate($row['Date Available to Report to Work'] ?? null),
-                    'desired_salary_range' => $row['Desired Salary Range'] ?? null,
-                    'work_preference' => $row['Please check your work preference:'] ?? null,
-                    'basic_pay' => $row['Basic Pay'] ?? null,
-                    'bonuses' => $row['Bonuses'] ?? null,
-                    'hmo' => $row['HMO'] ?? null,
-                    'leaves' => $row['Vacation Leaves/ Sick Leavse'] ?? null,
-                    'allowances' => $row['Allowances'] ?? null,
-                    'other_benefits' => $row['Other Benefits'] ?? null,
-                    'answer_q1' => $this->mapYesNo($row['Please answer the following questions below: [Have you ever filed an application in AWS, Inc. before?]'] ?? null),
-                    'answer_q2' => $this->mapYesNo($row['Please answer the following questions below: [Do any of your friends or relatives, other than a spouse, work in AWS>]'] ?? null),
-                    'answer_q3' => $this->mapYesNo($row['Please answer the following questions below: [Have you worked in AWS before?]'] ?? null),
-                    'answer_q4' => $this->mapYesNo($row['Please answer the following questions below: [Will you travel if the job requires it?]'] ?? null),
-                    'answer_q5' => $this->mapYesNo($row['Please answer the following questions below: [Will you work overtime if needed?]'] ?? null),
-                    'answer_q6' => $this->mapYesNo($row['Please answer the following questions below: [Have you been convicted of a crime?]'] ?? null),
-                    'answer_q7' => $this->mapYesNo($row['Please answer the following questions below: [Do you have any physical illness or impairments?]'] ?? null),
-                ]);
-
-                // -------------------------
-                // 4. WORK EXPERIENCES
-                // -------------------------
-
-                // Mark existing work experiences as deleted
-                $applicant->workExperiences()->update(['is_deleted' => 1]);
-
-                $workBlocks = [
-                    ['1. Employer (Company Name)', '1. Company Address', '1. Job Title', '1. Dates Employed', '1. Work Description/ Responsibilities', '1. Salary', '1. Reason for Leaving', '1. Name of Supervisor/Team Lead and Contact Number'],
-                    ['2. Employer (Company Name)', '2. Company Address', '2. Job Title', '2. Dates Employed', '2. Work Description/ Responsibilities', '2. Salary', '2. Reason for Leaving', '2. Name of Supervisor/Team Lead and Contact Number'],
-                    ['3. Employer (Company Name)', '3. Company Address', '3. Job Title', '3. Dates Employed', '3. Work Description/ Responsibilities', '3. Salary', '3. Reason for Leaving', '3. Name of Supervisor/Team Lead and Contact Number'],
-                ];
-
-                foreach ($workBlocks as $block) {
-                    // Check if this work experience has an employer
-                    if (! empty($row[$block[0]])) {
-                        $applicant->workExperiences()->create([
-                            'employer' => $row[$block[0]] ?? null,
-                            'company_address' => $row[$block[1]] ?? null,
-                            'job_title' => $row[$block[2]] ?? null,
-                            'date_employed' => $this->parseExcelDate($row[$block[3]] ?? null),
-                            'work_description' => $row[$block[4]] ?? null,
-                            'salary' => $row[$block[5]] ?? null,
-                            'reason_for_leaving' => $row[$block[6]] ?? null,
-                            'name_supervisor' => $row[$block[7]] ?? null,
-                            'is_deleted' => 0,
-                            'created_by' => auth()->id() ?? 1,
-                            'created_time' => now(),
-                            'updated_by' => auth()->id() ?? 1,
-                            'updated_time' => now(),
-                        ]);
-                    }
-                }
-
-                DB::commit();
-                $imported[] = $fullName;
-
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                $failed[] = 'Row '.($index + 2)." ({$fullName}) - ".$e->getMessage();
-            }
-        }
-
-        // Return JSON for Inertia
         return response()->json([
-            'success' => count($imported) ? 'Imported: '.implode(', ', $imported) : null,
-            'error' => count($failed) ? 'Failed: '.implode(', ', $failed) : null,
-            'skipped' => count($skipped) ? 'Skipped: '.implode(', ', $skipped) : null,
+            'success' => count($results['imported']) ? 'Imported/Updated: '.implode(', ', $results['imported']) : null,
+            'error' => count($results['failed']) ? 'Failed: '.implode(', ', $results['failed']) : null,
         ]);
-    }
-
-    /**
-     * Convert Yes/No to 1/0
-     */
-    private function mapYesNo($value)
-    {
-        $value = strtolower(trim($value ?? ''));
-
-        return in_array($value, ['yes', '1']) ? 1 : 0;
-    }
-
-    /**
-     * Parse Excel/CSV file for Intermediate Applicants
-     */
-    private function parseFileIntermediate($file)
-    {
-        $mime = $file->getMimeType();
-        $path = $file->getRealPath();
-
-        $rows = [];
-
-        if (in_array($mime, ['text/csv', 'text/plain'])) {
-            $handle = fopen($path, 'r');
-            $header = fgetcsv($handle);
-            while ($row = fgetcsv($handle)) {
-                $rows[] = array_combine($header, $row);
-            }
-            fclose($handle);
-        } else {
-            $spreadsheet = IOFactory::load($path);
-            $worksheet = $spreadsheet->getActiveSheet();
-            $arrayData = $worksheet->toArray(null, true, true, true);
-            $header = array_shift($arrayData);
-
-            foreach ($arrayData as $rowData) {
-                $row = [];
-                foreach ($header as $i => $h) {
-                    $row[$h] = $rowData[$i] ?? '';
-                }
-                $rows[] = $row;
-            }
-        }
-
-        return $rows;
-    }
-
-    protected function parseExcelDate($value)
-    {
-        if (empty($value)) {
-            return null;
-        }
-
-        // If it’s already a Carbon/DateTime instance
-        if ($value instanceof \DateTimeInterface) {
-            return Carbon::instance($value);
-        }
-
-        // If numeric (Excel serial date)
-        if (is_numeric($value)) {
-            try {
-                return Carbon::instance(Date::excelToDateTimeObject($value));
-            } catch (\Throwable $e) {
-                return null;
-            }
-        }
-
-        // Otherwise, try parsing string normally
-        try {
-            return Carbon::parse($value);
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    protected function parseBirthday($rawDate)
-    {
-        if (! $rawDate) {
-            return null;
-        }
-
-        // Remove the first 6 characters
-        $cleaned = substr($rawDate, 6);
-
-        // Replace 年 and 月 with '-', remove 日
-        $cleaned = str_replace(['年', '月'], '-', $cleaned);
-        $cleaned = str_replace('日', '', $cleaned);
-
-        // Optionally, ensure proper zero padding for month/day
-        $parts = explode('-', $cleaned);
-        if (count($parts) === 3) {
-            $year = $parts[0];
-            $month = str_pad($parts[1], 2, '0', STR_PAD_LEFT);
-            $day = str_pad($parts[2], 2, '0', STR_PAD_LEFT);
-
-            return "$year-$month-$day";
-        }
-
-        return $cleaned;
     }
 }

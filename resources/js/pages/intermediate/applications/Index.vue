@@ -179,7 +179,7 @@ const showingTo = computed(() => Math.min(currentPage.value * perPage, filteredA
 
 const getStageLabel = (stage: number) => {
     const labels: Record<number, string> = {
-        1: 'New', 2: 'For Exam', 3: 'For Initial Interview', 4: 'For Final Interview', 5: 'For Job Offer'
+        1: 'New', 2: 'For Exam', 3: 'For Initial Interview', 4: 'For Final Interview', 5: 'For Job Offer', 6: 'Failed'
     }
     return labels[stage] || 'Unknown'
 }
@@ -310,7 +310,8 @@ const getStageLabel = (stage: number) => {
                                                 app.application_stage === 3 ? 'bg-blue-100 text-blue-800' :
                                                     app.application_stage === 4 ? 'bg-purple-100 text-purple-800' :
                                                         app.application_stage === 5 ? 'bg-green-100 text-green-800' :
-                                                            'bg-gray-100 text-gray-800'
+                                                            app.application_stage === 6 ? 'bg-red-100 text-red-800' :
+                                                            'bg-gray-100 text-gray-800'         
                                     ]">{{ getStageLabel(app.application_stage) }}</span>
                                 </td>
                                 <td class="border px-3 py-2">{{ app.remarks || '—' }}</td>
