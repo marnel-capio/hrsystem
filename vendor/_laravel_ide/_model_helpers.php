@@ -1127,11 +1127,6 @@ namespace App\Models {
      * @property float|null $exam_prg_result
      * @property float|null $exam_git_result
      * @property float|null $exam_atpp_result
-     * @property \Illuminate\Support\Carbon|null $pending_approval_notified_at
-     * @property string|null $decline_reason
-     * @property bool $status
-     * @property string|null $actual_date
-     * @property \Illuminate\Support\Carbon|null $scheduled_date
      * @property bool|null $interview_type
      * @property mixed $action_application_id
      * @property mixed $interviewer_id
@@ -1142,11 +1137,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereInterviewerId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereActionApplicationId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereInterviewType($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereScheduledDate($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereActualDate($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereDeclineReason($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview wherePendingApprovalNotifiedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereExamAtppResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereExamGitResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereExamPrgResult($value)
@@ -3523,7 +3513,7 @@ namespace App\Models {
      * @property mixed $created_by
      * @property boolean $active_status
      * @property mixed $permissions
-     * @property string $position
+     * @property bool $position
      * @property string $email_address
      * @property string $contact_no
      * @property string $address
