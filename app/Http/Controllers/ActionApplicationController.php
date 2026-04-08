@@ -283,36 +283,55 @@ class ActionApplicationController extends Controller
                     break;
 
             case 'applicant_scheduled':
-                $allInterviews = $application->interviews;
+    $approvedInterviews = $application->interviews
+        ->where('status', config('constants.interview_assignment_status.approved'));
 
-                if ($allInterviews->isEmpty()) {
-                    return response()->json([
-                        'message' => 'No interview schedules found.',
-                    ], 422);
-                }
+    if ($approvedInterviews->isEmpty()) {
+        return response()->json([
+            'message' => 'No approved interview schedules found.',
+        ], 422);
+    }
 
-                $hasUnapproved = $allInterviews->contains(function ($interview) {
-                    return (int) $interview->status !== config('constants.interview_assignment_status.approved');
-                });
+    // Pick the latest/current stage that has approved assignments.
+    $currentStage = null;
 
-                if ($hasUnapproved) {
-                    return response()->json([
-                        'message' => 'Applicant schedule email can only be sent after all assigned interviewers have approved.',
-                    ], 422);
-                }
+    if ($approvedInterviews->where('interview_type', config('constants.interview_types.final'))->isNotEmpty()) {
+        $currentStage = config('constants.interview_types.final');
+    } elseif ($approvedInterviews->where('interview_type', config('constants.interview_types.initial'))->isNotEmpty()) {
+        $currentStage = config('constants.interview_types.initial');
+    } elseif ($approvedInterviews->where('interview_type', config('constants.interview_types.exam'))->isNotEmpty()) {
+        $currentStage = config('constants.interview_types.exam');
+    }
 
-                if (empty(optional($application->applicant)->email_address)) {
-                    return response()->json([
-                        'message' => 'Applicant email address is missing.',
-                    ], 422);
-                }
+    $stageInterviews = $approvedInterviews
+        ->where('interview_type', $currentStage)
+        ->values();
 
-                Mail::to($application->applicant->email_address)->send(
-                    new ActionApplicantScheduledMail($application, $allInterviews->values(), $link)
-                );
+    // Make sure all assignments for that stage are approved before sending.
+    $stageAllInterviews = $application->interviews
+        ->where('interview_type', $currentStage);
 
-                break;
+    $hasUnapprovedForStage = $stageAllInterviews->contains(function ($interview) {
+        return (int) $interview->status !== config('constants.interview_assignment_status.approved');
+    });
 
+    if ($hasUnapprovedForStage) {
+        return response()->json([
+            'message' => 'Applicant schedule email can only be sent after all assigned interviewers for this stage have approved.',
+        ], 422);
+    }
+
+    if (empty(optional($application->applicant)->email_address)) {
+        return response()->json([
+            'message' => 'Applicant email address is missing.',
+        ], 422);
+    }
+
+    Mail::to($application->applicant->email_address)->send(
+        new ActionApplicantScheduledMail($application, $stageInterviews, $link)
+    );
+
+    break;
                 case 'applicant_failed':
                     $failedStage = null;
 
@@ -598,6 +617,7 @@ if ($request->type === 'hr_recruiters_job_offer') {
             config('constants.HR_RECRUITER_PERMISSION.value'),
             config('constants.BU_MANAGER_PERMISSION.value'),
             config('constants.INTERVIEWER_PERMISSION.value'),
+            config('constants.HR_MANAGER_PERMISSION.value'),
         ], true)) {
             abort(403, 'Only assigned recruiters, BU managers, or interviewers can submit a decision.');
         }

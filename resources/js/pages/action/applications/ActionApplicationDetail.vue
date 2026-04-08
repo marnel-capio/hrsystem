@@ -9,7 +9,7 @@ import {
 import axios from 'axios'
 
 const canAcceptDecline = (interview: any) => {
-return [3, 5, 6].includes(userPermissions.value) &&
+return [2, 3, 5, 6].includes(userPermissions.value) &&
        interview.interviewer_id === page.props.user_id &&
        interview.status === 1
     }
@@ -541,8 +541,8 @@ const availableNotificationOptions = computed(() => {
 if (allInterviewersApproved.value) {
     options.push({
         value: 'applicant_scheduled',
-        label: 'Send applicant interview/exam schedule',
-        description: 'Notify the applicant about approved interview/exam schedule(s).',
+        label: 'Send applicant scheduled assessment',
+        description: 'Notify the applicant about their approved schedule.',
     })
 }
 
