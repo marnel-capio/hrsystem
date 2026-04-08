@@ -112,45 +112,59 @@ Route::middleware(['auth'])->group(function () {
     // Resource Schedules
     // ------------------------
 
-    Route::middleware(['check.permission'])->group(function () {
+    Route::middleware(['auth', 'check.permission'])->group(function () {
         Route::get('/action/schedules', [ResourceScheduleController::class, 'index'])->name('action.schedules.index');
         Route::get('/action/schedules/register', [ResourceScheduleController::class, 'create'])->name('action.schedules.register');
         Route::post('/action/schedules', [ResourceScheduleController::class, 'store'])->name('action.schedules.store');
         Route::get('/action/schedules/{id}', [ResourceScheduleController::class, 'show'])->name('action.schedules.show');
         Route::get('/action/schedules/{id}/edit', [ResourceScheduleController::class, 'edit'])->name('action.schedules.edit');
         Route::put('/action/schedules/{id}/update', [ResourceScheduleController::class, 'update'])->name('action.schedules.update');
-        //email
-        Route::post('/action/schedules/{id}/send-notification',
-            [ResourceScheduleController::class, 'sendResourceScheduleNotification']
-        )->name('action.schedules.notify');
-        //delete
-        Route::delete('/action/schedules/{id}', [ResourceScheduleController::class, 'destroy'])
-        ->name('action.schedules.destroy');
-        });
+        Route::post('/action/schedules/{id}/send-notification', [ResourceScheduleController::class, 'sendResourceScheduleNotification'])->name('action.schedules.notify');
+        Route::delete('/action/schedules/{id}', [ResourceScheduleController::class, 'destroy'])->name('action.schedules.destroy');
+    });
 
-    // ------------------------
-    // ACTION ApplicaTIONS
-    // ------------------------
-    Route::middleware(['check.permission'])->group(function () {
-         Route::prefix('applicant-applications')->name('applicant-applications.')->group(function () {
-        Route::get('/', [ActionApplicationController::class, 'index'])->name('index');
-        Route::get('/create', [ActionApplicationController::class, 'create'])->name('create');
-        Route::post('/', [ActionApplicationController::class, 'store'])->name('store');
-        Route::get('/{id}', [ActionApplicationController::class, 'show'])->name('detail');
-        Route::post('/check-unique', [ActionApplicationController::class, 'checkUnique'])->name('checkUnique');});
-        Route::get('/action/applications', [ActionApplicationController::class, 'index'])->name('action.applications.index');
-        Route::get('/action/applications/register', [ActionApplicationController::class, 'create'])
-        ->name('action.applications.create');
-        Route::get('/action/applications/{id}', [ActionApplicationController::class, 'show'])
-        ->name('action.applications.show');
-        Route::get('/action/applications/{id}', [ActionApplicationController::class, 'show'])
-        ->name('action.applications.show');
-        Route::post('/action/applications', [ActionApplicationController::class, 'store'])
-        ->name('action.applications.store');
-        Route::post('/applications/import', [ApplicationImportController::class, 'import'])->name('action.applications.import');
-        Route::get('/action/applications/eligible-applicants/{batchId}', [ActionApplicationController::class, 'getApplicantsForBatch']); //api
-        Route::post('/action/applications/check-eligibility', [ActionApplicationController::class, 'checkEligibility']); //api
-        });
+        // ------------------------
+        // ACTION APPLICATIONS
+        // ------------------------
+        Route::middleware(['auth', 'check.permission'])->group(function () {
+            Route::prefix('action/applications')->name('action.applications.')->group(function () {
+            Route::get('/', [ActionApplicationController::class, 'index'])->name('index');
+            Route::get('/register', [ActionApplicationController::class, 'create'])->name('create');
+            Route::post('/', [ActionApplicationController::class, 'store'])->name('store');
+            Route::get('/{id}', [ActionApplicationController::class, 'show'])->name('show');
+            Route::post('/import', [ApplicationImportController::class, 'import'])->name('import');
+            Route::get('/{id}/edit', [ActionApplicationController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [ActionApplicationController::class, 'update'])->name('update');
+
+            Route::get('/eligible-applicants/{batchId}', [ActionApplicationController::class, 'getApplicantsForBatch'])
+                ->name('eligible-applicants');
+            Route::post('/check-eligibility', [ActionApplicationController::class, 'checkEligibility'])
+                ->name('check-eligibility');
+
+            Route::post('/{id}/interviews/bulk-add', [ActionApplicationController::class, 'bulkAddInterviews'])
+                ->name('interviews.bulk-add');
+
+            Route::post('/{applicationId}/interviews/bulk-delete', [ActionApplicationController::class, 'bulkDeleteInterviews'])
+                ->name('interviews.bulk-delete');
+
+            Route::post('/{applicationId}/interviews/{interviewId}/decision', [ActionApplicationController::class, 'submitInterviewDecision'])
+                ->name('interviews.decision');
+
+            Route::post(
+                '/{applicationId}/interviews/bulk-update-schedule',
+                [ActionApplicationController::class, 'bulkUpdateInterviewSchedule']
+            )->name('interviews.bulk-update-schedule');
+
+            Route::post(
+                '/{application}/send-notification',
+                [ActionApplicationController::class, 'sendNotification']
+            )->name('send-notification');
+
+            Route::get('/{id}/print', [ActionApplicationController::class, 'print'])
+                ->name('print');
+
+});
+});
 
 
     // ------------------------
@@ -185,7 +199,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/action/applicants/check-email', [ActionApplicantController::class, 'checkEmail'])
                 ->name('action.applicants.check-email');
 
-        //action-applicants detail 
+        //action-applicants detail
         Route::get('/action/applicants/{id}', [ActionApplicantController::class, 'show'])
                 ->name('action.applicants.detail');
 
@@ -193,13 +207,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/action/applicants/{id}/edit', [ActionApplicantController::class, 'edit'])
                 ->name('action.applicants.edit');
 
-        
+
 
         //action-applicants update api
         Route::put('/action/applicants/{id}/update', [ActionApplicantController::class, 'update'])
                 ->name('action.applicants.update');
 
-        
+
     });
 
 

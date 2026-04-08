@@ -8,8 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckUserPermission
 {
+
+
     public function handle(Request $request, Closure $next): Response
     {
+
+
         $user = auth()->user();
 
         if (! $user) {
@@ -18,16 +22,27 @@ class CheckUserPermission
 
         $permission = (int) $user->permissions;
         $routeName = optional($request->route())->getName();
+        $routeId = $request->route('id');
         $routePath = $request->path();
 
-        if ($request->is('action/applications') && $request->isMethod('post')) {
-    if (in_array($permission, [config('constants.HR_ADMIN_PERMISSION.value'), config('constants.HR_MANAGER_PERMISSION.value'), config('constants.HR_RECRUITER_PERMISSION.value')])) {
-        return $next($request);
-    }
+        logger([
+    'user_id' => optional(auth()->user())->id,
+    'permission' => optional(auth()->user())->permissions,
+    'routeName' => $routeName,
+]);
 
-    return redirect('/dashboard')
-        ->with('error', config('errors.unauthorized.errorMessage'));
-}
+        if ($request->is('action/applications') && $request->isMethod('post')) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
 
         /*
         |----------------------------------------------------------------------
@@ -57,9 +72,88 @@ class CheckUserPermission
         | Only HR Admin & HR Manager allowedintermediate.projects.lis
         |----------------------------------------------------------------------
         */
-        if (in_array($routeName, ['user.index', 'user.register', 'user.store', 'action.schedules.register', 'action.schedules.store', 'action.schedules.edit', 'action.schedules.update', 'action.create', 'action.show', 'action.schedules.notify', 'action.schedules.destroy'])) {
+if (in_array($routeName, [
+    'user.index',
+    'user.register',
+    'user.store',
+])) {
+    if (in_array($permission, [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+        config('constants.HR_MANAGER_PERMISSION.value'),
+    ])) {
+        return $next($request);
+    }
+
+    return redirect('/dashboard')
+        ->with('error', config('errors.unauthorized.errorMessage'));
+}
+
+if (in_array($routeName, [
+    'action.schedules.index',
+    'action.schedules.show',
+])) {
+    if (in_array($permission, [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+        config('constants.HR_MANAGER_PERMISSION.value'),
+        config('constants.HR_RECRUITER_PERMISSION.value'),
+    ])) {
+        return $next($request);
+    }
+
+    return redirect('/dashboard')
+        ->with('error', config('errors.unauthorized.errorMessage'));
+}
+
+if (in_array($routeName, [
+    'action.schedules.register',
+    'action.schedules.store',
+    'action.schedules.edit',
+    'action.schedules.update',
+    'action.schedules.notify',
+    'action.schedules.destroy',
+])) {
+    if (in_array($permission, [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+        config('constants.HR_MANAGER_PERMISSION.value'),
+    ])) {
+        return $next($request);
+    }
+
+    return redirect('/dashboard')
+        ->with('error', config('errors.unauthorized.errorMessage'));
+}
+
+        /*
+        |--------------------------------------------------------------------------
+        | Route: /action/schedules/ and /action/batches and ACTION Applications create/process routes
+        | Only HR Admin, HR Manager, and HR Recruiter allowed
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($routeName, [
+            'action.applications.import',
+            'action.applications.create',
+            'action.applications.store',
+            'action.applications.eligible-applicants',
+            'action.applications.check-eligibility',
+            'action.applications.send-notification',
+            'action.applications.interviews.bulk-add',
+            'action.applications.interviews.bulk-delete',
+            'action.applications.interviews.bulk-update-schedule',
+        ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+        }
+
+        if ($routeName === 'action.applications.interviews.decision') {
+            if (in_array($permission, [
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
                 config('constants.HR_MANAGER_PERMISSION.value'),
             ])) {
                 return $next($request);
@@ -71,23 +165,18 @@ class CheckUserPermission
 
         /*
         |--------------------------------------------------------------------------
-        | Route: /action/schedules/ and /action/batches and /action/applications/register and /action/applications/id and applications import
-        | Only permission 1, 2, and 3 allowed
+        | Route: ACTION Applications List
+        | HR Admin, HR Manager, HR Recruiter, BU Manager, Interviewer allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, [
-            'action.schedules.index',
-            'action.schedules.show',
-            'action.list',
-            'action.applications.import',
-            'action.applications.create',
-            'action.applications.show',
-            'action.applications.store',
-            'action.applications.eligible-applicants',
-            'action.applications.check-eligibility',
-            'action.applications.check-unique'
-        ])) {
-            if (in_array($permission, [config('constants.HR_ADMIN_PERMISSION.value'), config('constants.HR_MANAGER_PERMISSION.value'), config('constants.HR_RECRUITER_PERMISSION.value')])) {
+        if (in_array($routeName, ['action.applications.index'])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
                 return $next($request);
             }
 
@@ -97,12 +186,23 @@ class CheckUserPermission
 
         /*
         |--------------------------------------------------------------------------
-        | Route: ACTION Applications List
-        | Only permission 1, 2, 3, 5, 6 allowed
+        | Route: ACTION Applications Detail / Edit / Print
+        | HR Admin, HR Manager, HR Recruiter, BU Manager, Interviewer allowed
         |--------------------------------------------------------------------------
         */
-        if (in_array($routeName, ['action.applications.index'])) {
-            if (in_array($permission, [1, 2, 3, 5, 6])) {
+        if (in_array($routeName, [
+            'action.applications.show',
+            'action.applications.edit',
+            'action.applications.update',
+            'action.applications.print',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
                 return $next($request);
             }
 
@@ -167,6 +267,7 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
+
         if (in_array($routeName, ['intermediate.projects.register', 'intermediate.projects.store', 'intermediate.projects.edit', 'intermediate.projects.update'])) {
             // Only permission 1 or 5 are allowed for these routes
             if (in_array($permission, [1, 5])) {
@@ -179,7 +280,6 @@ class CheckUserPermission
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
-
 
         /*
         |----------------------------------------------------------------------

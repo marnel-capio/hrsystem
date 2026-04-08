@@ -167,22 +167,6 @@ function validateScoreField(field: string, label: string, value: string | number
     clearLiveError(field)
 }
 
-function validateDateField(field: string, label: string, value: string) {
-    if (!value) {
-        clearLiveError(field)
-        return
-    }
-
-    const date = new Date(value)
-
-    if (Number.isNaN(date.getTime())) {
-        setLiveError(field, `${label} must be a valid date.`)
-        return
-    }
-
-    clearLiveError(field)
-}
-
 watch(() => form.exam_atpp_result, (value) => {
     validateScoreField('exam_atpp_result', 'ATTP Result', value)
 })
@@ -305,7 +289,7 @@ watch(() => form.action_batch_id, async (newBatchId) => {
         const response = await axios.get(`/action/applications/eligible-applicants/${newBatchId}`)
 
         if (!response.data || response.data.length === 0) {
-            noApplicantsError.value = 'No eligible applicants found for this batch. All applicants either already applied or have failed applications in the last 6 months.'
+            noApplicantsError.value = 'No eligible applicants found for this batch.'
             actionApplicants.value = []
             return
         }
@@ -390,25 +374,75 @@ watch(() => form.action_applicant_id, async (newApplicantId, oldApplicantId) => 
     }
 })
 
-function getExamCategory(applicant: { age: number | null, degree: string } | null): 'young_it' | 'young_other' | 'adult' {
+function normalizeDegree(degree: string): string {
+    return String(degree || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+}
+
+function isTechDegree(degree: string): boolean {
+    const normalizedDegree = normalizeDegree(degree)
+
+    const patterns = [
+        'bs information technology',
+        'bachelor of science in information technology',
+        'bachelor of science major in information technology',
+        'information technology',
+        'bsit',
+        'it',
+        'bs it',
+
+        'bs computer science',
+        'bachelor of science in computer science',
+        'bachelor of science major in computer science',
+        'computer science',
+        'bscs',
+        'cs',
+        'bs cs',
+
+        'bs computer engineering',
+        'bachelor of science in computer engineering',
+        'bachelor of science major in computer engineering',
+        'computer engineering',
+        'bscpe',
+        'cpe',
+        'bs cpe',
+    ]
+
+    for (const pattern of patterns) {
+        const normalizedPattern = normalizeDegree(pattern)
+
+        if (!normalizedPattern) continue
+
+        if (['it', 'cs', 'cpe', 'bsit', 'bscs', 'bscpe'].includes(normalizedPattern)) {
+            const regex = new RegExp(`\\b${normalizedPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
+            if (regex.test(normalizedDegree)) {
+                return true
+            }
+            continue
+        }
+
+        if (normalizedDegree.includes(normalizedPattern)) {
+            return true
+        }
+    }
+
+    return false
+}
+
+function getExamCategory(applicant: any): 'young_it' | 'young_other' | 'adult' {
     if (!applicant) return 'young_other'
 
     const age = Number(applicant.age || 0)
-    const degree = (applicant.degree || '').toLowerCase().trim()
+    const rawDegree = applicant.others_degree || applicant.degree || applicant.course || ''
 
     if (age >= 25) {
         return 'adult'
     }
 
-    const isTech =
-        degree.includes('computer science') ||
-        degree.includes('information technology') ||
-        degree.includes('computer engineering') ||
-        /\bcs\b/.test(degree) ||
-        /\bit\b/.test(degree) ||
-        /\bcpe\b/.test(degree)
-
-    return isTech ? 'young_it' : 'young_other'
+    return isTechDegree(rawDegree) ? 'young_it' : 'young_other'
 }
 
 function getExamApplicationStatus(attp: number, git: number, prg: number, category: 'young_it' | 'young_other' | 'adult'): string {

@@ -19,6 +19,7 @@ const props = defineProps<{
 }>()
 
 
+
 const sourceTypes = props.sourceTypes
     ? Object.entries(props.sourceTypes).map(([value, label]) => ({ value: Number(value), label }))
     : []
@@ -125,6 +126,14 @@ const rules = {
     age: (val: string) => /^\d+$/.test(val) || 'Age must be a valid number',
     school: (val: string) => !!val || 'School is required',
     degree: (val: string) => !!val || 'Degree is required',
+    expected_graduation: (val: string) => {
+        const currentYear = new Date().getFullYear();
+        if (!val || val.trim() === '') return 'Expected Graduation Year is required';
+        const year = Number(val);
+        if (isNaN(year)) return 'Expected Graduation Year must be numeric';
+        if (year < currentYear) return `Value must be greater than or equal to ${currentYear}`;
+        return true;
+    },
 };
 
 function validateField(field: keyof typeof rules) {
@@ -173,6 +182,8 @@ watch(
     },
     { immediate: true, deep: true }
 )
+watch(() => form.expected_graduation, () => validateField('expected_graduation'));
+
 
 </script>
 
@@ -309,10 +320,10 @@ watch(
 
                     <!-- Expected Graduation -->
                     <div class="form-group">
-                        <label>Expected Graduation</label>
-                        <input type="date" v-model="form.expected_graduation" :min="minGraduationDate" />
+                        <label>Expected Graduation (Year)</label>
+                        <input type="text" v-model="form.expected_graduation" placeholder="YYYY" />
                         <span v-if="form.errors.expected_graduation" class="error">{{ form.errors.expected_graduation
-                            }}</span>
+                        }}</span>
                     </div>
 
                     <!-- Achievements / Remarks -->

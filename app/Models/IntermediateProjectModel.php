@@ -12,6 +12,7 @@ class IntermediateProjectModel extends Model
  
     protected $fillable = [
         'project_name',
+        'project_description',
         'remarks',
         'created_by',
         'created_time',
