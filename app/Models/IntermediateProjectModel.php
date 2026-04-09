@@ -3,7 +3,8 @@
 namespace App\Models;
  
 use Illuminate\Database\Eloquent\Model;
- 
+use Illuminate\Support\Facades\DB;
+
 class IntermediateProjectModel extends Model
 {
     protected $table = 'projects';
@@ -36,6 +37,29 @@ class IntermediateProjectModel extends Model
             ->orderBy('id', 'desc')
             ->paginate($perPage)
             ->withQueryString();
+    }
+
+
+    //TO BE USED IN RESOURCE REQS
+    public static function getProjects($excludeScheduled = true)
+    {
+        $requisitionIds = IntermediateRequisitionModel::pluck('project_id')->toArray();
+
+        $query = DB::table('projects')->select('id', 'project_name');
+
+        if ($excludeScheduled) {
+            $query->whereNotIn('id', $requisitionIds);
+        } else {
+            $query->whereIn('id', $requisitionIds);
+        }
+
+        return $query->get();
+    }
+
+
+    public function requisitions()
+    {
+        return $this->hasMany(IntermediateRequisitionModel::class, 'project_id');
     }
 
     const CREATED_AT = 'created_time';
