@@ -46,7 +46,7 @@ const actionApplicants = ref<Array<{
 
 const noApplicantsError = ref<string>('')
 
-    const examResultLabel = computed(() => {
+const examResultLabel = computed(() => {
     const selected = examResults.value.find(result => result.value === Number(form.exam_result))
     return selected ? selected.label : ''
 })
@@ -84,10 +84,10 @@ const form = useForm({
     initial_interview_application_status: '',
     initial_interview_remarks: '',
     final_interview_date: '',
-    final_interview_sf: '',
-    final_interview_ib: '',
-    final_interview_rv: '',
-    final_interview_ma: '',
+    final_interview_score_1: '',
+    final_interview_score_2: '',
+    final_interview_score_3: '',
+    final_interview_score_4: '',
     final_interview_final: '',
     final_interview_result: '',
     final_interview_application_status: '',
@@ -138,6 +138,49 @@ const filteredApplicants = computed(() => {
 
 const liveErrors = ref<Record<string, string>>({})
 
+const finalScoreManuallyEdited = ref(false)
+
+function parseScore(value: string | number | null | undefined): number {
+    if (value === '' || value === null || value === undefined) return 0
+    const num = Number(value)
+    return Number.isNaN(num) ? 0 : num
+}
+
+watch(
+    [
+        () => form.final_interview_score_1,
+        () => form.final_interview_score_2,
+        () => form.final_interview_score_3,
+        () => form.final_interview_score_4,
+    ],
+    ([score1, score2, score3, score4]) => {
+        const hasAnyScore =
+            score1 !== '' || score2 !== '' || score3 !== '' || score4 !== ''
+
+        if (!hasAnyScore) {
+            form.final_interview_final = ''
+            finalScoreManuallyEdited.value = false
+            return
+        }
+
+        if (finalScoreManuallyEdited.value) {
+            return
+        }
+
+        const total =
+            parseScore(score1) +
+            parseScore(score2) +
+            parseScore(score3) +
+            parseScore(score4)
+
+        form.final_interview_final = total.toFixed(2)
+    }
+)
+
+function handleFinalScoreManualInput() {
+    finalScoreManuallyEdited.value = true
+}
+
 function setLiveError(field: string, message: string) {
     liveErrors.value[field] = message
 }
@@ -183,24 +226,106 @@ watch(() => form.initial_interview_final, (value) => {
     validateScoreField('initial_interview_final', 'Initial Interview Final Score', value)
 })
 
-watch(() => form.final_interview_sf, (value) => {
-    validateScoreField('final_interview_sf', 'SF Score', value)
+watch(() => form.final_interview_score_1, (value) => {
+    validateScoreField('final_interview_score_1', 'Score 1', value)
 })
 
-watch(() => form.final_interview_ib, (value) => {
-    validateScoreField('final_interview_ib', 'IB Score', value)
+watch(() => form.final_interview_score_2, (value) => {
+    validateScoreField('final_interview_score_2', 'Score 2', value)
 })
 
-watch(() => form.final_interview_rv, (value) => {
-    validateScoreField('final_interview_rv', 'RV Score', value)
+watch(() => form.final_interview_score_3, (value) => {
+    validateScoreField('final_interview_score_3', 'Score 3', value)
 })
 
-watch(() => form.final_interview_ma, (value) => {
-    validateScoreField('final_interview_ma', 'MA Score', value)
+watch(() => form.final_interview_score_4, (value) => {
+    validateScoreField('final_interview_score_4', 'Score 4', value)
 })
 
 watch(() => form.final_interview_final, (value) => {
     validateScoreField('final_interview_final', 'Final Score', value)
+})
+
+function formatDateTimeLocal(value: Date) {
+    const year = value.getFullYear()
+    const month = String(value.getMonth() + 1).padStart(2, '0')
+    const day = String(value.getDate()).padStart(2, '0')
+    const hours = String(value.getHours()).padStart(2, '0')
+    const minutes = String(value.getMinutes()).padStart(2, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+function addOneMinute(value: string) {
+    if (!value) return ''
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return ''
+    date.setMinutes(date.getMinutes() + 1)
+    return formatDateTimeLocal(date)
+}
+
+const initialInterviewPlanMin = computed(() => {
+    return form.exam_plan_date ? addOneMinute(form.exam_plan_date) : ''
+})
+function parseDateTimeLocal(value: string): Date | null {
+    return value ? new Date(value) : null
+}
+
+function tomorrowStart(): string {
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    now.setDate(now.getDate() + 1)
+    return formatDateTimeLocal(now)
+}
+
+const examPlanMin = computed(() => tomorrowStart())
+const examActualMin = computed(() => form.exam_plan_date || undefined)
+const initialInterviewActualMin = computed(() => form.initial_interview_plan_date || undefined)
+const finalInterviewMin = computed(() => form.initial_interview_plan_date || undefined)
+const jobOfferMin = computed(() => form.final_interview_date || undefined)
+
+watch(() => form.exam_plan_date, (planDate) => {
+    if (!planDate) return
+
+    if (form.exam_actual_date) {
+        const actual = parseDateTimeLocal(form.exam_actual_date)
+        const plan = parseDateTimeLocal(planDate)
+        if (actual && plan && actual < plan) {
+            form.exam_actual_date = ''
+        }
+    }
+})
+
+watch(() => form.initial_interview_plan_date, (planDate) => {
+    if (!planDate) return
+
+    if (form.initial_interview_actual_date) {
+        const actual = parseDateTimeLocal(form.initial_interview_actual_date)
+        const plan = parseDateTimeLocal(planDate)
+        if (actual && plan && actual < plan) {
+            form.initial_interview_actual_date = ''
+        }
+    }
+
+    if (form.final_interview_date) {
+        const finalDate = parseDateTimeLocal(form.final_interview_date)
+        const plan = parseDateTimeLocal(planDate)
+        if (finalDate && plan && finalDate < plan) {
+            form.final_interview_date = ''
+        }
+    }
+})
+
+watch(() => form.final_interview_date, (finalDate) => {
+    if (!finalDate) return
+
+    if (form.job_offer_schedule) {
+        const schedule = parseDateTimeLocal(form.job_offer_schedule)
+        const final = parseDateTimeLocal(finalDate)
+        if (schedule && final && schedule < final) {
+            form.job_offer_schedule = ''
+        }
+    }
 })
 
 onMounted(() => {
@@ -349,10 +474,10 @@ watch(() => form.action_applicant_id, async (newApplicantId, oldApplicantId) => 
         form.initial_interview_remarks = ''
 
         form.final_interview_date = ''
-        form.final_interview_sf = ''
-        form.final_interview_ib = ''
-        form.final_interview_rv = ''
-        form.final_interview_ma = ''
+        form.final_interview_score_1 = ''
+        form.final_interview_score_2 = ''
+        form.final_interview_score_3 = ''
+        form.final_interview_score_4 = ''
         form.final_interview_final = ''
         form.final_interview_application_status = ''
         form.final_interview_result = ''
@@ -793,6 +918,7 @@ function submit() {
             form.reset()
             actionApplicants.value = []
             noApplicantsError.value = ''
+            finalScoreManuallyEdited.value = false
 
             removeFile('resume')
             removeFile('tor')
@@ -861,7 +987,18 @@ function handleClickOutside(event: MouseEvent) {
 
                             <div class="form-grid grid-2">
                                 <div class="form-field">
-                                    <label class="field-label required">ACTION Applicant</label>
+                                    <label class="field-label-required required">ACTION Batch</label>
+                                    <select v-model="form.action_batch_id" class="form-select">
+                                        <option disabled value="">Select Batch</option>
+                                        <option v-for="batch in actionBatches" :key="batch.value" :value="batch.value">
+                                            {{ batch.label }}
+                                        </option>
+                                    </select>
+                                    <span v-if="form.errors.action_batch_id" class="error-message">{{ form.errors.action_batch_id }}</span>
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label-required required">ACTION Applicant</label>
 
                                     <div class="custom-select-wrapper" :class="{ 'is-open': isDropdownOpen }">
                                         <div
@@ -908,17 +1045,6 @@ function handleClickOutside(event: MouseEvent) {
 
                                     <span v-if="noApplicantsError" class="error-message">{{ noApplicantsError }}</span>
                                     <span v-if="form.errors.action_applicant_id" class="error-message">{{ form.errors.action_applicant_id }}</span>
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label required">ACTION Batch</label>
-                                    <select v-model="form.action_batch_id" class="form-select">
-                                        <option disabled value="">Select Batch</option>
-                                        <option v-for="batch in actionBatches" :key="batch.value" :value="batch.value">
-                                            {{ batch.label }}
-                                        </option>
-                                    </select>
-                                    <span v-if="form.errors.action_batch_id" class="error-message">{{ form.errors.action_batch_id }}</span>
                                 </div>
                             </div>
                         </div>
@@ -997,13 +1123,25 @@ function handleClickOutside(event: MouseEvent) {
                             <div class="form-grid grid-2">
                                 <div class="form-field">
                                     <label class="field-label">Exam Plan Date</label>
-                                    <input type="datetime-local" v-model="form.exam_plan_date" class="form-input" :disabled="!isApplicantSelected" />
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.exam_plan_date"
+                                        class="form-input"
+                                        :disabled="!isApplicantSelected"
+                                        :min="examPlanMin"
+                                    />
                                     <span v-if="form.errors.exam_plan_date" class="error-message">{{ form.errors.exam_plan_date }}</span>
                                 </div>
 
                                 <div class="form-field">
                                     <label class="field-label">Exam Actual Date</label>
-                                    <input type="datetime-local" v-model="form.exam_actual_date" class="form-input" :disabled="!isApplicantSelected" />
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.exam_actual_date"
+                                        class="form-input"
+                                        :disabled="!isApplicantSelected"
+                                        :min="examActualMin"
+                                    />
                                     <span v-if="form.errors.exam_actual_date" class="error-message">{{ form.errors.exam_actual_date }}</span>
                                 </div>
                             </div>
@@ -1024,18 +1162,21 @@ function handleClickOutside(event: MouseEvent) {
                                     <label class="field-label">ATTP Result</label>
                                     <input type="number" step="0.01" v-model="form.exam_atpp_result" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
                                     <span v-if="form.errors.exam_atpp_result" class="error-message">{{ form.errors.exam_atpp_result }}</span>
+                                    <span v-if="liveErrors.exam_atpp_result" class="error-message">{{ liveErrors.exam_atpp_result }}</span>
                                 </div>
 
                                 <div class="form-field">
                                     <label class="field-label">GIT Result</label>
-                                    <input type="number" step="0.01"  v-model="form.exam_git_result" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
+                                    <input type="number" step="0.01" v-model="form.exam_git_result" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
                                     <span v-if="form.errors.exam_git_result" class="error-message">{{ form.errors.exam_git_result }}</span>
+                                    <span v-if="liveErrors.exam_git_result" class="error-message">{{ liveErrors.exam_git_result }}</span>
                                 </div>
 
                                 <div class="form-field">
                                     <label class="field-label">PRG Result</label>
-                                    <input type="number" step="0.01"  v-model="form.exam_prg_result" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
+                                    <input type="number" step="0.01" v-model="form.exam_prg_result" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
                                     <span v-if="form.errors.exam_prg_result" class="error-message">{{ form.errors.exam_prg_result }}</span>
+                                    <span v-if="liveErrors.exam_prg_result" class="error-message">{{ liveErrors.exam_prg_result }}</span>
                                 </div>
                             </div>
 
@@ -1059,9 +1200,7 @@ function handleClickOutside(event: MouseEvent) {
                                         class="form-select"
                                         :disabled="!isApplicantSelected || !selectedApplicant"
                                     >
-                                        <option value="">
-                                            Select Status
-                                        </option>
+                                        <option value="">Select Status</option>
                                         <option v-for="status in examStatuses" :key="status.value" :value="status.value">
                                             {{ status.label }}
                                         </option>
@@ -1085,33 +1224,46 @@ function handleClickOutside(event: MouseEvent) {
                             <div class="form-grid grid-2">
                                 <div class="form-field">
                                     <label class="field-label">Plan Date</label>
-                                    <input type="datetime-local" v-model="form.initial_interview_plan_date" class="form-input" :disabled="!isApplicantSelected" />
+<input
+    type="datetime-local"
+    v-model="form.initial_interview_plan_date"
+    class="form-input"
+    :min="initialInterviewPlanMin || undefined"
+    :disabled="!isApplicantSelected"
+/>
                                     <span v-if="form.errors.initial_interview_plan_date" class="error-message">{{ form.errors.initial_interview_plan_date }}</span>
                                 </div>
 
                                 <div class="form-field">
                                     <label class="field-label">Actual Date</label>
-                                    <input type="datetime-local" v-model="form.initial_interview_actual_date" class="form-input" :disabled="!isApplicantSelected" />
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.initial_interview_actual_date"
+                                        class="form-input"
+                                        :disabled="!isApplicantSelected"
+                                        :min="initialInterviewActualMin"
+                                    />
                                     <span v-if="form.errors.initial_interview_actual_date" class="error-message">{{ form.errors.initial_interview_actual_date }}</span>
                                 </div>
                             </div>
 
-                                <div class="form-field">
-                                    <label class="field-label">Venue</label>
-                                    <select v-model="form.initial_interview_venue" class="form-select" :disabled="!isApplicantSelected">
-                                        <option value="">Select Venue</option>
-                                        <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
-                                            {{ venue.label }}
-                                        </option>
-                                    </select>
-                                    <span v-if="form.errors.initial_interview_venue" class="error-message">{{ form.errors.initial_interview_venue }}</span>
-                                </div>
+                            <div class="form-field">
+                                <label class="field-label">Venue</label>
+                                <select v-model="form.initial_interview_venue" class="form-select" :disabled="!isApplicantSelected">
+                                    <option value="">Select Venue</option>
+                                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
+                                        {{ venue.label }}
+                                    </option>
+                                </select>
+                                <span v-if="form.errors.initial_interview_venue" class="error-message">{{ form.errors.initial_interview_venue }}</span>
+                            </div>
 
-                                <div class="form-field">
-                                    <label class="field-label">Initial Interview Final Score</label>
-                                    <input type="number" step="0.01"  v-model="form.initial_interview_final" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.initial_interview_final" class="error-message">{{ form.errors.initial_interview_final }}</span>
-                                </div>
+                            <div class="form-field">
+                                <label class="field-label">Initial Interview Final Score</label>
+                                <input type="number" step="0.01" v-model="form.initial_interview_final" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
+                                <span v-if="form.errors.initial_interview_final" class="error-message">{{ form.errors.initial_interview_final }}</span>
+                                <span v-if="liveErrors.initial_interview_final" class="error-message">{{ liveErrors.initial_interview_final }}</span>
+                            </div>
 
                             <div class="form-grid grid-2">
                                 <div class="form-field">
@@ -1132,9 +1284,7 @@ function handleClickOutside(event: MouseEvent) {
                                         class="form-select"
                                         :disabled="!isApplicantSelected"
                                     >
-                                        <option value="">
-                                            Select Status
-                                        </option>
+                                        <option value="">Select Status</option>
                                         <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
                                             {{ status.label }}
                                         </option>
@@ -1156,38 +1306,50 @@ function handleClickOutside(event: MouseEvent) {
 
                             <div class="form-field">
                                 <label class="field-label">Date</label>
-                                <input type="datetime-local" v-model="form.final_interview_date" class="form-input" :disabled="!isApplicantSelected" />
+                                <input
+                                    type="datetime-local"
+                                    v-model="form.final_interview_date"
+                                    class="form-input"
+                                    :disabled="!isApplicantSelected"
+                                    :min="finalInterviewMin"
+                                />
+                                <span v-if="form.errors.final_interview_date" class="error-message">{{ form.errors.final_interview_date }}</span>
                             </div>
 
                             <div class="form-grid grid-5">
                                 <div class="form-field">
-                                    <label class="field-label">SF Score</label>
-                                    <input type="number" step="0.01"  v-model="form.final_interview_sf" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.final_interview_sf" class="error-message">{{ form.errors.final_interview_sf }}</span>
+                                    <label class="field-label">Score 1</label>
+                                    <input type="number" step="0.01" v-model="form.final_interview_score_1" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
+                                    <span v-if="form.errors.final_interview_score_1" class="error-message">{{ form.errors.final_interview_score_1 }}</span>
+                                    <span v-if="liveErrors.final_interview_score_1" class="error-message">{{ liveErrors.final_interview_score_1 }}</span>
                                 </div>
 
                                 <div class="form-field">
-                                    <label class="field-label">IB Score</label>
-                                    <input type="number" step="0.01"  v-model="form.final_interview_ib" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.final_interview_ib" class="error-message">{{ form.errors.final_interview_ib }}</span>
+                                    <label class="field-label">Score 2</label>
+                                    <input type="number" step="0.01" v-model="form.final_interview_score_2" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
+                                    <span v-if="form.errors.final_interview_score_2" class="error-message">{{ form.errors.final_interview_score_2 }}</span>
+                                    <span v-if="liveErrors.final_interview_score_2" class="error-message">{{ liveErrors.final_interview_score_2 }}</span>
                                 </div>
 
                                 <div class="form-field">
-                                    <label class="field-label">RV Score</label>
-                                    <input type="number" step="0.01"  v-model="form.final_interview_rv" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.final_interview_rv" class="error-message">{{ form.errors.final_interview_rv }}</span>
+                                    <label class="field-label">Score 3</label>
+                                    <input type="number" step="0.01" v-model="form.final_interview_score_3" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
+                                    <span v-if="form.errors.final_interview_score_3" class="error-message">{{ form.errors.final_interview_score_3 }}</span>
+                                    <span v-if="liveErrors.final_interview_score_3" class="error-message">{{ liveErrors.final_interview_score_3 }}</span>
                                 </div>
 
                                 <div class="form-field">
-                                    <label class="field-label">MA Score</label>
-                                    <input type="number" step="0.01"  v-model="form.final_interview_ma" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.final_interview_ma" class="error-message">{{ form.errors.final_interview_ma }}</span>
+                                    <label class="field-label">Score 4</label>
+                                    <input type="number" step="0.01" v-model="form.final_interview_score_4" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
+                                    <span v-if="form.errors.final_interview_score_4" class="error-message">{{ form.errors.final_interview_score_4 }}</span>
+                                    <span v-if="liveErrors.final_interview_score_4" class="error-message">{{ liveErrors.final_interview_score_4 }}</span>
                                 </div>
 
                                 <div class="form-field">
                                     <label class="field-label">Final Score</label>
-                                    <input type="number" step="0.01"  v-model="form.final_interview_final" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
+                                    <input type="number" step="0.01" v-model="form.final_interview_final" @input="handleFinalScoreManualInput" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
                                     <span v-if="form.errors.final_interview_final" class="error-message">{{ form.errors.final_interview_final }}</span>
+                                    <span v-if="liveErrors.final_interview_final" class="error-message">{{ liveErrors.final_interview_final }}</span>
                                 </div>
                             </div>
 
@@ -1233,7 +1395,14 @@ function handleClickOutside(event: MouseEvent) {
                             <div class="form-grid grid-2">
                                 <div class="form-field">
                                     <label class="field-label">Schedule</label>
-                                    <input type="datetime-local" v-model="form.job_offer_schedule" class="form-input" :disabled="!isApplicantSelected" />
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.job_offer_schedule"
+                                        class="form-input"
+                                        :disabled="!isApplicantSelected"
+                                        :min="jobOfferMin"
+                                    />
+                                    <span v-if="form.errors.job_offer_schedule" class="error-message">{{ form.errors.job_offer_schedule }}</span>
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label">Status</label>
@@ -1449,7 +1618,15 @@ function handleClickOutside(event: MouseEvent) {
     line-height: 1.4;
 }
 
-.field-label.required::after {
+.field-label-required {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: black;
+    line-height: 1.4;
+}
+
+.required::after {
     content: '*';
     margin-left: 0.25rem;
     color: var(--ats-danger);
@@ -1811,8 +1988,6 @@ a.btn-secondary:hover {
         flex-direction: column-reverse;
         align-items: stretch;
     }
-
-
 }
 
 /* Print */
