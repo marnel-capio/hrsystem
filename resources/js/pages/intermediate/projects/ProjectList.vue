@@ -50,6 +50,12 @@ function nextBlock() {
 }
 
 const shouldShowPagination = computed(() => projectsTotal.value > 20)
+
+const selectedOption = ref('')
+const otherValue = ref('')
+
+const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
+
 </script>
 
 <template>
@@ -93,8 +99,9 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
           <table class="ats-table w-full table-auto border-collapse border text-sm">
             <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
-                <th class="border px-3 py-2">Project Name</th>
-                <th class="border px-3 py-2">Remarks</th>
+                <th class="border px-3 py-2 w-70">Project Name</th>
+                <th class="border px-3 py-2 w-90">Project Description</th>
+                <th class="border px-3 py-2">Remarks </th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-zinc-900">
@@ -102,6 +109,7 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
                 <td class="border px-3 py-2">
                   <Link :href="`/intermediate/projects/${project.id}`" class="table-link">{{ project.project_name }}</Link>
                 </td>
+                <td class="border px-3 py-2">{{ project.project_description }}</td>
                 <td class="border px-3 py-2">{{ project.remarks }}</td>
               </tr>
               <tr v-if="projects.data.length === 0">
@@ -125,7 +133,6 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
           <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer"
             :class="{ 'opacity-50 cursor-not-allowed': endPage === lastPage }">Next</span>
         </div>
-
       </div>
     </div>
   </AppLayout>

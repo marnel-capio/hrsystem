@@ -18,6 +18,102 @@ const page = usePage();
 const errorMessage = computed(() => (page.props.flash as any)?.error || '');
 const showError = ref(false);
 
+const deploymentMinWeek = computed(() => {
+  if (!form.deployment_date) return "";
+
+  const [year, month] = form.deployment_date.split("-").map(Number);
+
+  // deployment_date is YYYY-MM, so subtract 6 months
+  const minDate = new Date(year, month - 1, 1);
+  minDate.setMonth(minDate.getMonth() - 6);
+
+  // convert date to ISO week string
+  const temp = new Date(minDate);
+  temp.setHours(0, 0, 0, 0);
+
+  // ISO week calculation
+  const dayNum = temp.getDay() || 7;
+  temp.setDate(temp.getDate() + 4 - dayNum);
+
+  const isoYear = temp.getFullYear();
+  const yearStart = new Date(isoYear, 0, 1);
+  const weekNo = Math.ceil((((temp.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+
+  return `${isoYear}-W${String(weekNo).padStart(2, '0')}`;
+});
+
+const deploymentMaxWeek = computed(() => {
+  if (!form.deployment_date) return "";
+
+  const [year, month] = form.deployment_date.split("-").map(Number);
+  const lastDay = new Date(year, month, 0);
+
+  const temp = new Date(lastDay);
+  temp.setDate(temp.getDate() + 4 - (temp.getDay() || 7));
+  const yearStart = new Date(temp.getFullYear(), 0, 1);
+  const weekNo = Math.ceil((((temp.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+
+  return `${temp.getFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+});
+
+function isBatchSelected() {
+  return !!form.action_batch_id;
+}
+
+function canEditStart(activity: string) {
+  // must have selected batch first
+  if (!isBatchSelected()) return false;
+
+  // then follow your stricter sequence rule
+  return isActivityEnabled(activity);
+}
+
+function canEditEnd(activity: string) {
+  // batch must be selected
+  if (!isBatchSelected()) return false;
+
+  // activity itself must already be allowed
+  if (!isActivityEnabled(activity)) return false;
+
+  // end date only enabled once start date is filled
+  return !!ganttForm.value[activity].start;
+}
+
+function previousActivityStart(activity: string) {
+  const index = ganttActivities.indexOf(activity);
+  if (index <= 0) return "";
+  const prev = ganttActivities[index - 1];
+  return ganttForm.value[prev].start || "";
+}
+
+function getPreviousActivity(activity: string) {
+  const index = ganttActivities.indexOf(activity);
+  if (index <= 0) return null;
+  return ganttActivities[index - 1];
+}
+
+function hasAnyInput(activity: string) {
+  const row = ganttForm.value[activity];
+  return !!(row?.start || row?.end);
+}
+
+function isCompleted(activity: string) {
+  const row = ganttForm.value[activity];
+  return !!(row?.start && row?.end);
+}
+
+function isActivityEnabled(activity: string) {
+  const previous = getPreviousActivity(activity);
+  if (!previous) return true;
+  return isCompleted(previous);
+}
+
+function startMinWeek(activity: string) {
+  const prevStart = previousActivityStart(activity);
+  return prevStart || deploymentMinWeek.value;
+}
+
+
 // Initialize form with all  fields
 const form = useForm({
   action_batch_id: "",
@@ -205,6 +301,66 @@ watch(errorMessage, (val) => {
   }
 });
 
+watch(() => form.action_batch_id, (newId) => {
+  const batch = props.newBatches.find(b => b.id === Number(newId));
+
+  if (batch) {
+    form.target_trainees = batch.target_trainees;
+
+    if (batch.target_date) {
+      form.deployment_date = batch.target_date.length > 7
+        ? batch.target_date.substring(0, 7)
+        : batch.target_date;
+    } else {
+      form.deployment_date = '';
+    }
+  } else {
+    form.target_trainees = '';
+    form.deployment_date = '';
+
+    ganttActivities.forEach((act) => {
+      ganttForm.value[act].start = "";
+      ganttForm.value[act].end = "";
+      ganttForm.value[act].error = "";
+    });
+  }
+});
+
+watch(() => form.deployment_date, () => {
+  ganttActivities.forEach((act) => {
+    const row = ganttForm.value[act];
+
+    if (row.start && deploymentMinWeek.value && row.start < deploymentMinWeek.value) {
+      row.start = "";
+      row.end = "";
+      row.error = "";
+    }
+
+    if (row.end && deploymentMinWeek.value && row.end < deploymentMinWeek.value) {
+      row.end = "";
+      row.error = "";
+    }
+  });
+});
+
+watch(
+  ganttForm,
+  (newVal) => {
+    ganttActivities.forEach((act, index) => {
+      if (index === 0) return;
+
+      const prev = ganttActivities[index - 1];
+
+      if (!isCompleted(prev)) {
+        newVal[act].start = "";
+        newVal[act].end = "";
+        newVal[act].error = "";
+      }
+    });
+  },
+  { deep: true }
+);
+
 // When user selects a batch, auto-fill target_trainees and deployment date
 watch(() => form.action_batch_id, (newId) => {
   const batch = props.newBatches.find(b => b.id === Number(newId));
@@ -323,22 +479,26 @@ watch(() => form.action_batch_id, (newId) => {
                 <div class="grid grid-cols-2 gap-3 mt-1 mb-1">
                   <div>
                     <label class="text-xs text-zinc-500 block mb-1">Start</label>
-                    <input
-                      type="week"
-                      v-model="ganttForm[act].start"
-                      class="w-full bg-zinc-50 border rounded-lg p-2"
-                      
-                    />
+<input
+  type="week"
+  v-model="ganttForm[act].start"
+  class="w-full bg-zinc-50 border rounded-lg p-2"
+  :disabled="!canEditStart(act)"
+  :min="startMinWeek(act)"
+  :max="deploymentMaxWeek"
+/>
                   </div>
 
                   <div>
                     <label class="text-xs text-zinc-500 block mb-1">End</label>
-                    <input
-                      type="week"
-                      v-model="ganttForm[act].end"
-                      class="w-full bg-zinc-50 border rounded-lg p-2"
-                      
-                    />
+<input
+  type="week"
+  v-model="ganttForm[act].end"
+  class="w-full bg-zinc-50 border rounded-lg p-2"
+  :disabled="!canEditEnd(act)"
+  :min="ganttForm[act].start || deploymentMinWeek"
+  :max="deploymentMaxWeek"
+/>
                   </div>
                 </div>
 

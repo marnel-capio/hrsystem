@@ -116,6 +116,48 @@ class User extends Authenticatable
                ->get(['email_address', 'first_name', 'id']);
     }
 
+    //functions used in action applications
+    public function getRoleLabelAttribute(): string
+{
+    return match ((int) $this->permissions) {
+        config('constants.HR_ADMIN_PERMISSION.value') => 'HR Admin',
+        config('constants.HR_MANAGER_PERMISSION.value') => 'HR Manager',
+        config('constants.HR_RECRUITER_PERMISSION.value') => 'HR Recruiter',
+        config('constants.BU_MANAGER_PERMISSION.value') => 'BU Manager',
+        config('constants.INTERVIEWER_PERMISSION.value') => 'Interviewer',
+        config('constants.HR_PERMISSION.value') => 'HR',
+        config('constants.WALKIN_PERMISSION.value') => 'Walk-in',
+        default => 'User',
+    };
+}
+
+public function scopeActionInterviewers($query)
+{
+    return $query->whereIn('permissions', [
+        config('constants.HR_MANAGER_PERMISSION.value'),
+        config('constants.HR_RECRUITER_PERMISSION.value'),
+        config('constants.BU_MANAGER_PERMISSION.value'),
+        config('constants.INTERVIEWER_PERMISSION.value'),
+    ]);
+}
+
+public function toInterviewerOption(): array
+{
+    return [
+        'id' => $this->id,
+        'name' => $this->full_name ?: 'N/A',
+        'role_label' => $this->role_label,
+        'position' => $this->position,
+        'permissions' => (int) $this->permissions,
+        'email_address' => $this->email_address,
+    ];
+}
+
+public function getFullNameAttribute(): string
+{
+    return trim($this->first_name . ' ' . $this->last_name);
+}
+
     public function updateUser(array $data): array
     {
         // Step 1: old snapshot

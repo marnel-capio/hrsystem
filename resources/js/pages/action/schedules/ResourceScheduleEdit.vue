@@ -38,7 +38,7 @@ const page = usePage();
 // Error notification
 const errorMessage = computed(() => (page.props.flash as any)?.error || '');
 const showError = ref(false);
-const successMessage = computed(() => (page.props.flash as any)?.error || '');
+const successMessage = computed(() => (page.props.flash as any)?.success || '');
 const showSuccess = ref(!!successMessage.value);
 
 // Initialize form with existing schedule data
@@ -176,6 +176,86 @@ const ganttRows = computed(() => {
 });
 
 
+const deploymentMinWeek = computed(() => {
+  if (!form.deployment_date) return "";
+
+  const [year, month] = form.deployment_date.split("-").map(Number);
+
+  const minDate = new Date(year, month - 1, 1);
+  minDate.setMonth(minDate.getMonth() - 6);
+
+  const temp = new Date(minDate);
+  temp.setHours(0, 0, 0, 0);
+
+  const dayNum = temp.getDay() || 7;
+  temp.setDate(temp.getDate() + 4 - dayNum);
+
+  const isoYear = temp.getFullYear();
+  const yearStart = new Date(isoYear, 0, 1);
+  const weekNo = Math.ceil((((temp.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+
+  return `${isoYear}-W${String(weekNo).padStart(2, '0')}`;
+});
+
+const deploymentMaxWeek = computed(() => {
+  if (!form.deployment_date) return "";
+
+  const [year, month] = form.deployment_date.split("-").map(Number);
+  const lastDay = new Date(year, month, 0);
+
+  const temp = new Date(lastDay);
+  temp.setDate(temp.getDate() + 4 - (temp.getDay() || 7));
+
+  const yearStart = new Date(temp.getFullYear(), 0, 1);
+  const weekNo = Math.ceil((((temp.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+
+  return `${temp.getFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+});
+
+function isBatchSelected() {
+  return !!form.action_batch_id;
+}
+
+function getPreviousActivity(activity: string) {
+  const index = ganttActivities.indexOf(activity);
+  if (index <= 0) return null;
+  return ganttActivities[index - 1];
+}
+
+function isCompleted(activity: string) {
+  const row = ganttForm.value[activity];
+  return !!(row?.start && row?.end);
+}
+
+function isActivityEnabled(activity: string) {
+  const previous = getPreviousActivity(activity);
+  if (!previous) return true;
+  return isCompleted(previous);
+}
+
+function previousActivityStart(activity: string) {
+  const index = ganttActivities.indexOf(activity);
+  if (index <= 0) return "";
+  const prev = ganttActivities[index - 1];
+  return ganttForm.value[prev].start || "";
+}
+
+function startMinWeek(activity: string) {
+  const prevStart = previousActivityStart(activity);
+  return prevStart || deploymentMinWeek.value;
+}
+
+function canEditStart(activity: string) {
+  if (!isBatchSelected()) return false;
+  return isActivityEnabled(activity);
+}
+
+function canEditEnd(activity: string) {
+  if (!isBatchSelected()) return false;
+  if (!isActivityEnabled(activity)) return false;
+  return !!ganttForm.value[activity].start;
+}
+
 onMounted(() => {
   // Initialize ganttForm with existing data
   ganttActivities.forEach(act => {
@@ -208,7 +288,7 @@ const wbsColors: Record<string, string> = {
   training: '#84cc16',
 };
 
-// Submit form 
+// Submit form
 function updateResourceSchedule() {
   ganttActivities.forEach(act => {
     (form as any)[`${act}_startdate`] = ganttForm.value[act].start;
@@ -240,8 +320,8 @@ watch(successMessage, (newVal) => {
 watch(() => form.action_batch_id, (newId) => {
   // Only run if the value actually changed (not on initial mount)
   if (!newId) return;
-  
-const batch = props.newBatches.find(b => b.id === Number(newId)) || 
+
+const batch = props.newBatches.find(b => b.id === Number(newId)) ||
                 (props.currentBatch && props.currentBatch.id === Number(newId) ? props.currentBatch : null);
   if (batch) {
     form.target_trainees = batch.target_trainees;
@@ -259,6 +339,51 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
   }
 }, { immediate: false });
 
+watch(() => form.deployment_date, () => {
+  ganttActivities.forEach((act) => {
+    const row = ganttForm.value[act];
+
+    if (row.start && deploymentMinWeek.value && row.start < deploymentMinWeek.value) {
+      row.start = "";
+      row.end = "";
+      row.error = "";
+    }
+
+    if (row.start && deploymentMaxWeek.value && row.start > deploymentMaxWeek.value) {
+      row.start = "";
+      row.end = "";
+      row.error = "";
+    }
+
+    if (row.end && deploymentMinWeek.value && row.end < deploymentMinWeek.value) {
+      row.end = "";
+      row.error = "";
+    }
+
+    if (row.end && deploymentMaxWeek.value && row.end > deploymentMaxWeek.value) {
+      row.end = "";
+      row.error = "";
+    }
+  });
+});
+
+watch(
+  ganttForm,
+  (newVal) => {
+    ganttActivities.forEach((act, index) => {
+      if (index === 0) return;
+
+      const prev = ganttActivities[index - 1];
+
+      if (!isCompleted(prev)) {
+        newVal[act].start = "";
+        newVal[act].end = "";
+        newVal[act].error = "";
+      }
+    });
+  },
+  { deep: true }
+);
 
 </script>
 
@@ -270,17 +395,17 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
       <h1 class="text-3xl font-bold mb-6">Edit Resource Schedule</h1>
 
       <!-- Error Notification -->
-      <div 
+      <div
         v-if="showError"
         class="full-width-alert"
       >
-        <div 
+        <div
           class="alert-banner alert-error-banner"
         >
           <div class="alert-body">
               {{ errorMessage }}
           </div>
-          <button 
+          <button
             style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
             @click="closeError"
           >
@@ -290,17 +415,17 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
       </div>
 
       <!-- Success Notification -->
-      <div 
+      <div
         v-if="showSuccess"
         class="full-width-alert"
       >
-        <div 
+        <div
           class="alert-banner alert-error-banner"
         >
           <div class="alert-body">
               {{ successMessage }}
           </div>
-          <button 
+          <button
             style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
             @click="showSuccess = false"
           >
@@ -317,11 +442,11 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
           <!-- Batch Name -->
           <div>
             <label class="text-sm font-semibold">Batch Name</label>
-            <input 
-              type="text" 
-              :value="currentBatch?.action_batch || 'N/A'" 
-              readonly 
-              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
+            <input
+              type="text"
+              :value="currentBatch?.action_batch || 'N/A'"
+              readonly
+              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed"
               style="background-color: #e5e7eb; color: #9ca3af;"
             />
             <!-- No validation error for disabled field -->
@@ -344,8 +469,8 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
             <!-- Target Trainees -->
             <div>
               <label class="text-sm font-semibold">Target Trainees</label>
-              <input v-model="form.target_trainees" type="number" readonly 
-              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
+              <input v-model="form.target_trainees" type="number" readonly
+              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed"
               style="background-color: #e5e7eb; color: #9ca3af;" />
               <!-- No validation error for disabled field -->
             </div>
@@ -353,12 +478,12 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
             <!-- Date of Deployment -->
             <div>
               <label class="text-sm font-semibold">Date of Deployment</label>
-              <input v-model="form.deployment_date" readonly 
-              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed" 
+              <input v-model="form.deployment_date" readonly
+              class="w-full bg-zinc-200 border border-zinc-300 rounded-lg p-2.5 text-zinc-500 cursor-not-allowed"
               style="background-color: #e5e7eb; color: #9ca3af;" />
               <!-- No validation error for disabled field -->
             </div>
-            
+
             <!-- Previous Batch -->
             <div>
               <label class="text-sm font-semibold">Compare with Previous Batch</label>
@@ -383,20 +508,26 @@ const batch = props.newBatches.find(b => b.id === Number(newId)) ||
                 <div class="grid grid-cols-2 gap-3 mt-1 mb-1">
                   <div>
                     <label class="text-xs text-zinc-500 block mb-1">Start</label>
-                    <input
-                      type="week"
-                      v-model="ganttForm[act].start"
-                      class="w-full bg-zinc-50 border rounded-lg p-2"
-                    />
+<input
+  type="week"
+  v-model="ganttForm[act].start"
+  class="w-full bg-zinc-50 border rounded-lg p-2"
+  :disabled="!canEditStart(act)"
+  :min="startMinWeek(act)"
+  :max="deploymentMaxWeek"
+/>
                   </div>
 
                   <div>
                     <label class="text-xs text-zinc-500 block mb-1">End</label>
-                    <input
-                      type="week"
-                      v-model="ganttForm[act].end"
-                      class="w-full bg-zinc-50 border rounded-lg p-2"
-                    />
+<input
+  type="week"
+  v-model="ganttForm[act].end"
+  class="w-full bg-zinc-50 border rounded-lg p-2"
+  :disabled="!canEditEnd(act)"
+  :min="ganttForm[act].start || deploymentMinWeek"
+  :max="deploymentMaxWeek"
+/>
                   </div>
                 </div>
 

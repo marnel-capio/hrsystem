@@ -55,7 +55,7 @@ class ResourceSchedule extends Model
                 $query->where(function ($q) use ($search) {
                     $q->where('action_batches.action_batch', 'like', "%{$search}%")
                       ->orWhere('resource_schedules.target_location', 'like', "%{$search}%")
-                      ->orWhereRaw("DATE_FORMAT(resource_schedules.deployment_date, '%M %Y') LIKE ?", ["%{$search}%"]);
+                      ->orWhereRaw("DATE_FORMAT(resource_schedules.target_date, '%M %Y') LIKE ?", ["%{$search}%"]);
                 });
             })
             ->orderBy('resource_schedules.created_time', 'desc')
@@ -84,13 +84,13 @@ public function getProjection($prevSchedule = null)
     $actionBatch = $this->actionBatch;
 
     $actualApps = DB::table('action_applicant_applications')
-        ->where('action_batch_id', $this->action_batch_id)
+        ->where('action_applicant_id', $this->action_applicant_id)
         ->get();
     
     $planApps = collect([]);
     if ($prevSchedule) {
         $planApps = DB::table('action_applicant_applications')
-            ->where('action_batch_id', $prevSchedule->action_batch_id)
+            ->where('action_applicant_id', $prevSchedule->action_applicant_id)
             ->get();
     }
 
