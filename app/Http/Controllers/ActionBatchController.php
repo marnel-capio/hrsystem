@@ -41,9 +41,8 @@ class ActionBatchController extends Controller
     public function create()
     {
         $options = $this->actionBatchService->getNextBatchOptions();
-
-        $lastBatch = ActionBatchModel::orderBy('created_time', 'desc')->first();
-        $lastBatchTargetDate = $lastBatch ? $lastBatch->target_date : null;
+        $prevBatch = ActionBatchModel::orderBy('created_time', 'desc')->first();
+        $lastBatchTargetDate = $prevBatch ? $prevBatch->target_date : null;
 
         return Inertia::render('action/batches/ActionBatchRegister', [
             'batchOptions' => $options,
@@ -103,14 +102,22 @@ class ActionBatchController extends Controller
     public function edit($id)
     {
         $batch = ActionBatchModel::findOrFail($id);
-        $lastBatch = ActionBatchModel::orderBy('created_time', 'desc')->first();
-        $nextBatch = ActionBatchModel::orderBy('created_time', 'asc')->first();
-        $lastBatchTargetDate = $lastBatch ? $lastBatch->target_date : null; 
+        $prevBatch = ActionBatchModel::where('id', '<', $id)
+            ->orderBy('id', 'desc')
+            ->first();
+        $lastBatchTargetDate = $prevBatch ? $prevBatch->target_date : null;
+
+        $nextBatch = ActionBatchModel::where('id', '>', $id)
+            ->orderBy('id', 'asc')
+            ->first();
+
+        $nextBatchTargetDate = $nextBatch ? $nextBatch->target_date : null;
 
         return Inertia::render('action/batches/ActionBatchEdit', [
             'batch' => $batch,
             'user_permissions' => auth()->user()->permissions,
             'lastBatchTargetDate' => $lastBatchTargetDate,
+            'nextBatchTargetDate' => $nextBatchTargetDate,
         ]);
     }
 

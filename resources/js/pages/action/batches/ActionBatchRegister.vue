@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 
@@ -17,26 +17,88 @@ const form = ref({
 const targetTraineesError = ref('')
 const remarksError = ref('')
 const targetDateError = ref('')
-
 const lastBatchTargetDate = page.props.lastBatchTargetDate || null
+
 
 const maxTargetTrainees = 100  
 const maxRemarksLength = 1024 
 const today = new Date().toISOString().slice(0, 10)  
 
-const getMinTargetDate = () => {
-  if (lastBatchTargetDate) {
-    const lastBatchDate = new Date(lastBatchTargetDate)
-    lastBatchDate.setMonth(lastBatchDate.getMonth() + 0)  
-    return lastBatchDate.toISOString().slice(0, 7)  
+const handleTraineesInput = (event: Event) => {
+  const el = event.target as HTMLInputElement;
+  let value = el.value;
+
+  if (value === '0') {
+    el.value = '';
+    form.value.target_trainees = '';
+  } else if (value === '') {
+    form.value.target_trainees = '';
+  } else {
+    const num = Number(value);
+
+    if (num < 1) {
+      el.value = '';
+      form.value.target_trainees = '';
+    } else {
+      form.value.target_trainees = num;
+    }
   }
-  return today 
+
+  validateTargetTrainees();
 }
+
+const validateTargetTrainees = () => {
+  targetTraineesError.value = form.value.target_trainees && form.value.target_trainees > maxTargetTrainees
+    ? `This field exceeds the maximum allowed length.`
+    : ''
+}
+
+const getMinTargetDate = () => {
+  const nextMonth = new Date();
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  const minDateFromToday = nextMonth.toISOString().slice(0, 7);
+
+  if (lastBatchTargetDate) {
+    const lastBatchDate = new Date(lastBatchTargetDate);
+    const lastBatchDateStr = lastBatchDate.toISOString().slice(0, 7);
+
+    return lastBatchDateStr > minDateFromToday ? lastBatchDateStr : minDateFromToday;
+  }
+
+  return minDateFromToday;
+}
+
+const isTargetDateValid = computed(() => {
+  const minDate = getMinTargetDate()
+
+  if (form.value.target_date && form.value.target_date <= today) {
+    targetDateError.value = 'The selected date must be in the future.'
+    return false
+  }
+
+  if (form.value.target_date && form.value.target_date < minDate) {
+    targetDateError.value =
+      'The selected date must be after the previous ACTION Batch.'
+    return false
+  }
+
+  targetDateError.value = ''
+  return true
+})
+
+const sanitizedTargetDate = computed({
+  get: () => form.value.target_date,
+  set: (newDate: string) => {
+    form.value.target_date = newDate;
+    isTargetDateValid.value; 
+  },
+});
+
 
 const submit = () => {
   targetTraineesError.value = ''
   remarksError.value = ''
-  targetDateError.value = ''
+  targetDateError.value = ''  
 
   form.value.processing = true
   loading.value = true
@@ -64,7 +126,7 @@ const submit = () => {
       <!-- ACTION Batch Dropdown -->
       <div class="grid grid-cols-2 gap-4">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">ACTION Batch</label>
+          <label class="text-xs font-bold mb-1">ACTION Batch <label class="text-red-500">*</label></label>
           <select v-model="form.action_batch" class="border p-2 rounded w-full">
             <option disabled value="">Select ACTION Batch</option>
             <option v-for="option in page.props.batchOptions" :key="option" :value="option">
@@ -80,12 +142,14 @@ const submit = () => {
       <!-- Target Trainees -->
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Target Trainees</label>
+          <label class="text-xs font-bold mb-1">Target Trainees<label class="text-red-500">*</label></label>
           <input
             v-model="form.target_trainees"
             placeholder="Target Trainees"
             type="number"
             class="border p-2 rounded w-full"
+            min="1"
+            @input="handleTraineesInput"
           />
           <span v-if="targetTraineesError" class="text-red-600 text-xs mt-1">
             {{ targetTraineesError }}
@@ -99,9 +163,9 @@ const submit = () => {
       <!-- Target Date -->
       <div class="grid grid-cols-2 gap-4 mt-5 w-40">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Target Start Date</label>
+          <label class="text-xs font-bold mb-1">Target Start Date<label class="text-red-500">*</label></label>
           <input
-            v-model="form.target_date"
+            v-model="sanitizedTargetDate"
             type="month"
             :min="getMinTargetDate()"
             class="border p-2 rounded w-full"
@@ -118,7 +182,7 @@ const submit = () => {
       <!-- Remarks -->
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Remarks</label>
+          <label class="text-xs mb-1">Remarks</label>
           <textarea
             v-model="form.remarks"
             rows="6"

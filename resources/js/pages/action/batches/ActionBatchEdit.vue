@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head } from '@inertiajs/vue3'
@@ -19,6 +19,8 @@ const targetTraineesError = ref('')
 const remarksError = ref('')
 const targetDateError = ref('')
 const lastBatchTargetDate = page.props.lastBatchTargetDate || null
+const nextBatchTargetDate = page.props.nextBatchTargetDate || null
+
 
 
 // Constants for validation
@@ -26,13 +28,55 @@ const maxTargetTrainees = 100
 const maxRemarksLength = 1024 
 const today = new Date().toISOString().slice(0, 10)  
 
+
+
+
+
 const getMinTargetDate = () => {
+  const nextMonth = new Date();
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  const minDateFromToday = nextMonth.toISOString().slice(0, 7);
+
   if (lastBatchTargetDate) {
-    const lastBatchDate = new Date(lastBatchTargetDate)
-    lastBatchDate.setMonth(lastBatchDate.getMonth() + 0)  
-    return lastBatchDate.toISOString().slice(0, 7)  
+    const lastBatchDate = new Date(lastBatchTargetDate);
+    const lastBatchDateStr = lastBatchDate.toISOString().slice(0, 7);
+
+    return lastBatchDateStr > minDateFromToday ? lastBatchDateStr : minDateFromToday;
   }
-  return today 
+
+  return minDateFromToday;
+};
+
+const getMaxTargetDate = () => {
+  if (nextBatchTargetDate) {
+    return new Date(nextBatchTargetDate).toISOString().slice(0, 7);
+  }
+  return '';
+};
+
+
+
+const handleTraineesInput = (event: Event) => {
+  const el = event.target as HTMLInputElement;
+  let value = el.value;
+
+  if (value === '0') {
+    el.value = '';
+    form.value.target_trainees = '';
+  } else if (value === '') {
+    form.value.target_trainees = '';
+  } else {
+    const num = Number(value);
+
+    if (num < 1) {
+      el.value = '';
+      form.value.target_trainees = '';
+    } else {
+      form.value.target_trainees = num;
+    }
+  }
+
+  validateTargetTrainees();
 }
 
 const validateTargetTrainees = () => {
@@ -47,15 +91,49 @@ const validateRemarks = () => {
     : ''
 }
 
-const validateTargetDate = () => {
-  targetDateError.value = form.value.target_date && form.value.target_date <= today
-    ? 'The selected date must be in the future.'
-    : ''
-}
+
+
+
+
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const options = { year: 'numeric', month: 'long' };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+};
+
+const isTargetDateValid = computed(() => {
+  const minDate = getMinTargetDate();
+  const maxDate = getMaxTargetDate();
+
+  if (form.value.target_date && form.value.target_date <= today) {
+    targetDateError.value = 'The selected date must be in the future.';
+    return false;
+  }
+
+  const formattedMinDate = formatDate(minDate);
+  const formattedMaxDate = formatDate(maxDate);
+  if (form.value.target_date && (form.value.target_date < minDate || form.value.target_date > maxDate)) {
+    targetDateError.value = `The selected date must be between the previous and next ACTION Batch.`;
+    return false;
+  }
+
+  targetDateError.value = ''; 
+  return true;
+});
+
+const sanitizedTargetDate = computed({
+  get: () => form.value.target_date,
+  set: (newDate: string) => {
+    form.value.target_date = newDate;
+    isTargetDateValid.value; 
+  },
+});
+
+
 const submit = () => {
   targetTraineesError.value = ''
   remarksError.value = ''
-  targetDateError.value = ''
+  targetDateError.value = ''  
 
   form.value.processing = true
   loading.value = true
@@ -75,14 +153,14 @@ const submit = () => {
   <Head title="Action Batch Register" />
   <AppLayout :errors="page.props.errors">
     <div class="flex justify-between items-center mx-5 mb-3">
-      <h2 class="text-xl font-bold">Edit Action Batch</h2>
+      <h2 class="text-xl font-bold">Edit ACTION Batch</h2>
     </div>
 
     <!-- Form Fields -->
     <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
       <div class="grid grid-cols-2 gap-4">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Action Batch</label>
+          <label class="text-xs font-bold mb-1">ACTION Batch<label class="text-red-500">*</label></label>
           <input
             v-model="form.action_batch"
             readonly
@@ -96,13 +174,14 @@ const submit = () => {
 
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Target Trainees</label>
+          <label class="text-xs font-bold mb-1">Target Trainees<label class="text-red-500">*</label></label>
           <input
             v-model="form.target_trainees"
             placeholder="Target Trainees"
             type="number"
-            @input="validateTargetTrainees"
             class="border p-2 rounded w-full"
+            min="1"
+            @input="handleTraineesInput"
           />
           <span v-if="page.props.errors?.target_trainees" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.target_trainees }}
@@ -115,14 +194,15 @@ const submit = () => {
 
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2 w-40">
-          <label class="text-xs font-semibold mb-1">Target Start Date</label>
+          <label class="text-xs font-bold mb-1">Target Start Date<label class="text-red-500">*</label></label>
           <input
-            v-model="form.target_date"
+            v-model="sanitizedTargetDate"
             type="month"
-            @input="validateTargetDate"
+            @input="isTargetDateValid"
             placeholder="Target Start Date"
             class="border p-2 rounded w-full"
             :min="getMinTargetDate()" 
+            :max="getMaxTargetDate()" 
           />
           <span v-if="page.props.errors?.target_date" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.target_date }}
@@ -135,7 +215,7 @@ const submit = () => {
 
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-semibold mb-1">Remarks</label>
+          <label class="text-xs mb-1">Remarks</label>
           <textarea
             v-model="form.remarks"
             rows="6"
@@ -171,7 +251,7 @@ const submit = () => {
                 disabled:opacity-60 disabled:cursor-not-allowed
                 !w-fit inline-flex items-center justify-center"
           @click="submit"
-          :disabled="form.processing"
+          :disabled="form.processing "
         >
           {{ form.processing ? 'Updating...' : 'Update' }}
         </button>
