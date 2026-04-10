@@ -97,7 +97,7 @@ class IntermediateApplicantImportService
         $parsedData = $this->parseApplicantData($row);
         $updateData = $parsedData['applicant'];
 
-        unset($updateData['created_by'], $updateData['created_time']);
+        unset($updateData['registered_by'], $updateData['source_type'], $updateData['source'], $updateData['other_source'], $updateData['created_by'], $updateData['created_time'], );
 
         $applicant->update(array_merge($updateData, [
             'updated_by' => Auth::id(),
@@ -169,51 +169,51 @@ class IntermediateApplicantImportService
                     'Expired >6 months default'
                 );
             }
-        }
+            // =========================================================
+            //  CASE 2: REGISTERED ≤ 6 MONTHS
+            // =========================================================
+            if (! $isExpired) {
+                //  No latest app → create new (safe fallback)
+                if (! $latestApp) {
+                    return $this->createAppWithSync($applicant, $row, $fullName, 1, 'Recent Reg - No App');
+                }
 
-        // =========================================================
-        //  CASE 2: REGISTERED ≤ 6 MONTHS
-        // =========================================================
+                // exam_status = 5 → update latest app (stage 1) and reset exam_status
+                if ($examStatus == 5 && $latestApp) {
+                    $latestApp->update(
+                        array_merge(
+                            $this->buildApplicationData($row, 1, true),
+                            [
+                                'exam_status' => null,
+                            ]
+                        )
+                    );
 
-        //  No latest app → create new (safe fallback)
-        if (! $latestApp) {
-            return $this->createAppWithSync($applicant, $row, $fullName, 1, 'Recent Reg - No App');
-        }
+                    $this->syncWorkExperiences($applicant, $row);
 
-        // exam_status = 5 → update latest app (stage 1) and reset exam_status
-        if ($examStatus == 5 && $latestApp) {
+                    return [
+                        'success' => "{$fullName} (FULL APP SYNC + stage 1 reset exam_status)",
+                    ];
+                }
+
+                // exam_status = 3 or 4 → update latest app (stage 3) instead of creating new app
+                if (in_array($examStatus, [3, 4]) && $latestApp) {
+                    $latestApp->update(
+                        $this->buildApplicationData($row, 3, true)
+                    );
+
+                    $this->syncWorkExperiences($applicant, $row);
+
+                    return [
+                        'success' => "{$fullName} (FULL APP SYNC + stage 3)",
+                    ];
+                }
+            }
+
             $latestApp->update(
-                array_merge(
-                    $this->buildApplicationData($row, 1, true),
-                    [
-                        'exam_status' => null,
-                    ]
-                )
+                $this->buildApplicationData($row, $latestApp->application_stage ?? 1, true)
             );
-
-            $this->syncWorkExperiences($applicant, $row);
-
-            return [
-                'success' => "{$fullName} (FULL APP SYNC + stage 1 reset exam_status)",
-            ];
         }
-
-        // exam_status = 3 or 4 → update latest app (stage 3) instead of creating new app
-        if (in_array($examStatus, [3, 4]) && $latestApp) {
-            $latestApp->update(
-                $this->buildApplicationData($row, 3, true)
-            );
-
-            $this->syncWorkExperiences($applicant, $row);
-
-            return [
-                'success' => "{$fullName} (FULL APP SYNC + stage 3)",
-            ];
-        }
-
-        $latestApp->update(
-            $this->buildApplicationData($row, $latestApp->application_stage ?? 1, true)
-        );
 
         return $this->successWithSync("{$fullName} (UPDATED PROFILE + UPDATED LATEST APP - Default)", $applicant, $row);
     }
