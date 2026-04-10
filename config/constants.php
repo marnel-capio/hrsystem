@@ -165,10 +165,8 @@ return [
     ],
 
     'examVenues' => [
-        1 => 'Gmeet',
-        2 => 'Zoom',
-        3 => 'USJ-R Basak',
-        4 => 'AdDU',
+        1 => 'Online',
+        2 => 'Face to face',
     ],
 
     'examResults' => [
@@ -213,12 +211,7 @@ return [
         2 => 'Cebu',
     ],
 
-    'examVenues' => [
-        1 => 'Gmeet',
-        2 => 'Zoom',
-        3 => 'USJ-R Basak',
-        4 => 'AdDU',
-    ],
+
 
     'examResults' => [
         1 => 'Pending',

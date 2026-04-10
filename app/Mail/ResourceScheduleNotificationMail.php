@@ -5,6 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Auth;
 
 class ResourceScheduleNotificationMail extends Mailable
 {
@@ -16,10 +17,15 @@ class ResourceScheduleNotificationMail extends Mailable
 
     public string|int $userId;
 
+public $senderName;
+public $senderRole;
+
     public function __construct(string $batchName, string $link)
     {
         $this->batchName = $batchName;
         $this->link = $link;
+            $this->senderName = Auth::user()?->full_name ?? 'AWS HR';
+    $this->senderRole = Auth::user()?->role_label ?? 'HR';
     }
 
     public function build()
@@ -29,6 +35,8 @@ class ResourceScheduleNotificationMail extends Mailable
                     ->with([
                         'batchName' => $this->batchName,
                         'link' => $this->link,
+                         'senderName' => $this->senderName,
+            'senderRole' => $this->senderRole,
                     ]);
     }
 }
