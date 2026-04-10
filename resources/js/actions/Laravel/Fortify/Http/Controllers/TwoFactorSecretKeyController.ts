@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \Laravel\Fortify\Http\Controllers\TwoFactorSecretKeyController::show
  * @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorSecretKeyController.php:17
@@ -76,6 +75,11 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
                     }),
             method: 'get',
         })
+    
+    show.form = showForm
+const TwoFactorSecretKeyController = { show }
+
+export default TwoFactorSecretKeyController      })
     
     show.form = showForm
 const TwoFactorSecretKeyController = { show }

@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \Laravel\Fortify\Http\Controllers\RecoveryCodeController::index
  * @see vendor/laravel/fortify/src/Http/Controllers/RecoveryCodeController.php:19
@@ -131,6 +130,11 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
             action: store.url(options),
             method: 'post',
         })
+    
+    store.form = storeForm
+const RecoveryCodeController = { index, store }
+
+export default RecoveryCodeController        })
     
     store.form = storeForm
 const RecoveryCodeController = { index, store }

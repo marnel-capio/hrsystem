@@ -53,19 +53,26 @@ const validateTargetTrainees = () => {
     : ''
 }
 
+const formatMonth = (date: Date) => {
+  return date.toISOString().slice(0, 7)
+}
+
+const addMonths = (date: Date, months: number) => {
+  const d = new Date(date)
+  d.setMonth(d.getMonth() + months)
+  return d
+}
+
 const getMinTargetDate = () => {
-  const nextMonth = new Date();
-  nextMonth.setMonth(nextMonth.getMonth() + 1);
-  const minDateFromToday = nextMonth.toISOString().slice(0, 7);
-
   if (lastBatchTargetDate) {
-    const lastBatchDate = new Date(lastBatchTargetDate);
-    const lastBatchDateStr = lastBatchDate.toISOString().slice(0, 7);
-
-    return lastBatchDateStr > minDateFromToday ? lastBatchDateStr : minDateFromToday;
+    const last = new Date(lastBatchTargetDate)
+    const minFromLastBatch = addMonths(last, 1)
+    return formatMonth(minFromLastBatch)
   }
 
-  return minDateFromToday;
+  const today = new Date()
+  const nextMonth = addMonths(today, 1)
+  return formatMonth(nextMonth)
 }
 
 const isTargetDateValid = computed(() => {
@@ -78,7 +85,7 @@ const isTargetDateValid = computed(() => {
 
   if (form.value.target_date && form.value.target_date < minDate) {
     targetDateError.value =
-      'The selected date must be after the previous ACTION Batch.'
+      'The selected date must be after the previous ACTION Batch`s date.'
     return false
   }
 

@@ -32,28 +32,37 @@ const today = new Date().toISOString().slice(0, 10)
 
 
 
+const formatMonth = (date: Date) => {
+  return date.toISOString().slice(0, 7)
+}
+
+const addMonths = (date: Date, months: number) => {
+  const d = new Date(date)
+  d.setMonth(d.getMonth() + months)
+  return d
+}
+
 const getMinTargetDate = () => {
-  const nextMonth = new Date();
-  nextMonth.setMonth(nextMonth.getMonth() + 1);
-  const minDateFromToday = nextMonth.toISOString().slice(0, 7);
-
   if (lastBatchTargetDate) {
-    const lastBatchDate = new Date(lastBatchTargetDate);
-    const lastBatchDateStr = lastBatchDate.toISOString().slice(0, 7);
-
-    return lastBatchDateStr > minDateFromToday ? lastBatchDateStr : minDateFromToday;
+    const last = new Date(lastBatchTargetDate)
+    const minFromLastBatch = addMonths(last, 1)
+    return formatMonth(minFromLastBatch)
   }
 
-  return minDateFromToday;
-};
+  const today = new Date()
+  const nextMonth = addMonths(today, 1)
+  return formatMonth(nextMonth)
+}
 
 const getMaxTargetDate = () => {
   if (nextBatchTargetDate) {
-    return new Date(nextBatchTargetDate).toISOString().slice(0, 7);
+    const next = new Date(nextBatchTargetDate)
+    next.setMonth(next.getMonth() - 1)
+    return next.toISOString().slice(0, 7)
   }
-  return '';
-};
 
+  return ''
+}
 
 
 const handleTraineesInput = (event: Event) => {
