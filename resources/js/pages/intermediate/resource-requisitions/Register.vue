@@ -193,12 +193,16 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
   <Head title="Resource Requisition Register" />
 
   <AppLayout :errors="page.props.errors">
-    <div class="flex justify-between items-center mx-5 mb-3">
+
+  <div class="w-3/4 mx-auto">
+
+    <div class="mb-3">
       <h2 class="text-xl font-bold">Create Resource Requisition</h2>
     </div>
 
-    <!-- Form -->
-    <div class="text-xs overflow-x-auto mt-6 p-6 bg-white shadow-lg rounded-lg border w-3/4 mx-auto">
+    <!-- Form container -->
+    <div class="text-xs overflow-x-auto mt-6 p-6 bg-white shadow-lg rounded-lg border">
+      <p class="text-red-500 mb-10 mt-4"><b>Note:</b> Resource Requisition must already be approved by SR Manager.</p>
       <!-- Engagement Type, Sourcing Type, Request Type -->
       <div class="grid grid-cols-3 gap-5">
         <!-- Engagement Type -->
@@ -547,6 +551,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
           {{ form.processing ? 'Creating…' : 'Create' }}
         </button>
       </div>
+    </div>
     </div>
   </AppLayout>
 </template>
