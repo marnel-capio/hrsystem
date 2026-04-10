@@ -4,16 +4,15 @@ import { ref, computed, watch } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import {
     User, FileText, File, Image, Award, Calendar, Star, CheckCircle,
-    Users, Plus, Trash, Download
+    Users, Plus
 } from 'lucide-vue-next'
 import axios from 'axios'
 
 const canAcceptDecline = (interview: any) => {
-return [2, 3, 5, 6].includes(userPermissions.value) &&
-       interview.interviewer_id === page.props.user_id &&
-       interview.status === 1
-    }
-
+    return [2, 3, 5, 6].includes(userPermissions.value) &&
+        interview.interviewer_id === page.props.user_id &&
+        interview.status === 1
+}
 
 const bulkEditScheduleErrors = ref({
     selectedInterviewers: '',
@@ -115,8 +114,6 @@ const openAcceptDeclineModal = (interview: any) => {
     showAcceptDeclineModal.value = true
 }
 
-
-
 const page = usePage<any>()
 
 const application = computed(() => page.props.application)
@@ -157,7 +154,6 @@ const bulkAddStage = ref('1')
 
 const selectedInterviewers = ref<number[]>([])
 const selectAll = ref(false)
-
 
 const getVenueLabel = (venue: number | null) => {
     if (!venue) return '-'
@@ -384,10 +380,10 @@ const submitBulkAdd = async () => {
         return
     }
 
-if (!bulkAddPlannedDate.value) {
-    showToast('No plan date is set for the selected stage', 'error')
-    return
-}
+    if (!bulkAddPlannedDate.value) {
+        showToast('No plan date is set for the selected stage', 'error')
+        return
+    }
 
     bulkAdding.value = true
 
@@ -415,11 +411,11 @@ if (!bulkAddPlannedDate.value) {
     } catch (error: any) {
         console.error('Bulk add failed:', error?.response || error)
         showToast(
-    error?.response?.data?.error ||
-    error?.response?.data?.message ||
-    'Failed to add interviewers',
-    'error'
-)
+            error?.response?.data?.error ||
+            error?.response?.data?.message ||
+            'Failed to add interviewers',
+            'error'
+        )
     } finally {
         bulkAdding.value = false
     }
@@ -574,29 +570,29 @@ const availableNotificationOptions = computed(() => {
         })
     }
 
-if (examReadyForApplicantNotification.value) {
-    options.push({
-        value: 'applicant_exam_scheduled',
-        label: 'Send applicant exam schedule',
-        description: 'Notify the applicant about the approved exam schedule.',
-    })
-}
+    if (examReadyForApplicantNotification.value) {
+        options.push({
+            value: 'applicant_exam_scheduled',
+            label: 'Send applicant exam schedule',
+            description: 'Notify the applicant about the approved exam schedule.',
+        })
+    }
 
-if (initialReadyForApplicantNotification.value) {
-    options.push({
-        value: 'applicant_initial_scheduled',
-        label: 'Send applicant initial interview schedule',
-        description: 'Notify the applicant about the approved initial interview schedule.',
-    })
-}
+    if (initialReadyForApplicantNotification.value) {
+        options.push({
+            value: 'applicant_initial_scheduled',
+            label: 'Send applicant initial interview schedule',
+            description: 'Notify the applicant about the approved initial interview schedule.',
+        })
+    }
 
-if (finalReadyForApplicantNotification.value) {
-    options.push({
-        value: 'applicant_final_scheduled',
-        label: 'Send applicant final interview schedule',
-        description: 'Notify the applicant about the approved final interview schedule.',
-    })
-}
+    if (finalReadyForApplicantNotification.value) {
+        options.push({
+            value: 'applicant_final_scheduled',
+            label: 'Send applicant final interview schedule',
+            description: 'Notify the applicant about the approved final interview schedule.',
+        })
+    }
 
     if (failedStage.value) {
         options.push({
@@ -617,7 +613,6 @@ if (finalReadyForApplicantNotification.value) {
     return options
 })
 
-
 const notificationPreview = computed(() => {
     switch (notification.value.type) {
         case 'interviewer_pending_approval':
@@ -631,44 +626,44 @@ const notificationPreview = computed(() => {
                 summary: `This email tells interviewer(s) that they have a pending interview assignment for ${applicantFullName.value} and includes a direct link to the application page so they can review and respond.`,
             }
 
-case 'applicant_exam_scheduled':
-    return {
-        subject: '【HR System】AWS Application Schedule',
-        recipients: [
-            {
-                name: applicantFullName.value,
-                email: application.value?.applicant?.email_address || '',
-                extra: 'Applicant',
+        case 'applicant_exam_scheduled':
+            return {
+                subject: '【HR System】AWS Application Schedule',
+                recipients: [
+                    {
+                        name: applicantFullName.value,
+                        email: application.value?.applicant?.email_address || '',
+                        extra: 'Applicant',
+                    }
+                ],
+                summary: `This email tells the applicant that their exam schedule has been confirmed.`,
             }
-        ],
-        summary: `This email tells the applicant that their exam schedule has been confirmed.`,
-    }
 
-case 'applicant_initial_scheduled':
-    return {
-        subject: '【HR System】AWS Application Schedule',
-        recipients: [
-            {
-                name: applicantFullName.value,
-                email: application.value?.applicant?.email_address || '',
-                extra: 'Applicant',
+        case 'applicant_initial_scheduled':
+            return {
+                subject: '【HR System】AWS Application Schedule',
+                recipients: [
+                    {
+                        name: applicantFullName.value,
+                        email: application.value?.applicant?.email_address || '',
+                        extra: 'Applicant',
+                    }
+                ],
+                summary: `This email tells the applicant that their initial interview schedule has been confirmed.`,
             }
-        ],
-        summary: `This email tells the applicant that their initial interview schedule has been confirmed.`,
-    }
 
-case 'applicant_final_scheduled':
-    return {
-        subject: '【HR System】AWS Application Schedule',
-        recipients: [
-            {
-                name: applicantFullName.value,
-                email: application.value?.applicant?.email_address || '',
-                extra: 'Applicant',
+        case 'applicant_final_scheduled':
+            return {
+                subject: '【HR System】AWS Application Schedule',
+                recipients: [
+                    {
+                        name: applicantFullName.value,
+                        email: application.value?.applicant?.email_address || '',
+                        extra: 'Applicant',
+                    }
+                ],
+                summary: `This email tells the applicant that their final interview schedule has been confirmed.`,
             }
-        ],
-        summary: `This email tells the applicant that their final interview schedule has been confirmed.`,
-    }
 
         case 'applicant_failed':
             return {
@@ -682,84 +677,26 @@ case 'applicant_final_scheduled':
                 ],
                 summary: `This email tells the applicant that they did not pass the ${failedStageLabel.value}.`,
             }
-            case 'hr_recruiters_job_offer':
-    return {
-        subject: '【HR System】Scheduled Job Offer',
-        recipients: [
-            {
-                name: 'All HR Recruiters',
-                email: 'HR Recruiter distribution',
-                extra: formatDateTime(application.value?.job_offer_schedule),
+
+        case 'hr_recruiters_job_offer':
+            return {
+                subject: '【HR System】Scheduled Job Offer',
+                recipients: [
+                    {
+                        name: 'All HR Recruiters',
+                        email: 'HR Recruiter distribution',
+                        extra: formatDateTime(application.value?.job_offer_schedule),
+                    }
+                ],
+                summary: `This email notifies all HR recruiters that a job offer has been scheduled for ${applicantFullName.value}.`,
             }
-        ],
-        summary: `This email notifies all HR recruiters that a job offer has been scheduled for ${applicantFullName.value}.`,
-    }
 
         default:
             return null
     }
 })
 
-const notificationPreviewMap = computed(() => {
-    return {
-        interviewer_pending_approval: {
-            label: 'Interviewer has pending approval',
-            subject: '【HR System】Exam/Interview Schedule Pending Approval',
-            recipients: pendingApprovalInterviewers.value.map((i: any) => ({
-                name: i.name,
-                email: i.email_address || '',
-                extra: `${stageLabel(i.interview_type)} • ${formatDateTime(i.scheduled_date)}`,
-            })),
-            summary: `This email tells the assigned interviewer that they have a pending interview schedule to approve or decline for ${applicantFullName.value}.`,
-        },
-
-        applicant_scheduled: {
-            label: 'Applicant scheduled for exam/interview',
-            subject: '【HR System】Your Exam / Interview Schedule',
-            recipients: [
-                {
-                    name: applicantFullName.value,
-                    email: application.value?.applicant?.email_address || '',
-                    extra: 'Applicant',
-                }
-            ],
-            summary: `This email tells the applicant that they have been scheduled. It includes the scheduled exam/interview stages and dates currently assigned in the application.`,
-        },
-
-        interviewer_schedule_approved: {
-            label: 'Interviewer approved interview schedule',
-            subject: '【HR System】Interview Schedule Approved',
-            recipients: approvedInterviewers.value.map((i: any) => ({
-                name: i.name,
-                email: i.email_address || '',
-                extra: `${stageLabel(i.interview_type)} • ${formatDateTime(i.scheduled_date)}`,
-            })),
-            summary: `This email confirms to approved interviewers that their schedule for ${applicantFullName.value} has been finalized.`,
-        },
-
-        applicant_failed: {
-            label: 'Applicant failed exam/interview',
-            subject: '【HR System】Application Update',
-            recipients: [
-                {
-                    name: applicantFullName.value,
-                    email: application.value?.applicant?.email_address || '',
-                    extra: 'Applicant',
-                }
-            ],
-            summary: `This email informs the applicant that they did not pass the ${failedStageLabel.value}.`,
-        },
-    }
-})
-
-const selectedNotificationPreviews = computed(() => {
-    return notification.value.types
-        .map((type: string) => notificationPreviewMap.value[type as keyof typeof notificationPreviewMap.value])
-        .filter(Boolean)
-})
-
-
-    watch(acceptDeclineReason, (newVal) => {
+watch(acceptDeclineReason, (newVal) => {
     if (newVal.trim()) {
         acceptDeclineErrors.value.reason = ''
     }
@@ -864,864 +801,844 @@ watch(errorMessage, (newVal) => {
 }, { immediate: true })
 </script>
 
-  <template>
+<template>
     <AppLayout>
-      <div class="action-application-detail">
-          <!-- SUCCESS ALERT -->
-          <div v-if="showSuccess" class="full-width-alert">
-              <div class="alert-banner alert-success-banner">
-                  <div class="alert-body">{{ successMessage }}</div>
-                  <button type="button" class="close-btn" @click="showSuccess = false">×</button>
-              </div>
-          </div>
-
-          <!-- ERROR ALERT -->
-          <div v-if="showError" class="full-width-alert">
-              <div class="alert-banner alert-error-banner">
-                  <div class="alert-body">{{ errorMessage }}</div>
-                  <button type="button" class="close-btn" @click="showError = false">×</button>
-              </div>
-          </div>
-
-<div v-if="showToastMessage" class="full-width-alert">
-  <div
-    class="alert-banner"
-    :class="toastType === 'success' ? 'alert-success-banner' : 'alert-error-banner'"
-  >
-    <div class="alert-body">{{ toastMessage }}</div>
-    <button type="button" class="close-btn" @click="showToastMessage = false">×</button>
-  </div>
-</div>
-
-          <div class="flex flex-1 flex-col gap-6 p-8 bg-zinc-50/50 dark:bg-zinc-950 min-h-screen">
-              <!-- Header -->
-              <div class="flex items-center justify-between">
-                  <div>
-                      <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-                          ACTION Application Details
-                      </h1>
-                  </div>
-                  <div class="flex gap-3">
-                      <button @click="downloadApplication" class="btn-primary">
-                          Print or Save as PDF
-                      </button>
-                      <button v-if="canNotify" @click="showNotificationModal = true" class="btn-send">
-                        Notify Applicant, Interviewer, or Conductor
-                    </button>
-                      <Link :href="`/action/applications/${application.id}/edit`" class="btn-edit">
-                          Edit Application
-                      </Link>
-                  </div>
-              </div>
-
-              <!-- ROW 1: Left Column (Profile) + Right Column (Basic Info & Documents) -->
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <!-- LEFT COLUMN: Applicant Profile Card -->
-                  <div class="col-span-1">
-                      <div class="text-white px-5 py-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center h-full"
-                          style="background-color: #2f359e;">
-<div class="w-30 h-30 bg-white rounded-full flex items-center justify-center mb-3 overflow-hidden">
-    <img
-        v-if="application.upload_pic"
-        :src="getFileUrl(application.upload_pic) || ''"
-        alt="Applicant Photo"
-        class="w-full h-full object-cover"
-    />
-    <User v-else class="w-10 h-10 text-blue-600" />
-</div>
-                          <h2 class="text-2xl font-extrabold tracking-wide drop-shadow">
-                              {{ application.applicant.last_name }}, {{ application.applicant.first_name }}
-                          </h2>
-                          <p class="text-sm opacity-90 mt-1">{{ application.applicant.middle_name }}</p>
-                          <p class="text-xs opacity-75 mt-2">{{ application.applicant.email_address }}</p>
-                          <p class="text-xs opacity-75">{{ application.applicant.contact_number }}</p>
-                      </div>
-                  </div>
-
-                  <!-- RIGHT COLUMN: Basic Info + Uploaded Documents -->
-                  <div class="md:col-span-2 space-y-6">
-                      <!-- Basic Info Card -->
-                      <div class="bg-white dark:bg-zinc-900 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                          <div class="space-y-3 text-sm">
-                              <div class="flex justify-between items-center bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-lg">
-                                  <span class="font-semibold">Batch:</span>
-                                  <span class="font-extrabold text-blue-600">{{ application.batch?.action_batch || 'N/A' }}</span>
-                              </div>
-                              <div class="flex justify-between items-center bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-lg">
-                                  <span class="font-semibold">Status:</span>
-                                  <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getOverallStatusColor()]">
-                                      {{ getOverallStatus() }}
-                                  </span>
-                              </div>
-                          </div>
-                      </div>
-
-                      <!-- Uploaded Documents -->
-<div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-    <h2 class="text-lg font-bold mb-4">Uploaded Documents</h2>
-
-    <div class="space-y-3" v-if="application.upload_resume || application.upload_tor || application.upload_pic">
-        <div
-            v-if="application.upload_resume"
-            class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg"
-        >
-            <div class="flex items-center gap-2">
-                <FileText class="w-4 h-4 text-blue-600" />
-                <span class="text-sm">Resume/CV</span>
-            </div>
-            <a
-                :href="getFileUrl(application.upload_resume)"
-                target="_blank"
-                class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-                View File
-            </a>
-        </div>
-
-        <div
-            v-if="application.upload_tor"
-            class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg"
-        >
-            <div class="flex items-center gap-2">
-                <File class="w-4 h-4 text-green-600" />
-                <span class="text-sm">Transcript of Records</span>
-            </div>
-            <a
-                :href="getFileUrl(application.upload_tor)"
-                target="_blank"
-                class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-                View File
-            </a>
-        </div>
-
-        <div
-            v-if="application.upload_pic"
-            class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg"
-        >
-            <div class="flex items-center gap-2">
-                <Image class="w-4 h-4 text-purple-600" />
-                <span class="text-sm">2x2 Picture</span>
-            </div>
-            <a
-                :href="getFileUrl(application.upload_pic)"
-                target="_blank"
-                class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-                View Image
-            </a>
-        </div>
-    </div>
-
-    <div v-else class="text-sm text-gray-500 dark:text-gray-400">
-        No uploaded documents available.
-    </div>
-</div>
-                  </div>
-              </div>
-
-              <!-- FULL WIDTH SECTIONS -->
-              <div class="space-y-6">
-                  <!-- Exam Details Table -->
-                  <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                      <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                          <Award class="w-5 h-5 text-blue-600" /> EXAM DETAILS
-                      </h2>
-                      <div class="overflow-x-auto">
-                          <table class="w-full text-sm border-collapse border">
-                              <tbody>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Plan Date</td>
-                                      <td class="px-3 py-2 border">{{ formatDateTime(application.exam_plan_date) }}</td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Actual Date</td>
-                                      <td class="px-3 py-2 border">{{ formatDateTime(application.exam_actual_date) }}</td>
-                                  </tr>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Venue</td>
-                                      <td class="px-3 py-2 border">{{ examVenues[application.exam_venue] ?? '-' }}</td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Programming Result</td>
-                                      <td class="px-3 py-2 border">{{ formatScore(application.exam_prg_result) }}</td>
-                                  </tr>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">ATPP Result</td>
-                                      <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_result) }}</td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">GIT Result</td>
-                                      <td class="px-3 py-2 border">{{ formatScore(application.exam_git_result) }}</td>
-                                  </tr>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
-                                      <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamResultLabel(application.exam_result))]">
-    {{ getExamResultLabel(application.exam_result) || '-' }}
-</span>
-                                      </td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
-                                      <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamApplicationStatusLabel(application.exam_application_status))]">
-    {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
-</span>
-                                      </td>
-                                  </tr>
-                              </tbody>
-                          </table>
-                      </div>
-                      <div class="mt-4">
-                          <strong class="text-sm">Comments:</strong>
-                          <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.exam_remarks || 'No comments' }}</p>
-                      </div>
-                  </div>
-
-                  <!-- Initial Interview Details Table -->
-                  <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                      <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                          <Calendar class="w-5 h-5 text-blue-600" /> INITIAL INTERVIEW DETAILS
-                      </h2>
-                      <div class="overflow-x-auto">
-                          <table class="w-full text-sm border-collapse border">
-                              <tbody>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Plan Date</td>
-                                      <td class="px-3 py-2 border">{{ formatDateTime(application.initial_interview_plan_date) }}</td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Actual Date</td>
-                                      <td class="px-3 py-2 border">{{ formatDateTime(application.initial_interview_actual_date) }}</td>
-                                  </tr>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Venue</td>
-                                      <td class="px-3 py-2 border">{{ getVenueLabel(application.initial_interview_venue) || '-' }}</td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Final Score</td>
-                                      <td class="px-3 py-2 border">{{ formatScore(application.initial_interview_final) }}</td>
-                                  </tr>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
-                                      <td class="px-3 py-2 border">
-<span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.initial_interview_result))]">
-    {{ getInterviewResultLabel(application.initial_interview_result) || '-' }}
-</span>
-                                      </td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
-                                      <td class="px-3 py-2 border">
-                                          <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.initial_interview_application_status))]">
-    {{ getInterviewApplicationStatusLabel(application.initial_interview_application_status) || '-' }}
-</span>
-                                      </td>
-                                  </tr>
-                              </tbody>
-                          </table>
-                      </div>
-                      <div class="mt-4">
-                          <strong class="text-sm">Comments:</strong>
-                          <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.initial_interview_remarks || 'No comments' }}</p>
-                      </div>
-                  </div>
-
-                  <!-- Final Interview Details Table -->
-                  <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                      <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                          <Star class="w-5 h-5 text-blue-600" /> FINAL INTERVIEW DETAILS
-                      </h2>
-                      <div class="overflow-x-auto">
-                          <table class="w-full text-sm border-collapse border">
-                              <tbody>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Interview Date</td>
-                                      <td class="px-3 py-2 border">{{ formatDateTime(application.final_interview_date) }}</td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Final Score</td>
-                                      <td class="px-3 py-2 border">{{ formatScore(application.final_interview_final) }}</td>
-                                  </tr>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">SF Score</td>
-                                      <td class="px-3 py-2 border">{{ formatScore(application.final_interview_sf) }}</td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">IB Score</td>
-                                      <td class="px-3 py-2 border">{{ formatScore(application.final_interview_ib) }}</td>
-                                  </tr>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">RV Score</td>
-                                      <td class="px-3 py-2 border">{{ formatScore(application.final_interview_rv) }}</td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">MA Score</td>
-                                      <td class="px-3 py-2 border">{{ formatScore(application.final_interview_ma) }}</td>
-                                  </tr>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
-                                      <td class="px-3 py-2 border">
-<span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.final_interview_result))]">
-    {{ getInterviewResultLabel(application.final_interview_result) || '-' }}
-</span>
-                                      </td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
-                                      <td class="px-3 py-2 border">
-<span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.final_interview_application_status))]">
-    {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
-</span>
-                                      </td>
-                                  </tr>
-                              </tbody>
-                          </table>
-                      </div>
-                      <div class="mt-4">
-                          <strong class="text-sm">Comments:</strong>
-                          <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.final_interview_remarks || 'No comments' }}</p>
-                      </div>
-                  </div>
-
-                  <!-- Job Offer Details Table -->
-                  <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                      <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                          <CheckCircle class="w-5 h-5 text-blue-600" /> JOB OFFER DETAILS
-                      </h2>
-                      <div class="overflow-x-auto">
-                          <table class="w-full text-sm border-collapse border">
-                              <tbody>
-                                  <tr class="border">
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Schedule</td>
-                                      <td class="px-3 py-2 border">{{ formatDateTime(application.job_offer_schedule) }}</td>
-                                      <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Status</td>
-                                      <td class="px-3 py-2 border">
-                                         <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getJobOfferStatusLabel(application.job_offer_status))]">
-    {{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}
-</span>
-                                      </td>
-                                  </tr>
-
-                              </tbody>
-                          </table>
-                      </div>
-                      <div class="mt-4">
-                          <strong class="text-sm">Comments:</strong>
-                          <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.job_offer_remarks || 'No comments' }}</p>
-                      </div>
-                  </div>
-
-<!-- INTERVIEWERS TABLE -->
-<div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow overflow-hidden">
-    <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-800 dark:to-zinc-800/50 px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
-        <div class="flex justify-between items-center">
-            <div>
-                <h2 class="text-lg font-bold flex items-center gap-2">
-                    <Users class="w-5 h-5 text-blue-600" /> INTERVIEWERS AND EXAM CONDUCTORS
-                </h2>
-                <p class="text-xs text-gray-500 mt-1">Manage interviewers and exam conductors assigned to this application</p>
-            </div>
-
-<div class="flex gap-2" v-if="canManageInterviewers">
-    <button @click="openBulkAddModal" class="btn-bulk-add">
-        <Plus class="w-4 h-4" />
-        Add
-    </button>
-
-    <button
-        @click="openBulkEditScheduleModal"
-        :disabled="selectedInterviewers.length === 0"
-        :class="['btn-bulk-edit', selectedInterviewers.length === 0 && 'opacity-50 cursor-not-allowed']"
-    >
-        Edit Schedule
-    </button>
-</div>
-
-        </div>
-    </div>
-
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="bg-zinc-50 dark:bg-zinc-800">
-                <tr>
-                    <th class="px-4 py-3 text-left w-10" v-if="canManageInterviewers">
-                        <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" class="rounded border-gray-300" />
-                    </th>
-                    <th class="px-4 py-3 text-left font-semibold">Interviewer/Conductor</th>
-                    <th class="px-4 py-3 text-left font-semibold">Role</th>
-                    <th class="px-4 py-3 text-left font-semibold">Stage</th>
-                    <th class="px-4 py-3 text-left font-semibold">Scheduled Date</th>
-                    <th class="px-4 py-3 text-left font-semibold">Stage Status</th>
-                    <th class="px-4 py-3 text-left font-semibold">Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <tr
-                    v-for="interview in interviews"
-                    :key="interview.id"
-                    class="border-t border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-                >
-                    <td class="px-4 py-3" v-if="canManageInterviewers">
-                        <input type="checkbox" v-model="selectedInterviewers" :value="interview.id" class="rounded border-gray-300" />
-                    </td>
-
-                    <td class="px-4 py-3">
-                        <div class="flex items-center gap-2">
-                            <User class="w-4 h-4 text-gray-400" />
-                            <span>{{ interview.name }}</span>
-                        </div>
-                    </td>
-
-                    <td class="px-4 py-3">{{ interview.role_label || '-' }}</td>
-
-                    <td class="px-4 py-3">
-                        <span :class="['px-2 py-1 text-xs rounded-full', getStageBadgeClass(interview.interview_type)]">
-                            {{ getStageLabel(interview.interview_type) }}
-                        </span>
-                    </td>
-
-                    <td class="px-4 py-3">{{ formatDateTime(interview.scheduled_date) }}</td>
-
-                    <td class="px-4 py-3">
-                        <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getInterviewStatusBadgeClass(interview.status)]">
-                            {{ getInterviewStatusLabel(interview.status) }}
-                        </span>
-                    </td>
-
-<td class="px-4 py-3">
-    <div class="flex items-center gap-2">
-        <button
-            v-if="canAcceptDecline(interview)"
-            @click="openAcceptDeclineModal(interview)"
-            class="inline-flex items-center justify-center rounded-md text-green-600 hover:text-green-800 hover:bg-green-50 transition px-1 py-2"
-            title="Accept/Decline"
-        >
-            <CheckCircle class="w-4 h-4 mr-1" />
-            Respond
-        </button>
-
-        <button
-            v-if="canViewDeclineReason(interview)"
-            @click="openDeclineReasonModal(interview)"
-            class="inline-flex items-center justify-center rounded-md text-red-600 hover:text-red-800 hover:bg-red-50 transition px-1 py-2 text-sm font-sm"
-            title="View Reason for Decline"
-        >
-            View Reason
-        </button>
-    </div>
-</td>
-                </tr>
-
-                <tr v-if="interviews.length === 0">
-                    <td :colspan="canManageInterviewers ? 7 : 6" class="px-4 py-6 text-center text-gray-500">
-                        No interview assignments found.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-                  <!-- Additional Information -->
-                  <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                      <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-                          <Users class="w-5 h-5 text-blue-600" /> ADDITIONAL INFORMATION
-                      </h2>
-                      <div class="mb-4">
-                          <strong class="text-sm">General Remarks:</strong>
-                          <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.remarks || '-' }}</p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-
-          <!-- DECLINE REASON MODAL -->
-<div v-if="showDeclineReasonModal" class="fixed inset-0 z-50 flex items-center justify-center">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeDeclineReasonModal"></div>
-
-    <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-        <h3 class="text-xl font-bold mb-2">Reason for Decline</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Decline details for this interview assignment
-        </p>
-
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Interviewer
-                </label>
-                <input
-                    type="text"
-                    :value="selectedDeclinedInterview?.name || '-'"
-                    disabled
-                    class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100"
-                />
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Stage
-                </label>
-                <input
-                    type="text"
-                    :value="getStageLabel(selectedDeclinedInterview?.interview_type)"
-                    disabled
-                    class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100"
-                />
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Scheduled Date
-                </label>
-                <input
-                    type="text"
-                    :value="formatDateTime(selectedDeclinedInterview?.scheduled_date)"
-                    disabled
-                    class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100"
-                />
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Decline Reason
-                </label>
-                <div class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-3 bg-zinc-50 dark:bg-zinc-800 text-sm whitespace-pre-wrap">
-                    {{ selectedDeclinedInterview?.decline_reason || '-' }}
+        <div class="action-application-detail">
+            <div v-if="showSuccess" class="full-width-alert">
+                <div class="alert-banner alert-success-banner">
+                    <div class="alert-body">{{ successMessage }}</div>
+                    <button type="button" class="close-btn" @click="showSuccess = false">×</button>
                 </div>
             </div>
-        </div>
 
-        <div class="flex gap-3 mt-6">
-            <button
-                @click="closeDeclineReasonModal"
-                class="w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
-            >
-                Close
-            </button>
-        </div>
-    </div>
-</div>
-
-          <!--  EDIT MODAL -->
-<div v-if="showBulkEditScheduleModal" class="fixed inset-0 z-50 flex items-center justify-center">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showBulkEditScheduleModal = false"></div>
-
-    <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-        <h3 class="text-xl font-bold mb-2">Bulk Edit Schedule</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Update the schedule of checked interviewers
-        </p>
-
-        <div class="space-y-4">
-
-            <!-- Selected Interviewers -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Selected Interviewers
-                </label>
-
-                <div class="bg-gray-50 dark:bg-zinc-800 rounded-lg px-3 py-3">
-                    <div v-if="selectedInterviewDetails.length > 0" class="space-y-2">
-                        <div
-                            v-for="interview in selectedInterviewDetails"
-                            :key="interview.id"
-                            class="flex items-center justify-between gap-3 text-sm border-b border-gray-200 dark:border-zinc-700 last:border-b-0 pb-2 last:pb-0"
-                        >
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-gray-100">
-                                    {{ interview.name }}
-                                </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ interview.role_label || '-' }} • {{ getStageLabel(interview.interview_type) }}
-                                </div>
-                            </div>
-
-                            <div class="text-xs text-gray-500 dark:text-gray-400 text-right">
-                                {{ formatDateTime(interview.scheduled_date) }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div v-else class="text-sm text-gray-500">
-                        No interviewers selected.
-                    </div>
+            <div v-if="showError" class="full-width-alert">
+                <div class="alert-banner alert-error-banner">
+                    <div class="alert-body">{{ errorMessage }}</div>
+                    <button type="button" class="close-btn" @click="showError = false">×</button>
                 </div>
-
-                <!-- INLINE ERROR -->
-                <p v-if="bulkEditScheduleErrors.selectedInterviewers" class="mt-1 text-sm text-red-600">
-                    {{ bulkEditScheduleErrors.selectedInterviewers }}
-                </p>
             </div>
 
-            <!-- Scheduled Date -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    New Scheduled Date
-                </label>
-
-                <input
-                    type="datetime-local"
-                    v-model="bulkEditScheduledDate"
-                    class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800"
-                />
-
-                <!-- INLINE ERROR -->
-                <p v-if="bulkEditScheduleErrors.scheduledDate" class="mt-1 text-sm text-red-600">
-                    {{ bulkEditScheduleErrors.scheduledDate }}
-                </p>
-            </div>
-        </div>
-
-        <div class="flex gap-3 mt-6">
-            <button
-                @click="showBulkEditScheduleModal = false"
-                class="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
-            >
-                Cancel
-            </button>
-
-            <button
-                @click="submitBulkEditSchedule"
-                :disabled="bulkEditingSchedule"
-                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-            >
-                <span v-if="!bulkEditingSchedule">Update Schedule</span>
-                <span v-else>Updating...</span>
-            </button>
-        </div>
-    </div>
-</div>
-
-          <!-- BULK ADD MODAL -->
-          <div v-if="showBulkAddModal" class="fixed inset-0 z-50 flex items-center justify-center">
-              <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showBulkAddModal = false"></div>
-              <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                  <h3 class="text-xl font-bold mb-2">Add Interviewers/Conductors</h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Add multiple interviewers or conductors at once</p>
-
-                  <div class="space-y-4">
-                      <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Interviewers</label>
-                          <div class="tag-input-container border border-gray-300 dark:border-zinc-700 rounded-lg p-2 bg-white dark:bg-zinc-800">
-                              <div class="flex flex-wrap gap-2 mb-2">
-                                  <div v-for="interviewer in selectedBulkInterviewers" :key="interviewer.id" class="tag-item">
-                                      <span>{{ interviewer.name }} ({{ interviewer.role_label }})</span>
-                                      <button @click="removeFromBulkSelection(interviewer.id)" class="remove-tag">×</button>
-                                  </div>
-                              </div>
-                              <div class="relative">
-                                  <input type="text" v-model="interviewerSearch" @focus="showInterviewerDropdown = true" @input="searchInterviewers"
-                                      placeholder="Type to search interviewers..." class="w-full border-0 focus:ring-0 p-2 text-sm bg-transparent" />
-                                  <div v-if="showInterviewerDropdown && filteredAvailableInterviewers.length > 0" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
-                                      <div v-for="interviewer in filteredAvailableInterviewers" :key="interviewer.id" @click="addToBulkSelection(interviewer)"
-                                          class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer text-sm">
-                                          {{ interviewer.name }} ({{ interviewer.role_label }})
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                          <p class="text-xs text-gray-500 mt-1">{{ selectedBulkInterviewers.length }} interviewer(s) selected</p>
-                      </div>
-
-                      <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stage</label>
-<select v-model="bulkAddStage" class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800">
-    <option value="1">Exam</option>
-    <option value="2">Initial Interview</option>
-    <option value="3">Final Interview</option>
-</select>
-                      </div>
-
-<div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Scheduled Date
-    </label>
-    <div class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100 dark:bg-zinc-800 text-sm">
-        {{ bulkAddPlannedDate ? formatDateTime(bulkAddPlannedDate) : 'No plan date set for this stage' }}
-    </div>
-    <p class="text-xs text-gray-500 mt-1">
-        This is automatically taken from the selected stage's planned date.
-    </p>
-</div>
-
-                  </div>
-
-                  <div class="flex gap-3 mt-6">
-                      <button @click="showBulkAddModal = false" class="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition">Cancel</button>
-<button
-    @click="submitBulkAdd"
-    :disabled="
-        bulkAdding ||
-        selectedBulkInterviewers.length === 0 ||
-        !bulkAddPlannedDate
-    "
-    class="flex-1 px-4 py-2 rounded-lg transition
-        disabled:opacity-50 disabled:cursor-not-allowed
-        bg-blue-600 text-white hover:bg-blue-700
-    "
->
-    <span v-if="!bulkAdding">Add Interviewers</span>
-    <span v-else>Adding...</span>
-</button>
-                  </div>
-              </div>
-          </div>
-
-          <!-- ACCEPT/DECLINE MODAL -->
-          <div v-if="showAcceptDeclineModal" class="fixed inset-0 z-50 flex items-center justify-center">
-              <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showAcceptDeclineModal = false"></div>
-              <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-                  <h3 class="text-xl font-bold mb-2">Interview Assignment Confirmation</h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Please confirm your availability for this interview</p>
-
-                  <div class="space-y-4">
-                      <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Interviewer</label>
-                          <input type="text" :value="acceptDeclineInterviewer?.name" disabled class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100" />
-                      </div>
-                      <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stage</label>
-                          <input type="text" :value="getStageLabel(acceptDeclineInterviewer?.interview_type)" disabled class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100" />
-                      </div>
-                      <div>
-                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Date</label>
-                          <input type="text" :value="formatDateTime(acceptDeclineInterviewer?.scheduled_date)" disabled class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100" />
-                      </div>
-<div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Decision</label>
-    <div class="flex gap-4">
-        <label class="flex items-center gap-2">
-            <input type="radio" v-model="acceptDeclineDecision" value="accept" class="rounded-full border-gray-300" />
-            <span>Accept</span>
-        </label>
-        <label class="flex items-center gap-2">
-            <input type="radio" v-model="acceptDeclineDecision" value="decline" class="rounded-full border-gray-300" />
-            <span>Decline</span>
-        </label>
-    </div>
-    <p v-if="acceptDeclineErrors.decision" class="mt-1 text-sm text-red-600">
-        {{ acceptDeclineErrors.decision }}
-    </p>
-</div>
-<div v-if="acceptDeclineDecision === 'decline'">
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for Declining</label>
-    <textarea
-        v-model="acceptDeclineReason"
-        rows="3"
-        class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white"
-        placeholder="Please provide reason for declining..."
-    ></textarea>
-    <p v-if="acceptDeclineErrors.reason" class="mt-1 text-sm text-red-600">
-        {{ acceptDeclineErrors.reason }}
-    </p>
-</div>
-                  </div>
-
-                  <div class="flex gap-3 mt-6">
-                      <button @click="showAcceptDeclineModal = false" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">Cancel</button>
-                      <button @click="submitAcceptDecline" :disabled="acceptDeclineSubmitting" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
-                          <span v-if="!acceptDeclineSubmitting">Submit</span><span v-else>Submitting...</span>
-                      </button>
-                  </div>
-              </div>
-          </div>
-
-          <!-- SEND NOTIFICATION MODAL -->
-<div v-if="showNotificationModal" class="fixed inset-0 z-50 flex items-center justify-center">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showNotificationModal = false"></div>
-
-    <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h3 class="text-xl font-bold text-center mb-2">Send Email</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
-            Only valid email actions for this application are shown.
-        </p>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<!-- LEFT SIDE: EMAIL ACTION -->
-<div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-        Available Email Action
-    </label>
-
-    <div v-if="availableNotificationOptions.length === 0"
-        class="border border-dashed border-gray-300 dark:border-zinc-700 rounded-lg p-4 text-sm text-gray-500">
-        No email actions are currently available for this application.
-    </div>
-
-    <div v-else class="space-y-3">
-        <label
-            v-for="option in availableNotificationOptions"
-            :key="option.value"
-            class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 cursor-pointer"
-        >
-            <input
-                type="radio"
-                :value="option.value"
-                v-model="notification.type"
-                class="mt-1"
-            />
-            <div>
-                <div class="font-medium">{{ option.label }}</div>
-                <div class="text-xs text-gray-500">{{ option.description }}</div>
-            </div>
-        </label>
-    </div>
-
-    <!-- INLINE ERROR -->
-    <p v-if="notificationErrors.type" class="mt-2 text-sm text-red-600">
-        {{ notificationErrors.type }}
-    </p>
-</div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Email Preview
-                </label>
-
+            <div v-if="showToastMessage" class="full-width-alert">
                 <div
-                    v-if="!notificationPreview"
-                    class="border border-dashed border-gray-300 dark:border-zinc-700 rounded-lg p-4 text-sm text-gray-500"
+                    class="alert-banner"
+                    :class="toastType === 'success' ? 'alert-success-banner' : 'alert-error-banner'"
                 >
-                    Select an available email action to preview recipients and message details.
+                    <div class="alert-body">{{ toastMessage }}</div>
+                    <button type="button" class="close-btn" @click="showToastMessage = false">×</button>
+                </div>
+            </div>
+
+            <div class="flex flex-1 flex-col gap-6 p-8 bg-zinc-50/50 dark:bg-zinc-950 min-h-screen">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+                            ACTION Application Details
+                        </h1>
+                    </div>
+                    <div class="flex gap-3">
+                        <button @click="downloadApplication" class="btn-primary">
+                            Print or Save as PDF
+                        </button>
+                        <button v-if="canNotify" @click="showNotificationModal = true" class="btn-send">
+                            Notify Applicant, Interviewer, or Conductor
+                        </button>
+                        <Link :href="`/action/applications/${application.id}/edit`" class="btn-edit">
+                            Edit Application
+                        </Link>
+                    </div>
                 </div>
 
-                <div v-else class="border border-gray-200 dark:border-zinc-700 rounded-xl p-4 bg-gray-50 dark:bg-zinc-800/50 space-y-4">
-                    <div>
-                        <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Subject</div>
-                        <div class="text-sm font-medium">{{ notificationPreview.subject }}</div>
-                    </div>
-
-                    <div>
-                        <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Recipients</div>
-                        <div class="space-y-2">
-                            <div
-                                v-for="(recipient, idx) in notificationPreview.recipients"
-                                :key="idx"
-                                class="text-sm border rounded-lg px-3 py-2 bg-white dark:bg-zinc-900"
-                            >
-                                <div class="font-medium">{{ recipient.name || '-' }}</div>
-                                <div class="text-xs text-gray-500">{{ recipient.email || 'No email address' }}</div>
-                                <div class="text-xs text-gray-400 mt-1">{{ recipient.extra }}</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="col-span-1">
+                        <div class="text-white px-5 py-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center h-full"
+                            style="background-color: #2f359e;">
+                            <div class="w-30 h-30 bg-white rounded-full flex items-center justify-center mb-3 overflow-hidden">
+                                <img
+                                    v-if="application.upload_pic"
+                                    :src="getFileUrl(application.upload_pic) || ''"
+                                    alt="Applicant Photo"
+                                    class="w-full h-full object-cover"
+                                />
+                                <User v-else class="w-10 h-10 text-blue-600" />
                             </div>
+                            <h2 class="text-2xl font-extrabold tracking-wide drop-shadow">
+                                {{ application.applicant.last_name }}, {{ application.applicant.first_name }}
+                            </h2>
+                            <p class="text-sm opacity-90 mt-1">{{ application.applicant.middle_name }}</p>
+                            <p class="text-xs opacity-75 mt-2">{{ application.applicant.email_address }}</p>
+                            <p class="text-xs opacity-75">{{ application.applicant.contact_number }}</p>
                         </div>
                     </div>
 
-                    <div>
-                        <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Message Summary</div>
-                        <div class="text-sm text-gray-700 dark:text-gray-300">
-                            {{ notificationPreview.summary }}
+                    <div class="md:col-span-2 space-y-6">
+                        <div class="bg-white dark:bg-zinc-900 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between items-center bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-lg">
+                                    <span class="font-semibold">Batch:</span>
+                                    <span class="font-extrabold text-blue-600">{{ application.batch?.action_batch || 'N/A' }}</span>
+                                </div>
+                                <div class="flex justify-between items-center bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-lg">
+                                    <span class="font-semibold">Status:</span>
+                                    <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getOverallStatusColor()]">
+                                        {{ getOverallStatus() }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+                            <h2 class="text-lg font-bold mb-4">Uploaded Documents</h2>
+
+                            <div class="space-y-3" v-if="application.upload_resume || application.upload_tor || application.upload_pic">
+                                <div
+                                    v-if="application.upload_resume"
+                                    class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <FileText class="w-4 h-4 text-blue-600" />
+                                        <span class="text-sm">Resume/CV</span>
+                                    </div>
+                                    <a
+                                        :href="getFileUrl(application.upload_resume)"
+                                        target="_blank"
+                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    >
+                                        View File
+                                    </a>
+                                </div>
+
+                                <div
+                                    v-if="application.upload_tor"
+                                    class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <File class="w-4 h-4 text-green-600" />
+                                        <span class="text-sm">Transcript of Records</span>
+                                    </div>
+                                    <a
+                                        :href="getFileUrl(application.upload_tor)"
+                                        target="_blank"
+                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    >
+                                        View File
+                                    </a>
+                                </div>
+
+                                <div
+                                    v-if="application.upload_pic"
+                                    class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <Image class="w-4 h-4 text-purple-600" />
+                                        <span class="text-sm">2x2 Picture</span>
+                                    </div>
+                                    <a
+                                        :href="getFileUrl(application.upload_pic)"
+                                        target="_blank"
+                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    >
+                                        View Image
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+                                No uploaded documents available.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+                        <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
+                            <Award class="w-5 h-5 text-blue-600" /> EXAM DETAILS
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border-collapse border">
+                                <tbody>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Plan Date</td>
+                                        <td class="px-3 py-2 border">{{ formatDateTime(application.exam_plan_date) }}</td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Actual Date</td>
+                                        <td class="px-3 py-2 border">{{ formatDateTime(application.exam_actual_date) }}</td>
+                                    </tr>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Venue</td>
+                                        <td class="px-3 py-2 border">{{ examVenues[application.exam_venue] ?? '-' }}</td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Programming Result</td>
+                                        <td class="px-3 py-2 border">{{ formatScore(application.exam_prg_result) }}</td>
+                                    </tr>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">ATPP Result</td>
+                                        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_result) }}</td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">GIT Result</td>
+                                        <td class="px-3 py-2 border">{{ formatScore(application.exam_git_result) }}</td>
+                                    </tr>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
+                                        <td class="px-3 py-2 border">
+                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamResultLabel(application.exam_result))]">
+                                                {{ getExamResultLabel(application.exam_result) || '-' }}
+                                            </span>
+                                        </td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
+                                        <td class="px-3 py-2 border">
+                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamApplicationStatusLabel(application.exam_application_status))]">
+                                                {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4">
+                            <strong class="text-sm">Comments:</strong>
+                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.exam_remarks || 'No comments' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+                        <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
+                            <Calendar class="w-5 h-5 text-blue-600" /> INITIAL INTERVIEW DETAILS
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border-collapse border">
+                                <tbody>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Plan Date</td>
+                                        <td class="px-3 py-2 border">{{ formatDateTime(application.initial_interview_plan_date) }}</td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Actual Date</td>
+                                        <td class="px-3 py-2 border">{{ formatDateTime(application.initial_interview_actual_date) }}</td>
+                                    </tr>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Venue</td>
+                                        <td class="px-3 py-2 border">{{ getVenueLabel(application.initial_interview_venue) || '-' }}</td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Final Score</td>
+                                        <td class="px-3 py-2 border">{{ formatScore(application.initial_interview_final) }}</td>
+                                    </tr>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
+                                        <td class="px-3 py-2 border">
+                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.initial_interview_result))]">
+                                                {{ getInterviewResultLabel(application.initial_interview_result) || '-' }}
+                                            </span>
+                                        </td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
+                                        <td class="px-3 py-2 border">
+                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.initial_interview_application_status))]">
+                                                {{ getInterviewApplicationStatusLabel(application.initial_interview_application_status) || '-' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4">
+                            <strong class="text-sm">Comments:</strong>
+                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.initial_interview_remarks || 'No comments' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+                        <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
+                            <Star class="w-5 h-5 text-blue-600" /> FINAL INTERVIEW DETAILS
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border-collapse border">
+                                <tbody>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Interview Date</td>
+                                        <td class="px-3 py-2 border">{{ formatDateTime(application.final_interview_date) }}</td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Final Score</td>
+                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_final) }}</td>
+                                    </tr>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 1</td>
+                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_1) }}</td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 2</td>
+                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_2) }}</td>
+                                    </tr>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 3</td>
+                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_3) }}</td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 4</td>
+                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_4) }}</td>
+                                    </tr>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
+                                        <td class="px-3 py-2 border">
+                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.final_interview_result))]">
+                                                {{ getInterviewResultLabel(application.final_interview_result) || '-' }}
+                                            </span>
+                                        </td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
+                                        <td class="px-3 py-2 border">
+                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.final_interview_application_status))]">
+                                                {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4">
+                            <strong class="text-sm">Comments:</strong>
+                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.final_interview_remarks || 'No comments' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+                        <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
+                            <CheckCircle class="w-5 h-5 text-blue-600" /> JOB OFFER DETAILS
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border-collapse border">
+                                <tbody>
+                                    <tr class="border">
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Schedule</td>
+                                        <td class="px-3 py-2 border">{{ formatDateTime(application.job_offer_schedule) }}</td>
+                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Status</td>
+                                        <td class="px-3 py-2 border">
+                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getJobOfferStatusLabel(application.job_offer_status))]">
+                                                {{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4">
+                            <strong class="text-sm">Comments:</strong>
+                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.job_offer_remarks || 'No comments' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow overflow-hidden">
+                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-800 dark:to-zinc-800/50 px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h2 class="text-lg font-bold flex items-center gap-2">
+                                        <Users class="w-5 h-5 text-blue-600" /> INTERVIEWERS AND EXAM CONDUCTORS
+                                    </h2>
+                                    <p class="text-xs text-gray-500 mt-1">Manage interviewers and exam conductors assigned to this application</p>
+                                </div>
+
+                                <div class="flex gap-2" v-if="canManageInterviewers">
+                                    <button @click="openBulkAddModal" class="btn-bulk-add">
+                                        <Plus class="w-4 h-4" />
+                                        Add
+                                    </button>
+
+                                    <button
+                                        @click="openBulkEditScheduleModal"
+                                        :disabled="selectedInterviewers.length === 0"
+                                        :class="['btn-bulk-edit', selectedInterviewers.length === 0 && 'opacity-50 cursor-not-allowed']"
+                                    >
+                                        Edit Schedule
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-zinc-50 dark:bg-zinc-800">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left w-10" v-if="canManageInterviewers">
+                                            <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" class="rounded border-gray-300" />
+                                        </th>
+                                        <th class="px-4 py-3 text-left font-semibold">Interviewer/Conductor</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Role</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Stage</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Scheduled Date</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Stage Status</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr
+                                        v-for="interview in interviews"
+                                        :key="interview.id"
+                                        class="border-t border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                                    >
+                                        <td class="px-4 py-3" v-if="canManageInterviewers">
+                                            <input type="checkbox" v-model="selectedInterviewers" :value="interview.id" class="rounded border-gray-300" />
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-2">
+                                                <User class="w-4 h-4 text-gray-400" />
+                                                <span>{{ interview.name }}</span>
+                                            </div>
+                                        </td>
+
+                                        <td class="px-4 py-3">{{ interview.role_label || '-' }}</td>
+
+                                        <td class="px-4 py-3">
+                                            <span :class="['px-2 py-1 text-xs rounded-full', getStageBadgeClass(interview.interview_type)]">
+                                                {{ getStageLabel(interview.interview_type) }}
+                                            </span>
+                                        </td>
+
+                                        <td class="px-4 py-3">{{ formatDateTime(interview.scheduled_date) }}</td>
+
+                                        <td class="px-4 py-3">
+                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getInterviewStatusBadgeClass(interview.status)]">
+                                                {{ getInterviewStatusLabel(interview.status) }}
+                                            </span>
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-2">
+                                                <button
+                                                    v-if="canAcceptDecline(interview)"
+                                                    @click="openAcceptDeclineModal(interview)"
+                                                    class="inline-flex items-center justify-center rounded-md text-green-600 hover:text-green-800 hover:bg-green-50 transition px-1 py-2"
+                                                    title="Accept/Decline"
+                                                >
+                                                    <CheckCircle class="w-4 h-4 mr-1" />
+                                                    Respond
+                                                </button>
+
+                                                <button
+                                                    v-if="canViewDeclineReason(interview)"
+                                                    @click="openDeclineReasonModal(interview)"
+                                                    class="inline-flex items-center justify-center rounded-md text-red-600 hover:text-red-800 hover:bg-red-50 transition px-1 py-2 text-sm font-sm"
+                                                    title="View Reason for Decline"
+                                                >
+                                                    View Reason
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <tr v-if="interviews.length === 0">
+                                        <td :colspan="canManageInterviewers ? 7 : 6" class="px-4 py-6 text-center text-gray-500">
+                                            No interview assignments found.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                            <Users class="w-5 h-5 text-blue-600" /> ADDITIONAL INFORMATION
+                        </h2>
+                        <div class="mb-4">
+                            <strong class="text-sm">General Remarks:</strong>
+                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.remarks || '-' }}</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="flex gap-3 mt-6">
-            <button
-                @click="showNotificationModal = false"
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
-                Cancel
-            </button>
+            <div v-if="showDeclineReasonModal" class="fixed inset-0 z-50 flex items-center justify-center">
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeDeclineReasonModal"></div>
 
-            <button
-                @click="sendNotification"
-                :disabled="sendingNotification || !notification.type"
-                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-            >
-                <span v-if="!sendingNotification">Send</span>
-                <span v-else>Sending...</span>
-            </button>
+                <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+                    <h3 class="text-xl font-bold mb-2">Reason for Decline</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                        Decline details for this interview assignment
+                    </p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Interviewer
+                            </label>
+                            <input
+                                type="text"
+                                :value="selectedDeclinedInterview?.name || '-'"
+                                disabled
+                                class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Stage
+                            </label>
+                            <input
+                                type="text"
+                                :value="getStageLabel(selectedDeclinedInterview?.interview_type)"
+                                disabled
+                                class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Scheduled Date
+                            </label>
+                            <input
+                                type="text"
+                                :value="formatDateTime(selectedDeclinedInterview?.scheduled_date)"
+                                disabled
+                                class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Decline Reason
+                            </label>
+                            <div class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-3 bg-zinc-50 dark:bg-zinc-800 text-sm whitespace-pre-wrap">
+                                {{ selectedDeclinedInterview?.decline_reason || '-' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button
+                            @click="closeDeclineReasonModal"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="showBulkEditScheduleModal" class="fixed inset-0 z-50 flex items-center justify-center">
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showBulkEditScheduleModal = false"></div>
+
+                <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+                    <h3 class="text-xl font-bold mb-2">Bulk Edit Schedule</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                        Update the schedule of checked interviewers
+                    </p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Selected Interviewers
+                            </label>
+
+                            <div class="bg-gray-50 dark:bg-zinc-800 rounded-lg px-3 py-3">
+                                <div v-if="selectedInterviewDetails.length > 0" class="space-y-2">
+                                    <div
+                                        v-for="interview in selectedInterviewDetails"
+                                        :key="interview.id"
+                                        class="flex items-center justify-between gap-3 text-sm border-b border-gray-200 dark:border-zinc-700 last:border-b-0 pb-2 last:pb-0"
+                                    >
+                                        <div>
+                                            <div class="font-medium text-gray-900 dark:text-gray-100">
+                                                {{ interview.name }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ interview.role_label || '-' }} • {{ getStageLabel(interview.interview_type) }}
+                                            </div>
+                                        </div>
+
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 text-right">
+                                            {{ formatDateTime(interview.scheduled_date) }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-else class="text-sm text-gray-500">
+                                    No interviewers selected.
+                                </div>
+                            </div>
+
+                            <p v-if="bulkEditScheduleErrors.selectedInterviewers" class="mt-1 text-sm text-red-600">
+                                {{ bulkEditScheduleErrors.selectedInterviewers }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                New Scheduled Date
+                            </label>
+
+                            <input
+                                type="datetime-local"
+                                v-model="bulkEditScheduledDate"
+                                class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800"
+                            />
+
+                            <p v-if="bulkEditScheduleErrors.scheduledDate" class="mt-1 text-sm text-red-600">
+                                {{ bulkEditScheduleErrors.scheduledDate }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button
+                            @click="showBulkEditScheduleModal = false"
+                            class="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            @click="submitBulkEditSchedule"
+                            :disabled="bulkEditingSchedule"
+                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                        >
+                            <span v-if="!bulkEditingSchedule">Update Schedule</span>
+                            <span v-else>Updating...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="showBulkAddModal" class="fixed inset-0 z-50 flex items-center justify-center">
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showBulkAddModal = false"></div>
+                <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <h3 class="text-xl font-bold mb-2">Add Interviewers/Conductors</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Add multiple interviewers or conductors at once</p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Interviewers</label>
+                            <div class="tag-input-container border border-gray-300 dark:border-zinc-700 rounded-lg p-2 bg-white dark:bg-zinc-800">
+                                <div class="flex flex-wrap gap-2 mb-2">
+  <div v-for="interviewer in selectedBulkInterviewers" :key="interviewer.id" class="tag-item">
+    <span class="tag-text">
+      {{ interviewer.name }}
+      <span class="tag-role">({{ interviewer.role_label }})</span>
+    </span>
+    <button
+      @click="removeFromBulkSelection(interviewer.id)"
+      class="remove-tag"
+      type="button"
+      aria-label="Remove interviewer"
+    >
+      <svg class="remove-icon" viewBox="0 0 14 14" width="14" height="14" aria-hidden="true">
+        <path d="M1 12.5L12.5 1M1 1l11.5 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+                                </div>
+                                <div class="relative">
+                                    <input type="text" v-model="interviewerSearch" @focus="showInterviewerDropdown = true" @input="searchInterviewers"
+                                        placeholder="Type to search interviewers..." class="w-full border-0 focus:ring-0 p-2 text-sm bg-transparent" />
+                                    <div v-if="showInterviewerDropdown && filteredAvailableInterviewers.length > 0" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                                        <div v-for="interviewer in filteredAvailableInterviewers" :key="interviewer.id" @click="addToBulkSelection(interviewer)"
+                                            class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer text-sm">
+                                            {{ interviewer.name }} ({{ interviewer.role_label }})
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">{{ selectedBulkInterviewers.length }} interviewer(s) selected</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stage</label>
+                            <select v-model="bulkAddStage" class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800">
+                                <option value="1">Exam</option>
+                                <option value="2">Initial Interview</option>
+                                <option value="3">Final Interview</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Scheduled Date
+                            </label>
+                            <div class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100 dark:bg-zinc-800 text-sm">
+                                {{ bulkAddPlannedDate ? formatDateTime(bulkAddPlannedDate) : 'No plan date set for this stage' }}
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">
+                                This is automatically taken from the selected stage's planned date.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button @click="showBulkAddModal = false" class="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition">Cancel</button>
+                        <button
+                            @click="submitBulkAdd"
+                            :disabled="
+                                bulkAdding ||
+                                selectedBulkInterviewers.length === 0 ||
+                                !bulkAddPlannedDate
+                            "
+                            class="flex-1 px-4 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 text-white hover:bg-blue-700"
+                        >
+                            <span v-if="!bulkAdding">Add Interviewers</span>
+                            <span v-else>Adding...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="showAcceptDeclineModal" class="fixed inset-0 z-50 flex items-center justify-center">
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showAcceptDeclineModal = false"></div>
+                <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+                    <h3 class="text-xl font-bold mb-2">Interview Assignment Confirmation</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Please confirm your availability for this interview</p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Interviewer</label>
+                            <input type="text" :value="acceptDeclineInterviewer?.name" disabled class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stage</label>
+                            <input type="text" :value="getStageLabel(acceptDeclineInterviewer?.interview_type)" disabled class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Date</label>
+                            <input type="text" :value="formatDateTime(acceptDeclineInterviewer?.scheduled_date)" disabled class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Decision</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2">
+                                    <input type="radio" v-model="acceptDeclineDecision" value="accept" class="rounded-full border-gray-300" />
+                                    <span>Accept</span>
+                                </label>
+                                <label class="flex items-center gap-2">
+                                    <input type="radio" v-model="acceptDeclineDecision" value="decline" class="rounded-full border-gray-300" />
+                                    <span>Decline</span>
+                                </label>
+                            </div>
+                            <p v-if="acceptDeclineErrors.decision" class="mt-1 text-sm text-red-600">
+                                {{ acceptDeclineErrors.decision }}
+                            </p>
+                        </div>
+                        <div v-if="acceptDeclineDecision === 'decline'">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for Declining</label>
+                            <textarea
+                                v-model="acceptDeclineReason"
+                                rows="3"
+                                class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white"
+                                placeholder="Please provide reason for declining..."
+                            ></textarea>
+                            <p v-if="acceptDeclineErrors.reason" class="mt-1 text-sm text-red-600">
+                                {{ acceptDeclineErrors.reason }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button @click="showAcceptDeclineModal = false" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                        <button @click="submitAcceptDecline" :disabled="acceptDeclineSubmitting" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
+                            <span v-if="!acceptDeclineSubmitting">Submit</span><span v-else>Submitting...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="showNotificationModal" class="fixed inset-0 z-50 flex items-center justify-center">
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showNotificationModal = false"></div>
+
+                <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <h3 class="text-xl font-bold text-center mb-2">Send Email</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+                        Only valid email actions for this application are shown.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                Available Email Action
+                            </label>
+
+                            <div v-if="availableNotificationOptions.length === 0"
+                                class="border border-dashed border-gray-300 dark:border-zinc-700 rounded-lg p-4 text-sm text-gray-500">
+                                No email actions are currently available for this application.
+                            </div>
+
+                            <div v-else class="space-y-3">
+                                <label
+                                    v-for="option in availableNotificationOptions"
+                                    :key="option.value"
+                                    class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 cursor-pointer"
+                                >
+                                    <input
+                                        type="radio"
+                                        :value="option.value"
+                                        v-model="notification.type"
+                                        class="mt-1"
+                                    />
+                                    <div>
+                                        <div class="font-medium">{{ option.label }}</div>
+                                        <div class="text-xs text-gray-500">{{ option.description }}</div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <p v-if="notificationErrors.type" class="mt-2 text-sm text-red-600">
+                                {{ notificationErrors.type }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                Email Preview
+                            </label>
+
+                            <div
+                                v-if="!notificationPreview"
+                                class="border border-dashed border-gray-300 dark:border-zinc-700 rounded-lg p-4 text-sm text-gray-500"
+                            >
+                                Select an available email action to preview recipients and message details.
+                            </div>
+
+                            <div v-else class="border border-gray-200 dark:border-zinc-700 rounded-xl p-4 bg-gray-50 dark:bg-zinc-800/50 space-y-4">
+                                <div>
+                                    <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Subject</div>
+                                    <div class="text-sm font-medium">{{ notificationPreview.subject }}</div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Recipients</div>
+                                    <div class="space-y-2">
+                                        <div
+                                            v-for="(recipient, idx) in notificationPreview.recipients"
+                                            :key="idx"
+                                            class="text-sm border rounded-lg px-3 py-2 bg-white dark:bg-zinc-900"
+                                        >
+                                            <div class="font-medium">{{ recipient.name || '-' }}</div>
+                                            <div class="text-xs text-gray-500">{{ recipient.email || 'No email address' }}</div>
+                                            <div class="text-xs text-gray-400 mt-1">{{ recipient.extra }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Message Summary</div>
+                                    <div class="text-sm text-gray-700 dark:text-gray-300">
+                                        {{ notificationPreview.summary }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button
+                            @click="showNotificationModal = false"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            @click="sendNotification"
+                            :disabled="sendingNotification || !notification.type"
+                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                        >
+                            <span v-if="!sendingNotification">Send</span>
+                            <span v-else>Sending...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-      </div>
-      </AppLayout>
-  </template>
+    </AppLayout>
+</template>
 
   <style scoped>
+
   .btn-bulk-add {
     background-color: #2563eb;
     color: white;
@@ -1785,4 +1702,74 @@ watch(errorMessage, (newVal) => {
     font-size: 1.2rem;
     cursor: pointer;
   }
+
+  .tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin: 0.125rem 0.25rem 0.125rem 0;
+  background: #f8f9fa;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  transition: all 0.15s ease;
+  cursor: default;
+}
+
+.tag-item:hover {
+  background: #f1f5f9;
+  border-color: #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tag-text {
+  font-size: 0.875rem;
+}
+
+.tag-role {
+  font-size: 0.8125rem;
+  opacity: 0.7;
+  font-weight: 400;
+  margin-left: 0.25rem;
+}
+
+.remove-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.remove-tag:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.remove-tag:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.remove-tag:active {
+  transform: scale(0.95);
+}
+
+.remove-icon {
+  display: block;
+}
   </style>
