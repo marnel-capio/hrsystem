@@ -333,16 +333,16 @@
                     <td>{{ $application->final_interview_final ?? '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="label">SF Score</td>
-                    <td>{{ $application->final_interview_sf ?? '-' }}</td>
-                    <td class="label">IB Score</td>
-                    <td>{{ $application->final_interview_ib ?? '-' }}</td>
+                    <td class="label">Score 1</td>
+                    <td>{{ $application->final_interview_score_1 ?? '-' }}</td>
+                    <td class="label">Score 2</td>
+                    <td>{{ $application->final_interview_score_2 ?? '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="label">RV Score</td>
-                    <td>{{ $application->final_interview_rv ?? '-' }}</td>
-                    <td class="label">MA Score</td>
-                    <td>{{ $application->final_interview_ma ?? '-' }}</td>
+                    <td class="label">Score 3</td>
+                    <td>{{ $application->final_interview_score_3 ?? '-' }}</td>
+                    <td class="label">Score 4</td>
+                    <td>{{ $application->final_interview_score_4 ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td class="label">Result</td>

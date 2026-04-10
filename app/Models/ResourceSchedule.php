@@ -65,74 +65,70 @@ class ResourceSchedule extends Model
             ->firstOrFail();
     }
 
-    public function getProjection($prevSchedule = null)
-    {
-        $actualApps = DB::table('action_applicant_applications')
-            ->where('action_applicant_id', $this->action_applicant_id)
+public function getProjection($prevSchedule = null)
+{
+    $actualApps = DB::table('action_applicant_applications')
+        ->where('action_batch_id', $this->action_batch_id)
+        ->get();
+
+    $planApps = collect([]);
+
+    if ($prevSchedule) {
+        $planApps = DB::table('action_applicant_applications')
+            ->where('action_batch_id', $prevSchedule->action_batch_id)
             ->get();
-
-        $planApps = collect([]);
-        if ($prevSchedule) {
-            $planApps = DB::table('action_applicant_applications')
-                ->where('action_applicant_id', $prevSchedule->action_applicant_id)
-                ->get();
-        }
-
-        $stages = [
-            'examinees',
-            'initial_interview',
-            'final_interview',
-            'job_offer',
-            'accepted',
-            'declined',
-            'trainees_manila',
-            'trainees_cebu',
-        ];
-
-        $counter = function($apps, $stage) {
-            return match ($stage) {
-                'examinees' => $apps->whereNotNull('exam_actual_date')->count(),
-                'initial_interview' => $apps->whereNotNull('initial_interview_result')
-                    ->where('initial_interview_result', '!=', 1)->count(),
-                'final_interview' => $apps->whereNotNull('final_interview_result')
-                    ->where('final_interview_result', '!=', 1)->count(),
-                'job_offer' => $apps->whereIn('job_offer_status', [2, 3, 4])->count(),
-                'accepted' => $apps->where('job_offer_status', 3)->count(),
-                'declined' => $apps->where('job_offer_status', 4)->count(),
-                'trainees_manila' => $apps->where('trainees_from', 1)->where('job_offer_status', 3)->count(),
-                'trainees_cebu' => $apps->where('trainees_from', 2)->where('job_offer_status', 3)->count(),
-                default => 0,
-            };
-        };
-
-        $projection = [];
-
-        $actualExaminees = $counter($actualApps, 'examinees');
-        $planExaminees   = $counter($planApps, 'examinees');
-
-        foreach ($stages as $stage) {
-            $actualNo = $counter($actualApps, $stage);
-            $planNo   = $counter($planApps, $stage);
-
-            if ($stage === 'examinees') {
-                $projection[$stage] = [
-                    'actual_no'  => $actualNo,
-                    'actual_pct' => null,
-                    'plan_no'    => $planNo,
-                    'plan_pct'   => null,
-                ];
-            } else {
-                $projection[$stage] = [
-                    'actual_no'  => $actualNo,
-                    'actual_pct' => $actualExaminees > 0 ? round(($actualNo / $actualExaminees) * 100, 2) : 0,
-                    'plan_no'    => $planNo,
-                    'plan_pct'   => $planExaminees > 0 ? round(($planNo / $planExaminees) * 100, 2) : 0,
-                ];
-            }
-        }
-
-        return $projection;
     }
+
+    $stages = [
+        'examinees',
+        'initial_interview',
+        'final_interview',
+        'job_offer',
+        'accepted',
+        'declined',
+        'trainees_manila',
+        'trainees_cebu',
+    ];
+
+    $counter = function ($apps, $stage) {
+        return match ($stage) {
+            'examinees' => $apps->whereNotNull('exam_actual_date')->count(),
+            'initial_interview' => $apps->whereNotNull('initial_interview_result')
+                ->where('initial_interview_result', '!=', 1)->count(),
+            'final_interview' => $apps->whereNotNull('final_interview_result')
+                ->where('final_interview_result', '!=', 1)->count(),
+            'job_offer' => $apps->whereIn('job_offer_status', [2, 3, 4])->count(),
+            'accepted' => $apps->where('job_offer_status', 3)->count(),
+            'declined' => $apps->where('job_offer_status', 4)->count(),
+            'trainees_manila' => $apps->where('trainees_from', 1)->where('job_offer_status', 3)->count(),
+            'trainees_cebu' => $apps->where('trainees_from', 2)->where('job_offer_status', 3)->count(),
+            default => 0,
+        };
+    };
+
+    $projection = [];
+
+    $actualExaminees = $counter($actualApps, 'examinees');
+    $planExaminees = $counter($planApps, 'examinees');
+
+    foreach ($stages as $stage) {
+        $actualNo = $counter($actualApps, $stage);
+        $planNo = $counter($planApps, $stage);
+
+        $projection[$stage] = [
+            'actual_no' => $actualNo,
+            'actual_pct' => $stage === 'examinees'
+                ? null
+                : ($actualExaminees > 0 ? round(($actualNo / $actualExaminees) * 100, 2) : 0),
+            'plan_no' => $planNo,
+            'plan_pct' => $stage === 'examinees'
+                ? null
+                : ($planExaminees > 0 ? round(($planNo / $planExaminees) * 100, 2) : 0),
+        ];
+    }
+
+    return $projection;
+}
 
     public static function getAllBatchFromExistingResourceSchedule($resourceId)
     {

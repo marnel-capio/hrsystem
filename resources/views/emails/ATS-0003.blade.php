@@ -39,8 +39,11 @@
                             </p>
 
                             <p style="font-size: 16px; line-height: 1.6;">
-                                Thank you,<br>
-                                <strong>AWS HR Manager</strong>
+Thank you,<br>
+<strong>{{ $senderName }}</strong><br>
+<span style="font-size: 14px; color: #555;">
+    {{ $senderRole }}
+</span>
                             </p>
                         </td>
                     </tr>

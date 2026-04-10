@@ -724,10 +724,10 @@ namespace App\Models {
      * @property bool|null $final_interview_application_status
      * @property bool|null $final_interview_result
      * @property float|null $final_interview_final
-     * @property float|null $final_interview_ma
-     * @property float|null $final_interview_rv
-     * @property float|null $final_interview_ib
-     * @property float|null $final_interview_sf
+     * @property float|null $final_interview_score_4
+     * @property float|null $final_interview_score_3
+     * @property float|null $final_interview_score_2
+     * @property float|null $final_interview_score_1
      * @property string|null $final_interview_date
      * @property string|null $initial_interview_remarks
      * @property bool|null $initial_interview_application_status
@@ -778,10 +778,10 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereInitialInterviewApplicationStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereInitialInterviewRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewDate($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewSf($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewIb($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewRv($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewMa($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore1($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore2($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore3($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore4($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewFinal($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewApplicationStatus($value)
