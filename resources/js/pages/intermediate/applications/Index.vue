@@ -24,7 +24,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// FLASH MESSAGES
+// FLASH MESSAGES (UPDATED STYLE)
 const flashMessages = ref({ success: '', error: '', info: '' })
 const hasFlash = computed(() =>
     !!flashMessages.value.success || !!flashMessages.value.error || !!flashMessages.value.info
@@ -33,9 +33,9 @@ const hasFlash = computed(() =>
 watch(() => page.props.flash as any, (flash) => {
     if (flash) {
         flashMessages.value = {
-            success: (flash as any).success || '',
-            error: (flash as any).error || '',
-            info: (flash as any).info || ''
+            success: flash?.success || '',
+            error: flash?.error || '',
+            info: flash?.info || ''
         }
     }
 }, { immediate: true, deep: true })
@@ -51,26 +51,29 @@ const showImportModal = ref(false)
 const importFile = ref<File | null>(null)
 const processing = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
+const importError = ref('')
 
 const openImportModal = () => {
     showImportModal.value = true
     importFile.value = null
+    importError.value = ''
     if (fileInput.value) fileInput.value.value = ''
 }
 
 const closeImportModal = () => {
     showImportModal.value = false
     importFile.value = null
+    importError.value = ''
     if (fileInput.value) fileInput.value.value = ''
 }
 
 const onImportFileChange = (event: Event) => {
-    importError.value = '' // clear previous inline error
+    importError.value = ''
     const target = event.target as HTMLInputElement
     if (!target.files?.length) return
 
     const file = target.files[0]
-    const maxSize = 10 * 1024 * 1024 // 10MB
+    const maxSize = 10 * 1024 * 1024
 
     if (file.size > maxSize) {
         flashMessages.value.error = props.errorsConfig?.file_too_large || 'File is too large (max 10MB)'
@@ -80,15 +83,9 @@ const onImportFileChange = (event: Event) => {
     }
 
     const allowedExtensions = ['xlsx', 'csv']
-    const allowedTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'text/csv'
-    ]
-
     const fileExtension = file.name.split('.').pop()?.toLowerCase()
-    const isValidType = allowedExtensions.includes(fileExtension!) || allowedTypes.includes(file.type)
 
-    if (!isValidType) {
+    if (!allowedExtensions.includes(fileExtension || '')) {
         flashMessages.value.error = 'Please upload only .xlsx or .csv files'
         target.value = ''
         importFile.value = null
@@ -99,7 +96,8 @@ const onImportFileChange = (event: Event) => {
 }
 
 const submitImport = () => {
-    importError.value = '' // reset
+    importError.value = ''
+
     if (!importFile.value) {
         importError.value = props.errorsConfig?.field_required || 'Please select a file to upload'
         return
@@ -120,8 +118,7 @@ const submitImport = () => {
             router.reload({ only: ['applications'] })
         },
         onError: (errors) => {
-            // Only show flash if it's a server-side file error (not "required")
-            if (errors?.file && errors.file !== 'This field is required') {
+            if (errors?.file) {
                 flashMessages.value.error = Array.isArray(errors.file) ? errors.file[0] : errors.file
             }
             importFile.value = null
@@ -138,20 +135,22 @@ const searchQuery = ref(props.filters.search || '')
 const currentPage = ref(1)
 const perPage = 20
 const blockSize = 5
-const importError = ref('')
 
 watch(searchQuery, () => currentPage.value = 1)
 
 const filteredApplications = computed(() => {
     const q = searchQuery.value.toLowerCase().trim()
     if (!q) return props.applications
+
     return props.applications.filter(app => {
         const fullName = `${app.first_name} ${app.last_name}`.toLowerCase()
-        return fullName.includes(q) ||
+        return (
+            fullName.includes(q) ||
             String(app.id).includes(q) ||
             (app.position?.toLowerCase().includes(q) ?? false) ||
             (app.project_name?.toLowerCase().includes(q) ?? false) ||
             (app.remarks?.toLowerCase().includes(q) ?? false)
+        )
     })
 })
 
@@ -165,7 +164,7 @@ const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize))
 const startPage = computed(() => (currentBlock.value - 1) * blockSize + 1)
 const endPage = computed(() => Math.min(startPage.value + blockSize - 1, totalPages.value))
 const pageNumbers = computed(() => {
-    const pages = []
+    const pages: number[] = []
     for (let i = startPage.value; i <= endPage.value; i++) pages.push(i)
     return pages
 })
@@ -187,32 +186,48 @@ const getStageLabel = (stage: number) => {
 
 <template>
     <AppLayout>
-        <!-- FLASH TOASTS -->
+
+        <!-- TOASTS (MATCHED FRIEND STYLE) -->
         <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full sm:w-96">
+
+            <!-- SUCCESS -->
             <TransitionGroup name="toast" tag="div">
                 <div v-if="flashMessages.success" key="success"
                     class="bg-green-100 border border-green-400 text-green-700 p-4 rounded-xl shadow-2xl backdrop-blur-sm max-h-80 overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-300">
                     <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
                         <div class="flex-1 min-w-0">
-                            <pre class="whitespace-pre-wrap text-sm">{{ flashMessages.success }}</pre>
+                            <pre class="whitespace-pre-wrap text-sm font-medium">{{ flashMessages.success }}</pre>
                         </div>
                         <button @click="closeSuccess"
-                            class="all:unset w-7 h-7 rounded-full bg-black/30 text-white flex items-center justify-center font-bold">X</button>
+                            style="all:unset;cursor:pointer;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.3);color:#fff;font-weight:bold;display:flex;align-items:center;justify-content:center">X</button>
                     </div>
                 </div>
             </TransitionGroup>
+
+            <!-- ERROR -->
             <TransitionGroup name="toast" tag="div">
                 <div v-if="flashMessages.error" key="error"
                     class="bg-red-100 border border-red-400 text-red-700 p-4 rounded-xl shadow-2xl backdrop-blur-sm max-h-80 overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-300">
                     <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
                         <div class="flex-1 min-w-0">
-                            <pre class="whitespace-pre-wrap text-sm">{{ flashMessages.error }}</pre>
+                            <pre class="whitespace-pre-wrap text-sm font-medium">{{ flashMessages.error }}</pre>
                         </div>
                         <button @click="closeError"
-                            class="all:unset w-7 h-7 rounded-full bg-black/30 text-white flex items-center justify-center font-bold">X</button>
+                            style="all:unset;cursor:pointer;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.3);color:#fff;font-weight:bold;display:flex;align-items:center;justify-content:center">X</button>
                     </div>
                 </div>
             </TransitionGroup>
+
         </div>
 
         <!-- IMPORT MODAL -->
@@ -311,7 +326,7 @@ const getStageLabel = (stage: number) => {
                                                     app.application_stage === 4 ? 'bg-purple-100 text-purple-800' :
                                                         app.application_stage === 5 ? 'bg-green-100 text-green-800' :
                                                             app.application_stage === 6 ? 'bg-red-100 text-red-800' :
-                                                            'bg-gray-100 text-gray-800'         
+                                                                'bg-gray-100 text-gray-800'
                                     ]">{{ getStageLabel(app.application_stage) }}</span>
                                 </td>
                                 <td class="border px-3 py-2">{{ app.remarks || '—' }}</td>

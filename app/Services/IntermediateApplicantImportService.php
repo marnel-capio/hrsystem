@@ -283,15 +283,83 @@ class IntermediateApplicantImportService
     private function parseApplicantData(array $row): array
     {
         $nameParts = array_map('trim', explode(',', trim($row['Name (Last Name, Given Name, Middle Name)'] ?? '')));
+        $source = trim($row['How did you learn about this job posting?'] ?? '');
 
+        // ========== SOURCE PARSING ==========
+        $sourceType = null;
+        $sourceValue = null;
+        $otherSource = null;
+
+        // Exact header match for your Excel
+        $referralHeader = $referralHeader = 'If “Referral” is selected above, please provide the name or description of the referring party. If not applicable, kindly indicate “N/A.”';
+
+        // Source type detection (case-insensitive)
+        $sourceLower = strtolower($source);
+
+        if (stripos($sourceLower, 'referral') !== false ||
+            stripos($sourceLower, 'referral') !== false) {
+            $sourceType = 2;
+            $sourceValue = null;
+            $otherSource = trim($row[$referralHeader] ?? '');
+        } elseif (stripos($sourceLower, 'foundit') !== false) {
+            $sourceType = 1;
+            $sourceValue = 1;
+        } elseif (stripos($sourceLower, 'linkedin') !== false) {
+            $sourceType = 1;
+            $sourceValue = 2;
+        } elseif (stripos($sourceLower, 'facebook') !== false) {
+            $sourceType = 1;
+            $sourceValue = 3;
+        } elseif (stripos($sourceLower, 'mynimo') !== false) {
+            $sourceType = 1;
+            $sourceValue = 4;
+        } elseif (stripos($sourceLower, 'kalibrr') !== false) {
+            $sourceType = 1;
+            $sourceValue = 5;
+        } elseif (stripos($sourceLower, 'aaisi') !== false) {
+            $sourceType = 3;
+            $sourceValue = 1;
+        } elseif (stripos($sourceLower, 'primover') !== false) {
+            $sourceType = 3;
+            $sourceValue = 2;
+        } elseif (stripos($sourceLower, 'tech tierra') !== false) {
+            $sourceType = 3;
+            $sourceValue = 3;
+        } elseif (stripos($sourceLower, 'spring valley') !== false) {
+            $sourceType = 3;
+            $sourceValue = 4;
+        } elseif (stripos($sourceLower, 'yens') !== false) {
+            $sourceType = 3;
+            $sourceValue = 5;
+        } elseif (stripos($sourceLower, 'job fairs') !== false ||
+            stripos($sourceLower, 'job fairs') !== false) {
+            $sourceType = 4;
+            $sourceValue = null;
+            $otherSource = trim($row[$referralHeader] ?? '');
+        } elseif (stripos($sourceLower, 'website') !== false ||
+            stripos($sourceLower, 'website') !== false) {
+            $sourceType = 5;
+            $sourceValue = null;
+            $otherSource = trim($row[$referralHeader] ?? '');
+        } elseif (stripos($sourceLower, 'rehire') !== false ||
+            stripos($sourceLower, 'rehire') !== false) {
+            $sourceType = 6;
+            $sourceValue = null;
+            $otherSource = trim($row[$referralHeader] ?? '');
+        }
+
+        // ========== APPLICANT DATA ==========
         return [
             'applicant' => [
+                'source' => $sourceValue,
+                'source_type' => $sourceType,
+                'other_source' => $otherSource,
                 'email_address' => trim($row['Email Address'] ?? ''),
                 'first_name' => $nameParts[1] ?? null,
                 'middle_name' => $nameParts[2] ?? null,
                 'last_name' => $nameParts[0] ?? null,
                 'address' => $row['Address'] ?? null,
-                'contact_no' => $row['Contact Number'] ?? null,
+                'contact_no' => $row['Contact Number (Please follow 0916XXXXXXX format.)'] ?? null,
                 'birthdate' => $this->parseBirthday($row['Birthday'] ?? null),
                 'age' => $row['Age'] ?? null,
                 'school_graduated_from' => $row['School Graduated from'] ?? null,
@@ -305,9 +373,13 @@ class IntermediateApplicantImportService
                 'sibling_details' => $row['SIBLING/S'] ?? null,
                 'emergency_contact_name' => $row['Person to notify in case of emergency:'] ?? null,
                 'emergency_contact_number' => $row['Contact Details'] ?? null,
-                'emergency_contact_address' => $row['Address'] ?? null,
+                'emergency_contact_address' => $row['Contact Address'] ?? null, 
                 'registered_date' => $this->parseExcelDate($row['Timestamp'] ?? null),
                 'registered_by' => Auth::id(),
+                'created_by' => Auth::id(),
+                'created_time' => now(),
+                'updated_by' => Auth::id(),
+                'updated_time' => now(),
             ],
         ];
     }
