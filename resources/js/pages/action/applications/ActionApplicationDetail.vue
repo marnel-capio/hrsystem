@@ -290,6 +290,19 @@ const getInterviewStatusBadgeClass = (status: number) => {
     return classes[status] || 'bg-gray-100 text-gray-800'
 }
 
+const getJobOfferStatusBadgeClass = (status: number) => {
+    const classes: Record<number, string> = {
+        1: 'bg-yellow-100 text-yellow-800', // Pending
+        2: 'bg-blue-100 text-blue-800',     // Done
+        3: 'bg-green-100 text-green-800',   // Accept
+        4: 'bg-red-100 text-red-800',       // Decline
+        5: 'bg-gray-100 text-gray-800',     // Withdraw
+        6: 'bg-gray-100 text-gray-800',     // Retracted
+    }
+
+    return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
 const getStageBadgeClass = (type: number) => {
     const classes: Record<number, string> = {
         1: 'bg-purple-100 text-purple-800',
@@ -1100,10 +1113,14 @@ watch(errorMessage, (newVal) => {
                                         <td class="px-3 py-2 border">{{ formatDateTime(application.job_offer_schedule) }}</td>
                                         <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Status</td>
                                         <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getJobOfferStatusLabel(application.job_offer_status))]">
-                                                {{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}
-                                            </span>
-                                        </td>
+<span
+    :class="[
+        'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+        getJobOfferStatusBadgeClass(application.job_offer_status)
+    ]"
+>
+    {{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}
+</span>                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
