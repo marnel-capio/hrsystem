@@ -315,7 +315,7 @@ const getStatusBadgeColor = (status: string | null) => {
 const getOverallStatus = () => {
     const jobStatus = Number(application.value.job_offer_status)
 
-    if (jobStatus === 3) return 'Hired'
+    if (jobStatus === 3) return 'Offer Accepted'
     if (jobStatus === 4) return 'Offer Declined'
     if (jobStatus === 5) return 'Offer Withdrawn'
     if (jobStatus === 6) return 'Offer Retracted'
@@ -332,7 +332,7 @@ const getOverallStatus = () => {
 
 const getOverallStatusColor = () => {
     const status = getOverallStatus()
-    if (status === 'Hired') return 'bg-green-100 text-green-800'
+    if (status === 'Offer Accepted') return 'bg-green-100 text-green-800'
     if (status.includes('Failed') || status.includes('Declined')) return 'bg-red-100 text-red-800'
     if (status.includes('Passed')) return 'bg-blue-100 text-blue-800'
     return 'bg-yellow-100 text-yellow-800'
@@ -497,10 +497,46 @@ const pendingApprovalInterviewers = computed(() => {
     )
 })
 
-const allInterviewersApproved = computed(() => {
-    if (interviews.value.length === 0) return false
+const examRows = computed(() =>
+    interviews.value.filter((i: any) => Number(i.interview_type) === 1)
+)
 
-    return interviews.value.every((i: any) => Number(i.status) === 2)
+const initialInterviewRows = computed(() =>
+    interviews.value.filter((i: any) => Number(i.interview_type) === 2)
+)
+
+const finalInterviewRows = computed(() =>
+    interviews.value.filter((i: any) => Number(i.interview_type) === 3)
+)
+
+const isApproved = (status: number) => Number(status) === 2
+const isDone = (status: number) => Number(status) === 4
+
+const examReadyForApplicantNotification = computed(() => {
+    if (examRows.value.length === 0) return false
+
+    const allApproved = examRows.value.every((i: any) => isApproved(i.status))
+    const anyDone = examRows.value.some((i: any) => isDone(i.status))
+
+    return allApproved && !anyDone
+})
+
+const initialReadyForApplicantNotification = computed(() => {
+    if (initialInterviewRows.value.length === 0) return false
+
+    const allApproved = initialInterviewRows.value.every((i: any) => isApproved(i.status))
+    const anyDone = initialInterviewRows.value.some((i: any) => isDone(i.status))
+
+    return allApproved && !anyDone
+})
+
+const finalReadyForApplicantNotification = computed(() => {
+    if (finalInterviewRows.value.length === 0) return false
+
+    const allApproved = finalInterviewRows.value.every((i: any) => isApproved(i.status))
+    const anyDone = finalInterviewRows.value.some((i: any) => isDone(i.status))
+
+    return allApproved && !anyDone
 })
 
 const failedStage = computed(() => {
@@ -538,11 +574,27 @@ const availableNotificationOptions = computed(() => {
         })
     }
 
-if (allInterviewersApproved.value) {
+if (examReadyForApplicantNotification.value) {
     options.push({
-        value: 'applicant_scheduled',
-        label: 'Send applicant scheduled assessment',
-        description: 'Notify the applicant about their approved schedule.',
+        value: 'applicant_exam_scheduled',
+        label: 'Send applicant exam schedule',
+        description: 'Notify the applicant about the approved exam schedule.',
+    })
+}
+
+if (initialReadyForApplicantNotification.value) {
+    options.push({
+        value: 'applicant_initial_scheduled',
+        label: 'Send applicant initial interview schedule',
+        description: 'Notify the applicant about the approved initial interview schedule.',
+    })
+}
+
+if (finalReadyForApplicantNotification.value) {
+    options.push({
+        value: 'applicant_final_scheduled',
+        label: 'Send applicant final interview schedule',
+        description: 'Notify the applicant about the approved final interview schedule.',
     })
 }
 
@@ -579,18 +631,44 @@ const notificationPreview = computed(() => {
                 summary: `This email tells interviewer(s) that they have a pending interview assignment for ${applicantFullName.value} and includes a direct link to the application page so they can review and respond.`,
             }
 
-        case 'applicant_scheduled':
-            return {
-                subject: '【HR System】AWS Application Schedule',
-                recipients: [
-                    {
-                        name: applicantFullName.value,
-                        email: application.value?.applicant?.email_address || '',
-                        extra: 'Applicant',
-                    }
-                ],
-                summary: `This email tells the applicant that their schedule has been confirmed. Only approved schedules will be included.`,
+case 'applicant_exam_scheduled':
+    return {
+        subject: '【HR System】AWS Application Schedule',
+        recipients: [
+            {
+                name: applicantFullName.value,
+                email: application.value?.applicant?.email_address || '',
+                extra: 'Applicant',
             }
+        ],
+        summary: `This email tells the applicant that their exam schedule has been confirmed.`,
+    }
+
+case 'applicant_initial_scheduled':
+    return {
+        subject: '【HR System】AWS Application Schedule',
+        recipients: [
+            {
+                name: applicantFullName.value,
+                email: application.value?.applicant?.email_address || '',
+                extra: 'Applicant',
+            }
+        ],
+        summary: `This email tells the applicant that their initial interview schedule has been confirmed.`,
+    }
+
+case 'applicant_final_scheduled':
+    return {
+        subject: '【HR System】AWS Application Schedule',
+        recipients: [
+            {
+                name: applicantFullName.value,
+                email: application.value?.applicant?.email_address || '',
+                extra: 'Applicant',
+            }
+        ],
+        summary: `This email tells the applicant that their final interview schedule has been confirmed.`,
+    }
 
         case 'applicant_failed':
             return {
