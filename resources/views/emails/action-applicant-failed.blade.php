@@ -12,7 +12,7 @@
     };
 @endphp
 
-<p style="font-size: 16px;">Good Day {{ $applicantName }},</p>
+<p style="font-size: 16px;">Good day {{ $applicantName }},</p>
 
 <p style="font-size: 16px; line-height: 1.6;">
     Thank you for your interest in applying with <strong>Advanced World Solutions</strong>.

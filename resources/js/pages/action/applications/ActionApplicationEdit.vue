@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { Head, Link, usePage, useForm } from '@inertiajs/vue3'
+import { Link, usePage, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 
 const page = usePage()
@@ -48,7 +48,6 @@ const canEditAnything = computed(() =>
     Object.values(editableStages.value).some(Boolean)
 )
 
-// Dropdown option arrays
 const examVenues = ref<Array<{ value: number, label: string }>>([])
 const examResults = ref<Array<{ value: number, label: string }>>([])
 const examStatuses = ref<Array<{ value: number, label: string }>>([])
@@ -56,19 +55,65 @@ const interviewResults = ref<Array<{ value: number, label: string }>>([])
 const interviewAppStatuses = ref<Array<{ value: number, label: string }>>([])
 const jobOfferStatuses = ref<Array<{ value: number, label: string }>>([])
 
-// File references
 const resumeFile = ref<File | null>(null)
 const torFile = ref<File | null>(null)
 const pictureFile = ref<File | null>(null)
 
-// Format date for datetime-local input
 const formatDateForInput = (dateString: string | null) => {
     if (!dateString) return ''
     const date = new Date(dateString)
     return date.toISOString().slice(0, 16)
 }
 
-// Form data
+function formatDateTimeLocal(value: Date) {
+    const year = value.getFullYear()
+    const month = String(value.getMonth() + 1).padStart(2, '0')
+    const day = String(value.getDate()).padStart(2, '0')
+    const hours = String(value.getHours()).padStart(2, '0')
+    const minutes = String(value.getMinutes()).padStart(2, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+function addMinutes(value: string, minutes: number) {
+    if (!value) return ''
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return ''
+    date.setMinutes(date.getMinutes() + minutes)
+    return formatDateTimeLocal(date)
+}
+
+function getTomorrowStart() {
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    now.setDate(now.getDate() + 1)
+    return formatDateTimeLocal(now)
+}
+
+function isBefore(a: string, b: string) {
+    if (!a || !b) return false
+    const first = new Date(a)
+    const second = new Date(b)
+
+    if (Number.isNaN(first.getTime()) || Number.isNaN(second.getTime())) {
+        return false
+    }
+
+    return first.getTime() < second.getTime()
+}
+
+const finalScoreManuallyEdited = ref(false)
+
+function parseScore(value: string | number | null | undefined): number {
+    if (value === '' || value === null || value === undefined) return 0
+    const num = Number(value)
+    return Number.isNaN(num) ? 0 : num
+}
+
+function handleFinalScoreManualInput() {
+    finalScoreManuallyEdited.value = true
+}
+
 const form = useForm({
     upload_resume: props.application.upload_resume || '',
     upload_tor: props.application.upload_tor || '',
@@ -92,10 +137,10 @@ const form = useForm({
     initial_interview_remarks: props.application.initial_interview_remarks || '',
 
     final_interview_date: formatDateForInput(props.application.final_interview_date),
-    final_interview_sf: props.application.final_interview_sf || '',
-    final_interview_ib: props.application.final_interview_ib || '',
-    final_interview_rv: props.application.final_interview_rv || '',
-    final_interview_ma: props.application.final_interview_ma || '',
+    final_interview_score_1: props.application.final_interview_score_1 || '',
+    final_interview_score_2: props.application.final_interview_score_2 || '',
+    final_interview_score_3: props.application.final_interview_score_3 || '',
+    final_interview_score_4: props.application.final_interview_score_4 || '',
     final_interview_final: props.application.final_interview_final || '',
     final_interview_result: props.application.final_interview_result || '',
     final_interview_application_status: props.application.final_interview_application_status || '',
@@ -107,7 +152,6 @@ const form = useForm({
     remarks: props.application.remarks || ''
 })
 
-// Computed values
 const currentApplicant = computed(() => {
     return props.application?.applicant || null
 })
@@ -145,17 +189,46 @@ const existingResumeUrl = computed(() => getFileUrl(props.application.upload_res
 const existingTorUrl = computed(() => getFileUrl(props.application.upload_tor || null))
 const existingPictureUrl = computed(() => getFileUrl(props.application.upload_pic || null))
 
-const existingResumeName = computed(() => props.application.upload_resume || '')
-const existingTorName = computed(() => props.application.upload_tor || '')
-const existingPictureName = computed(() => props.application.upload_pic || '')
-
 const originalFiles = {
     resume: props.application.upload_resume,
     tor: props.application.upload_tor,
     picture: props.application.upload_pic,
 }
 
-// Error and success handling
+const examPlanMin = computed(() => getTomorrowStart())
+const examActualMin = computed(() => form.exam_plan_date || '')
+const initialInterviewPlanMin = computed(() => form.exam_plan_date ? addMinutes(form.exam_plan_date, 1) : '')
+const initialInterviewActualMin = computed(() => form.initial_interview_plan_date || '')
+const finalInterviewMin = computed(() => form.initial_interview_plan_date || '')
+const jobOfferScheduleMin = computed(() => form.final_interview_date || '')
+
+watch(() => form.exam_plan_date, (newValue) => {
+    if (form.exam_actual_date && newValue && isBefore(form.exam_actual_date, newValue)) {
+        form.exam_actual_date = ''
+    }
+
+    const nextInitialPlanMin = newValue ? addMinutes(newValue, 1) : ''
+    if (form.initial_interview_plan_date && nextInitialPlanMin && isBefore(form.initial_interview_plan_date, nextInitialPlanMin)) {
+        form.initial_interview_plan_date = ''
+    }
+})
+
+watch(() => form.initial_interview_plan_date, (newValue) => {
+    if (form.initial_interview_actual_date && newValue && isBefore(form.initial_interview_actual_date, newValue)) {
+        form.initial_interview_actual_date = ''
+    }
+
+    if (form.final_interview_date && newValue && isBefore(form.final_interview_date, newValue)) {
+        form.final_interview_date = ''
+    }
+})
+
+watch(() => form.final_interview_date, (newValue) => {
+    if (form.job_offer_schedule && newValue && isBefore(form.job_offer_schedule, newValue)) {
+        form.job_offer_schedule = ''
+    }
+})
+
 const errorMessage = computed(() => (page.props.flash as any)?.error || '')
 const showError = ref(false)
 const successMessage = computed(() => (page.props.flash as any)?.success || '')
@@ -219,7 +292,6 @@ function isTechDegree(degree: string): boolean {
     return false
 }
 
-// Helpers copied from register logic
 function getExamCategory(applicant: any): 'young_it' | 'young_other' | 'adult' {
     if (!applicant) return 'young_other'
 
@@ -280,7 +352,98 @@ function getInitialInterviewApplicationStatus(score: number): string {
     return '2'
 }
 
-// Load dropdown options
+function validateScoreField(field: string, label: string, value: string | number) {
+    if (value === '' || value === null || value === undefined) {
+        if ((form.errors as any)[field]?.includes(`${label} must`)) {
+            form.clearErrors(field as any)
+        }
+        return
+    }
+
+    const num = Number(value)
+
+    if (Number.isNaN(num)) {
+        form.setError(field as any, `${label} must be a valid number.`)
+        return
+    }
+
+    if (num < 0 || num > 999.99) {
+        form.setError(field as any, `${label} must be between 0 and 999.99.`)
+        return
+    }
+
+    if ((form.errors as any)[field]?.includes(`${label} must`)) {
+        form.clearErrors(field as any)
+    }
+}
+
+watch(() => form.exam_atpp_result, (value) => {
+    validateScoreField('exam_atpp_result', 'ATTP Result', value)
+})
+
+watch(() => form.exam_git_result, (value) => {
+    validateScoreField('exam_git_result', 'GIT Result', value)
+})
+
+watch(() => form.exam_prg_result, (value) => {
+    validateScoreField('exam_prg_result', 'PRG Result', value)
+})
+
+watch(() => form.initial_interview_final, (value) => {
+    validateScoreField('initial_interview_final', 'Initial Interview Final Score', value)
+})
+
+watch(() => form.final_interview_score_1, (value) => {
+    validateScoreField('final_interview_score_1', 'Score 1', value)
+})
+
+watch(() => form.final_interview_score_2, (value) => {
+    validateScoreField('final_interview_score_2', 'Score 2', value)
+})
+
+watch(() => form.final_interview_score_3, (value) => {
+    validateScoreField('final_interview_score_3', 'Score 3', value)
+})
+
+watch(() => form.final_interview_score_4, (value) => {
+    validateScoreField('final_interview_score_4', 'Score 4', value)
+})
+
+watch(() => form.final_interview_final, (value) => {
+    validateScoreField('final_interview_final', 'Final Score', value)
+})
+
+watch(
+    [
+        () => form.final_interview_score_1,
+        () => form.final_interview_score_2,
+        () => form.final_interview_score_3,
+        () => form.final_interview_score_4,
+    ],
+    ([score1, score2, score3, score4]) => {
+        const hasAnyScore =
+            score1 !== '' || score2 !== '' || score3 !== '' || score4 !== ''
+
+        if (!hasAnyScore) {
+            form.final_interview_final = ''
+            finalScoreManuallyEdited.value = false
+            return
+        }
+
+        if (finalScoreManuallyEdited.value) {
+            return
+        }
+
+        const total =
+            parseScore(score1) +
+            parseScore(score2) +
+            parseScore(score3) +
+            parseScore(score4)
+
+        form.final_interview_final = total.toFixed(2)
+    }
+)
+
 onMounted(() => {
     if (props.examVenues) {
         examVenues.value = Object.entries(props.examVenues).map(([value, label]) => ({
@@ -325,7 +488,6 @@ onMounted(() => {
     }
 })
 
-// Flash message watchers
 watch(errorMessage, (val) => {
     if (val) {
         showError.value = true
@@ -340,7 +502,6 @@ watch(successMessage, (val) => {
     }
 })
 
-// Auto-fill logic: Exam
 watch(() => form.exam_plan_date, (newPlanDate) => {
     if (newPlanDate && !form.exam_atpp_result && !form.exam_git_result && !form.exam_prg_result) {
         form.exam_application_status = '1'
@@ -386,7 +547,6 @@ watch(
     }
 )
 
-// Auto-fill logic: Initial Interview
 watch(() => form.initial_interview_plan_date, (newPlanDate) => {
     if (newPlanDate && !form.initial_interview_final) {
         form.initial_interview_application_status = '1'
@@ -419,7 +579,6 @@ watch(
     }
 )
 
-// Auto-fill logic: Final Interview
 watch(() => form.final_interview_date, (newPlanDate) => {
     if (newPlanDate && !form.final_interview_application_status) {
         form.final_interview_application_status = '1'
@@ -430,7 +589,6 @@ watch(() => form.final_interview_date, (newPlanDate) => {
     }
 })
 
-// Auto-fill logic: Job Offer
 watch(() => form.job_offer_schedule, (newSchedule) => {
     if (newSchedule && !form.job_offer_status) {
         form.job_offer_status = '1'
@@ -441,7 +599,6 @@ watch(() => form.job_offer_schedule, (newSchedule) => {
     }
 })
 
-// Result mapping
 watch(() => form.exam_application_status, (newStatus) => {
     if (!newStatus) {
         form.exam_result = ''
@@ -472,7 +629,6 @@ watch(() => form.final_interview_application_status, (newStatus) => {
     form.final_interview_result = mappedResult ? String(mappedResult) : ''
 })
 
-// File handling
 const handleResumeUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
     if (target.files && target.files[0]) {
@@ -566,7 +722,6 @@ const removeFile = (type: 'resume' | 'tor' | 'picture') => {
     }
 }
 
-// Submit function
 function submit() {
     form.clearErrors()
 
@@ -576,12 +731,11 @@ function submit() {
         Object.keys(data).forEach((key) => {
             const value = data[key as keyof typeof data]
 
-            // FILE FIELDS
             if (key === 'upload_resume') {
                 if (resumeFile.value) {
                     formData.append('upload_resume', resumeFile.value)
                 } else if (value === '' && originalFiles.resume) {
-                    formData.append('upload_resume', '') // REMOVE
+                    formData.append('upload_resume', '')
                 }
                 return
             }
@@ -590,7 +744,7 @@ function submit() {
                 if (torFile.value) {
                     formData.append('upload_tor', torFile.value)
                 } else if (value === '' && originalFiles.tor) {
-                    formData.append('upload_tor', '') // REMOVE
+                    formData.append('upload_tor', '')
                 }
                 return
             }
@@ -599,12 +753,11 @@ function submit() {
                 if (pictureFile.value) {
                     formData.append('upload_pic', pictureFile.value)
                 } else if (value === '' && originalFiles.picture) {
-                    formData.append('upload_pic', '') // REMOVE
+                    formData.append('upload_pic', '')
                 }
                 return
             }
 
-            // NORMAL FIELDS
             if (value !== null && value !== undefined && value !== '') {
                 formData.append(key, String(value))
             }
@@ -620,15 +773,16 @@ function submit() {
     })
 }
 </script>
+
 <template>
     <AppLayout>
-        <!-- Success/Error Alerts -->
         <div v-if="showSuccess" class="full-width-alert">
             <div class="alert-banner alert-success-banner">
                 <div class="alert-body">{{ successMessage }}</div>
                 <button type="button" class="close-btn" @click="showSuccess = false">×</button>
             </div>
         </div>
+
         <div v-if="showError" class="full-width-alert">
             <div class="alert-banner alert-error-banner">
                 <div class="alert-body">{{ errorMessage }}</div>
@@ -644,392 +798,448 @@ function submit() {
             <div class="form-wrapper">
                 <div class="form-card">
                     <form @submit.prevent="submit">
-                        <!-- Basic Information Section -->
                         <div class="form-section">
                             <div class="section-header"><h3>Basic Information</h3></div>
                             <div class="form-grid grid-2">
                                 <div class="form-field">
-                                    <label class="field-label required">ACTION Applicant</label>
-                                    <input type="text" :value="selectedApplicantLabel" class="form-input" disabled />
-                                </div>
-                                <div class="form-field">
-                                    <label class="field-label required">ACTION Batch</label>
+                                    <label class="field-label-required required">ACTION Batch</label>
                                     <input type="text" :value="batchName" class="form-input" disabled />
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label-required required">ACTION Applicant</label>
+                                    <input type="text" :value="selectedApplicantLabel" class="form-input" disabled />
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Upload Documents Section -->
+                        <div class="form-section">
+                            <div class="section-header"><h3>Upload Documents</h3></div>
 
-<div class="form-section">
-    <div class="section-header"><h3>Upload Documents</h3></div>
+                            <div class="form-grid grid-3">
+                                <div class="form-field">
+                                    <label class="field-label">Upload Resume</label>
 
-    <div class="form-grid grid-3">
-        <div class="form-field">
-            <label class="field-label">Upload Resume</label>
+                                    <div v-if="form.upload_resume && !resumeFile" class="file-info">
+                                        <span class="file-name">{{ form.upload_resume }}</span>
+                                        <button
+                                            type="button"
+                                            @click="removeFile('resume')"
+                                            class="remove-file"
+                                            :disabled="!editableStages.documents"
+                                        >×</button>
+                                    </div>
 
-            <div v-if="form.upload_resume && !resumeFile" class="file-info">
-                <span class="file-name">{{ form.upload_resume }}</span>
-                <button
-                    type="button"
-                    @click="removeFile('resume')"
-                    class="remove-file"
-                    :disabled="!editableStages.documents"
-                >×</button>
-            </div>
+                                    <div v-if="resumeFile" class="file-info">
+                                        <span class="file-name">{{ form.upload_resume }}</span>
+                                        <button
+                                            type="button"
+                                            @click="removeFile('resume')"
+                                            class="remove-file"
+                                            :disabled="!editableStages.documents"
+                                        >×</button>
+                                    </div>
 
-            <div v-if="resumeFile" class="file-info">
-                <span class="file-name">{{ form.upload_resume }}</span>
-                <button
-                    type="button"
-                    @click="removeFile('resume')"
-                    class="remove-file"
-                    :disabled="!editableStages.documents"
-                >×</button>
-            </div>
+                                    <input
+                                        type="file"
+                                        @change="handleResumeUpload"
+                                        accept=".pdf,.doc,.docx"
+                                        class="file-input-btn w-full"
+                                        :disabled="form.processing || !editableStages.documents"
+                                    />
 
-            <input
-                type="file"
-                @change="handleResumeUpload"
-                accept=".pdf,.doc,.docx"
-                class="file-input-btn w-full"
-                :disabled="form.processing || !editableStages.documents"
-            />
+                                    <span v-if="form.errors.upload_resume" class="error-message">
+                                        {{ form.errors.upload_resume }}
+                                    </span>
 
-            <span v-if="form.errors.upload_resume" class="error-message">
-                {{ form.errors.upload_resume }}
-            </span>
+                                    <div v-if="existingResumeUrl && !resumeFile" class="file-preview">
+                                        <a :href="existingResumeUrl" target="_blank" class="preview-link">Open current resume</a>
+                                    </div>
+                                </div>
 
-            <div v-if="existingResumeUrl && !resumeFile" class="file-preview">
-                <a :href="existingResumeUrl" target="_blank" class="preview-link">Open current resume</a>
-            </div>
-        </div>
+                                <div class="form-field">
+                                    <label class="field-label">Upload TOR</label>
 
-        <div class="form-field">
-            <label class="field-label">Upload TOR</label>
+                                    <div v-if="form.upload_tor && !torFile" class="file-info">
+                                        <span class="file-name">{{ form.upload_tor }}</span>
+                                        <button
+                                            type="button"
+                                            @click="removeFile('tor')"
+                                            class="remove-file"
+                                            :disabled="!editableStages.documents"
+                                        >×</button>
+                                    </div>
 
-            <div v-if="form.upload_tor && !torFile" class="file-info">
-                <span class="file-name">{{ form.upload_tor }}</span>
-                <button
-                    type="button"
-                    @click="removeFile('tor')"
-                    class="remove-file"
-                    :disabled="!editableStages.documents"
-                >×</button>
-            </div>
+                                    <div v-if="torFile" class="file-info">
+                                        <span class="file-name">{{ form.upload_tor }}</span>
+                                        <button
+                                            type="button"
+                                            @click="removeFile('tor')"
+                                            class="remove-file"
+                                            :disabled="!editableStages.documents"
+                                        >×</button>
+                                    </div>
 
-            <div v-if="torFile" class="file-info">
-                <span class="file-name">{{ form.upload_tor }}</span>
-                <button
-                    type="button"
-                    @click="removeFile('tor')"
-                    class="remove-file"
-                    :disabled="!editableStages.documents"
-                >×</button>
-            </div>
+                                    <input
+                                        type="file"
+                                        @change="handleTorUpload"
+                                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                        class="file-input-btn w-full"
+                                        :disabled="form.processing || !editableStages.documents"
+                                    />
 
-            <input
-                type="file"
-                @change="handleTorUpload"
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                class="file-input-btn w-full"
-                :disabled="form.processing || !editableStages.documents"
-            />
+                                    <span v-if="form.errors.upload_tor" class="error-message">
+                                        {{ form.errors.upload_tor }}
+                                    </span>
 
-            <span v-if="form.errors.upload_tor" class="error-message">
-                {{ form.errors.upload_tor }}
-            </span>
+                                    <div v-if="existingTorUrl && !torFile" class="file-preview">
+                                        <a :href="existingTorUrl" target="_blank" class="preview-link">Open current TOR</a>
+                                    </div>
+                                </div>
 
-            <div v-if="existingTorUrl && !torFile" class="file-preview">
-                <a :href="existingTorUrl" target="_blank" class="preview-link">Open current TOR</a>
-            </div>
-        </div>
+                                <div class="form-field">
+                                    <label class="field-label">Upload 2x2 Pic</label>
 
-        <div class="form-field">
-            <label class="field-label">Upload 2x2 Pic</label>
+                                    <div v-if="form.upload_pic && !pictureFile" class="file-info">
+                                        <span class="file-name">{{ form.upload_pic }}</span>
+                                        <button
+                                            type="button"
+                                            @click="removeFile('picture')"
+                                            class="remove-file"
+                                            :disabled="!editableStages.documents"
+                                        >×</button>
+                                    </div>
 
-            <div v-if="form.upload_pic && !pictureFile" class="file-info">
-                <span class="file-name">{{ form.upload_pic }}</span>
-                <button
-                    type="button"
-                    @click="removeFile('picture')"
-                    class="remove-file"
-                    :disabled="!editableStages.documents"
-                >×</button>
-            </div>
+                                    <div v-if="pictureFile" class="file-info">
+                                        <span class="file-name">{{ form.upload_pic }}</span>
+                                        <button
+                                            type="button"
+                                            @click="removeFile('picture')"
+                                            class="remove-file"
+                                            :disabled="!editableStages.documents"
+                                        >×</button>
+                                    </div>
 
-            <div v-if="pictureFile" class="file-info">
-                <span class="file-name">{{ form.upload_pic }}</span>
-                <button
-                    type="button"
-                    @click="removeFile('picture')"
-                    class="remove-file"
-                    :disabled="!editableStages.documents"
-                >×</button>
-            </div>
+                                    <input
+                                        type="file"
+                                        @change="handlePictureUpload"
+                                        accept="image/jpeg,image/png,image/jpg"
+                                        class="file-input-btn w-full"
+                                        :disabled="form.processing || !editableStages.documents"
+                                    />
 
-            <input
-                type="file"
-                @change="handlePictureUpload"
-                accept="image/jpeg,image/png,image/jpg"
-                class="file-input-btn w-full"
-                :disabled="form.processing || !editableStages.documents"
-            />
+                                    <span v-if="form.errors.upload_pic" class="error-message">
+                                        {{ form.errors.upload_pic }}
+                                    </span>
 
-            <span v-if="form.errors.upload_pic" class="error-message">
-                {{ form.errors.upload_pic }}
-            </span>
+                                    <div v-if="existingPictureUrl && !pictureFile" class="picture-preview">
+                                        <img :src="existingPictureUrl" alt="Current picture" class="preview-image" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-            <div v-if="existingPictureUrl && !pictureFile" class="picture-preview">
-                <img :src="existingPictureUrl" alt="Current picture" class="preview-image" />
-            </div>
-        </div>
-    </div>
-</div>
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h3>Exam Details</h3>
+                            </div>
 
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label">Exam Plan Date</label>
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.exam_plan_date"
+                                        class="form-input"
+                                        :min="examPlanMin || undefined"
+                                        :disabled="!editableStages.exam"
+                                    />
+                                    <span v-if="form.errors.exam_plan_date" class="error-message">{{ form.errors.exam_plan_date }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Exam Actual Date</label>
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.exam_actual_date"
+                                        class="form-input"
+                                        :min="examActualMin || undefined"
+                                        :disabled="!editableStages.exam"
+                                    />
+                                    <span v-if="form.errors.exam_actual_date" class="error-message">{{ form.errors.exam_actual_date }}</span>
+                                </div>
+                            </div>
 
-                        <!-- Exam Details Section -->
-<div class="form-section">
-    <div class="section-header">
-        <h3>Exam Details</h3>
-    </div>
+                            <div class="form-field">
+                                <label class="field-label">Exam Venue</label>
+                                <select v-model="form.exam_venue" class="form-select" :disabled="!editableStages.exam">
+                                    <option value="">Select Venue</option>
+                                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">{{ venue.label }}</option>
+                                </select>
+                                <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue }}</span>
+                            </div>
 
-    <div class="form-grid grid-2">
-        <div class="form-field">
-            <label class="field-label">Exam Plan Date</label>
-            <input type="datetime-local" v-model="form.exam_plan_date" class="form-input" :disabled="!editableStages.exam" />
-        </div>
-        <div class="form-field">
-            <label class="field-label">Exam Actual Date</label>
-            <input type="datetime-local" v-model="form.exam_actual_date" class="form-input" :disabled="!editableStages.exam" />
-        </div>
-    </div>
+                            <div class="form-grid grid-3">
+                                <div class="form-field">
+                                    <label class="field-label">ATPP Result</label>
+                                    <input type="number" step="0.01" v-model="form.exam_atpp_result" class="form-input" :disabled="!editableStages.exam" />
+                                    <span v-if="form.errors.exam_atpp_result" class="error-message">{{ form.errors.exam_atpp_result }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">GIT Result</label>
+                                    <input type="number" step="0.01" v-model="form.exam_git_result" class="form-input" :disabled="!editableStages.exam" />
+                                    <span v-if="form.errors.exam_git_result" class="error-message">{{ form.errors.exam_git_result }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">PRG Result</label>
+                                    <input type="number" step="0.01" v-model="form.exam_prg_result" class="form-input" :disabled="!editableStages.exam" />
+                                    <span v-if="form.errors.exam_prg_result" class="error-message">{{ form.errors.exam_prg_result }}</span>
+                                </div>
+                            </div>
 
-    <div class="form-field">
-        <label class="field-label">Exam Venue</label>
-        <select v-model="form.exam_venue" class="form-select" :disabled="!editableStages.exam">
-            <option value="">Select Venue</option>
-            <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">{{ venue.label }}</option>
-        </select>
-    </div>
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label">Exam Result</label>
+                                    <input
+                                        type="text"
+                                        class="form-input"
+                                        :value="examResultLabel || (!form.exam_application_status ? 'Auto-filled from application status' : '')"
+                                        readonly
+                                        :disabled="!editableStages.exam"
+                                    />
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Exam Application Status</label>
+                                    <select v-model="form.exam_application_status" class="form-select" :disabled="!editableStages.exam">
+                                        <option value="">Select Status</option>
+                                        <option v-for="status in examStatuses" :key="status.value" :value="status.value">{{ status.label }}</option>
+                                    </select>
+                                </div>
+                            </div>
 
-    <div class="form-grid grid-3">
-        <div class="form-field">
-            <label class="field-label">ATPP Result</label>
-            <input type="number" step="0.01" v-model="form.exam_atpp_result" class="form-input" :disabled="!editableStages.exam" />
-        </div>
-        <div class="form-field">
-            <label class="field-label">GIT Result</label>
-            <input type="number" step="0.01" v-model="form.exam_git_result" class="form-input" :disabled="!editableStages.exam" />
-        </div>
-        <div class="form-field">
-            <label class="field-label">PRG Result</label>
-            <input type="number" step="0.01" v-model="form.exam_prg_result" class="form-input" :disabled="!editableStages.exam" />
-        </div>
-    </div>
+                            <div class="form-field">
+                                <label class="field-label">Exam Comments</label>
+                                <textarea v-model="form.exam_remarks" rows="3" class="form-textarea" :disabled="!editableStages.exam"></textarea>
+                                <span v-if="form.errors.exam_remarks" class="error-message">
+                                    {{ form.errors.exam_remarks }}
+                                </span>
+                            </div>
+                        </div>
 
-    <div class="form-grid grid-2">
-        <div class="form-field">
-            <label class="field-label">Exam Result</label>
-            <input
-                type="text"
-                class="form-input"
-                :value="examResultLabel || (!form.exam_application_status ? 'Auto-filled from application status' : '')"
-                readonly
-                :disabled="!editableStages.exam"
-            />
-        </div>
-        <div class="form-field">
-            <label class="field-label">Exam Application Status</label>
-            <select v-model="form.exam_application_status" class="form-select" :disabled="!editableStages.exam">
-                <option value="">Select Status</option>
-                <option v-for="status in examStatuses" :key="status.value" :value="status.value">{{ status.label }}</option>
-            </select>
-        </div>
-    </div>
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h3>Initial Interview</h3>
+                            </div>
 
-    <div class="form-field">
-        <label class="field-label">Exam Comments</label>
-<textarea v-model="form.exam_remarks" rows="3" class="form-textarea" :disabled="!editableStages.exam"></textarea>
-<span v-if="form.errors.exam_remarks" class="error-message">
-    {{ form.errors.exam_remarks }}
-</span>    </div>
-</div>
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label">Plan Date</label>
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.initial_interview_plan_date"
+                                        class="form-input"
+                                        :min="initialInterviewPlanMin || undefined"
+                                        :disabled="!editableStages.initial_interview"
+                                    />
+                                    <span v-if="form.errors.initial_interview_plan_date" class="error-message">{{ form.errors.initial_interview_plan_date }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Actual Date</label>
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.initial_interview_actual_date"
+                                        class="form-input"
+                                        :min="initialInterviewActualMin || undefined"
+                                        :disabled="!editableStages.initial_interview"
+                                    />
+                                    <span v-if="form.errors.initial_interview_actual_date" class="error-message">{{ form.errors.initial_interview_actual_date }}</span>
+                                </div>
+                            </div>
 
-                        <!-- Initial Interview Section -->
-<div class="form-section">
-    <div class="section-header">
-        <h3>Initial Interview</h3>
-    </div>
+                            <div class="form-field">
+                                <label class="field-label">Venue</label>
+                                <select v-model="form.initial_interview_venue" class="form-select" :disabled="!editableStages.initial_interview">
+                                    <option value="">Select Venue</option>
+                                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">{{ venue.label }}</option>
+                                </select>
+                                <span v-if="form.errors.initial_interview_venue" class="error-message">{{ form.errors.initial_interview_venue }}</span>
+                            </div>
 
-    <div class="form-grid grid-2">
-        <div class="form-field">
-            <label class="field-label">Plan Date</label>
-            <input type="datetime-local" v-model="form.initial_interview_plan_date" class="form-input" :disabled="!editableStages.initial_interview" />
-        </div>
-        <div class="form-field">
-            <label class="field-label">Actual Date</label>
-            <input type="datetime-local" v-model="form.initial_interview_actual_date" class="form-input" :disabled="!editableStages.initial_interview" />
-        </div>
-    </div>
+                            <div class="form-field">
+                                <label class="field-label">Initial Interview Final Score</label>
+                                <input type="number" step="0.01" v-model="form.initial_interview_final" class="form-input" :disabled="!editableStages.initial_interview" />
+                                <span v-if="form.errors.initial_interview_final" class="error-message">{{ form.errors.initial_interview_final }}</span>
+                            </div>
 
-    <div class="form-field">
-        <label class="field-label">Venue</label>
-        <select v-model="form.initial_interview_venue" class="form-select" :disabled="!editableStages.initial_interview">
-            <option value="">Select Venue</option>
-            <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">{{ venue.label }}</option>
-        </select>
-    </div>
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label">Result</label>
+                                    <input
+                                        type="text"
+                                        class="form-input"
+                                        :value="initialInterviewResultLabel || (!form.initial_interview_application_status ? 'Auto-filled from application status' : '')"
+                                        readonly
+                                        :disabled="!editableStages.initial_interview"
+                                    />
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Application Status</label>
+                                    <select v-model="form.initial_interview_application_status" class="form-select" :disabled="!editableStages.initial_interview">
+                                        <option value="">Select Status</option>
+                                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">{{ status.label }}</option>
+                                    </select>
+                                </div>
+                            </div>
 
-    <div class="form-field">
-        <label class="field-label">Initial Interview Final Score</label>
-        <input type="number" step="0.01" v-model="form.initial_interview_final" class="form-input" :disabled="!editableStages.initial_interview" />
-    </div>
+                            <div class="form-field">
+                                <label class="field-label">Initial Interview Comments</label>
+                                <textarea v-model="form.initial_interview_remarks" rows="3" class="form-textarea" :disabled="!editableStages.initial_interview"></textarea>
+                                <span v-if="form.errors.initial_interview_remarks" class="error-message">
+                                    {{ form.errors.initial_interview_remarks }}
+                                </span>
+                            </div>
+                        </div>
 
-    <div class="form-grid grid-2">
-        <div class="form-field">
-            <label class="field-label">Result</label>
-            <input
-                type="text"
-                class="form-input"
-                :value="initialInterviewResultLabel || (!form.initial_interview_application_status ? 'Auto-filled from application status' : '')"
-                readonly
-                :disabled="!editableStages.initial_interview"
-            />
-        </div>
-        <div class="form-field">
-            <label class="field-label">Application Status</label>
-            <select v-model="form.initial_interview_application_status" class="form-select" :disabled="!editableStages.initial_interview">
-                <option value="">Select Status</option>
-                <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">{{ status.label }}</option>
-            </select>
-        </div>
-    </div>
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h3>Final Interview</h3>
+                            </div>
 
-    <div class="form-field">
-        <label class="field-label">Initial Interview Comments</label>
-<textarea v-model="form.initial_interview_remarks" rows="3" class="form-textarea" :disabled="!editableStages.initial_interview"></textarea>
-<span v-if="form.errors.initial_interview_remarks" class="error-message">
-    {{ form.errors.initial_interview_remarks }}
-</span>    </div>
-</div>
+                            <div class="form-field">
+                                <label class="field-label">Date</label>
+                                <input
+                                    type="datetime-local"
+                                    v-model="form.final_interview_date"
+                                    class="form-input"
+                                    :min="finalInterviewMin || undefined"
+                                    :disabled="!editableStages.final_interview"
+                                />
+                                <span v-if="form.errors.final_interview_date" class="error-message">{{ form.errors.final_interview_date }}</span>
+                            </div>
 
-                        <!-- Final Interview Section -->
-<div class="form-section">
-    <div class="section-header">
-        <h3>Final Interview</h3>
-    </div>
+                            <div class="form-grid grid-5">
+                                <div class="form-field">
+                                    <label class="field-label">Score 1</label>
+                                    <input type="number" step="0.01" v-model="form.final_interview_score_1" class="form-input" :disabled="!editableStages.final_interview" />
+                                    <span v-if="form.errors.final_interview_score_1" class="error-message">{{ form.errors.final_interview_score_1 }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Score 2</label>
+                                    <input type="number" step="0.01" v-model="form.final_interview_score_2" class="form-input" :disabled="!editableStages.final_interview" />
+                                    <span v-if="form.errors.final_interview_score_2" class="error-message">{{ form.errors.final_interview_score_2 }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Score 3</label>
+                                    <input type="number" step="0.01" v-model="form.final_interview_score_3" class="form-input" :disabled="!editableStages.final_interview" />
+                                    <span v-if="form.errors.final_interview_score_3" class="error-message">{{ form.errors.final_interview_score_3 }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Score 4</label>
+                                    <input type="number" step="0.01" v-model="form.final_interview_score_4" class="form-input" :disabled="!editableStages.final_interview" />
+                                    <span v-if="form.errors.final_interview_score_4" class="error-message">{{ form.errors.final_interview_score_4 }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Final Score</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        v-model="form.final_interview_final"
+                                        @input="handleFinalScoreManualInput"
+                                        class="form-input"
+                                        :disabled="!editableStages.final_interview"
+                                    />
+                                    <span v-if="form.errors.final_interview_final" class="error-message">{{ form.errors.final_interview_final }}</span>
+                                </div>
+                            </div>
 
-    <div class="form-field">
-        <label class="field-label">Date</label>
-        <input type="datetime-local" v-model="form.final_interview_date" class="form-input" :disabled="!editableStages.final_interview" />
-    </div>
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label">Result</label>
+                                    <input
+                                        type="text"
+                                        class="form-input"
+                                        :value="finalInterviewResultLabel || (!form.final_interview_application_status ? 'Auto-filled from application status' : '')"
+                                        readonly
+                                        :disabled="!editableStages.final_interview"
+                                    />
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Application Status</label>
+                                    <select v-model="form.final_interview_application_status" class="form-select" :disabled="!editableStages.final_interview">
+                                        <option value="">Select Status</option>
+                                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">{{ status.label }}</option>
+                                    </select>
+                                </div>
+                            </div>
 
-    <div class="form-grid grid-5">
-        <div class="form-field">
-            <label class="field-label">SF Score</label>
-            <input type="number" step="0.01" v-model="form.final_interview_sf" class="form-input" :disabled="!editableStages.final_interview" />
-        </div>
-        <div class="form-field">
-            <label class="field-label">IB Score</label>
-            <input type="number" step="0.01" v-model="form.final_interview_ib" class="form-input" :disabled="!editableStages.final_interview" />
-        </div>
-        <div class="form-field">
-            <label class="field-label">RV Score</label>
-            <input type="number" step="0.01" v-model="form.final_interview_rv" class="form-input" :disabled="!editableStages.final_interview" />
-        </div>
-        <div class="form-field">
-            <label class="field-label">MA Score</label>
-            <input type="number" step="0.01" v-model="form.final_interview_ma" class="form-input" :disabled="!editableStages.final_interview" />
-        </div>
-        <div class="form-field">
-            <label class="field-label">Final Score</label>
-            <input type="number" step="0.01" v-model="form.final_interview_final" class="form-input" :disabled="!editableStages.final_interview" />
-        </div>
-    </div>
+                            <div class="form-field">
+                                <label class="field-label">Final Interview Comments</label>
+                                <textarea v-model="form.final_interview_remarks" rows="3" class="form-textarea" :disabled="!editableStages.final_interview"></textarea>
+                                <span v-if="form.errors.final_interview_remarks" class="error-message">
+                                    {{ form.errors.final_interview_remarks }}
+                                </span>
+                            </div>
+                        </div>
 
-    <div class="form-grid grid-2">
-        <div class="form-field">
-            <label class="field-label">Result</label>
-            <input
-                type="text"
-                class="form-input"
-                :value="finalInterviewResultLabel || (!form.final_interview_application_status ? 'Auto-filled from application status' : '')"
-                readonly
-                :disabled="!editableStages.final_interview"
-            />
-        </div>
-        <div class="form-field">
-            <label class="field-label">Application Status</label>
-            <select v-model="form.final_interview_application_status" class="form-select" :disabled="!editableStages.final_interview">
-                <option value="">Select Status</option>
-                <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">{{ status.label }}</option>
-            </select>
-        </div>
-    </div>
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h3>Job Offer</h3>
+                            </div>
 
-    <div class="form-field">
-        <label class="field-label">Final Interview Comments</label>
-<textarea v-model="form.final_interview_remarks" rows="3" class="form-textarea" :disabled="!editableStages.final_interview"></textarea>
-<span v-if="form.errors.final_interview_remarks" class="error-message">
-    {{ form.errors.final_interview_remarks }}
-</span>    </div>
-</div>
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label">Schedule</label>
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.job_offer_schedule"
+                                        class="form-input"
+                                        :min="jobOfferScheduleMin || undefined"
+                                        :disabled="!editableStages.job_offer"
+                                    />
+                                    <span v-if="form.errors.job_offer_schedule" class="error-message">{{ form.errors.job_offer_schedule }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Status</label>
+                                    <select v-model="form.job_offer_status" class="form-select" :disabled="!editableStages.job_offer">
+                                        <option value="">Select Status</option>
+                                        <option v-for="status in jobOfferStatuses" :key="status.value" :value="status.value">{{ status.label }}</option>
+                                    </select>
+                                </div>
+                            </div>
 
-                        <!-- Job Offer Section -->
-<div class="form-section">
-    <div class="section-header">
-        <h3>Job Offer</h3>
-    </div>
+                            <div class="form-field">
+                                <label class="field-label">Job Offer Comments</label>
+                                <textarea v-model="form.job_offer_remarks" rows="3" class="form-textarea" :disabled="!editableStages.job_offer"></textarea>
+                                <span v-if="form.errors.job_offer_remarks" class="error-message">
+                                    {{ form.errors.job_offer_remarks }}
+                                </span>
+                            </div>
+                        </div>
 
-    <div class="form-grid grid-2">
-        <div class="form-field">
-            <label class="field-label">Schedule</label>
-            <input type="datetime-local" v-model="form.job_offer_schedule" class="form-input" :disabled="!editableStages.job_offer" />
-        </div>
-        <div class="form-field">
-            <label class="field-label">Status</label>
-            <select v-model="form.job_offer_status" class="form-select" :disabled="!editableStages.job_offer">
-                <option value="">Select Status</option>
-                <option v-for="status in jobOfferStatuses" :key="status.value" :value="status.value">{{ status.label }}</option>
-            </select>
-        </div>
-    </div>
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h3>Additional Information</h3>
+                            </div>
 
-    <div class="form-field">
-        <label class="field-label">Job Offer Comments</label>
-<textarea v-model="form.job_offer_remarks" rows="3" class="form-textarea" :disabled="!editableStages.job_offer"></textarea>
-<span v-if="form.errors.job_offer_remarks" class="error-message">
-    {{ form.errors.job_offer_remarks }}
-</span>    </div>
-</div>
+                            <div class="form-field">
+                                <label class="field-label">General Remarks</label>
+                                <textarea v-model="form.remarks" rows="3" class="form-textarea" :disabled="!editableStages.general"></textarea>
+                                <span v-if="form.errors.remarks" class="error-message">
+                                    {{ form.errors.remarks }}
+                                </span>
+                            </div>
+                        </div>
 
-                        <!-- Additional Information Section -->
-<div class="form-section">
-    <div class="section-header">
-        <h3>Additional Information</h3>
-    </div>
-
-    <div class="form-field">
-        <label class="field-label">General Remarks</label>
-<textarea v-model="form.remarks" rows="3" class="form-textarea" :disabled="!editableStages.general"></textarea>
-<span v-if="form.errors.remarks" class="error-message">
-    {{ form.errors.remarks }}
-</span>    </div>
-</div>
-
-                        <!-- Form Actions -->
-<div class="form-actions">
-    <Link :href="`/action/applications/${application.id}`" class="btn btn-secondary">Cancel</Link>
-    <button
-        v-if="canEditAnything"
-        type="submit"
-        :disabled="form.processing"
-        class="btn btn-primary"
-    >
-        {{ form.processing ? 'Updating…' : 'Update' }}
-    </button>
-</div>
+                        <div class="form-actions">
+                            <Link :href="`/action/applications/${application.id}`" class="btn btn-secondary">Cancel</Link>
+                            <button
+                                v-if="canEditAnything"
+                                type="submit"
+                                :disabled="form.processing"
+                                class="btn btn-primary"
+                            >
+                                {{ form.processing ? 'Updating…' : 'Update' }}
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -1208,12 +1418,19 @@ function submit() {
     line-height: 1.4;
 }
 
-.field-label.required::after {
+.field-label-required {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: black;
+    line-height: 1.4;
+}
+
+.required::after {
     content: '*';
     margin-left: 0.25rem;
     color: var(--ats-danger);
 }
-
 /* Inputs */
 .form-input,
 .form-select,

@@ -9,14 +9,14 @@
         <tr>
             <td align="center">
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    
+
                     <!-- Header / Logo -->
                     <tr>
                         <td style="background-color: #0d6efd; padding: 20px; text-align: center;">
                             <img src="{{ asset('images/aws-logo.jpg') }}" alt="AWS Logo" width="150" style="display: block;">
                         </td>
                     </tr>
-                    
+
                     <!-- Body -->
                     <tr>
                         <td style="padding: 30px; color: #333333;">
@@ -35,8 +35,11 @@
                             </p>
 
                             <p style="font-size: 16px; line-height: 1.6;">
-                                Thank you,<br>
-                                <strong>AWS HR Manager</strong>
+Thank you,<br>
+<strong>{{ $senderName }}</strong><br>
+<span style="font-size: 14px; color: #555;">
+    {{ $senderRole }}
+</span>
                             </p>
                         </td>
                     </tr>
