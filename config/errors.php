@@ -166,6 +166,11 @@ return [
         'errorMessage' => 'The selected date must be in the future.',
     ],
 
+    'start_date_after' => [
+        'errorCode' => 'START_DATE_AFTER',
+        'errorMessage' => 'The selected date must be in the future.',
+    ],
+
 
     'age_numeric' => [
         'errorCode' => 'AGE_NUMERIC_INVALID',

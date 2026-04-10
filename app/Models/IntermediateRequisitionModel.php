@@ -25,7 +25,7 @@ class IntermediateRequisitionModel extends Model
         'start_date',
         'duration_project_engagement',
         'required_skills',
-        'preferred_skilss',
+        'preferred_skilLs',
         'role',
         'expected_salary_range',
         'remarks',

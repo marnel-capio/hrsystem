@@ -3,20 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\IntermediateRequisitionModel;
-use App\Models\IntermediateProjectModel; // Import your IntermediateProjectModel
-use App\Http\Requests\IntermediateRequest;
+use App\Models\IntermediateProjectModel; 
+use App\Http\Requests\IntermediateRequisitionRequest;
 use Inertia\Inertia;
-use App\Services\IntermediateService;
+use App\Services\IntermediateRequisitionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+
 
 class IntermediateRequisitionController extends Controller
 {
-    protected $intermediateService;
+    protected $intermediateRequisitionService;
 
-    public function __construct(IntermediateService $intermediateService)
+    public function __construct(IntermediateRequisitionService $intermediateRequisitionService)
     {
-        $this->intermediateService = $intermediateService;
+        $this->intermediateRequisitionService = $intermediateRequisitionService;
     }
 
     public function index(Request $request)
@@ -45,6 +49,41 @@ class IntermediateRequisitionController extends Controller
             'newProjects' => $projects,
         ]);
     }
+
+    public function store(IntermediateRequisitionRequest $request)
+{
+    try {
+        // Start a transaction
+        DB::beginTransaction();
+        
+        // Log the validated data for debugging
+        Log::debug('Creating requisition with data: ', $request->validated());
+        
+        // Create the requisition
+        $requisition = $this->intermediateRequisitionService->create($request->validated(), $request);
+        
+        // Commit the transaction
+        DB::commit();
+        
+        // Redirect on success
+        return redirect()
+            ->route('intermediate.requisitions.show', ['id' => $requisition->id])
+            ->with('success', config('errors.record_created_successfully.errorMessage'));
+
+    } catch (\Exception $e) {
+        // Rollback the transaction
+        DB::rollBack();
+
+        // Log the exception
+        Log::error('Error creating requisition: ', ['error' => $e->getMessage()]);
+        
+        // Return error message
+        return back()->withErrors([
+            'error' => config('errors.transaction_failed.errorMessage')
+        ]);
+    }
+}
+
 
     public function show($id)
     {

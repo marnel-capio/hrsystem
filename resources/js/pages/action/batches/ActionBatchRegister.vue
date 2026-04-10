@@ -40,7 +40,6 @@ const validateTargetDate = () => {
 }
 
 const submit = () => {
-  // Clear frontend validation errors
   targetTraineesError.value = ''
   remarksError.value = ''
   targetDateError.value = ''
