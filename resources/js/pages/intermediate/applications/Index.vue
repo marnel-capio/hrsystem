@@ -114,7 +114,6 @@ const submitImport = () => {
         preserveScroll: true,
         onSuccess: () => {
             closeImportModal()
-            flashMessages.value.success = 'File imported successfully'
             router.reload({ only: ['applications'] })
         },
         onError: (errors) => {

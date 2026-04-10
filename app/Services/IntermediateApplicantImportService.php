@@ -22,12 +22,20 @@ class IntermediateApplicantImportService
         $failed = [];
 
         foreach ($rows as $index => $row) {
+
             $result = $this->processApplicantRow($row, $index);
 
-            // Only success or failed
+            // Skip empty rows
+            if (isset($result['skip']) && $result['skip']) {
+                continue;
+            }
+
+            // Success case
             if (isset($result['success']) && $result['success']) {
                 $imported[] = $result['success'];
             }
+
+            // Error case
             if (isset($result['error']) && $result['error']) {
                 $failed[] = $result['error'];
             }
@@ -52,10 +60,13 @@ class IntermediateApplicantImportService
         $email = trim($row['Email Address'] ?? '');
         $fullName = trim($row['Name (Last Name, Given Name, Middle Name)'] ?? '');
 
-        // Even empty rows get processed (will fail with error)
+        if (empty($email) && empty($fullName)) {
+            return ['skip' => true];
+        }
+
         if (empty($email) || empty($fullName)) {
             return [
-                'error' => 'Row '.($rowIndex + 2).' - Missing email or name (FAILED)',
+                'error' => 'Row '.($rowIndex + 2).' - Missing email or name',
             ];
         }
 
@@ -84,7 +95,11 @@ class IntermediateApplicantImportService
 
         // Parse + Update profile FIRST (always)
         $parsedData = $this->parseApplicantData($row);
-        $applicant->update(array_merge($parsedData['applicant'], [
+        $updateData = $parsedData['applicant'];
+
+        unset($updateData['created_by'], $updateData['created_time']);
+
+        $applicant->update(array_merge($updateData, [
             'updated_by' => Auth::id(),
             'updated_time' => now(),
         ]));
@@ -109,31 +124,39 @@ class IntermediateApplicantImportService
             ->latest('created_time')
             ->first();
 
+        $latestAppTime = $latestApp?->created_time
+            ? Carbon::parse($latestApp->created_time)
+            : null;
+
+        $excelTime = $excelTimestamp;
+
         $examStatus = $latestApp?->exam_status ?? null;
 
-        \Log::info("Eligibility Debug [{$fullName}]:", [
-            'registered_date' => $registeredDate,
-            'is_recent' => $isRecent,
-            'exam_status' => $examStatus,
-        ]);
+        //
+        // CASE 1: Excel record is newer than latest application
+        // → Past application is considered expired → CREATE NEW APPLICATION
+        //
+        if ($excelTime && $excelTime->gt($latestAppTime)) {
 
-        // =========================================================
-        //  CASE 1: REGISTERED > 6 MONTHS (DEFAULT → NEW APP)
-        // =========================================================
-        if (! $isRecent) {
+            $stage = match (true) {
+                $examStatus == 5 => 1,
+                in_array($examStatus, [3, 4]) => 2,
+                default => 1,
+            };
 
-            // exam_status = 5 → stage 1
-            if ($examStatus == 5) {
-                return $this->createAppWithSync($applicant, $row, $fullName, 1, 'Reg >6mo + Exam=5');
-            }
+            $reason = match (true) {
+                $examStatus == 5 => 'Excel newer + Exam=5',
+                in_array($examStatus, [3, 4]) => 'Excel newer + Exam=3/4',
+                default => 'Excel newer default',
+            };
 
-            // exam_status = 3 or 4 → stage 2
-            if (in_array($examStatus, [3, 4])) {
-                return $this->createAppWithSync($applicant, $row, $fullName, 2, 'Reg >6mo + Exam=3/4');
-            }
-
-            //  DEFAULT (Reg >6mo)
-            return $this->createAppWithSync($applicant, $row, $fullName, 1, 'Reg >6mo Default');
+            return $this->createAppWithSync(
+                $applicant,
+                $row,
+                $fullName,
+                $stage,
+                $reason
+            );
         }
 
         // =========================================================
@@ -147,46 +170,38 @@ class IntermediateApplicantImportService
 
         // exam_status = 5 → update latest app (stage 1) and reset exam_status
         if ($examStatus == 5 && $latestApp) {
-            $latestApp->update([
-                'application_stage' => 1,    // set stage 1
-                'exam_status' => null,       // reset exam_status
-                'remarks' => 'Recent Reg - Exam=5',
-                'updated_by' => Auth::id(),
-                'updated_time' => now(),
-            ]);
+            $latestApp->update(
+                array_merge(
+                    $this->buildApplicationData($row, 1, true),
+                    [
+                        'exam_status' => null,
+                    ]
+                )
+            );
 
-            // Sync work experiences
             $this->syncWorkExperiences($applicant, $row);
 
             return [
-                'success' => "{$fullName} (UPDATED PROFILE + UPDATED APP stage 1 - Exam=5, exam_status reset)",
+                'success' => "{$fullName} (FULL APP SYNC + stage 1 reset exam_status)",
             ];
         }
 
         // exam_status = 3 or 4 → update latest app (stage 3) instead of creating new app
         if (in_array($examStatus, [3, 4]) && $latestApp) {
-            // Update latest application
-            $latestApp->update([
-                'application_stage' => 3,                  // stage 3
-                'remarks' => 'Recent Reg - Exam=3/4',      // remark
-                'updated_by' => Auth::id(),
-                'updated_time' => now(),
-            ]);
+            $latestApp->update(
+                $this->buildApplicationData($row, 3, true)
+            );
 
-            // Sync work experiences after update
             $this->syncWorkExperiences($applicant, $row);
 
             return [
-                'success' => "{$fullName} (UPDATED PROFILE + UPDATED LATEST APP stage 3 - Exam=3/4)",
+                'success' => "{$fullName} (FULL APP SYNC + stage 3)",
             ];
         }
 
-        //  DEFAULT (Recent) → update latest app
-        $latestApp->update([
-            'remarks' => 'Recent Reg - Default update',
-            'updated_by' => Auth::id(),
-            'updated_time' => now(),
-        ]);
+        $latestApp->update(
+            $this->buildApplicationData($row, $latestApp->application_stage ?? 1, true)
+        );
 
         return $this->successWithSync("{$fullName} (UPDATED PROFILE + UPDATED LATEST APP - Default)", $applicant, $row);
     }
@@ -207,26 +222,6 @@ class IntermediateApplicantImportService
     }
 
     /**
-     * Update LATEST application status
-     */
-    private function updateLatestAppStatus($applicant, array $row, string $fullName, int $newStage, ?int $examStatus, string $remark): array
-    {
-        $latestApp = $applicant->applications()->latest('created_time')->first();
-
-        $latestApp->update([
-            'application_stage' => $newStage,
-            'exam_status' => $examStatus,
-            'remarks' => $remark,
-            'updated_by' => Auth::id(),
-            'updated_time' => now(),
-        ]);
-
-        $this->syncWorkExperiences($applicant, $row);
-
-        return ['success' => "{$fullName} (UPDATED App Stage {$newStage})"];
-    }
-
-    /**
      * Create completely NEW application
      */
     private function createNewApplication($applicant, array $row, string $fullName, int $stage, string $remark): array
@@ -235,7 +230,6 @@ class IntermediateApplicantImportService
 
         $applicant->applications()->latest()->first()->update([
             'application_stage' => $stage,
-            'remarks' => $remark,
         ]);
 
         $this->syncWorkExperiences($applicant, $row);
@@ -267,9 +261,13 @@ class IntermediateApplicantImportService
     {
         $parsedData = $this->parseApplicantData($row);
 
-        $applicant->update(array_merge($parsedData['applicant'], [
-            'application_stage' => 1,
-            'remarks' => 'Still within 6 months eligibility',
+        $updateData = $parsedData['applicant'];
+
+        unset($updateData['created_by'], $updateData['created_time']);
+
+        $applicant->update(array_merge($updateData, [
+            'updated_by' => Auth::id(),
+            'updated_time' => now(),
         ]));
 
         $this->syncWorkExperiences($applicant, $row);
@@ -280,108 +278,114 @@ class IntermediateApplicantImportService
     /**
      * Parse applicant data from row
      */
-    private function parseApplicantData(array $row): array
+    private function parseApplicantData(array $row, bool $isUpdate = false): array
     {
-        $nameParts = array_map('trim', explode(',', trim($row['Name (Last Name, Given Name, Middle Name)'] ?? '')));
-        $source = trim($row['How did you learn about this job posting?'] ?? '');
+        $nameParts = array_map(
+            'trim',
+            explode(',', trim($row['Name (Last Name, Given Name, Middle Name)'] ?? ''))
+        );
 
-        // ========== SOURCE PARSING ==========
+        $source = strtolower(trim($row['How did you learn about this job posting?'] ?? ''));
+
+        [$sourceType, $sourceValue, $otherSource] = $this->mapSource($row, $source);
+
+        $applicantData = [
+            'source' => $sourceValue,
+            'source_type' => $sourceType,
+            'other_source' => $otherSource,
+
+            'email_address' => trim($row['Email Address'] ?? ''),
+            'first_name' => $nameParts[1] ?? null,
+            'middle_name' => $nameParts[2] ?? null,
+            'last_name' => $nameParts[0] ?? null,
+
+            'address' => $row['Address'] ?? null,
+            'contact_no' => $row['Contact Number (Please follow 0916XXXXXXX format.)'] ?? null,
+            'birthdate' => $this->parseBirthday($row['Birthday'] ?? null),
+            'age' => $row['Age'] ?? null,
+            'school_graduated_from' => $row['School Graduated from'] ?? null,
+            'course' => $row['Course/Degree taken'] ?? null,
+            'year_attended' => $row['Inclusive Year Attended'] ?? null,
+            'others' => $row['Others'] ?? null,
+
+            'spouse_details' => $row['SPOUSE'] ?? null,
+            'children' => is_numeric($row['CHILDREN']) ? (int) $row['CHILDREN'] : 0,
+            'father_details' => $row['FATHER'] ?? null,
+            'mother_details' => $row['MOTHER'] ?? null,
+            'sibling_details' => $row['SIBLING/S'] ?? null,
+
+            'emergency_contact_name' => $row['Person to notify in case of emergency:'] ?? null,
+            'emergency_contact_number' => $row['Contact Details'] ?? null,
+            'emergency_contact_address' => $row['Contact Address'] ?? null,
+
+            'registered_date' => $this->parseExcelDate($row['Timestamp'] ?? null),
+
+            'registered_by' => Auth::id(),
+            'updated_by' => Auth::id(),
+            'updated_time' => now(),
+        ];
+
+        // ✅ ONLY set created fields on insert
+        if (! $isUpdate) {
+            $applicantData['created_by'] = Auth::id();
+            $applicantData['created_time'] = now();
+        }
+
+        return [
+            'applicant' => $applicantData,
+        ];
+    }
+
+    private function mapSource(array $row, string $sourceLower): array
+    {
+        $referralHeader = 'If “Referral” is selected above, please provide the name or description of the referring party. If not applicable, kindly indicate “N/A.”';
+
         $sourceType = null;
         $sourceValue = null;
         $otherSource = null;
 
-        // Exact header match for your Excel
-        $referralHeader = $referralHeader = 'If “Referral” is selected above, please provide the name or description of the referring party. If not applicable, kindly indicate “N/A.”';
-
-        // Source type detection (case-insensitive)
-        $sourceLower = strtolower($source);
-
-        if (stripos($sourceLower, 'referral') !== false ||
-            stripos($sourceLower, 'referral') !== false) {
+        if (str_contains($sourceLower, 'referral')) {
             $sourceType = 2;
-            $sourceValue = null;
             $otherSource = trim($row[$referralHeader] ?? '');
-        } elseif (stripos($sourceLower, 'foundit') !== false) {
+        } elseif (str_contains($sourceLower, 'foundit')) {
             $sourceType = 1;
             $sourceValue = 1;
-        } elseif (stripos($sourceLower, 'linkedin') !== false) {
+        } elseif (str_contains($sourceLower, 'linkedin')) {
             $sourceType = 1;
             $sourceValue = 2;
-        } elseif (stripos($sourceLower, 'facebook') !== false) {
+        } elseif (str_contains($sourceLower, 'facebook')) {
             $sourceType = 1;
             $sourceValue = 3;
-        } elseif (stripos($sourceLower, 'mynimo') !== false) {
+        } elseif (str_contains($sourceLower, 'mynimo')) {
             $sourceType = 1;
             $sourceValue = 4;
-        } elseif (stripos($sourceLower, 'kalibrr') !== false) {
+        } elseif (str_contains($sourceLower, 'kalibrr')) {
             $sourceType = 1;
             $sourceValue = 5;
-        } elseif (stripos($sourceLower, 'aaisi') !== false) {
+        } elseif (str_contains($sourceLower, 'aaisi')) {
             $sourceType = 3;
             $sourceValue = 1;
-        } elseif (stripos($sourceLower, 'primover') !== false) {
+        } elseif (str_contains($sourceLower, 'primover')) {
             $sourceType = 3;
             $sourceValue = 2;
-        } elseif (stripos($sourceLower, 'tech tierra') !== false) {
+        } elseif (str_contains($sourceLower, 'tech tierra')) {
             $sourceType = 3;
             $sourceValue = 3;
-        } elseif (stripos($sourceLower, 'spring valley') !== false) {
+        } elseif (str_contains($sourceLower, 'spring valley')) {
             $sourceType = 3;
             $sourceValue = 4;
-        } elseif (stripos($sourceLower, 'yens') !== false) {
+        } elseif (str_contains($sourceLower, 'yens')) {
             $sourceType = 3;
             $sourceValue = 5;
-        } elseif (stripos($sourceLower, 'job fairs') !== false ||
-            stripos($sourceLower, 'job fairs') !== false) {
+        } elseif (str_contains($sourceLower, 'job fairs')) {
             $sourceType = 4;
-            $sourceValue = null;
-            $otherSource = trim($row[$referralHeader] ?? '');
-        } elseif (stripos($sourceLower, 'website') !== false ||
-            stripos($sourceLower, 'website') !== false) {
+        } elseif (str_contains($sourceLower, 'website')) {
             $sourceType = 5;
-            $sourceValue = null;
-            $otherSource = trim($row[$referralHeader] ?? '');
-        } elseif (stripos($sourceLower, 'rehire') !== false ||
-            stripos($sourceLower, 'rehire') !== false) {
+        } elseif (str_contains($sourceLower, 'rehire')) {
             $sourceType = 6;
-            $sourceValue = null;
-            $otherSource = trim($row[$referralHeader] ?? '');
         }
 
-        // ========== APPLICANT DATA ==========
-        return [
-            'applicant' => [
-                'source' => $sourceValue,
-                'source_type' => $sourceType,
-                'other_source' => $otherSource,
-                'email_address' => trim($row['Email Address'] ?? ''),
-                'first_name' => $nameParts[1] ?? null,
-                'middle_name' => $nameParts[2] ?? null,
-                'last_name' => $nameParts[0] ?? null,
-                'address' => $row['Address'] ?? null,
-                'contact_no' => $row['Contact Number (Please follow 0916XXXXXXX format.)'] ?? null,
-                'birthdate' => $this->parseBirthday($row['Birthday'] ?? null),
-                'age' => $row['Age'] ?? null,
-                'school_graduated_from' => $row['School Graduated from'] ?? null,
-                'course' => $row['Course/Degree taken'] ?? null,
-                'year_attended' => $row['Inclusive Year Attended'] ?? null,
-                'others' => $row['Others'] ?? null,
-                'spouse_details' => $row['SPOUSE'] ?? null,
-                'children' => is_numeric($row['CHILDREN']) ? (int) $row['CHILDREN'] : 0,
-                'father_details' => $row['FATHER'] ?? null,
-                'mother_details' => $row['MOTHER'] ?? null,
-                'sibling_details' => $row['SIBLING/S'] ?? null,
-                'emergency_contact_name' => $row['Person to notify in case of emergency:'] ?? null,
-                'emergency_contact_number' => $row['Contact Details'] ?? null,
-                'emergency_contact_address' => $row['Contact Address'] ?? null, 
-                'registered_date' => $this->parseExcelDate($row['Timestamp'] ?? null),
-                'registered_by' => Auth::id(),
-                'created_by' => Auth::id(),
-                'created_time' => now(),
-                'updated_by' => Auth::id(),
-                'updated_time' => now(),
-            ],
-        ];
+        return [$sourceType, $sourceValue, $otherSource];
     }
 
     /**
@@ -389,9 +393,16 @@ class IntermediateApplicantImportService
      */
     private function createApplication($applicant, array $row)
     {
-        $applicant->applications()->create([
+        $applicant->applications()->create(
+            $this->buildApplicationData($row, 1)
+        );
+    }
+
+    private function buildApplicationData(array $row, $stage = 1, $isUpdate = false): array
+    {
+        $data = [
             'position' => $row['Position you are applying for'] ?? null,
-            'application_stage' => 1,
+            'application_stage' => $stage,
             'fy_week' => 1,
             'availability_date' => $this->parseExcelDate($row['Date Available to Report to Work'] ?? null),
             'desired_salary_range' => $row['Desired Salary Range'] ?? null,
@@ -402,11 +413,23 @@ class IntermediateApplicantImportService
             'leaves' => $row['Vacation Leaves/ Sick Leavse'] ?? null,
             'allowances' => $row['Allowances'] ?? null,
             'other_benefits' => $row['Other Benefits'] ?? null,
+
             'answer_q1' => $this->mapYesNo($row['Please answer the following questions below: [Have you ever filed an application in AWS, Inc. before?]'] ?? null),
             'answer_q2' => $this->mapYesNo($row['Please answer the following questions below: [Do any of your friends or relatives, other than a spouse, work in AWS>]'] ?? null),
             'answer_q3' => $this->mapYesNo($row['Please answer the following questions below: [Have you worked in AWS before?]'] ?? null),
             'answer_q4' => $this->mapYesNo($row['Please answer the following questions below: [Will you travel if the job requires it?]'] ?? null),
-        ]);
+
+            'updated_by' => Auth::id(),
+            'updated_time' => now(),
+        ];
+
+        // ONLY set these on CREATE
+        if (! $isUpdate) {
+            $data['created_by'] = Auth::id();
+            $data['created_time'] = now();
+        }
+
+        return $data;
     }
 
     /**

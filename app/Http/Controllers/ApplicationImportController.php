@@ -46,7 +46,6 @@ class ApplicationImportController extends Controller
         ]);
     }
 
-
     public function import(ImportApplicationsRequest $request)
     {
 
@@ -370,9 +369,88 @@ class ApplicationImportController extends Controller
 
         $results = $importService->processFileImport($file);
 
-        return response()->json([
-            'success' => count($results['imported']) ? 'Imported/Updated: '.implode(', ', $results['imported']) : null,
-            'error' => count($results['failed']) ? 'Failed: '.implode(', ', $results['failed']) : null,
+        return back()->with([
+            'success' => count($results['imported'])
+                ? $this->formatSuccessMessage($results['imported'])
+                : null,
+
+            'error' => count($results['failed'])
+                ? $this->formatErrorMessage($results['failed'])
+                : null,
         ]);
+    }
+
+    private function formatSuccessMessage(array $items): string
+    {
+        $count = count($items);
+
+        $message = "Count of Successful Uploads: {$count}\n";
+        $message .= "The following applicants have been successfully uploaded:\n";
+
+        foreach ($items as $index => $item) {
+            // Extract just the name (before the first parenthesis)
+            $name = trim(explode('(', $item)[0]);
+
+            $message .= ($index + 1).". {$name}\n";
+        }
+
+        return $message;
+    }
+
+    private function formatErrorMessage(array $items): string
+    {
+        $messageList = [];
+
+        foreach ($items as $item) {
+            $label = $this->extractFailedLabel($item);
+
+            if ($label !== null) {
+                $messageList[] = $label;
+            }
+        }
+
+        $messageList = array_values(array_unique($messageList));
+        $count = count($messageList);
+
+        $message = "Count of Failed Uploads: {$count}\n";
+        $message .= "The following applicants failed to upload:\n";
+
+        foreach ($messageList as $index => $entry) {
+            $message .= ($index + 1).". {$entry} - Excel row contains invalid data.\n";
+        }
+
+        return $message;
+    }
+
+    private function extractFailedLabel(string $item): ?string
+    {
+        // 1. Try extract name inside parentheses
+        if (preg_match('/\((.*?)\)/', $item, $nameMatch)) {
+            $fullName = trim($nameMatch[1]);
+
+            return $this->formatName($fullName);
+        }
+
+        // 2. Try extract row number
+        if (preg_match('/Row\s+(\d+)/i', $item, $rowMatch)) {
+            return "Row {$rowMatch[1]}";
+        }
+
+        // 3. Ignore garbage entries like "FAILED"
+        return null;
+    }
+
+    private function formatName(string $fullName): string
+    {
+        $nameParts = preg_split('/\s+/', trim($fullName));
+
+        if (count($nameParts) < 2) {
+            return $fullName;
+        }
+
+        $firstName = $nameParts[0];
+        $lastName = $nameParts[count($nameParts) - 1];
+
+        return "{$lastName}, {$firstName}";
     }
 }
