@@ -132,31 +132,43 @@ class IntermediateApplicantImportService
 
         $examStatus = $latestApp?->exam_status ?? null;
 
-        //
-        // CASE 1: Excel record is newer than latest application
-        // → Past application is considered expired → CREATE NEW APPLICATION
-        //
-        if ($excelTime && $excelTime->gt($latestAppTime)) {
+        if ($excelTime && $latestAppTime) {
 
-            $stage = match (true) {
-                $examStatus == 5 => 1,
-                in_array($examStatus, [3, 4]) => 2,
-                default => 1,
-            };
+            $isExpired = $excelTime->diffInMonths($latestAppTime) > 6;
 
-            $reason = match (true) {
-                $examStatus == 5 => 'Excel newer + Exam=5',
-                in_array($examStatus, [3, 4]) => 'Excel newer + Exam=3/4',
-                default => 'Excel newer default',
-            };
+            // =====================================================
+            // CASE 1: EXPIRED → CREATE NEW APPLICATION
+            // =====================================================
+            if ($isExpired) {
 
-            return $this->createAppWithSync(
-                $applicant,
-                $row,
-                $fullName,
-                $stage,
-                $reason
-            );
+                if ($examStatus == 5) {
+                    return $this->createAppWithSync(
+                        $applicant,
+                        $row,
+                        $fullName,
+                        1,
+                        'Expired >6 months + Exam=5'
+                    );
+                }
+
+                if (in_array($examStatus, [3, 4])) {
+                    return $this->createAppWithSync(
+                        $applicant,
+                        $row,
+                        $fullName,
+                        2,
+                        'Expired >6 months + Exam=3/4'
+                    );
+                }
+
+                return $this->createAppWithSync(
+                    $applicant,
+                    $row,
+                    $fullName,
+                    1,
+                    'Expired >6 months default'
+                );
+            }
         }
 
         // =========================================================
