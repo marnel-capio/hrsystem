@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\IntermediateRequisitionModel;
+use App\Models\IntermediateProjectModel; // Import your IntermediateProjectModel
 use App\Http\Requests\IntermediateRequest;
 use Inertia\Inertia;
 use App\Services\IntermediateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-
 
 class IntermediateRequisitionController extends Controller
 {
@@ -40,7 +39,11 @@ class IntermediateRequisitionController extends Controller
 
     public function create()
     {
-        return Inertia::render('intermediate/resource-requisitions/Register');
+        $projects = IntermediateProjectModel::getProjects(); 
+
+        return Inertia::render('intermediate/resource-requisitions/Register', [
+            'newProjects' => $projects,
+        ]);
     }
 
     public function show($id)

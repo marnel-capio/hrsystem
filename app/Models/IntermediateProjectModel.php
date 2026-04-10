@@ -4,6 +4,7 @@ namespace App\Models;
  
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class IntermediateProjectModel extends Model
 {
@@ -41,25 +42,31 @@ class IntermediateProjectModel extends Model
 
     //TO BE USED IN RESOURCE REQS
     public static function getProjects($excludeScheduled = true)
-    {
-        $requisitionIds = IntermediateRequisitionModel::pluck('project_id')->toArray();
+{
+    $requisitionIds = IntermediateRequisitionModel::pluck('project_id')->toArray();
+    $query = DB::table('projects')->select('id', 'project_name');
 
-        $query = DB::table('projects')->select('id', 'project_name');
-
-        if ($excludeScheduled) {
-            $query->whereNotIn('id', $requisitionIds);
-        } else {
-            $query->whereIn('id', $requisitionIds);
-        }
-
-        return $query->get();
+    if ($excludeScheduled) {
+        $query->whereNotIn('id', $requisitionIds);
+    } else {
+        $query->whereIn('id', $requisitionIds);
     }
+
+    $projects = $query->get();
+
+    // Debugging to ensure all projects are being fetched
+    Log::debug('Fetched Projects:', $projects->toArray());
+
+    return $projects;
+}
 
 
     public function requisitions()
     {
         return $this->hasMany(IntermediateRequisitionModel::class, 'project_id');
     }
+    
+
 
     const CREATED_AT = 'created_time';
     const UPDATED_AT = 'updated_time';

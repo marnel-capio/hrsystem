@@ -1,12 +1,41 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 
 const page = usePage<any>()
 const loading = ref(false)
+const props = defineProps<{
+  errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
+  newProjects: { id: number; project_name: string; project_description: number; }[];
+}>();
 
-const form = ref({
+
+interface Form {
+  engagement_type: string;
+  sourcing_type: string;
+  request_type: string;
+  replacement_due_to: string;
+  person_to_replace: string;
+  location_assignment: string;
+  custom_location: string; 
+  project_id: string;
+  business_unit: string;
+  resource: string;
+  practice: string;
+  no_resources_needed: string;
+  start_date: string;
+  duration_project_engagement: string;
+  required_skills: string;
+  preferred_skills: string;
+  role: string;
+  expected_salary_range: string;
+  remarks: string;
+  project_description: string;  
+  processing: boolean;
+}
+
+const form = ref<Form>({
   engagement_type: '',
   sourcing_type: '',
   request_type: '',
@@ -28,9 +57,8 @@ const form = ref({
   remarks: '',
   project_description: '', 
   processing: false,
-})
+});
 
-const projects = ref([]) 
 const selectedProject = ref(null) 
 
 const startDateError = ref('')
@@ -44,11 +72,6 @@ const validateStartDate = () => {
     : ''
 }
 
-onMounted(async () => {
-  const response = await fetch('/projects');
-  const data = await response.json();
-  projects.value = data;
-});
 
 // Update project description when a project is selected
 const updateProjectDescription = (projectId: string) => {
@@ -71,6 +94,17 @@ const submit = () => {
     }
   })
 }
+
+watch(() => form.value.project_id, (newId) => {
+  const project = props.newProjects.find(p => p.id === Number(newId));
+
+  if (project) {
+    form.value.project_description = project.project_description;  // TypeScript will now recognize this
+  } else {
+    form.value.project_description = '';
+  }
+});
+
 </script>
 
 <template>
@@ -86,7 +120,7 @@ const submit = () => {
     <!-- <div class="bg-[#2811C2] text-white text-center py-1 mb-2 border-b-4 border-t-4 border-black w-full">
       <strong class="text-lg">RESOURCE REQUISITION FORM</strong>
     </div>-->
-    <div class="text-xs mb-3 mt-2 text-red-600">
+    <div class="text-sm mb-3 mt-2 text-red-600">
       <strong>Note:</strong> Resource Requisition must be already approved by SR Manager.
     </div><br><br>
 
@@ -192,12 +226,18 @@ const submit = () => {
       <div class="grid grid-cols-2 gap-5 mt-5">
         <!-- Project Name (Dropdown) -->
         <div class="flex flex-col">
-          <label class="text-sm font-semibold mb-1">Project Name</label>
-          <select v-model="form.project_id" @change="updateProjectDescription(form.project_id)" class="border p-2 rounded w-full">
-            <option disabled value="">Select Project</option>
-            <option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option>
-          </select>
-        </div>
+        <label class="text-sm font-semibold mb-1">Project</label>
+        <select v-model="form.project_id" class="border p-2 rounded w-full">
+          <option disabled value="">Select Project</option>
+          <option 
+            v-for="project in props.newProjects" 
+            :key="project.id" 
+            :value="project.id"
+          >
+            {{ project.project_name }}
+          </option>
+        </select>
+      </div>
 
         <!-- Business Unit -->
         <div class="flex flex-col">
@@ -304,7 +344,7 @@ const submit = () => {
         </div>
 
         <!-- Expected Salary/Billing Range-->
-        <div v-if="form.engagement_type === '2'" class="grid grid-cols-2 gap-5 mt-5">
+        <div v-if="form.engagement_type === '2' || form.engagement_type === '1'" class="grid grid-cols-2 gap-5 mt-5">
           <div class="flex flex-col col-span-2">
             <label class="text-xs font-semibold mb-1"> Expected Salary/Billing Range</label>
             <input v-model="form.expected_salary_range" rows="6" class="border p-2 rounded w-full" placeholder="Please write Billing range if Temporary resource">
