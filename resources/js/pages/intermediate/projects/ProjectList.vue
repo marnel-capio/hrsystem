@@ -99,8 +99,9 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
           <table class="ats-table w-full table-auto border-collapse border text-sm">
             <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
-                <th class="border px-3 py-2">Project Name</th>
-                <th class="border px-3 py-2">Remarks</th>
+                <th class="border px-3 py-2 w-70">Project Name</th>
+                <th class="border px-3 py-2 w-90">Project Description</th>
+                <th class="border px-3 py-2">Remarks </th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-zinc-900">
@@ -108,6 +109,7 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
                 <td class="border px-3 py-2">
                   <Link :href="`/intermediate/projects/${project.id}`" class="table-link">{{ project.project_name }}</Link>
                 </td>
+                <td class="border px-3 py-2">{{ project.project_description }}</td>
                 <td class="border px-3 py-2">{{ project.remarks }}</td>
               </tr>
               <tr v-if="projects.data.length === 0">
