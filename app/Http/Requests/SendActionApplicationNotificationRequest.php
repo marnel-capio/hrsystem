@@ -18,7 +18,7 @@ class SendActionApplicationNotificationRequest extends FormRequest
         'type' => [
             'required',
             'string',
-            'in:interviewer_pending_approval,applicant_scheduled,applicant_failed,hr_recruiters_job_offer',
+            'in:interviewer_pending_approval,applicant_exam_scheduled,applicant_initial_scheduled,applicant_final_scheduled,applicant_failed,hr_recruiters_job_offer',
         ],
     ];
 }

@@ -13,10 +13,12 @@
                 default => 'Assessment',
             };
 
+            $dateKey = \Carbon\Carbon::parse($interview->scheduled_date)->format('Y-m-d H:i:s');
+
             return [
                 'stage' => $stageLabel,
                 'datetime' => \Carbon\Carbon::parse($interview->scheduled_date)->format('F d, Y h:i A'),
-                'key' => (int) $interview->interview_type . '|' . \Carbon\Carbon::parse($interview->scheduled_date)->format('Y-m-d H:i:s'),
+                'key' => ((int) $interview->interview_type) . '|' . $dateKey,
             ];
         })
         ->unique('key')
@@ -57,14 +59,8 @@
         </li>
     @endforeach
 </ul>
-
 <p style="font-size: 16px; line-height: 1.6;">
     Kindly ensure your availability on the scheduled date(s).
-</p>
-
-<p style="font-size: 16px; line-height: 1.6;">
-    You may view your application details here:<br>
-    <a href="{{ $link }}" style="color: #0d6efd;">View Application</a>
 </p>
 
 <p style="font-size: 16px; line-height: 1.6;">
