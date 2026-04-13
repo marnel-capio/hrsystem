@@ -181,6 +181,10 @@ const getStageLabel = (stage: number) => {
     }
     return labels[stage] || 'Unknown'
 }
+
+const canCreateOrImport = computed(() => {
+    return ![5, 6].includes(props.userPermissions)
+})
 </script>
 
 <template>
@@ -266,7 +270,7 @@ const getStageLabel = (stage: number) => {
             <!-- HEADER -->
             <div class="flex items-center justify-between">
                 <h2 class="page-title">Intermediate Application List</h2>
-                <div v-if="props.userPermissions !== 5 && props.userPermissions !== 6" class="flex gap-2 flex-nowrap">
+                <div v-if="canCreateOrImport" class="flex gap-2 flex-nowrap">
                     <Link href="/intermediate/applications/register"
                         class="!bg-[#1C7BA5] btn-primary whitespace-nowrap">Create Intermediate Application</Link>
                     <button @click="showImportModal = true" class="btn-primary whitespace-nowrap">Upload Applications
