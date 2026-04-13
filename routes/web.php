@@ -14,6 +14,7 @@ use App\Http\Controllers\ApplicationImportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
+use App\Http\Controllers\IntermediateApplicantController;
 
 /**
  * Web Routes
@@ -227,10 +228,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/intermediate/resource-requisitions', [IntermediateRequisitionController::class, 'index'])->name('intermediate.requisitions.index');
         Route::get('/intermediate/resource-requisitions/register', [IntermediateRequisitionController::class, 'create'])->name('intermediate.requisitions.register');
         Route::post('/intermediate/resource-requisitions', [IntermediateRequisitionController::class, 'store'])->name('intermediate.requisitions.store');
-        Route::get('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'show'])->name('intermediate.requisitions.show');       
-        Route::get('/intermediate/resource-requisitions/{id}/edit', [IntermediateRequisitionController::class, 'edit'])->name('intermediate.requisitions.edit');        
+        Route::get('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'show'])->name('intermediate.requisitions.show');
+        Route::get('/intermediate/resource-requisitions/{id}/edit', [IntermediateRequisitionController::class, 'edit'])->name('intermediate.requisitions.edit');
         Route::post('/intermediate/resource-requisitions/{id}/update', [IntermediateRequisitionController::class, 'update'])->name('intermediate.requisitions.update');
     });
+
+
+    // ------------------------
+// Intermediate Applicants
+// ------------------------
+Route::middleware(['auth', 'check.permission'])->group(function () {
+    Route::get('/intermediate/applicants', [IntermediateApplicantController::class, 'index'])
+        ->name('intermediate.applicants.index');
+
+});
 
 // ------------------------
 // Include additional routes
