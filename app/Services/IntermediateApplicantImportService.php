@@ -88,132 +88,119 @@ class IntermediateApplicantImportService
     {
         $applicant = IntermediateApplicant::where('email_address', $email)->first();
 
-        // NO APPLICANT → Create new ====== /
+        // FIRST PROCESS: NO APPLICANT → Create new
         if (! $applicant) {
             return $this->createNewApplicant($row, $fullName);
         }
 
-        // Parse + Update profile FIRST (always)
+        // SECOND PROCESS: Existing applicant
+        return $this->handleExistingApplicant($applicant, $row, $fullName);
+    }
+
+    private function handleExistingApplicant(IntermediateApplicant $applicant, array $row, string $fullName): array
+    {
+
+        // 0. Get OLD registered_date FIRST (before any updates)
+        $registeredDate = $applicant->registered_date
+            ? Carbon::parse($applicant->registered_date)
+            : null;
+
+        // 1. Parse + Update profile FIRST (always)
         $parsedData = $this->parseApplicantData($row);
         $updateData = $parsedData['applicant'];
 
-        unset($updateData['created_by'], $updateData['created_time']);
+        // Get Excel timestamp
+        $excelTimestamp = isset($row['Timestamp'])
+            ? $this->parseExcelDate($row['Timestamp'])
+            : null;
 
+        // Update applicant profile
+        unset($updateData['created_by'], $updateData['created_time'], $updateData['registered_by'], $updateData['source_type'], $updateData['source'], $updateData['other_source']);
         $applicant->update(array_merge($updateData, [
             'updated_by' => Auth::id(),
             'updated_time' => now(),
         ]));
 
-        //  Get Excel timestamp
-        $excelTimestamp = isset($row['Timestamp'])
-            ? $this->parseExcelDate($row['Timestamp'])
-            : null;
-
-        //  Safe date handling
-        $registeredDate = $applicant->registered_date
-            ? Carbon::parse($applicant->registered_date)
-            : null;
-
-        //  Compare: Excel timestamp vs registered_date
-        $isRecent = $registeredDate && $excelTimestamp
-            ? $excelTimestamp->lte($registeredDate->copy()->addMonths(6))
-            : false;
-
-        //  Get latest application
-        $latestApp = $applicant->applications()
-            ->latest('created_time')
-            ->first();
-
-        $latestAppTime = $latestApp?->created_time
-            ? Carbon::parse($latestApp->created_time)
-            : null;
-
-        $excelTime = $excelTimestamp;
-
-        $examStatus = $latestApp?->exam_status ?? null;
-
-        if ($excelTime && $latestAppTime) {
-
-            $isExpired = $excelTime->diffInMonths($latestAppTime) > 6;
-
-            // =====================================================
-            // CASE 1: EXPIRED → CREATE NEW APPLICATION
-            // =====================================================
-            if ($isExpired) {
-
-                if ($examStatus == 5) {
-                    return $this->createAppWithSync(
-                        $applicant,
-                        $row,
-                        $fullName,
-                        1,
-                        'Expired >6 months + Exam=5'
-                    );
-                }
-
-                if (in_array($examStatus, [3, 4])) {
-                    return $this->createAppWithSync(
-                        $applicant,
-                        $row,
-                        $fullName,
-                        2,
-                        'Expired >6 months + Exam=3/4'
-                    );
-                }
-
-                return $this->createAppWithSync(
-                    $applicant,
-                    $row,
-                    $fullName,
-                    1,
-                    'Expired >6 months default'
-                );
-            }
+        // 2. Compare dates: if difference > 6 months, CREATE NEW APPLICATION
+        if ($excelTimestamp && $registeredDate && $this->isExpired($excelTimestamp, $registeredDate)) {
+            return $this->createNewApplicationForExpiredApplicant($applicant, $row, $fullName);
         }
 
-        // =========================================================
-        //  CASE 2: REGISTERED ≤ 6 MONTHS
-        // =========================================================
+        // 3. NOT expired (≤ 6 months) → Update existing application
+        return $this->updateExistingApplication($applicant, $row, $fullName);
+    }
 
-        //  No latest app → create new (safe fallback)
+    private function isExpired(Carbon $excelTimestamp, Carbon $registeredDate): bool
+    {
+        return $registeredDate->diffInMonths($excelTimestamp) > 6;
+    }
+
+    private function createNewApplicationForExpiredApplicant(
+        IntermediateApplicant $applicant,
+        array $row,
+        string $fullName
+    ): array {
+        $latestApp = $applicant->applications()->latest('created_time')->first();
+        $examStatus = $latestApp?->exam_status ?? null;
+
+        // Handle different exam statuses with appropriate stages
+        $stage = match ($examStatus) {
+            5 => 1,
+            3, 4 => 2,
+            default => 1
+        };
+
+        $reason = match ($examStatus) {
+            5 => 'Expired >6 months + Exam=5',
+            3, 4 => 'Expired >6 months + Exam=3/4',
+            default => 'Expired >6 months default'
+        };
+
+        return $this->createAppWithSync($applicant, $row, $fullName, $stage, $reason);
+    }
+
+    private function updateExistingApplication(IntermediateApplicant $applicant, array $row, string $fullName): array
+    {
+        $latestApp = $applicant->applications()->latest('created_time')->first();
+
+        // No latest app → create new (safe fallback)
         if (! $latestApp) {
             return $this->createAppWithSync($applicant, $row, $fullName, 1, 'Recent Reg - No App');
         }
 
+        $examStatus = $latestApp->exam_status;
+
         // exam_status = 5 → update latest app (stage 1) and reset exam_status
-        if ($examStatus == 5 && $latestApp) {
-            $latestApp->update(
-                array_merge(
-                    $this->buildApplicationData($row, 1, true),
-                    [
-                        'exam_status' => null,
-                    ]
-                )
+        if ($examStatus == 5) {
+            $data = array_merge(
+                $this->buildApplicationData($row, 1, true),
+                ['exam_status' => null]
             );
+
+            unset($data['created_by'], $data['created_time']);
+
+            $latestApp->update($data);
 
             $this->syncWorkExperiences($applicant, $row);
 
-            return [
-                'success' => "{$fullName} (FULL APP SYNC + stage 1 reset exam_status)",
-            ];
+            return ['success' => "{$fullName} (FULL APP SYNC + stage 1 reset exam_status)"];
         }
 
-        // exam_status = 3 or 4 → update latest app (stage 3) instead of creating new app
-        if (in_array($examStatus, [3, 4]) && $latestApp) {
-            $latestApp->update(
-                $this->buildApplicationData($row, 3, true)
-            );
+        // exam_status = 3 or 4 → update latest app (stage 3)
+        if (in_array($examStatus, [3, 4])) {
+            $data = $this->buildApplicationData($row, 3, true);
 
-            $this->syncWorkExperiences($applicant, $row);
+            unset($data['created_by'], $data['created_time']);
 
-            return [
-                'success' => "{$fullName} (FULL APP SYNC + stage 3)",
-            ];
+            $latestApp->update($data);
+
+            return ['success' => "{$fullName} (FULL APP SYNC + stage 3)"];
         }
 
-        $latestApp->update(
-            $this->buildApplicationData($row, $latestApp->application_stage ?? 1, true)
-        );
+        // Default: update with current stage
+        $data = $this->buildApplicationData($row, $latestApp->application_stage ?? 1, true);
+        unset($data['created_by'], $data['created_time']);
+        $latestApp->update($data);
 
         return $this->successWithSync("{$fullName} (UPDATED PROFILE + UPDATED LATEST APP - Default)", $applicant, $row);
     }
