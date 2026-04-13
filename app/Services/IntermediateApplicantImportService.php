@@ -175,7 +175,7 @@ class IntermediateApplicantImportService
             $data = array_merge(
                 $this->buildApplicationData($row, 1, true),
                 ['exam_status' => null,
-                'remarks' => 'Most recent application exam was failed. Updated application for applicant.']
+                    'remarks' => 'Most recent application exam was failed. Updated application for applicant.']
             );
 
             unset($data['created_by'], $data['created_time']);
@@ -408,10 +408,17 @@ class IntermediateApplicantImportService
 
     private function buildApplicationData(array $row, $stage = 1, $isUpdate = false): array
     {
+
+        $registeredDate = $this->parseExcelDate(
+            $row['Timestamp'] ?? null
+        );
+
+        $fyWeek = $this->getFyWeekFromRegisteredDate($registeredDate);
+
         $data = [
             'position' => $row['Position you are applying for'] ?? null,
             'application_stage' => $stage,
-            'fy_week' => 1,
+            'fy_week' => $fyWeek,
             'availability_date' => $this->parseExcelDate($row['Date Available to Report to Work'] ?? null),
             'desired_salary_range' => $row['Desired Salary Range'] ?? null,
             'work_preference' => $row['Please check your work preference:'] ?? null,
@@ -438,6 +445,44 @@ class IntermediateApplicantImportService
         }
 
         return $data;
+    }
+
+    private function getFyWeekFromRegisteredDate(Carbon|string|null $registeredDate): ?int
+    {
+        if (! $registeredDate) {
+            return null;
+        }
+
+        $date = $registeredDate instanceof Carbon
+            ? $registeredDate->copy()
+            : Carbon::parse($registeredDate);
+
+        // FY year starts April
+        $fyYear = $date->month >= 4 ? $date->year : $date->year - 1;
+
+        $aprilStart = Carbon::create($fyYear, 4, 1)->startOfDay();
+        $aprilEnd = Carbon::create($fyYear, 4, 1)->endOfYear(); // FY end boundary base
+
+        // Find first MONDAY in April
+        $weekStart = $aprilStart->copy()->startOfWeek(Carbon::MONDAY);
+
+        // Ensure it's not before April 1
+        if ($weekStart->lt($aprilStart)) {
+            $weekStart->addWeek();
+        }
+
+        // Ensure full week is valid (Mon–Sun fully inside FY window logic)
+        if ($weekStart->copy()->addDays(6)->month < 4) {
+            $weekStart->addWeek();
+        }
+
+        // If date is before FY week 1 → go to previous FY last week
+        if ($date->lt($weekStart)) {
+            return $this->getLastFyWeekOfYear($fyYear - 1);
+        }
+
+        // Compute weeks from aligned start
+        return intdiv($weekStart->diffInDays($date), 7) + 1;
     }
 
     /**
