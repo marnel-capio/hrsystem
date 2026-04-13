@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\CustomLocation;
 
 class IntermediateRequisitionModel extends Model
 {
@@ -27,6 +28,7 @@ class IntermediateRequisitionModel extends Model
         'required_skills',
         'preferred_skilLs',
         'role',
+        'custom?_location',
         'expected_salary_range',
         'remarks',
         'created_by',
@@ -110,18 +112,24 @@ class IntermediateRequisitionModel extends Model
             ->select('id', 'first_name', 'last_name');
     }
 
-    public function getLocationAssignmentLabelAttribute()
+public function getCustomLocationNameAttribute()
     {
-        return match ((int) $this->location_assignment) {
+        if ($this->location_assignment == 6) {
+            return $this->custom_location;
+        }
+
+        $locationMap = [
             1 => 'Alabang',
             2 => 'Makati',
             3 => 'Cebu',
             4 => 'Japan',
             5 => 'China',
             6 => 'Other',
-            default => 'Unknown',
-        };
+        ];
+
+        return $locationMap[$this->location_assignment] ?? 'Unknown';
     }
+
 
     public static function getPaginated($search = null, $perPage = 20)
     {

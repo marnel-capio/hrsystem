@@ -8,6 +8,7 @@ const loading = ref(false)
 const props = defineProps<{
   errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
   newProjects: { id: number; project_name: string; project_description: string; }[];
+  custom_location_name: string | null;
 }>();
 const today = new Date().toISOString().slice(0, 10)  
 
@@ -103,7 +104,7 @@ const validateno_resources_needed = () => {
     form.value.no_resources_needed = ''; 
   } else {
     no_resources_neededError.value = value > maxno_resources_needed
-      ? `This field exceeds the maximum allowed value`
+      ? `This field exceeds the maximum allowed length.`
       : '';
   }
 }
