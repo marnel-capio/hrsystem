@@ -369,13 +369,29 @@ class ApplicationImportController extends Controller
 
         $results = $importService->processFileImport($file);
 
+        $importedApplicants = $results['imported'];
+        $allFailed = $results['failed'];
+
+        $totalRows = count($importedApplicants) + count($allFailed);
+
+        // LOG AFTER ALL IMPORTS
+        $user = Auth::user();
+
+        $logMessage =
+            'Imported Intermediate Applications and Applicants. '.
+            "Total rows: {$totalRows}. ".
+            'Success: '.count($importedApplicants).', '.
+            'Failed: '.count($allFailed);
+
+        Log::createLog('Intermediate', $logMessage, $user->id);
+
         return back()->with([
-            'success' => count($results['imported'])
-                ? $this->formatSuccessMessage($results['imported'])
+            'success' => count($importedApplicants)
+                ? $this->formatSuccessMessage($importedApplicants)
                 : null,
 
-            'error' => count($results['failed'])
-                ? $this->formatErrorMessage($results['failed'])
+            'error' => count($allFailed)
+                ? $this->formatErrorMessage($allFailed)
                 : null,
         ]);
     }
