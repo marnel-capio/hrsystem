@@ -50,13 +50,13 @@
             };
 
             $intro = match ($stage) {
-                'exam' => "We got your application and we would like to invite you to take the {$venueLabel} screening exam scheduled on <strong>{$firstSchedule['datetime']}</strong> .",
+                'exam' => "Thank you for your interest in joining our AWS Center for Technology Incubation (ACTION) Training Program. We would like to invite you to take the {$venueLabel} screening exam scheduled on <strong>{$firstSchedule['datetime']}</strong> .",
                 'initial interview' => "We are pleased to inform you that you have passed our initial screening exam. We would like to invite you for your {$venueLabel} initial interview scheduled on <strong>{$firstSchedule['datetime']}</strong>",
                 'final interview' => "We are pleased to inform you that you have passed our initial interview screening. We would like to invite you for your {$venueLabel} final interview scheduled <strong>{$firstSchedule['datetime']}</strong>",
                 default => "We got your application and we would like to invite you for the scheduled assessment on {$firstSchedule['datetime']}.",
             };
         } else {
-            $intro = 'We got your application and we would like to invite you for the following scheduled assessments.';
+            $intro = 'We got your application and we would like to invite you for scheduled assessments.';
         }
     @endphp
 
@@ -66,30 +66,38 @@
         {!! $intro !!}
     </p>
 
-    @if ($stageNames->contains('exam'))
-        <p style="font-size: 16px; line-height: 1.6; margin-top: 16px;">
-            Here is the scope of the exams:
-        </p>
+@php
+    use Illuminate\Support\Str;
+@endphp
 
-        <ul style="font-size: 16px; line-height: 1.6;">
-            <li>Aptitude Test I - Sequence/ Pattern Analysis (10mins)</li>
-            <li>Aptitude Test II - Abstract Reasoning (15mins)</li>
-            <li>Aptitude Test III - Problem Solving (30mins)</li>
-            <li>General IT Exams (15mins)</li>
-        </ul>
+@if ($stageNames->contains('exam'))
+    <p style="font-size: 16px; line-height: 1.6; margin-top: 16px;">
+        Here is the scope of the exams:
+    </p>
 
-        <p style="font-size: 16px; line-height: 1.6; margin-top: 12px;">
-            Here are some reminders that you should take note of:
-        </p>
+    <ul style="font-size: 16px; line-height: 1.6;">
+        <li>Aptitude Test I - Sequence/ Pattern Analysis (10mins)</li>
+        <li>Aptitude Test II - Abstract Reasoning (15mins)</li>
+        <li>Aptitude Test III - Problem Solving (30mins)</li>
+        <li>General IT Exams (15mins)</li>
+    </ul>
 
-        <ul style="font-size: 16px; line-height: 1.6;">
-            <li>Each part of the exam is time limited so please be on time.</li>
-            <li>It would take at least 70 minutes to finish the exams.</li>
+    <p style="font-size: 16px; line-height: 1.6; margin-top: 12px;">
+        Here are some reminders that you should take note of:
+    </p>
+
+    <ul style="font-size: 16px; line-height: 1.6;">
+        <li>Each part of the exam is time limited so please be on time.</li>
+        <li>It would take at least 70 minutes to finish the exams.</li>
+
+        @if (Str::contains(strtolower($venueLabel), 'online'))
             <li>During the exams, you are required to turn on your camera.</li>
             <li>You will receive the exam links during the conference call.</li>
-            <li>Please be at the meeting 30 mins early.</li>
-        </ul>
-    @endif
+        @endif
+
+        <li>Please be at the meeting 30 mins early.</li>
+    </ul>
+@endif
 
     <p style="font-size: 16px; line-height: 1.6;">
         Please confirm your attendance on the scheduled date.

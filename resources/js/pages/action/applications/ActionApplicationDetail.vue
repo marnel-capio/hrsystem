@@ -1373,10 +1373,11 @@ watch(errorMessage, (newVal) => {
                             </label>
 
                             <input
-                                type="datetime-local"
-                                v-model="bulkEditScheduledDate"
-                                class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800"
-                            />
+    type="datetime-local"
+    v-model="bulkEditScheduledDate"
+    :min="new Date().toISOString().slice(0,16)"
+    class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800"
+/>
 
                             <p v-if="bulkEditScheduleErrors.scheduledDate" class="mt-1 text-sm text-red-600">
                                 {{ bulkEditScheduleErrors.scheduledDate }}
