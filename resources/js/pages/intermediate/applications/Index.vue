@@ -295,9 +295,10 @@ const getStageLabel = (stage: number) => {
                 <div class="mb-2 text-xs text-gray-600">
                     Showing {{ showingFrom }}–{{ showingTo }} of {{ filteredApplications.length }} items
                 </div>
+
                 <div class="table-wrapper">
                     <table class="ats-table w-full table-auto border-collapse border text-sm">
-                        <thead>
+                        <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
                             <tr>
                                 <th class="border px-3 py-2">Applicant Name</th>
                                 <th class="border px-3 py-2">Project</th>
@@ -307,8 +308,7 @@ const getStageLabel = (stage: number) => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="app in paginatedApplications" :key="app.id"
-                                class="hover:bg-blue-50 transition-all">
+                            <tr v-for="app in paginatedApplications" :key="app.id">
                                 <td class="border px-3 py-2">
                                     <Link :href="`/intermediate/applications/${app.id}`" class="table-link">
                                         {{ app.first_name }} {{ app.last_name }}
@@ -329,54 +329,81 @@ const getStageLabel = (stage: number) => {
                                     ]">{{ getStageLabel(app.application_stage) }}</span>
                                 </td>
                                 <td class="border px-3 py-2">
-                                    <div class="max-w-[250px] truncate" :title="app.remarks">
+                                    <div class="remarks-clamp" :title="app.remarks">
                                         {{ app.remarks || '—' }}
                                     </div>
                                 </td>
                             </tr>
                             <tr v-if="!paginatedApplications.length">
-                                <td colspan="5" class="text-center p-6 text-zinc-500">No applications found.</td>
+                                <td colspan="5" class="text-center p-6 text-zinc-500">
+                                    No applications found.
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- PAGINATION -->
-                <div v-if="totalPages > 1" class="flex justify-center mt-3 gap-2 text-xs">
-                    <button @click="prevBlock" :disabled="startPage === 1"
-                        class="px-3 py-2 border rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Prev</button>
+                <div class="flex justify-center mt-3 gap-2 text-xs" v-if="filteredApplications.length > perPage">
+
+                    <span @click="prevBlock" class="px-3 py-2 border rounded cursor-pointer"
+                        :class="{ 'opacity-50 cursor-not-allowed': startPage === 1 }">
+                        Prev
+                    </span>
+
                     <span v-for="pageNumber in pageNumbers" :key="pageNumber" @click="goToPage(pageNumber)"
                         class="px-3 py-2 border rounded cursor-pointer"
-                        :class="{ 'bg-blue-600 text-white': pageNumber === currentPage }">{{ pageNumber }}</span>
-                    <button @click="nextBlock" :disabled="endPage === totalPages"
-                        class="px-3 py-2 border rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+                        :class="pageNumber === currentPage ? 'bg-blue-600 text-white' : ''">
+                        {{ pageNumber }}
+                    </span>
+
+                    <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer"
+                        :class="{ 'opacity-50 cursor-not-allowed': endPage === totalPages }">
+                        Next
+                    </span>
                 </div>
             </div>
         </div>
     </AppLayout>
 </template>
 <style scoped>
-/* CARD */
-.card {
-    background: var(--ats-card, white);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    box-shadow: var(--ats-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
-}
-
-/* TABLE WRAPPER */
+/* =========================
+   OVERRIDE GLOBAL ATS TABLE
+   ========================= */
 .table-wrapper {
     overflow-x: hidden;
-    /* remove horizontal scroll */
+    /* Prevents horizontal scrolling */
 }
 
+.ats-table {
+    min-width: 0 !important;
+    table-layout: fixed;
+    /* Equal column distribution */
+}
+
+/* Allow content to wrap naturally */
 .ats-table th,
 .ats-table td {
-    padding-left: 10px;
-    padding-right: 70px;
+    white-space: normal;
+    word-break: break-word;
 }
 
-/* TABLE LINK */
+/* =========================
+   REMARKS CLAMP (2-line limit)
+   ========================= */
+.remarks-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* =========================
+   TABLE LINK
+   ========================= */
 .table-link {
     color: var(--ats-accent, #1C7BA5);
     font-weight: 500;
@@ -387,12 +414,14 @@ const getStageLabel = (stage: number) => {
     text-decoration: underline;
 }
 
-/* PAGE HEADER */
-.page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
+/* =========================
+   EXISTING STYLES (Keep these)
+   ========================= */
+.card {
+    background: var(--ats-card, white);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: var(--ats-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
 }
 
 .page-title {
@@ -401,7 +430,6 @@ const getStageLabel = (stage: number) => {
     color: var(--ats-text);
 }
 
-/* BUTTON */
 .btn-primary {
     background: var(--ats-primary, #1C7BA5);
     color: #fff;
@@ -417,7 +445,6 @@ const getStageLabel = (stage: number) => {
     background: var(--ats-accent, #165a80);
 }
 
-/* PAGE CONTENT */
 .page-content {
     max-width: 1175px;
     margin: 0 auto;
