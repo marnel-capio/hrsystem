@@ -166,6 +166,16 @@ return [
         'errorMessage' => 'The selected date must be in the future.',
     ],
 
+    'TARGET_DATE_BETWEEN' => [
+        'errorCode' => 'TARGET_DATE_BETWEEN',
+        'errorMessage' => 'The selected date must be between the previous and next ACTION Batch.',
+    ],
+
+    'TARGET_DATE_MIN_ONLY' => [
+        'errorCode' => 'TARGET_DATE_MIN_ONLY',
+        'errorMessage' => 'The selected date must be after the previous ACTION Batch.',
+    ],
+
 
     'age_numeric' => [
         'errorCode' => 'AGE_NUMERIC_INVALID',
