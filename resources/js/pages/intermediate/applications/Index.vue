@@ -24,27 +24,38 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// FLASH MESSAGES (UPDATED STYLE)
+// FLASH MESSAGES
 const flashMessages = ref({ success: '', error: '', info: '' })
+
 const hasFlash = computed(() =>
-    !!flashMessages.value.success || !!flashMessages.value.error || !!flashMessages.value.info
+    !!flashMessages.value.success ||
+    !!flashMessages.value.error ||
+    !!flashMessages.value.info
 )
 
-watch(() => page.props.flash as any, (flash) => {
-    if (flash) {
-        flashMessages.value = {
-            success: flash?.success || '',
-            error: flash?.error || '',
-            info: flash?.info || ''
+watch(
+    () => page.props.flash as any,
+    (flash) => {
+        if (flash) {
+            flashMessages.value = {
+                success: flash?.success || '',
+                error: flash?.error || '',
+                info: flash?.info || ''
+            }
         }
-    }
-}, { immediate: true, deep: true })
+    },
+    { immediate: true, deep: true }
+)
 
-const clearFlash = () => flashMessages.value = { success: '', error: '', info: '' }
-const closeSuccess = () => flashMessages.value.success = ''
-const closeError = () => flashMessages.value.error = ''
+const clearFlash = () =>
+    (flashMessages.value = { success: '', error: '', info: '' })
 
-onMounted(() => { if (hasFlash.value) setTimeout(clearFlash, 10000) })
+const closeSuccess = () => (flashMessages.value.success = '')
+const closeError = () => (flashMessages.value.error = '')
+
+onMounted(() => {
+    if (hasFlash.value) setTimeout(clearFlash, 10000)
+})
 
 // ------------------- IMPORT MODAL -------------------
 const showImportModal = ref(false)
@@ -76,7 +87,9 @@ const onImportFileChange = (event: Event) => {
     const maxSize = 10 * 1024 * 1024
 
     if (file.size > maxSize) {
-        flashMessages.value.error = props.errorsConfig?.file_too_large || 'File is too large (max 10MB)'
+        flashMessages.value.error =
+            props.errorsConfig?.file_too_large ||
+            'File is too large (max 10MB)'
         target.value = ''
         importFile.value = null
         return
@@ -86,7 +99,8 @@ const onImportFileChange = (event: Event) => {
     const fileExtension = file.name.split('.').pop()?.toLowerCase()
 
     if (!allowedExtensions.includes(fileExtension || '')) {
-        flashMessages.value.error = 'Please upload only .xlsx or .csv files'
+        flashMessages.value.error =
+            'Please upload only .xlsx or .csv files'
         target.value = ''
         importFile.value = null
         return
@@ -99,7 +113,9 @@ const submitImport = () => {
     importError.value = ''
 
     if (!importFile.value) {
-        importError.value = props.errorsConfig?.field_required || 'Please select a file to upload'
+        importError.value =
+            props.errorsConfig?.field_required ||
+            'Please select a file to upload'
         return
     }
 
@@ -118,7 +134,9 @@ const submitImport = () => {
         },
         onError: (errors) => {
             if (errors?.file) {
-                flashMessages.value.error = Array.isArray(errors.file) ? errors.file[0] : errors.file
+                flashMessages.value.error = Array.isArray(errors.file)
+                    ? errors.file[0]
+                    : errors.file
             }
             importFile.value = null
             if (fileInput.value) fileInput.value.value = ''
@@ -132,10 +150,14 @@ const submitImport = () => {
 // ------------------- SEARCH & PAGINATION -------------------
 const searchQuery = ref(props.filters.search || '')
 const currentPage = ref(1)
+
 const perPage = 20
 const blockSize = 5
 
-watch(searchQuery, () => currentPage.value = 1)
+// RESET PAGE ON SEARCH (IMPORTANT)
+watch(searchQuery, () => {
+    currentPage.value = 1
+})
 
 const filteredApplications = computed(() => {
     const q = searchQuery.value.toLowerCase().trim()
@@ -143,41 +165,91 @@ const filteredApplications = computed(() => {
 
     return props.applications.filter(app => {
         const fullName = `${app.first_name} ${app.last_name}`.toLowerCase()
+
+        // Convert stage number → label for searching
+        const stageLabel = getStageLabel(app.application_stage).toLowerCase()
+
         return (
             fullName.includes(q) ||
             String(app.id).includes(q) ||
             (app.position?.toLowerCase().includes(q) ?? false) ||
             (app.project_name?.toLowerCase().includes(q) ?? false) ||
-            (app.remarks?.toLowerCase().includes(q) ?? false)
+            (app.remarks?.toLowerCase().includes(q) ?? false) ||
+            stageLabel.includes(q) // ✅ ADDED THIS
         )
     })
 })
 
-const totalPages = computed(() => Math.ceil(filteredApplications.value.length / perPage))
+const totalPages = computed(() =>
+    Math.ceil(filteredApplications.value.length / perPage)
+)
+
 const paginatedApplications = computed(() => {
     const start = (currentPage.value - 1) * perPage
     return filteredApplications.value.slice(start, start + perPage)
 })
 
-const currentBlock = computed(() => Math.ceil(currentPage.value / blockSize))
-const startPage = computed(() => (currentBlock.value - 1) * blockSize + 1)
-const endPage = computed(() => Math.min(startPage.value + blockSize - 1, totalPages.value))
+// BLOCK PAGINATION (5 pages per block)
+const currentBlock = computed(() =>
+    Math.ceil(currentPage.value / blockSize)
+)
+
+const startPage = computed(() =>
+    (currentBlock.value - 1) * blockSize + 1
+)
+
+const endPage = computed(() =>
+    Math.min(startPage.value + blockSize - 1, totalPages.value)
+)
+
 const pageNumbers = computed(() => {
     const pages: number[] = []
-    for (let i = startPage.value; i <= endPage.value; i++) pages.push(i)
+    for (let i = startPage.value; i <= endPage.value; i++) {
+        pages.push(i)
+    }
     return pages
 })
 
-function goToPage(page: number) { currentPage.value = Math.max(1, Math.min(page, totalPages.value)) }
-function prevBlock() { if (startPage.value > 1) goToPage(startPage.value - 1) }
-function nextBlock() { if (endPage.value < totalPages.value) goToPage(endPage.value + 1) }
+function goToPage(page: number) {
+    currentPage.value = Math.max(
+        1,
+        Math.min(page, totalPages.value)
+    )
+}
 
-const showingFrom = computed(() => filteredApplications.value.length === 0 ? 0 : (currentPage.value - 1) * perPage + 1)
-const showingTo = computed(() => Math.min(currentPage.value * perPage, filteredApplications.value.length))
+function prevBlock() {
+    if (startPage.value > 1) {
+        goToPage(startPage.value - 1)
+    }
+}
+
+function nextBlock() {
+    if (endPage.value < totalPages.value) {
+        goToPage(endPage.value + 1)
+    }
+}
+
+const showingFrom = computed(() =>
+    filteredApplications.value.length === 0
+        ? 0
+        : (currentPage.value - 1) * perPage + 1
+)
+
+const showingTo = computed(() =>
+    Math.min(
+        currentPage.value * perPage,
+        filteredApplications.value.length
+    )
+)
 
 const getStageLabel = (stage: number) => {
     const labels: Record<number, string> = {
-        1: 'New', 2: 'For Exam', 3: 'For Initial Interview', 4: 'For Final Interview', 5: 'For Job Offer', 6: 'Failed'
+        1: 'New',
+        2: 'For Exam',
+        3: 'For Initial Interview',
+        4: 'For Final Interview',
+        5: 'For Job Offer',
+        6: 'Failed'
     }
     return labels[stage] || 'Unknown'
 }
@@ -186,7 +258,6 @@ const canCreateOrImport = computed(() => {
     return ![5, 6].includes(props.userPermissions)
 })
 </script>
-
 <template>
     <AppLayout>
 
@@ -289,7 +360,7 @@ const canCreateOrImport = computed(() => {
                         </svg>
                     </span>
                     <input v-model="searchQuery" type="text"
-                        placeholder="Search by Applicant Name, Project, Position or Remarks"
+                        placeholder="Search by Applicant Name, Project, Position, Application Stage, or Remarks"
                         class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
                 </div>
             </div>

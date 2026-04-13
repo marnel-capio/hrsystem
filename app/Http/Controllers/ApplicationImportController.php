@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use App\Http\Requests\ImportIntermediateApplicationRequest;
+use Inertia\Inertia;
+use Inertia\Response;
+
 
 class ApplicationImportController extends Controller
 {
@@ -358,12 +362,8 @@ class ApplicationImportController extends Controller
         }
     }
 
-    public function importIntermediateApplicants(Request $request)
+    public function importIntermediateApplicants(ImportIntermediateApplicationRequest  $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,csv,xls',
-        ]);
-
         $file = $request->file('file');
         $importService = new IntermediateApplicantImportService;
 

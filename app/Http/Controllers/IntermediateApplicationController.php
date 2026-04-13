@@ -30,13 +30,15 @@ class IntermediateApplicationController extends Controller
             });
         }
 
-        $applications = IntermediateApplication::paginated($filters, 100)
-            ->through(function ($application) {
+        $applications = $query
+            ->orderBy('created_time', 'desc')
+            ->get()
+            ->map(function ($application) {
                 return [
                     'id' => $application->id,
                     'first_name' => $application->intermediateApplicant?->first_name ?? 'Unknown',
                     'last_name' => $application->intermediateApplicant?->last_name ?? '',
-                    'applicant_name' => $application->fullApplicantName, // optional
+                    'applicant_name' => $application->fullApplicantName,
                     'project_name' => $application->projectName,
                     'position' => $application->position,
                     'application_stage' => $application->application_stage,
@@ -45,7 +47,7 @@ class IntermediateApplicationController extends Controller
             });
 
         return Inertia::render('intermediate/applications/Index', [
-            'applications' => $applications->items(),
+            'applications' => $applications,
             'filters' => $filters,
             'userPermissions' => auth()->user()->permissions ?? 0,
             'errorsConfig' => [
