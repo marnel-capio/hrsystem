@@ -145,7 +145,7 @@ function formatActivityName(key: string) {
     final_interviews: "Final Interviews",
     contract_offers: "Contract Offers",
     requirements: "Requirements",
-    training: "Training",
+    training: "Start of Training",
   };
   return names[key] || key;
 }

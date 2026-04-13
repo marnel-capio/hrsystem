@@ -163,10 +163,8 @@ return [
     ],
 
     'examVenues' => [
-        1 => 'Gmeet',
-        2 => 'Zoom',
-        3 => 'USJ-R Basak',
-        4 => 'AdDU',
+        1 => 'Online',
+        2 => 'Face to face',
     ],
 
     'examResults' => [
@@ -209,13 +207,6 @@ return [
     'traineesFrom' => [
         1 => 'Manila',
         2 => 'Cebu',
-    ],
-
-    'examVenues' => [
-        1 => 'Gmeet',
-        2 => 'Zoom',
-        3 => 'USJ-R Basak',
-        4 => 'AdDU',
     ],
 
     'examResults' => [
@@ -344,10 +335,10 @@ return [
         'initial_interview_remarks' => 'Initial Interview Remarks',
 
         'final_interview_date' => 'Final Interview Date',
-        'final_interview_sf' => 'Final Interview SF',
-        'final_interview_ib' => 'Final Interview IB',
-        'final_interview_rv' => 'Final Interview RV',
-        'final_interview_ma' => 'Final Interview MA',
+        'final_interview_score_1' => 'Final Interview Score 1',
+        'final_interview_score_2' => 'Final Interview Score 2',
+        'final_interview_score_3' => 'Final Interview Score 3',
+        'final_interview_score_4' => 'Final Interview Score 4',
         'final_interview_final' => 'Final Interview Final Score',
         'final_interview_result' => 'Final Interview Result',
         'final_interview_application_status' => 'Final Interview Status',
@@ -529,7 +520,7 @@ return [
 
     ],
 
-    'source_maps' => [  
+    'source_maps' => [
         'type1' => [
             'Foundit' => 1,
             'LinkedIn' => 2,

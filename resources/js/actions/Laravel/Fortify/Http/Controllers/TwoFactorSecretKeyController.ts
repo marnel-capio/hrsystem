@@ -79,4 +79,9 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     show.form = showForm
 const TwoFactorSecretKeyController = { show }
 
+export default TwoFactorSecretKeyController      })
+    
+    show.form = showForm
+const TwoFactorSecretKeyController = { show }
+
 export default TwoFactorSecretKeyController

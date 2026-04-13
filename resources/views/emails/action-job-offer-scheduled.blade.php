@@ -25,7 +25,10 @@
 </p>
 
 <p style="font-size: 16px; line-height: 1.6;">
-    Thank you,<br>
-    <strong>AWS HR Team</strong>
+Thank you,<br>
+<strong>{{ $senderName ?? 'AWS HR Team' }}</strong><br>
+<span style="font-size: 14px; color: #555;">
+    {{ $senderRole ?? '' }}
+</span>
 </p>
 @endsection

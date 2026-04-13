@@ -64,7 +64,12 @@ class ActionApplicationController extends Controller
         DB::beginTransaction();
 
         try {
+
             $data = $request->validated();
+            
+            $batch = ActionBatchModel::with('resourceSchedule')->findOrFail($data['action_batch_id']);
+            $data['trainees_from'] = $batch->resourceSchedule?->target_location;
+
             $data = ActionApplication::normalizeComputedFields($data);
             $data = $this->handleUploads($request, $data);
 
@@ -282,40 +287,32 @@ class ActionApplicationController extends Controller
 
                     break;
 
-            case 'applicant_scheduled':
-    $approvedInterviews = $application->interviews
-        ->where('status', config('constants.interview_assignment_status.approved'));
+case 'applicant_exam_scheduled':
+case 'applicant_initial_scheduled':
+case 'applicant_final_scheduled':
+    $stageType = match ($request->type) {
+        'applicant_exam_scheduled' => config('constants.interview_types.exam'),
+        'applicant_initial_scheduled' => config('constants.interview_types.initial'),
+        'applicant_final_scheduled' => config('constants.interview_types.final'),
+    };
 
-    if ($approvedInterviews->isEmpty()) {
+    $stageInterviews = $application->interviews
+        ->where('interview_type', $stageType);
+
+    if ($stageInterviews->isEmpty()) {
         return response()->json([
-            'message' => 'No approved interview schedules found.',
+            'message' => 'No interview schedules found for this stage.',
         ], 422);
     }
 
-    // Pick the latest/current stage that has approved assignments.
-    $currentStage = null;
-
-    if ($approvedInterviews->where('interview_type', config('constants.interview_types.final'))->isNotEmpty()) {
-        $currentStage = config('constants.interview_types.final');
-    } elseif ($approvedInterviews->where('interview_type', config('constants.interview_types.initial'))->isNotEmpty()) {
-        $currentStage = config('constants.interview_types.initial');
-    } elseif ($approvedInterviews->where('interview_type', config('constants.interview_types.exam'))->isNotEmpty()) {
-        $currentStage = config('constants.interview_types.exam');
-    }
-
-    $stageInterviews = $approvedInterviews
-        ->where('interview_type', $currentStage)
-        ->values();
-
-    // Make sure all assignments for that stage are approved before sending.
-    $stageAllInterviews = $application->interviews
-        ->where('interview_type', $currentStage);
-
-    $hasUnapprovedForStage = $stageAllInterviews->contains(function ($interview) {
-        return (int) $interview->status !== config('constants.interview_assignment_status.approved');
+    $hasInvalidStatus = $stageInterviews->contains(function ($interview) {
+        return !in_array((int) $interview->status, [
+            config('constants.interview_assignment_status.approved'),
+            config('constants.interview_assignment_status.completed'),
+        ], true);
     });
 
-    if ($hasUnapprovedForStage) {
+    if ($hasInvalidStatus) {
         return response()->json([
             'message' => 'Applicant schedule email can only be sent after all assigned interviewers for this stage have approved.',
         ], 422);
@@ -328,7 +325,7 @@ class ActionApplicationController extends Controller
     }
 
     Mail::to($application->applicant->email_address)->send(
-        new ActionApplicantScheduledMail($application, $stageInterviews, $link)
+        new ActionApplicantScheduledMail($application, $stageInterviews->values(), $link)
     );
 
     break;
@@ -405,7 +402,12 @@ if ($request->type === 'interviewer_pending_approval') {
         ->all();
 }
 
-if (in_array($request->type, ['applicant_scheduled', 'applicant_failed'], true)) {
+if (in_array($request->type, [
+    'applicant_exam_scheduled',
+    'applicant_initial_scheduled',
+    'applicant_final_scheduled',
+    'applicant_failed',
+], true)) {
     $recipientList = [
         $application->applicant?->full_name ?: ($application->applicant?->email_address ?? 'Unknown')
     ];
@@ -423,12 +425,16 @@ if ($request->type === 'hr_recruiters_job_offer') {
         ->all();
 }
 
-            if (in_array($request->type, ['applicant_scheduled', 'applicant_failed'], true)) {
-                $recipientList = [
-                    $application->applicant?->full_name ?: ($application->applicant?->email_address ?? 'Unknown')
-                ];
-            }
-
+if (in_array($request->type, [
+    'applicant_exam_scheduled',
+    'applicant_initial_scheduled',
+    'applicant_final_scheduled',
+    'applicant_failed',
+], true)) {
+    $recipientList = [
+        $application->applicant?->full_name ?: ($application->applicant?->email_address ?? 'Unknown')
+    ];
+}
             Log::createLog(
                 'ACTION',
                 'Sent ' . $request->type . ' email/s to ' . implode(', ', $recipientList) .

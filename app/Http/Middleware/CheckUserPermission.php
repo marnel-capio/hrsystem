@@ -259,7 +259,8 @@ if (in_array($routeName, [
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-        // INTERMEDIATE
+
+        // INTERMEDIATE PROJECTS
         if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
             if (in_array($permission, [1, 2, 3, 5])) {
                 return $next($request);
@@ -276,6 +277,41 @@ if (in_array($routeName, [
 
             // Fetch the error message from errors.php using the correct key
             $errorMessage = trans('errors.unauthorized_user.errorMessage');
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+
+
+        
+        // INTERMEDIATE RREQUISITIONS
+        if (in_array($routeName, [
+            'intermediate.requisitions.index',
+            'intermediate.requisitions.show',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        if (in_array($routeName, [
+            'intermediate.requisitions.register',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
 
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));

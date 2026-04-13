@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\ActionBatchModel;
+
 
 class ActionBatchRequest extends FormRequest
 {
@@ -16,19 +18,65 @@ class ActionBatchRequest extends FormRequest
     {
         $batchId = $this->route('id') ?? null;
 
-        return [
-            'action_batch' => [
+        $previousBatch = null;
+        $nextBatch = null;
+
+        if ($batchId) {
+            $previousBatch = ActionBatchModel::where('id', '<', $batchId)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $nextBatch = ActionBatchModel::where('id', '>', $batchId)
+                ->orderBy('id', 'asc')
+                ->first();
+        } else {
+            $previousBatch = ActionBatchModel::orderBy('id', 'desc')->first();
+        }
+
+        $minDate = $previousBatch?->target_date;
+        $maxDate = $nextBatch?->target_date;
+
+        $rules = [];
+
+        if (!$batchId) {
+            $rules['action_batch'] = [
                 'required',
                 'string',
                 'max:20',
-                $batchId
-                    ? Rule::unique('action_batches', 'action_batch')->ignore($batchId)
-                    : Rule::unique('action_batches', 'action_batch'),
-            ],
-            'target_trainees' => 'required|integer|max:99',
-            'target_date' => 'required|date|after_or_equal:today',
-            'remarks' => 'nullable|string|max:1024',
+                Rule::unique('action_batches', 'action_batch'),
+            ];
+        }
+
+        $rules['target_trainees'] = 'required|integer|min:1|max:99';
+
+        $rules['target_date'] = [
+            'required',
+            'date',
+            'after_or_equal:today',
+
+            function ($attribute, $value, $fail) use ($batchId, $minDate, $maxDate) {
+
+                if (!$batchId) {
+                    if ($minDate && $value < $minDate) {
+                        return $fail(config('errors.TARGET_DATE_MIN_ONLY.errorMessage'));
+                    }
+                }
+
+                if ($batchId) {
+                    if ($minDate && $value < $minDate) {
+                        return $fail(config('errors.TARGET_DATE_BETWEEN.errorMessage'));
+                    }
+
+                    if ($maxDate && $value > $maxDate) {
+                        return $fail(config('errors.TARGET_DATE_BETWEEN.errorMessage'));
+                    }
+                }
+            }
         ];
+
+        $rules['remarks'] = 'nullable|string|max:1024';
+
+        return $rules;
     }
 
     public function messages(): array
