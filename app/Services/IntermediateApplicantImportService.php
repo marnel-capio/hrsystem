@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 class IntermediateApplicantImportService
 {
     /**
-     * Process entire file import (NO SKIP - only success/failed)
+     * Process entire file import
      */
     public function processFileImport($file): array
     {
@@ -48,7 +48,7 @@ class IntermediateApplicantImportService
     }
 
     /**
-     * Process a single row (NO SKIP - process everything)
+     * Process a single row
      */
     public function processApplicantRow(array $row, int &$rowIndex): array
     {
@@ -84,6 +84,9 @@ class IntermediateApplicantImportService
         return $result;
     }
 
+    /**
+     * Process eligibility of applicant application
+     */
     private function handleApplicantEligibility(array $row, string $email, string $fullName, int $rowIndex): array
     {
         $applicant = IntermediateApplicant::where('email_address', $email)->first();

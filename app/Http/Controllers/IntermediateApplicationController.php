@@ -14,9 +14,9 @@ class IntermediateApplicationController extends Controller
      */
     public function index(Request $request): Response
     {
-        $filters = $request->validate([
-            'search' => 'nullable|string|max:255',
-        ]);
+        $filters = [
+            'search' => $request->input('search'),
+        ];
 
         $query = IntermediateApplication::with('intermediateApplicant');
 
