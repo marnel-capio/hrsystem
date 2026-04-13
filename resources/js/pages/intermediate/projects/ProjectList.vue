@@ -50,6 +50,12 @@ function nextBlock() {
 }
 
 const shouldShowPagination = computed(() => projectsTotal.value > 20)
+
+const selectedOption = ref('')
+const otherValue = ref('')
+
+const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
+
 </script>
 
 <template>
@@ -127,7 +133,6 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
           <span @click="nextBlock" class="px-3 py-2 border rounded cursor-pointer"
             :class="{ 'opacity-50 cursor-not-allowed': endPage === lastPage }">Next</span>
         </div>
-
       </div>
     </div>
   </AppLayout>

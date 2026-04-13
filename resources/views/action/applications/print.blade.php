@@ -147,12 +147,39 @@
     <div class="no-print">
         <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
     </div>
+<table style="width: 100%; margin-bottom: 16px; border-collapse: collapse;">
+    <tr>
+        <td style="vertical-align: top; border: none;">
+            <h1 style="margin: 0 0 6px 0;">ACTION Application Details</h1>
+            <div class="muted">
+                Generated on {{ now()->format('F d, Y h:i A') }}
+            </div>
 
-    <div class="header">
-        <h1>ACTION Application Details</h1>
-        <div class="muted">Generated on {{ now()->format('F d, Y h:i A') }}</div>
-    </div>
+            <div style="margin-top: 14px;">
+                <h2 style="margin: 0 0 6px 0;">
+                    {{ $application->applicant->last_name }},
+                    {{ $application->applicant->first_name }}
+                    {{ $application->applicant->middle_name }}
+                </h2>
+                <div>{{ $application->applicant->email_address }}</div>
+            </div>
+        </td>
 
+        <td style="width: 140px; text-align: right; vertical-align: top; border: none;">
+            @if (!empty($application->upload_pic))
+                <img
+                    src="{{ asset('storage/' . $application->upload_pic) }}"
+                    alt="Applicant 2x2 Picture"
+                    style="
+                        width: 120px;
+                        height: 120px;
+                        object-fit: cover;
+                    "
+                >
+            @endif
+        </td>
+    </tr>
+</table>
 <div class="section">
     <div class="section-title">Applicant Information</div>
     <div class="box">
@@ -164,13 +191,7 @@
                     {{ $applicant->first_name ?? '' }}
                     {{ $applicant->middle_name ?? '' }}
                 </td>
-                <td class="label">Email Address</td>
-                <td>{{ $applicant->email_address ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Contact Number</td>
-                <td>{{ $applicant->contact_number ?? '-' }}</td>
-                <td class="label">Gender</td>
+               <td class="label">Gender</td>
                 <td>
                     {{ match((int) ($applicant->gender ?? 0)) {
                         1 => 'Male',
@@ -178,6 +199,11 @@
                         default => '-',
                     } }}
                 </td>
+            </tr>
+            <tr>
+                 <td class="label">Email Address</td>
+                <td>{{ $applicant->email_address ?? '-' }}</td>
+
             </tr>
             <tr>
                 <td class="label">Age</td>
@@ -307,16 +333,16 @@
                     <td>{{ $application->final_interview_final ?? '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="label">SF Score</td>
-                    <td>{{ $application->final_interview_sf ?? '-' }}</td>
-                    <td class="label">IB Score</td>
-                    <td>{{ $application->final_interview_ib ?? '-' }}</td>
+                    <td class="label">Score 1</td>
+                    <td>{{ $application->final_interview_score_1 ?? '-' }}</td>
+                    <td class="label">Score 2</td>
+                    <td>{{ $application->final_interview_score_2 ?? '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="label">RV Score</td>
-                    <td>{{ $application->final_interview_rv ?? '-' }}</td>
-                    <td class="label">MA Score</td>
-                    <td>{{ $application->final_interview_ma ?? '-' }}</td>
+                    <td class="label">Score 3</td>
+                    <td>{{ $application->final_interview_score_3 ?? '-' }}</td>
+                    <td class="label">Score 4</td>
+                    <td>{{ $application->final_interview_score_4 ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td class="label">Result</td>
