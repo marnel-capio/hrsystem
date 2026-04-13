@@ -1,60 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
- * @see app/Http/Controllers/ApplicationImportController.php:361
- * @route '/intermediate/applications/import'
- */
-export const importIntermediateApplicants = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: importIntermediateApplicants.url(options),
-    method: 'post',
-})
-
-importIntermediateApplicants.definition = {
-    methods: ["post"],
-    url: '/intermediate/applications/import',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
- * @see app/Http/Controllers/ApplicationImportController.php:361
- * @route '/intermediate/applications/import'
- */
-importIntermediateApplicants.url = (options?: RouteQueryOptions) => {
-    return importIntermediateApplicants.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
- * @see app/Http/Controllers/ApplicationImportController.php:361
- * @route '/intermediate/applications/import'
- */
-importIntermediateApplicants.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: importIntermediateApplicants.url(options),
-    method: 'post',
-})
-
-    /**
-* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
- * @see app/Http/Controllers/ApplicationImportController.php:361
- * @route '/intermediate/applications/import'
- */
-    const importIntermediateApplicantsForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: importIntermediateApplicants.url(options),
-        method: 'post',
-    })
-
-            /**
-* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
- * @see app/Http/Controllers/ApplicationImportController.php:361
- * @route '/intermediate/applications/import'
- */
-        importIntermediateApplicantsForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: importIntermediateApplicants.url(options),
-            method: 'post',
-        })
-    
-    importIntermediateApplicants.form = importIntermediateApplicantsForm
-/**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
  * @see app/Http/Controllers/ApplicationImportController.php:49
  * @route '/action/applications/import'
@@ -109,6 +54,61 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
         })
     
     importMethod.form = importMethodForm
-const ApplicationImportController = { importIntermediateApplicants, importMethod, import: importMethod }
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+export const importIntermediateApplicants = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importIntermediateApplicants.url(options),
+    method: 'post',
+})
+
+importIntermediateApplicants.definition = {
+    methods: ["post"],
+    url: '/intermediate/applications/import',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+importIntermediateApplicants.url = (options?: RouteQueryOptions) => {
+    return importIntermediateApplicants.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+importIntermediateApplicants.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importIntermediateApplicants.url(options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+    const importIntermediateApplicantsForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: importIntermediateApplicants.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ApplicationImportController::importIntermediateApplicants
+ * @see app/Http/Controllers/ApplicationImportController.php:361
+ * @route '/intermediate/applications/import'
+ */
+        importIntermediateApplicantsForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: importIntermediateApplicants.url(options),
+            method: 'post',
+        })
+    
+    importIntermediateApplicants.form = importIntermediateApplicantsForm
+const ApplicationImportController = { importMethod, importIntermediateApplicants, import: importMethod }
 
 export default ApplicationImportController

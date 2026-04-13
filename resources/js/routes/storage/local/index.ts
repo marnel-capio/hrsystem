@@ -82,12 +82,4 @@ const local = {
     upload: Object.assign(upload, upload),
 }
 
-export default localthod: 'post',
-        })
-    
-    upload.form = uploadForm
-const local = {
-    upload: Object.assign(upload, upload),
-}
-
 export default local
