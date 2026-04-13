@@ -79,13 +79,4 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 const AuthenticatedSessionController = { create }
 
-export default AuthenticatedSessionControllerns?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    create.form = createForm
-const AuthenticatedSessionController = { create }
-
 export default AuthenticatedSessionController

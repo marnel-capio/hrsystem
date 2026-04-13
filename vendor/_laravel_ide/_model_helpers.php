@@ -724,10 +724,10 @@ namespace App\Models {
      * @property bool|null $final_interview_application_status
      * @property bool|null $final_interview_result
      * @property float|null $final_interview_final
-     * @property float|null $final_interview_score_4
-     * @property float|null $final_interview_score_3
-     * @property float|null $final_interview_score_2
-     * @property float|null $final_interview_score_1
+     * @property float|null $final_interview_ma
+     * @property float|null $final_interview_rv
+     * @property float|null $final_interview_ib
+     * @property float|null $final_interview_sf
      * @property string|null $final_interview_date
      * @property string|null $initial_interview_remarks
      * @property bool|null $initial_interview_application_status
@@ -778,10 +778,10 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereInitialInterviewApplicationStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereInitialInterviewRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewDate($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore1($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore2($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore3($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore4($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewSf($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewIb($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewRv($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewMa($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewFinal($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewApplicationStatus($value)
@@ -2483,14 +2483,12 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
-     * @property string|null $project_description
      * @property string $project_name
      * @property int $id
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermediateRequisitionModel> $requisitions
      * @property-read int|null $requisitions_count
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateProjectModel>|IntermediateProjectModel whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateProjectModel>|IntermediateProjectModel whereProjectName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateProjectModel>|IntermediateProjectModel whereProjectDescription($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateProjectModel>|IntermediateProjectModel whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateProjectModel>|IntermediateProjectModel whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateProjectModel>|IntermediateProjectModel whereCreatedTime($value)
@@ -2821,7 +2819,7 @@ namespace App\Models {
      * @property mixed $created_by
      * @property string|null $remarks
      * @property string|null $role
-     * @property string|null $preferred_skills
+     * @property string|null $preferred_skilss
      * @property string|null $required_skills
      * @property string|null $duration_project_engagement
      * @property string|null $start_date
@@ -2830,7 +2828,7 @@ namespace App\Models {
      * @property string|null $resource
      * @property string $business_unit
      * @property mixed $project_id
-     * @property bool $location_assignment
+     * @property bool $location_assignement
      * @property string|null $person_to_replace
      * @property bool|null $replacement_due_to
      * @property bool $request_type
@@ -2847,7 +2845,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRequestType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereReplacementDueTo($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePersonToReplace($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereLocationAssignment($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereLocationAssignement($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereProjectId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereBusinessUnit($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereResource($value)
@@ -2856,7 +2854,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereStartDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereDurationProjectEngagement($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRequiredSkills($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkills($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkilss($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRole($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedBy($value)
@@ -3523,6 +3521,7 @@ namespace App\Models {
      * @property string $created_time
      * @property mixed $created_by
      * @property string|null $remarks
+     * @property string $training_enddate
      * @property string $training_startdate
      * @property string $requirements_enddate
      * @property string $requirements_startdate
@@ -3563,6 +3562,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereRequirementsStartdate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereRequirementsEnddate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereTrainingStartdate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereTrainingEnddate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereCreatedTime($value)
@@ -3892,7 +3892,7 @@ namespace App\Models {
      * @property mixed $created_by
      * @property boolean $active_status
      * @property mixed $permissions
-     * @property string $position
+     * @property bool $position
      * @property string $email_address
      * @property string $contact_no
      * @property string $address
