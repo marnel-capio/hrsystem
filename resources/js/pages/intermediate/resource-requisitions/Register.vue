@@ -100,7 +100,7 @@ const validateno_resources_needed = () => {
   const value = Number(form.value.no_resources_needed);
 
   if (value <= 0) {
-    form.value.no_resources_needed = '';  
+    form.value.no_resources_needed = ''; 
   } else {
     no_resources_neededError.value = value > maxno_resources_needed
       ? `This field exceeds the maximum allowed value`
@@ -390,18 +390,17 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             v-model="form.resource"
             @input="validateresource"
             type="text"
-            placeholder="Indicate Position Title or Service Required"
+            placeholder="Indicate position title or service required."
             class="border p-2 rounded w-full"
-            :min="1"
           />
-          <span v-if="page.props.errors?.resource" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.resource }}
-          </span>
           <span v-if="resourceError" class="text-red-600 text-xs mt-1">
             {{ resourceError }}
           </span>
+          <span v-if="page.props.errors?.resource" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.resource }}
+          </span>
         </div>
-
+        
         <!-- Practice -->
         <div class="flex flex-col">
           <label class="text-sm mb-1">Practice</label>
