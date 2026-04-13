@@ -44,6 +44,12 @@ const actionApplicants = ref<Array<{
     degree: string
 }>>([])
 
+const sortedActionBatches = computed(() => {
+    return [...actionBatches.value].sort((a, b) => {
+        return b.label.localeCompare(a.label) // DESC
+    })
+})
+
 const noApplicantsError = ref<string>('')
 
 const examResultLabel = computed(() => {
@@ -990,9 +996,13 @@ function handleClickOutside(event: MouseEvent) {
                                     <label class="field-label-required required">ACTION Batch</label>
                                     <select v-model="form.action_batch_id" class="form-select">
                                         <option disabled value="">Select Batch</option>
-                                        <option v-for="batch in actionBatches" :key="batch.value" :value="batch.value">
-                                            {{ batch.label }}
-                                        </option>
+                                            <option
+                                                v-for="batch in sortedActionBatches"
+                                                :key="batch.value"
+                                                :value="batch.value"
+                                            >
+                                                {{ batch.label }}
+                                            </option>
                                     </select>
                                     <span v-if="form.errors.action_batch_id" class="error-message">{{ form.errors.action_batch_id }}</span>
                                 </div>
