@@ -56,7 +56,7 @@ const maxperson_to_replace = 80
 const maxbusiness_unit = 20 
 const maxresource = 1024 
 const maxpractice = 1024  
-const maxno_resources_needed = 20 
+const maxno_resources_needed = 100
 const maxduration_project_engagement = 20 
 const maxrequired_skills = 1024
 const maxpreferred_skills = 1024  
@@ -97,9 +97,15 @@ const validatepractice = () => {
 }
 
 const validateno_resources_needed = () => {
-  no_resources_neededError.value = form.value.no_resources_needed.length > maxno_resources_needed
-    ? `This field exceeds the maximum allowed length`
-    : ''
+  const value = Number(form.value.no_resources_needed);
+
+  if (value <= 0) {
+    form.value.no_resources_needed = '';  
+  } else {
+    no_resources_neededError.value = value > maxno_resources_needed
+      ? `This field exceeds the maximum allowed value`
+      : '';
+  }
 }
 
 const validateduration_project_engagement = () => {
@@ -341,8 +347,8 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
               {{ project.project_name }}
             </option>
           </select>
-          <span v-if="page.props.errors?.engagement_type" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.engagement_type }}
+          <span v-if="page.props.errors?.project_id" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.project_id }}
           </span>
         </div>
 
@@ -386,6 +392,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             type="text"
             placeholder="Indicate Position Title or Service Required"
             class="border p-2 rounded w-full"
+            :min="1"
           />
           <span v-if="page.props.errors?.resource" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.resource }}
@@ -425,6 +432,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             type="number"
             placeholder="No. of Resources Needed"
             class="border p-2 rounded w-full"
+            
           />
           <span v-if="no_resources_neededError" class="text-red-600 text-xs mt-1">
             {{ no_resources_neededError }}

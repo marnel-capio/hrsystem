@@ -22,7 +22,7 @@ class IntermediateRequisitionRequest extends FormRequest
         'person_to_replace' => 'nullable|string|max:80',
         'location_assignment' => 'required|integer',
         'project_id' => 'required|integer',
-        'custom_location' => 'required|string|max:1024',
+        'custom_location' => 'nullable|string|max:1024|required_if:location_assignment,6',
         'business_unit' => 'required|string|max:20',
         'resource' => 'nullable|string|max:1024',
         'practice' => 'nullable|string|max:1024',
@@ -48,6 +48,7 @@ class IntermediateRequisitionRequest extends FormRequest
         'replacement_due_to.max' => config('errors.max_length_exceeded.errorMessage'),
         'person_to_replace.max' => config('errors.max_length_exceeded.errorMessage'),
         'custom_location.max' => config('errors.max_length_exceeded.errorMessage'),
+        'custom_location.required_if' => config('errors.field_required.errorMessage'),
         'location_assignment.required' => config('errors.field_required.errorMessage'), 
         'project_id.required' => config('errors.field_required.errorMessage'),
 
