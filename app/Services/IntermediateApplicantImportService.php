@@ -151,9 +151,9 @@ class IntermediateApplicantImportService
         };
 
         $reason = match ($examStatus) {
-            5 => 'Expired >6 months + Exam=5',
-            3, 4 => 'Expired >6 months + Exam=3/4',
-            default => 'Expired >6 months default'
+            5 => 'Most recent application exam was failed and has expired. Created new application for applicant.',
+            3, 4 => 'Most recent application exam was passed but has expired. The applicant is now eligible for exam.',
+            default => 'Most recent applicant application is expired. Created new application for applicant.'
         };
 
         return $this->createAppWithSync($applicant, $row, $fullName, $stage, $reason);
@@ -165,7 +165,7 @@ class IntermediateApplicantImportService
 
         // No latest app → create new (safe fallback)
         if (! $latestApp) {
-            return $this->createAppWithSync($applicant, $row, $fullName, 1, 'Recent Reg - No App');
+            return $this->createAppWithSync($applicant, $row, $fullName, 1, 'No existing application found. Created new application.');
         }
 
         $examStatus = $latestApp->exam_status;
@@ -174,7 +174,8 @@ class IntermediateApplicantImportService
         if ($examStatus == 5) {
             $data = array_merge(
                 $this->buildApplicationData($row, 1, true),
-                ['exam_status' => null]
+                ['exam_status' => null,
+                'remarks' => 'Most recent application exam was failed. Updated application for applicant.']
             );
 
             unset($data['created_by'], $data['created_time']);
@@ -190,6 +191,8 @@ class IntermediateApplicantImportService
         if (in_array($examStatus, [3, 4])) {
             $data = $this->buildApplicationData($row, 3, true);
 
+            $data['remarks'] = 'Most recent application exam was passed. Updated application for applicant.';
+
             unset($data['created_by'], $data['created_time']);
 
             $latestApp->update($data);
@@ -199,6 +202,7 @@ class IntermediateApplicantImportService
 
         // Default: update with current stage
         $data = $this->buildApplicationData($row, $latestApp->application_stage ?? 1, true);
+        $data['remarks'] = 'Most recent applicant application is still valid. Updated application for applicant.';
         unset($data['created_by'], $data['created_time']);
         $latestApp->update($data);
 
@@ -225,7 +229,7 @@ class IntermediateApplicantImportService
      */
     private function createNewApplication($applicant, array $row, string $fullName, int $stage, string $remark): array
     {
-        $this->createApplication($applicant, $row); // Creates with stage=1
+        $this->createApplication($applicant, $row, $remark);
 
         $applicant->applications()->latest()->first()->update([
             'application_stage' => $stage,
@@ -390,11 +394,16 @@ class IntermediateApplicantImportService
     /**
      * Create application record
      */
-    private function createApplication($applicant, array $row)
+    private function createApplication($applicant, array $row, ?string $remark = null)
     {
-        $applicant->applications()->create(
-            $this->buildApplicationData($row, 1)
-        );
+        $data = $this->buildApplicationData($row, 1);
+
+        // Only add remarks if provided
+        if (! is_null($remark)) {
+            $data['remarks'] = $remark;
+        }
+
+        $applicant->applications()->create($data);
     }
 
     private function buildApplicationData(array $row, $stage = 1, $isUpdate = false): array

@@ -328,7 +328,11 @@ const getStageLabel = (stage: number) => {
                                                                 'bg-gray-100 text-gray-800'
                                     ]">{{ getStageLabel(app.application_stage) }}</span>
                                 </td>
-                                <td class="border px-3 py-2">{{ app.remarks || '—' }}</td>
+                                <td class="border px-3 py-2">
+                                    <div class="max-w-[250px] truncate" :title="app.remarks">
+                                        {{ app.remarks || '—' }}
+                                    </div>
+                                </td>
                             </tr>
                             <tr v-if="!paginatedApplications.length">
                                 <td colspan="5" class="text-center p-6 text-zinc-500">No applications found.</td>
