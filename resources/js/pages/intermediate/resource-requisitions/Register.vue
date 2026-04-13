@@ -49,6 +49,7 @@ const roleError = ref('')
 const expected_salary_rangeError = ref('')
 const remarksError = ref('')
 const start_dateError = ref('')
+const custom_locationError = ref('')
 
 
 const maxperson_to_replace = 80 
@@ -62,71 +63,78 @@ const maxpreferred_skills = 1024
 const maxrole = 1024  
 const maxexpected_salary_range = 80  
 const maxremarks = 1024  
+const maxcustom_location = 1024  
 
 
 const validateperson_to_replace = () => {
   person_to_replaceError.value = form.value.person_to_replace.length > maxperson_to_replace
-    ? `This field exceeds the maximum allowed length of ${maxperson_to_replace} characters.`
+    ? `This field exceeds the maximum allowed length.`
+    : ''
+}
+
+const validatecustom_location = () => {
+  custom_locationError.value = form.value.custom_location.length > maxcustom_location
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 
 const validatebusiness_unit = () => {
   business_unitError.value = form.value.business_unit.length > maxbusiness_unit
-    ? `This field exceeds the maximum allowed length of ${maxbusiness_unit} characters.`
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 
 const validateresource = () => {
   resourceError.value = form.value.resource.length > maxresource
-    ? `This field exceeds the maximum allowed length of ${maxresource} characters.`
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 
 const validatepractice = () => {
   practiceError.value = form.value.practice.length > maxpractice
-    ? `This field exceeds the maximum allowed length of ${maxpractice} characters.`
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 
 const validateno_resources_needed = () => {
   no_resources_neededError.value = form.value.no_resources_needed.length > maxno_resources_needed
-    ? `This field exceeds the maximum allowed length of ${maxno_resources_needed} characters.`
+    ? `This field exceeds the maximum allowed length`
     : ''
 }
 
 const validateduration_project_engagement = () => {
   duration_project_engagementError.value = form.value.duration_project_engagement.length > maxduration_project_engagement
-    ? `This field exceeds the maximum allowed length of ${maxduration_project_engagement} characters.`
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 
 const validaterequired_skills = () => {
   required_skillsError.value = form.value.required_skills.length > maxrequired_skills
-    ? `This field exceeds the maximum allowed length of ${maxrequired_skills} characters.`
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 
 const validatepreferred_skills = () => {
   preferred_skillsError.value = form.value.preferred_skills.length > maxpreferred_skills
-    ? `This field exceeds the maximum allowed length of ${maxpreferred_skills} characters.`
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 
 const validaterole = () => {
   roleError.value = form.value.role.length > maxrole
-    ? `This field exceeds the maximum allowed length of ${maxrole} characters.`
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 
 const validateexpected_salary_range = () => {
   expected_salary_rangeError.value = form.value.expected_salary_range.length > maxexpected_salary_range
-    ? `This field exceeds the maximum allowed length of ${maxexpected_salary_range} characters.`
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 
 const validateremarks = () => {
   remarksError.value = form.value.remarks.length > maxremarks
-    ? `This field exceeds the maximum allowed length of ${maxremarks} characters.`
+    ? `This field exceeds the maximum allowed length.`
     : ''
 }
 const validateStartDate = () => {
@@ -159,6 +167,7 @@ watch(() => form.value.project_id, (newId) => {
 
 const submit = () => {
   person_to_replaceError.value = ''
+  custom_locationError.value = ''
   business_unitError.value = ''
   resourceError.value = ''
   practiceError.value = ''
@@ -183,6 +192,8 @@ const submit = () => {
     }
   })
 }
+
+
 
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1); 
@@ -304,11 +315,18 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
           <input
             v-model="form.custom_location"
             type="text"
+            @input="validatecustom_location"
             :class="{'bg-gray-200 cursor-not-allowed': form.location_assignment !== '6'}"
             class="border p-2 rounded w-full"
             placeholder="Specify location"
             :disabled="form.location_assignment !== '6'"
           />
+          <span v-if="page.props.errors?.custom_location" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.custom_location }}
+          </span>
+          <span v-if="custom_locationError" class="text-red-600 text-xs mt-1">
+            {{ custom_locationError }}
+          </span>
         </div>
       </div>
 
@@ -496,7 +514,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       </div>
 
       <!-- Expected Salary/Billing Range-->
-      <div v-if="form.engagement_type === '2' || form.engagement_type === '1'" class="grid grid-cols-2 gap-5 mt-5">
+      <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
           <label class="text-sm mb-1">Expected Salary/Billing Range</label>
           <input
@@ -504,7 +522,9 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             @input="validateexpected_salary_range"
             rows="6"
             class="border p-2 rounded w-full"
-            placeholder="Please write Billing range if Temporary resource"
+            placeholder="Expected Salary/Billing Range"
+            :disabled="form.engagement_type !== '1' && form.engagement_type !== '2'"
+            :class="{'bg-gray-200 cursor-not-allowed': form.engagement_type !== '1' && form.engagement_type !== '2'}"
           />
           <span v-if="expected_salary_rangeError" class="text-red-600 text-xs mt-1">
             {{ expected_salary_rangeError }}

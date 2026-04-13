@@ -29,7 +29,7 @@ const closeModal = () => {
       </div>
     </div>
 
-    <h2 class="text-xl font-bold">Resource Requisition Detail of</h2>
+    <h2 class="text-xl font-bold">Resource Requisition Detail</h2>
   </AppLayout>
 </template>
 
