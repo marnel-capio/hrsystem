@@ -197,5 +197,5 @@ return [
         'errorMessage' => 'Project already exists.',
     ]
 
-];
+]];
 
