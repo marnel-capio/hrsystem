@@ -14,6 +14,7 @@ const canAcceptDecline = (interview: any) => {
         interview.status === 1
 }
 
+
 const bulkEditScheduleErrors = ref({
     selectedInterviewers: '',
     scheduledDate: '',
@@ -249,6 +250,30 @@ const formatDateTime = (dateString: string | null) => {
         minute: 'numeric',
         hour12: true,
     })
+}
+
+const finalInterviewAssignments = computed(() => page.props.finalInterviewAssignments || [])
+
+const getEvaluationResultLabel = (result: number | null) => {
+    const results: Record<number, string> = {
+        1: 'Pending',
+        2: 'Passed',
+        3: 'Failed',
+    }
+
+    if (!result) return '-'
+    return results[result] || '-'
+}
+
+const getEvaluationBadgeClass = (result: number | null) => {
+    const classes: Record<number, string> = {
+        1: 'bg-yellow-100 text-yellow-800',
+        2: 'bg-green-100 text-green-800',
+        3: 'bg-red-100 text-red-800',
+    }
+
+    if (!result) return 'bg-gray-100 text-gray-800'
+    return classes[result] || 'bg-gray-100 text-gray-800'
 }
 
 const formatScore = (score: number | null) => {
@@ -809,6 +834,10 @@ watch(errorMessage, (newVal) => {
                             Edit Application
                         </Link>
                     </div>
+                    <!-- DRAFT FOR MIXED RESULTS DI KO ALAM SAN ILALAGAY -->
+                    <p v-if="page.props.hasMixedFinalInterviewResults" class="text-xs text-amber-600 mt-2">
+    Mixed interviewer results. Final decision is subject to HR deliberation.
+</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1037,53 +1066,129 @@ watch(errorMessage, (newVal) => {
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                        <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                            <Star class="w-5 h-5 text-blue-600" /> FINAL INTERVIEW DETAILS
-                        </h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm border-collapse border">
-                                <tbody>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Interview Date</td>
-                                        <td class="px-3 py-2 border">{{ formatDateTime(application.final_interview_date) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Final Score</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_final) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 1</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_1) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 2</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_2) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 3</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_3) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 4</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_4) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.final_interview_result))]">
-                                                {{ getInterviewResultLabel(application.final_interview_result) || '-' }}
-                                            </span>
-                                        </td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.final_interview_application_status))]">
-                                                {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-4">
-                            <strong class="text-sm">Comments:</strong>
-                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.final_interview_remarks || 'No comments' }}</p>
-                        </div>
-                    </div>
+<div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+    <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
+        <Star class="w-5 h-5 text-blue-600" /> FINAL INTERVIEW DETAILS
+    </h2>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse border">
+            <tbody>
+                <tr class="border">
+                    <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Interview Date</td>
+                    <td class="px-3 py-2 border">{{ formatDateTime(application.final_interview_date) }}</td>
+                    <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Final Score</td>
+                    <td class="px-3 py-2 border">{{ formatScore(application.final_interview_final) }}</td>
+                </tr>
+
+                <tr class="border bg-zinc-100 dark:bg-zinc-700">
+                    <td colspan="4" class="font-semibold px-3 py-2">
+                        Assigned Final Interviewers
+                    </td>
+                </tr>
+
+                <template v-if="finalInterviewAssignments.length > 0">
+                    <template
+                        v-for="assignment in finalInterviewAssignments"
+                        :key="assignment.id"
+                    >
+                        <tr class="border">
+                            <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">
+                                Interviewer
+                            </td>
+                            <td class="px-3 py-2 border">
+                                {{ assignment.name || '-' }}
+                                <span v-if="assignment.role_label" class="text-xs text-gray-500">
+                                    ({{ assignment.role_label }})
+                                </span>
+                            </td>
+
+                            <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">
+                                Score
+                            </td>
+                            <td class="px-3 py-2 border">
+                                {{ formatScore(assignment.score) }}
+                            </td>
+                        </tr>
+
+                        <tr class="border">
+                            <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">
+                                Evaluation Result
+                            </td>
+                            <td class="px-3 py-2 border">
+                                <span
+                                    :class="[
+                                        'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+                                        getEvaluationBadgeClass(assignment.evaluation_result)
+                                    ]"
+                                >
+                                    {{ getEvaluationResultLabel(assignment.evaluation_result) }}
+                                </span>
+                            </td>
+
+                            <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">
+                                Stage Status
+                            </td>
+                            <td class="px-3 py-2 border">
+                                <span
+                                    :class="[
+                                        'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+                                        getInterviewStatusBadgeClass(assignment.status)
+                                    ]"
+                                >
+                                    {{ getInterviewStatusLabel(assignment.status) }}
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr class="border">
+                            <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">
+                                Interviewer Remarks
+                            </td>
+                            <td colspan="3" class="px-3 py-2 border">
+                                {{ assignment.evaluation_remarks || 'No interviewer remarks' }}
+                            </td>
+                        </tr>
+                    </template>
+                </template>
+
+                <tr v-else class="border">
+                    <td colspan="4" class="px-3 py-3 border text-center text-gray-500">
+                        No final interviewers assigned.
+                    </td>
+                </tr>
+
+                <tr class="border bg-zinc-100 dark:bg-zinc-700">
+                    <td colspan="4" class="font-semibold px-3 py-2">
+                        Overall Final Interview Outcome
+                    </td>
+                </tr>
+
+                <tr class="border">
+                    <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
+                    <td class="px-3 py-2 border">
+                        <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.final_interview_result))]">
+                            {{ getInterviewResultLabel(application.final_interview_result) || '-' }}
+                        </span>
+                    </td>
+                    <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
+                    <td class="px-3 py-2 border">
+                        <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.final_interview_application_status))]">
+                            {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <strong class="text-sm">Comments:</strong>
+        <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">
+            {{ application.final_interview_remarks || 'No comments' }}
+        </p>
+    </div>
+</div>
 
                     <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
                         <h2 class="text-lg font-bold flex items-center gap-2 mb-4">

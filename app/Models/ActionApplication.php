@@ -43,10 +43,6 @@ class ActionApplication extends Model
         'initial_interview_application_status',
         'initial_interview_remarks',
         'final_interview_date',
-        'final_interview_score_1',
-        'final_interview_score_2',
-        'final_interview_score_3',
-        'final_interview_score_4',
         'final_interview_final',
         'final_interview_result',
         'final_interview_application_status',
@@ -296,20 +292,20 @@ protected static function computeInitialInterviewApplicationStatus(float $score)
 {
     $rules = config('constants.application_score_rules.initial_interview');
 
-    $failedMin = (float) ($rules['failed_min'] ?? 4.0);
-    $p2Min = (float) ($rules['p2_min'] ?? 2.5);
-    $passedMin = (float) ($rules['passed_min'] ?? 2.0);
+    $passedMax = (float) ($rules['passed_min'] ?? 2.0);
+    $p2Max = (float) ($rules['p2_min'] ?? 2.5);
+    $failedMax = (float) ($rules['failed_min'] ?? 4.0);
 
-    if ($score >= $failedMin) {
-        return 5;
+    if ($score <= $passedMax) {
+        return 3;
     }
 
-    if ($score >= $p2Min) {
+    if ($score <= $p2Max) {
         return 4;
     }
 
-    if ($score >= $passedMin) {
-        return 3;
+    if ($score <= $failedMax) {
+        return 5;
     }
 
     return 2;
@@ -425,4 +421,195 @@ public function syncInterviewStatusesFromStageResults(): void
     }
 }
 
+public function finalInterviewAssignments()
+{
+    return $this->hasMany(ActionApplicationInterview::class, 'action_application_id', 'id')
+        ->where('interview_type', config('constants.interview_types.final'));
+}
+
+public function initialInterviewAssignments()
+{
+    return $this->hasMany(ActionApplicationInterview::class, 'action_application_id', 'id')
+        ->where('interview_type', config('constants.interview_types.initial'));
+}
+
+public function examAssignments()
+{
+    return $this->hasMany(ActionApplicationInterview::class, 'action_application_id', 'id')
+        ->where('interview_type', config('constants.interview_types.exam'));
+}
+public function computeFinalInterviewOverallResult(): ?int
+{
+    $rows = $this->finalInterviewAssignments()->get();
+
+    if ($rows->isEmpty()) {
+        return null;
+    }
+
+    $evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
+        config('constants.application_results.passed'),
+        config('constants.application_results.failed'),
+    ], true));
+
+    if ($evaluatedRows->isEmpty()) {
+        return config('constants.application_results.pending');
+    }
+
+    $allPassed = $evaluatedRows->every(fn ($row) =>
+        (int) $row->evaluation_result === config('constants.application_results.passed')
+    );
+
+    if ($allPassed && $evaluatedRows->count() === $rows->count()) {
+        return config('constants.application_results.passed');
+    }
+
+    $allFailed = $evaluatedRows->every(fn ($row) =>
+        (int) $row->evaluation_result === config('constants.application_results.failed')
+    );
+
+    if ($allFailed && $evaluatedRows->count() === $rows->count()) {
+        return config('constants.application_results.failed');
+    }
+
+    return null;
+}
+
+public function hasMixedFinalInterviewEvaluations(): bool
+{
+    $rows = $this->finalInterviewAssignments()->get();
+
+    $evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
+        config('constants.application_results.passed'),
+        config('constants.application_results.failed'),
+    ], true));
+
+    if ($evaluatedRows->count() < 2) {
+        return false;
+    }
+
+    $hasPassed = $evaluatedRows->contains(fn ($row) =>
+        (int) $row->evaluation_result === config('constants.application_results.passed')
+    );
+
+    $hasFailed = $evaluatedRows->contains(fn ($row) =>
+        (int) $row->evaluation_result === config('constants.application_results.failed')
+    );
+
+    return $hasPassed && $hasFailed;
+}
+
+public function syncFinalInterviewOutcomeFromAssignments(bool $allowManualMixed = true): void
+{
+    $overallResult = $this->computeFinalInterviewOverallResult();
+
+    if ($overallResult !== null) {
+        $this->update([
+            'final_interview_result' => $overallResult,
+            'final_interview_application_status' => $overallResult === config('constants.application_results.passed')
+                ? 3
+                : 5,
+            'updated_by' => auth()->id(),
+            'updated_time' => now(),
+        ]);
+
+        return;
+    }
+
+    if ($this->hasMixedFinalInterviewEvaluations()) {
+        if (!$allowManualMixed) {
+            $this->update([
+                'final_interview_result' => config('constants.application_results.pending'),
+                'final_interview_application_status' => 2,
+                'updated_by' => auth()->id(),
+                'updated_time' => now(),
+            ]);
+        }
+    }
+}
+
+public function getEvaluatedFinalInterviewAssignments()
+{
+    return $this->finalInterviewAssignments()
+        ->whereIn('evaluation_result', [
+            config('constants.application_results.passed'),
+            config('constants.application_results.failed'),
+        ])
+        ->get();
+}
+
+public function allFinalInterviewersPassed(): bool
+{
+    $rows = $this->getEvaluatedFinalInterviewAssignments();
+
+    return $rows->isNotEmpty() &&
+        $rows->every(fn ($row) =>
+            (int) $row->evaluation_result === config('constants.application_results.passed')
+        );
+}
+
+public function allFinalInterviewersFailed(): bool
+{
+    $rows = $this->getEvaluatedFinalInterviewAssignments();
+
+    return $rows->isNotEmpty() &&
+        $rows->every(fn ($row) =>
+            (int) $row->evaluation_result === config('constants.application_results.failed')
+        );
+}
+public function hasMixedFinalInterviewResults(): bool
+{
+    $rows = $this->getEvaluatedFinalInterviewAssignments();
+
+    if ($rows->count() < 2) {
+        return false;
+    }
+
+    $hasPassed = $rows->contains(fn ($row) =>
+        (int) $row->evaluation_result === config('constants.application_results.passed')
+    );
+
+    $hasFailed = $rows->contains(fn ($row) =>
+        (int) $row->evaluation_result === config('constants.application_results.failed')
+    );
+
+    return $hasPassed && $hasFailed;
+}
+
+public function syncOverallFinalInterviewResult(?int $manualResult = null, bool $allowManual = false): void
+{
+    $result = null;
+    $status = null;
+
+    if ($this->allFinalInterviewersPassed()) {
+        $result = config('constants.application_results.passed');
+        $status = 3; // Passed
+    } elseif ($this->allFinalInterviewersFailed()) {
+        $result = config('constants.application_results.failed');
+        $status = 5; // Failed
+    } elseif ($this->hasMixedFinalInterviewResults()) {
+        if (
+            $allowManual &&
+            in_array($manualResult, [
+                config('constants.application_results.passed'),
+                config('constants.application_results.failed'),
+            ], true)
+        ) {
+            $result = $manualResult;
+            $status = $manualResult === config('constants.application_results.passed') ? 3 : 5;
+        } else {
+            $result = config('constants.application_results.pending');
+            $status = 2; // Done / for deliberation
+        }
+    } elseif ($this->finalInterviewAssignments()->exists()) {
+        $result = config('constants.application_results.pending');
+        $status = 1; // Pending
+    }
+
+    $this->update([
+        'final_interview_result' => $result,
+        'final_interview_application_status' => $status,
+        'updated_by' => auth()->id(),
+        'updated_time' => now(),
+    ]);
+}
 }

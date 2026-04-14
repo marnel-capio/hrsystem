@@ -305,10 +305,6 @@ return [
     ],
 'final_interview' => [
     'final_interview_date',
-    'final_interview_score_1',
-    'final_interview_score_2',
-    'final_interview_score_3',
-    'final_interview_score_4',
     'final_interview_final',
     'final_interview_result',
     'final_interview_application_status',
@@ -357,10 +353,6 @@ return [
     'initial_interview_remarks' => 'Initial Interview Remarks',
 
 'final_interview_date' => 'Final Interview Date',
-'final_interview_score_1' => 'Final Interview Score 1',
-'final_interview_score_2' => 'Final Interview Score 2',
-'final_interview_score_3' => 'Final Interview Score 3',
-'final_interview_score_4' => 'Final Interview Score 4',
 'final_interview_final' => 'Final Interview Final Score',
 'final_interview_result' => 'Final Interview Result',
 'final_interview_application_status' => 'Final Interview Status',

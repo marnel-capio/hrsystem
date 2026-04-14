@@ -23,6 +23,18 @@ const props = defineProps<{
         exam?: Record<string, any>,
         initial_interview?: Record<string, number>,
     },
+    finalInterviewAssignments?: Array<{
+    id: number
+    interviewer_id: number
+    name: string
+    role_label: string
+    score?: number | null
+    evaluation_result?: number | null
+    evaluation_remarks?: string | null
+}>
+canEditFinalInterviewDecision?: boolean
+user_permissions?: number
+user_id?: number
     flash?: {
         error?: string
         success?: string
@@ -95,10 +107,15 @@ exam_atpp_result: '',    exam_git_result: '',
     initial_interview_application_status: '',
     initial_interview_remarks: '',
     final_interview_date: '',
-    final_interview_score_1: '',
-    final_interview_score_2: '',
-    final_interview_score_3: '',
-    final_interview_score_4: '',
+    final_interview_assignments: (props.finalInterviewAssignments || []).map((row) => ({
+    id: row.id,
+    interviewer_id: row.interviewer_id,
+    name: row.name,
+    role_label: row.role_label,
+    score: row.score ?? '',
+    evaluation_result: row.evaluation_result ?? '',
+    evaluation_remarks: row.evaluation_remarks ?? '',
+})),
     final_interview_final: '',
     final_interview_result: '',
     final_interview_application_status: '',
@@ -182,39 +199,100 @@ const computedAtppResult = computed(() => {
     return finalScore.toFixed(2)
 })
 
+const canEditFinalInterviewDecision = computed(() => !!props.canEditFinalInterviewDecision)
+
+const isHrDecisionEditor = computed(() =>
+    [1, 2, 3].includes(Number(props.user_permissions || 0))
+)
+
+const visibleFinalInterviewAssignments = computed(() => {
+    const rows = form.final_interview_assignments || []
+
+    if (isHrDecisionEditor.value) {
+        return rows
+    }
+
+    return rows.filter((row: any) => Number(row.interviewer_id) === Number(props.user_id || 0))
+})
+
+const finalInterviewEvaluatedRows = computed(() => {
+    return (form.final_interview_assignments || []).filter((row: any) =>
+        [2, 3].includes(Number(row.evaluation_result))
+    )
+})
+
+const allFinalInterviewersPassed = computed(() => {
+    const rows = finalInterviewEvaluatedRows.value
+    return rows.length > 0 && rows.every((row: any) => Number(row.evaluation_result) === 2)
+})
+
+const allFinalInterviewersFailed = computed(() => {
+    const rows = finalInterviewEvaluatedRows.value
+    return rows.length > 0 && rows.every((row: any) => Number(row.evaluation_result) === 3)
+})
+
+const hasMixedFinalInterviewResults = computed(() => {
+    const rows = finalInterviewEvaluatedRows.value
+    const hasPassed = rows.some((row: any) => Number(row.evaluation_result) === 2)
+    const hasFailed = rows.some((row: any) => Number(row.evaluation_result) === 3)
+    return hasPassed && hasFailed
+})
+
 watch(computedAtppResult, (value) => {
     form.exam_atpp_result = value
 })
 
 watch(
-    [
-        () => form.final_interview_score_1,
-        () => form.final_interview_score_2,
-        () => form.final_interview_score_3,
-        () => form.final_interview_score_4,
-    ],
-    ([score1, score2, score3, score4]) => {
-        const hasAnyScore =
-            score1 !== '' || score2 !== '' || score3 !== '' || score4 !== ''
+    () => form.final_interview_assignments,
+    (rows) => {
+        const list = rows || []
 
-        if (!hasAnyScore) {
-            form.final_interview_final = ''
-            finalScoreManuallyEdited.value = false
+        const numericScores = list
+            .map((row: any) => Number(row.score))
+            .filter((value: number) => !Number.isNaN(value))
+
+        if (numericScores.length === 0) {
+            if (!finalScoreManuallyEdited.value) {
+                form.final_interview_final = ''
+            }
             return
         }
 
-        if (finalScoreManuallyEdited.value) {
+        if (!finalScoreManuallyEdited.value) {
+            const average =
+                numericScores.reduce((sum: number, value: number) => sum + value, 0) / numericScores.length
+
+            form.final_interview_final = average.toFixed(2)
+        }
+
+        if (allFinalInterviewersPassed.value) {
+            form.final_interview_result = '2'
+            form.final_interview_application_status = '3'
             return
         }
 
-        const total =
-            parseScore(score1) +
-            parseScore(score2) +
-            parseScore(score3) +
-            parseScore(score4)
+        if (allFinalInterviewersFailed.value) {
+            form.final_interview_result = '3'
+            form.final_interview_application_status = '5'
+            return
+        }
 
-        form.final_interview_final = total.toFixed(2)
-    }
+        if (hasMixedFinalInterviewResults.value) {
+            form.final_interview_application_status = '2'
+            if (!isHrDecisionEditor.value) {
+                form.final_interview_result = ''
+            }
+            return
+        }
+
+        if (form.final_interview_date) {
+            form.final_interview_application_status = '1'
+        } else {
+            form.final_interview_application_status = ''
+            form.final_interview_result = ''
+        }
+    },
+    { deep: true }
 )
 
 watch(() => form.exam_atpp_part1_correct, (value) => {
@@ -290,21 +368,19 @@ watch(() => form.initial_interview_final, (value) => {
     validateScoreField('initial_interview_final', 'Initial Interview Final Score', value)
 })
 
-watch(() => form.final_interview_score_1, (value) => {
-    validateScoreField('final_interview_score_1', 'Score 1', value)
-})
-
-watch(() => form.final_interview_score_2, (value) => {
-    validateScoreField('final_interview_score_2', 'Score 2', value)
-})
-
-watch(() => form.final_interview_score_3, (value) => {
-    validateScoreField('final_interview_score_3', 'Score 3', value)
-})
-
-watch(() => form.final_interview_score_4, (value) => {
-    validateScoreField('final_interview_score_4', 'Score 4', value)
-})
+watch(
+    () => form.final_interview_assignments,
+    (rows) => {
+        ;(rows || []).forEach((row: any, index: number) => {
+            validateScoreField(
+                `final_interview_assignments.${index}.score`,
+                `${row.name || 'Interviewer'} Score`,
+                row.score
+            )
+        })
+    },
+    { deep: true }
+)
 
 watch(() => form.final_interview_final, (value) => {
     validateScoreField('final_interview_final', 'Final Score', value)
@@ -559,10 +635,6 @@ form.exam_atpp_result = ''
         form.initial_interview_remarks = ''
 
         form.final_interview_date = ''
-        form.final_interview_score_1 = ''
-        form.final_interview_score_2 = ''
-        form.final_interview_score_3 = ''
-        form.final_interview_score_4 = ''
         form.final_interview_final = ''
         form.final_interview_application_status = ''
         form.final_interview_result = ''
@@ -687,14 +759,14 @@ function getExamApplicationStatus(attp: number, git: number, prg: number, catego
 function getInitialInterviewApplicationStatus(score: number): string {
     const rules = props.applicationScoreRules?.initial_interview
 
-    const failedMin = Number(rules?.failed_min ?? 4.0)
-    const p2Min = Number(rules?.p2_min ?? 2.5)
-    const passedMin = Number(rules?.passed_min ?? 2.0)
+    const passedMax = Number(rules?.passed_min ?? 2.0)
+    const p2Max = Number(rules?.p2_min ?? 2.5)
+    const failedMax = Number(rules?.failed_min ?? 4.0)
 
-    if (score >= failedMin) return '5'
-    if (score >= p2Min) return '4'
-    if (score >= passedMin) return '3'
-    return '2'
+    if (score <= passedMax) return '3' // Passed
+    if (score <= p2Max) return '4'     // P2
+    if (score <= failedMax) return '5' // Failed
+    return '2'                         // Done / fallback
 }
 
 watch(() => form.exam_plan_date, (newPlanDate) => {
@@ -1255,7 +1327,7 @@ function handleClickOutside(event: MouseEvent) {
 
             <div class="atpp-stack">
                 <div class="atpp-card">
-                    <div class="atpp-card-title">ATPP Part I </div>
+                    <div class="atpp-card-title">ATPP Part I (Sequence / Pattern Analysis)</div>
                     <div class="form-grid grid-2">
                         <div class="form-field">
                             <label class="field-label">Correct</label>
@@ -1298,7 +1370,7 @@ function handleClickOutside(event: MouseEvent) {
                 </div>
 
                 <div class="atpp-card">
-                    <div class="atpp-card-title">ATPP Part II</div>
+                    <div class="atpp-card-title">ATPP Part II (Abstract Reasoning)</div>
                     <div class="form-grid grid-2">
                         <div class="form-field">
                             <label class="field-label">Correct</label>
@@ -1341,7 +1413,7 @@ function handleClickOutside(event: MouseEvent) {
                 </div>
 
                 <div class="atpp-card">
-                    <div class="atpp-card-title">ATPP Part III</div>
+                    <div class="atpp-card-title">ATPP Part III (Problem Solving)</div>
                     <div class="form-grid grid-2">
                         <div class="form-field">
                             <label class="field-label">Correct</label>
@@ -1648,182 +1720,167 @@ function handleClickOutside(event: MouseEvent) {
         <h3>Final Interview</h3>
     </div>
 
+    <div class="form-field">
+        <label class="field-label">Date</label>
+        <input
+            type="datetime-local"
+            v-model="form.final_interview_date"
+            class="form-input"
+            :disabled="!isApplicantSelected"
+            :min="finalInterviewMin"
+        />
+        <span v-if="form.errors.final_interview_date" class="error-message">
+            {{ form.errors.final_interview_date }}
+        </span>
+    </div>
+
     <div class="exam-section-layout">
         <div class="exam-form-column">
-            <div class="form-field">
-                <label class="field-label">Date</label>
-                <input
-                    type="datetime-local"
-                    v-model="form.final_interview_date"
-                    class="form-input"
-                    :disabled="!isApplicantSelected"
-                    :min="finalInterviewMin"
-                />
-                <span v-if="form.errors.final_interview_date" class="error-message">
-                    {{ form.errors.final_interview_date }}
-                </span>
+            <div v-if="visibleFinalInterviewAssignments.length === 0" class="criteria-empty">
+                No final interviewers assigned yet. Add them first in the interviewers/conductors section.
             </div>
 
-            <div class="form-grid grid-5">
-                <div class="form-field">
-                    <label class="field-label">Score 1</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        v-model="form.final_interview_score_1"
-                        placeholder="0.00"
-                        class="form-input"
-                        :disabled="!isApplicantSelected"
-                    />
-                    <span v-if="form.errors.final_interview_score_1" class="error-message">
-                        {{ form.errors.final_interview_score_1 }}
-                    </span>
-                    <span v-if="liveErrors.final_interview_score_1" class="error-message">
-                        {{ liveErrors.final_interview_score_1 }}
-                    </span>
-                </div>
+            <div v-else class="atpp-stack">
+                <div
+                    v-for="(assignment, index) in visibleFinalInterviewAssignments"
+                    :key="assignment.id"
+                    class="atpp-card"
+                >
+                    <div class="atpp-card-title">
+                        {{ assignment.name }}
+                        <span class="criteria-panel-subtitle">({{ assignment.role_label }})</span>
+                    </div>
 
-                <div class="form-field">
-                    <label class="field-label">Score 2</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        v-model="form.final_interview_score_2"
-                        placeholder="0.00"
-                        class="form-input"
-                        :disabled="!isApplicantSelected"
-                    />
-                    <span v-if="form.errors.final_interview_score_2" class="error-message">
-                        {{ form.errors.final_interview_score_2 }}
-                    </span>
-                    <span v-if="liveErrors.final_interview_score_2" class="error-message">
-                        {{ liveErrors.final_interview_score_2 }}
-                    </span>
-                </div>
+                    <div class="form-grid grid-2">
+                        <div class="form-field">
+                            <label class="field-label">Score</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                v-model="assignment.score"
+                                class="form-input"
+                                :disabled="!isApplicantSelected"
+                            />
+                        </div>
 
-                <div class="form-field">
-                    <label class="field-label">Score 3</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        v-model="form.final_interview_score_3"
-                        placeholder="0.00"
-                        class="form-input"
-                        :disabled="!isApplicantSelected"
-                    />
-                    <span v-if="form.errors.final_interview_score_3" class="error-message">
-                        {{ form.errors.final_interview_score_3 }}
-                    </span>
-                    <span v-if="liveErrors.final_interview_score_3" class="error-message">
-                        {{ liveErrors.final_interview_score_3 }}
-                    </span>
-                </div>
+                        <div class="form-field">
+                            <label class="field-label">Result</label>
+                            <select
+                                v-model="assignment.evaluation_result"
+                                class="form-select"
+                                :disabled="!isApplicantSelected"
+                            >
+                                <option value="">Select Result</option>
+                                <option value="1">Pending</option>
+                                <option value="2">Passed</option>
+                                <option value="3">Failed</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <div class="form-field">
-                    <label class="field-label">Score 4</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        v-model="form.final_interview_score_4"
-                        placeholder="0.00"
-                        class="form-input"
-                        :disabled="!isApplicantSelected"
-                    />
-                    <span v-if="form.errors.final_interview_score_4" class="error-message">
-                        {{ form.errors.final_interview_score_4 }}
-                    </span>
-                    <span v-if="liveErrors.final_interview_score_4" class="error-message">
-                        {{ liveErrors.final_interview_score_4 }}
-                    </span>
-                </div>
-
-                <div class="form-field">
-                    <label class="field-label">Final Score</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        v-model="form.final_interview_final"
-                        @input="handleFinalScoreManualInput"
-                        placeholder="0.00"
-                        class="form-input"
-                        :disabled="!isApplicantSelected"
-                    />
-                    <span v-if="form.errors.final_interview_final" class="error-message">
-                        {{ form.errors.final_interview_final }}
-                    </span>
-                    <span v-if="liveErrors.final_interview_final" class="error-message">
-                        {{ liveErrors.final_interview_final }}
-                    </span>
+                    <div class="form-field">
+                        <label class="field-label">Interviewer Remarks</label>
+                        <textarea
+                            v-model="assignment.evaluation_remarks"
+                            rows="2"
+                            class="form-textarea"
+                            :disabled="!isApplicantSelected"
+                        ></textarea>
+                    </div>
                 </div>
             </div>
-
-            <div class="form-grid grid-2">
-                <div class="form-field">
-                    <label class="field-label">Result</label>
-                    <input
-                        type="text"
-                        class="form-input"
-                        :value="finalInterviewResultLabel || (!form.final_interview_application_status ? 'Auto-filled from application status' : '')"
-                        readonly
-                        :disabled="!isApplicantSelected || !form.final_interview_application_status"
-                    />
-                </div>
-
-                <div class="form-field">
-                    <label class="field-label">Application Status</label>
-                    <select
-                        v-model="form.final_interview_application_status"
-                        class="form-select"
-                        :disabled="!isApplicantSelected"
-                    >
-                        <option value="">Select Status</option>
-                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
-                            {{ status.label }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-
-
         </div>
-
 
         <div class="exam-criteria-column">
             <div class="criteria-panel compact">
                 <div class="criteria-panel-title">Final Interview Criteria</div>
 
-                    <div class="criteria-rule passed">
-        <div class="criteria-rule-title">1 - Highly Recommended</div>
-    </div>
-                        <div class="criteria-rule passed">
-        <div class="criteria-rule-title">2- Recommended</div>
-    </div>
-                        <div class="criteria-rule p2">
-        <div class="criteria-rule-title">3 - Average</div>
-    </div>
-                        <div class="criteria-rule failed">
-        <div class="criteria-rule-title">4 - Not Recommended</div>
-    </div>
-                            <div class="criteria-rule failed">
-        <div class="criteria-rule-title">5 - Never Recommended</div>
-    </div>
+                <div class="criteria-rule passed">
+                    <div class="criteria-rule-title">1 - Highly Recommended</div>
+                </div>
+
+                <div class="criteria-rule passed">
+                    <div class="criteria-rule-title">2 - Recommended</div>
+                </div>
+
+                <div class="criteria-rule p2">
+                    <div class="criteria-rule-title">3 - Average</div>
+                </div>
+
+                <div class="criteria-rule failed">
+                    <div class="criteria-rule-title">4 - Not Recommended</div>
+                </div>
+
+                <div class="criteria-rule failed">
+                    <div class="criteria-rule-title">5 - Never Recommended</div>
+                </div>
             </div>
         </div>
-
     </div>
-                        <div class="form-field">
-                <label class="field-label">Final Interview Comments</label>
-                <textarea
-                    v-model="form.final_interview_remarks"
-                    placeholder="Enter any remarks here..."
-                    rows="3"
-                    class="form-textarea"
-                    :disabled="!isApplicantSelected"
-                ></textarea>
-                <span v-if="form.errors.final_interview_remarks" class="error-message">
-                    {{ form.errors.final_interview_remarks }}
-                </span>
-            </div>
+
+    <div class="form-grid grid-3 mt-3">
+        <div class="form-field">
+            <label class="field-label">Final Score</label>
+            <input
+                type="number"
+                step="0.01"
+                v-model="form.final_interview_final"
+                @input="handleFinalScoreManualInput"
+                class="form-input"
+                :disabled="!isApplicantSelected"
+            />
+        </div>
+
+        <div class="form-field">
+            <label class="field-label">Result</label>
+            <input
+                v-if="allFinalInterviewersPassed || allFinalInterviewersFailed"
+                type="text"
+                class="form-input"
+                :value="finalInterviewResultLabel || (!form.final_interview_application_status ? 'Auto-filled from application status' : '')"
+                readonly
+            />
+
+            <select
+                v-else-if="hasMixedFinalInterviewResults && canEditFinalInterviewDecision"
+                v-model="form.final_interview_result"
+                class="form-select"
+                :disabled="!isApplicantSelected"
+            >
+                <option value="">Select Final Result</option>
+                <option value="2">Passed</option>
+                <option value="3">Failed</option>
+            </select>
+
+            <input
+                v-else
+                type="text"
+                class="form-input"
+                :value="finalInterviewResultLabel || 'For HR deliberation'"
+                readonly
+            />
+        </div>
+
+        <div class="form-field">
+            <label class="field-label">Application Status</label>
+            <input
+                type="text"
+                class="form-input"
+                :value="interviewAppStatuses.find((s) => String(s.value) === String(form.final_interview_application_status))?.label || ''"
+                readonly
+            />
+        </div>
+    </div>
+
+    <div class="form-field mt-3">
+        <label class="field-label">Final Interview Comments</label>
+        <textarea
+            v-model="form.final_interview_remarks"
+            rows="3"
+            class="form-textarea"
+            :disabled="!isApplicantSelected"
+        ></textarea>
+    </div>
 </div>
 
                         <div class="form-section">
