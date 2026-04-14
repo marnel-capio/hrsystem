@@ -22,6 +22,11 @@ const props = defineProps<{
             program_language: string
             remarks: string
         }>
+        skills?: Array<{
+            id: number
+            skill: string
+            remarks: string
+        }>
     }>
     flash?: { error?: string }
     userPermissions: number
@@ -66,37 +71,41 @@ const filteredApplicants = computed(() => {
         const school = a.school.toLowerCase()
         const degree = a.degree.toLowerCase()
 
-        // Only include programming languages in search for permissions 1,2,3
-        let languages = ''
-        if ([1, 2, 3].includes(props.userPermissions)) {
-            languages = (a.programming_languages ?? [])
-                .map(pl => pl.program_language.toLowerCase())
-                .join(' ')
-        }
         const japaneseBg = getJapaneseBackground(
             a.japanese_background,
             a.japanese_level
         ).toLowerCase()
+
+        let tech = ''
+
+        if (canViewTechDetails.value) {
+            const languages = (a.programming_languages ?? [])
+                .map(pl => pl.program_language.toLowerCase())
+
+            const skills = (a.skills ?? [])
+                .map(s => s.skill.toLowerCase())
+
+            tech = [...languages, ...skills].join(' ')
+        }
 
         return (
             name.includes(q) ||
             email.includes(q) ||
             school.includes(q) ||
             degree.includes(q) ||
-            languages.includes(q) ||
-            japaneseBg.includes(q) // ✅ added
+            japaneseBg.includes(q) ||
+            tech.includes(q)
         )
     })
 })
 
 const totalColumns = computed(() => {
-    // Base columns: Name, Email, School, Degree, Expected Graduation, Remarks
     let cols = 6
-    if (canViewProgrammingLanguages.value) cols += 1
+    if (canViewTechDetails.value) cols += 2
     return cols
 })
 
-const canViewProgrammingLanguages = computed(() => {
+const canViewTechDetails = computed(() => {
     return [1, 2, 3].includes(props.userPermissions)
 })
 
@@ -145,9 +154,10 @@ const canCreateApplicant = computed(() => {
 })
 
 const searchPlaceholder = computed(() => {
-    if (canViewProgrammingLanguages.value) {
-        return 'Search by name, email, school, degree, japanese language background, or programming language'
+    if (canViewTechDetails.value) {
+        return 'Search by name, email, school, degree, japanese language background, programming languages, or other skills'
     }
+
     return 'Search by name, email, school, japanese language background, or degree'
 })
 
@@ -233,8 +243,12 @@ const getJapaneseBackground = (
                                 <th class="border px-3 py-2">Degree</th>
                                 <th class="border px-3 py-2">Expected Graduation</th>
                                 <th class="border px-3 py-2">Japanese Language Background</th>
-                                <th v-if="canViewProgrammingLanguages" class="border px-3 py-2">
+                                <th v-if="canViewTechDetails" class="border px-3 py-2">
                                     Programming Languages
+                                </th>
+
+                                <th v-if="canViewTechDetails" class="border px-3 py-2">
+                                    Other Skills
                                 </th>
 
                                 <th class="border px-3 py-2">Remarks</th>
@@ -257,15 +271,19 @@ const getJapaneseBackground = (
                                     {{ a.expected_graduation }}
                                 </td>
 
-                                <!-- ✅ FIXED COLUMN -->
                                 <td class="border px-3 py-2">
                                     {{ getJapaneseBackground(a.japanese_background, a.japanese_level) }}
                                 </td>
 
-                                <td v-if="canViewProgrammingLanguages" class="border px-3 py-2">
+                                <td v-if="canViewTechDetails" class="border px-3 py-2">
                                     <div class="remarks-clamp"
                                         :title="a.programming_languages?.map(pl => pl.program_language).join(', ')">
                                         {{a.programming_languages?.map(pl => pl.program_language).join(', ') || '—'}}
+                                    </div>
+                                </td>
+                                <td v-if="canViewTechDetails" class="border px-3 py-2">
+                                    <div class="remarks-clamp" :title="a.skills?.map(s => s.skill).join(', ')">
+                                        {{a.skills?.map(s => s.skill).join(', ') || '—'}}
                                     </div>
                                 </td>
 

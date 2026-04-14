@@ -17,7 +17,7 @@ class ActionApplicantController extends Controller
 {
     public function index()
     {
-        $applicants = ActionApplicant::with('programmingLanguages')
+        $applicants = ActionApplicant::with('programmingLanguages', 'skills')
                 ->orderBy('created_time', 'desc')
                 ->get();
 
