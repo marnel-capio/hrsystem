@@ -556,6 +556,33 @@ if (in_array($request->type, [
                 $interview->update($updateData);
             }
 
+            // ✅ SYNC TO APPLICATION (THIS IS THE FIX)
+            $stageTypes = $interviewsToUpdate
+                ->pluck('interview_type')
+                ->unique()
+                ->values();
+
+            foreach ($stageTypes as $stageType) {
+
+                if ((int) $stageType === config('constants.interview_types.exam')) {
+                    $application->update([
+                        'exam_plan_date' => $request->scheduled_date,
+                    ]);
+                }
+
+                if ((int) $stageType === config('constants.interview_types.initial')) {
+                    $application->update([
+                        'initial_interview_plan_date' => $request->scheduled_date,
+                    ]);
+                }
+
+                if ((int) $stageType === config('constants.interview_types.final')) {
+                    $application->update([
+                        'final_interview_date' => $request->scheduled_date,
+                    ]);
+                }
+            }
+
             $rows = ActionApplicationInterview::with('interviewer')
                 ->where('action_application_id', $application->id)
                 ->orderBy('id')
@@ -643,6 +670,25 @@ if (in_array($request->type, [
                 }
             }
 
+            //  SYNC TO APPLICATION
+            if ((int) $request->interview_type === config('constants.interview_types.exam')) {
+                $application->update([
+                    'exam_plan_date' => $request->scheduled_date,
+                ]);
+            }
+
+            if ((int) $request->interview_type === config('constants.interview_types.initial')) {
+                $application->update([
+                    'initial_interview_plan_date' => $request->scheduled_date,
+                ]);
+            }
+
+            if ((int) $request->interview_type === config('constants.interview_types.final')) {
+                $application->update([
+                    'final_interview_date' => $request->scheduled_date,
+                ]);
+            }
+
             $rows = ActionApplicationInterview::with('interviewer')
                 ->where('action_application_id', $application->id)
                 ->orderBy('id')
@@ -687,28 +733,60 @@ if (in_array($request->type, [
             ->findOrFail($interviewId);
 
         if (!in_array((int) auth()->user()->permissions, [
+            config('constants.HR_MANAGER_PERMISSION.value'),
             config('constants.HR_RECRUITER_PERMISSION.value'),
             config('constants.BU_MANAGER_PERMISSION.value'),
             config('constants.INTERVIEWER_PERMISSION.value'),
-            config('constants.HR_MANAGER_PERMISSION.value'),
         ], true)) {
-            abort(403, 'Only assigned recruiters, BU managers, or interviewers can submit a decision.');
+            abort(403, 'Only assigned recruiters, HR managers, BU managers, or interviewers can submit a decision.');
         }
 
         if ((int) $interview->interviewer_id !== (int) auth()->id()) {
             abort(403, 'You are not assigned to this interview.');
         }
 
+        $newStatus = $request->decision === 'accept'
+            ? config('constants.interview_assignment_status.approved')
+            : config('constants.interview_assignment_status.declined');
+
         $interview->update([
-            'status' => $request->decision === 'accept'
-                ? config('constants.interview_assignment_status.approved')
-                : config('constants.interview_assignment_status.declined'),
+            'status' => $newStatus,
             'decline_reason' => $request->decision === 'decline' ? $request->reason : null,
             'updated_by' => auth()->id(),
             'updated_time' => now(),
         ]);
 
-        $application = ActionApplication::with('applicant')->findOrFail($applicationId);
+        $application = ActionApplication::with(['applicant', 'interviews.interviewer'])->findOrFail($applicationId);
+
+        // AUTO-SEND applicant notification once all interviewers for the same stage are approved
+        if ($request->decision === 'accept') {
+            $stageType = (int) $interview->interview_type;
+
+            $stageInterviews = $application->interviews
+                ->where('interview_type', $stageType);
+
+            $allApprovedForStage = $stageInterviews->isNotEmpty() &&
+                $stageInterviews->every(function ($row) {
+                    return (int) $row->status === config('constants.interview_assignment_status.approved');
+                });
+
+            if ($allApprovedForStage && !empty(optional($application->applicant)->email_address)) {
+                $link = url("/action/applications/{$application->id}");
+
+                Mail::to($application->applicant->email_address)->send(
+                    new ActionApplicantScheduledMail($application, $stageInterviews->values(), $link)
+                );
+
+                Log::createLog(
+                    'ACTION',
+                    'Automatically sent applicant schedule email for stage ' . $stageType .
+                    ' after all assigned interviewers approved for application of ' .
+                    ($application->applicant->first_name ?? '') . ' ' .
+                    ($application->applicant->last_name ?? '') . '.',
+                    auth()->id()
+                );
+            }
+        }
 
         $interviewerName = auth()->user()->full_name;
 

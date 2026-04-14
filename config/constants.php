@@ -279,6 +279,14 @@ return [
         'exam_plan_date',
         'exam_actual_date',
         'exam_venue',
+
+        'exam_atpp_part1_correct',
+        'exam_atpp_part1_wrong',
+        'exam_atpp_part2_correct',
+        'exam_atpp_part2_wrong',
+        'exam_atpp_part3_correct',
+        'exam_atpp_part3_wrong',
+
         'exam_atpp_result',
         'exam_git_result',
         'exam_prg_result',
@@ -325,6 +333,14 @@ return [
     'exam_plan_date' => 'Exam Plan Date',
     'exam_actual_date' => 'Exam Actual Date',
     'exam_venue' => 'Exam Venue',
+
+    'exam_atpp_part1_correct' => 'ATPP Part I Correct',
+    'exam_atpp_part1_wrong' => 'ATPP Part I Wrong',
+    'exam_atpp_part2_correct' => 'ATPP Part II Correct',
+    'exam_atpp_part2_wrong' => 'ATPP Part II Wrong',
+    'exam_atpp_part3_correct' => 'ATPP Part III Correct',
+    'exam_atpp_part3_wrong' => 'ATPP Part III Wrong',
+
     'exam_atpp_result' => 'Exam ATPP Result',
     'exam_git_result' => 'Exam GIT Result',
     'exam_prg_result' => 'Exam PRG Result',

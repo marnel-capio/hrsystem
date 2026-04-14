@@ -23,6 +23,12 @@ class ActionApplication extends Model
         'exam_plan_date',
         'exam_actual_date',
         'exam_venue',
+        'exam_atpp_part1_correct',
+        'exam_atpp_part1_wrong',
+        'exam_atpp_part2_correct',
+        'exam_atpp_part2_wrong',
+        'exam_atpp_part3_correct',
+        'exam_atpp_part3_wrong',
         'exam_atpp_result',
         'exam_git_result',
         'exam_prg_result',
@@ -143,6 +149,42 @@ class ActionApplication extends Model
         );
     }
 
+protected static function computeAtppResult(array $data): ?float
+{
+    $fields = [
+        'exam_atpp_part1_correct',
+        'exam_atpp_part1_wrong',
+        'exam_atpp_part2_correct',
+        'exam_atpp_part2_wrong',
+        'exam_atpp_part3_correct',
+        'exam_atpp_part3_wrong',
+    ];
+
+    $hasAny = collect($fields)->contains(function ($field) use ($data) {
+        return array_key_exists($field, $data)
+            && $data[$field] !== null
+            && $data[$field] !== '';
+    });
+
+    if (!$hasAny) {
+        return isset($data['exam_atpp_result']) && $data['exam_atpp_result'] !== ''
+            ? (float) $data['exam_atpp_result']
+            : null;
+    }
+
+    $p1c = (float) ($data['exam_atpp_part1_correct'] ?? 0);
+    $p1w = (float) ($data['exam_atpp_part1_wrong'] ?? 0);
+    $p2c = (float) ($data['exam_atpp_part2_correct'] ?? 0);
+    $p2w = (float) ($data['exam_atpp_part2_wrong'] ?? 0);
+    $p3c = (float) ($data['exam_atpp_part3_correct'] ?? 0);
+    $p3w = (float) ($data['exam_atpp_part3_wrong'] ?? 0);
+
+    $totalCorrect = $p1c + $p2c + $p3c;
+    $totalWrong = ($p1w + $p2w + $p3w) / 4;
+
+    return $totalCorrect - $totalWrong;
+}
+
     public static function normalizeComputedFields(array $data): array
 {
     $applicant = ActionApplicant::find($data['action_applicant_id'] ?? null);
@@ -151,6 +193,7 @@ class ActionApplication extends Model
         return $data;
     }
 
+    $data['exam_atpp_result'] = static::computeAtppResult($data);
 
     if (
         static::hasValue($data, 'exam_atpp_result') &&
@@ -164,9 +207,6 @@ $computedExamStatus = static::computeExamApplicationStatus(
     $applicant
 );
 
-logger([
-    'computed_exam_application_status' => $computedExamStatus,
-]);
 
 $data['exam_application_status'] = $computedExamStatus;
     } elseif (static::hasValue($data, 'exam_plan_date')) {

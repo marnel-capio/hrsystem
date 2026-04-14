@@ -76,8 +76,13 @@ const form = useForm({
     exam_plan_date: '',
     exam_actual_date: '',
     exam_venue: '',
-    exam_atpp_result: '',
-    exam_git_result: '',
+exam_atpp_part1_correct: '',
+exam_atpp_part1_wrong: '',
+exam_atpp_part2_correct: '',
+exam_atpp_part2_wrong: '',
+exam_atpp_part3_correct: '',
+exam_atpp_part3_wrong: '',
+exam_atpp_result: '',    exam_git_result: '',
     exam_prg_result: '',
     exam_result: '',
     exam_application_status: '',
@@ -152,6 +157,35 @@ function parseScore(value: string | number | null | undefined): number {
     return Number.isNaN(num) ? 0 : num
 }
 
+const computedAtppResult = computed(() => {
+    const p1c = parseScore(form.exam_atpp_part1_correct)
+    const p1w = parseScore(form.exam_atpp_part1_wrong)
+    const p2c = parseScore(form.exam_atpp_part2_correct)
+    const p2w = parseScore(form.exam_atpp_part2_wrong)
+    const p3c = parseScore(form.exam_atpp_part3_correct)
+    const p3w = parseScore(form.exam_atpp_part3_wrong)
+
+    const hasAny =
+        form.exam_atpp_part1_correct !== '' ||
+        form.exam_atpp_part1_wrong !== '' ||
+        form.exam_atpp_part2_correct !== '' ||
+        form.exam_atpp_part2_wrong !== '' ||
+        form.exam_atpp_part3_correct !== '' ||
+        form.exam_atpp_part3_wrong !== ''
+
+    if (!hasAny) return ''
+
+    const totalCorrect = p1c + p2c + p3c
+    const totalWrong = (p1w + p2w + p3w) / 4
+    const finalScore = totalCorrect - totalWrong
+
+    return finalScore.toFixed(2)
+})
+
+watch(computedAtppResult, (value) => {
+    form.exam_atpp_result = value
+})
+
 watch(
     [
         () => form.final_interview_score_1,
@@ -182,6 +216,30 @@ watch(
         form.final_interview_final = total.toFixed(2)
     }
 )
+
+watch(() => form.exam_atpp_part1_correct, (value) => {
+    validateScoreField('exam_atpp_part1_correct', 'ATPP Part I Correct', value)
+})
+
+watch(() => form.exam_atpp_part1_wrong, (value) => {
+    validateScoreField('exam_atpp_part1_wrong', 'ATPP Part I Wrong', value)
+})
+
+watch(() => form.exam_atpp_part2_correct, (value) => {
+    validateScoreField('exam_atpp_part2_correct', 'ATPP Part II Correct', value)
+})
+
+watch(() => form.exam_atpp_part2_wrong, (value) => {
+    validateScoreField('exam_atpp_part2_wrong', 'ATPP Part II Wrong', value)
+})
+
+watch(() => form.exam_atpp_part3_correct, (value) => {
+    validateScoreField('exam_atpp_part3_correct', 'ATPP Part III Correct', value)
+})
+
+watch(() => form.exam_atpp_part3_wrong, (value) => {
+    validateScoreField('exam_atpp_part3_wrong', 'ATPP Part III Wrong', value)
+})
 
 function handleFinalScoreManualInput() {
     finalScoreManuallyEdited.value = true
@@ -217,7 +275,7 @@ function validateScoreField(field: string, label: string, value: string | number
 }
 
 watch(() => form.exam_atpp_result, (value) => {
-    validateScoreField('exam_atpp_result', 'ATTP Result', value)
+    validateScoreField('exam_atpp_result', 'ATPP Result', value)
 })
 
 watch(() => form.exam_git_result, (value) => {
@@ -289,6 +347,21 @@ const examActualMin = computed(() => form.exam_plan_date || undefined)
 const initialInterviewActualMin = computed(() => form.initial_interview_plan_date || undefined)
 const finalInterviewMin = computed(() => form.initial_interview_plan_date || undefined)
 const jobOfferMin = computed(() => form.final_interview_date || undefined)
+
+const examCriteriaDisplay = computed(() => {
+    if (!selectedApplicant.value) return null
+
+    const category = getExamCategory(selectedApplicant.value)
+    const rules = props.applicationScoreRules?.exam?.[category]
+
+    if (!rules) return null
+
+    return {
+        category,
+        passed: rules.passed,
+        p2: rules.p2,
+    }
+})
 
 watch(() => form.exam_plan_date, (planDate) => {
     if (!planDate) return
@@ -464,7 +537,13 @@ watch(() => form.action_applicant_id, async (newApplicantId, oldApplicantId) => 
         form.exam_plan_date = ''
         form.exam_actual_date = ''
         form.exam_venue = ''
-        form.exam_atpp_result = ''
+form.exam_atpp_part1_correct = ''
+form.exam_atpp_part1_wrong = ''
+form.exam_atpp_part2_correct = ''
+form.exam_atpp_part2_wrong = ''
+form.exam_atpp_part3_correct = ''
+form.exam_atpp_part3_wrong = ''
+form.exam_atpp_result = ''
         form.exam_git_result = ''
         form.exam_prg_result = ''
         form.exam_application_status = ''
@@ -1125,277 +1204,627 @@ function handleClickOutside(event: MouseEvent) {
                             </div>
                         </div>
 
-                        <div class="form-section">
-                            <div class="section-header">
-                                <h3>Exam Details</h3>
-                            </div>
+<div class="form-section">
+    <div class="section-header">
+        <h3>Exam Details</h3>
+    </div>
+            <div class="form-grid grid-2">
+                <div class="form-field">
+                    <label class="field-label">Exam Plan Date</label>
+                    <input
+                        type="datetime-local"
+                        v-model="form.exam_plan_date"
+                        class="form-input"
+                        :disabled="!isApplicantSelected"
+                        :min="examPlanMin"
+                    />
+                    <span v-if="form.errors.exam_plan_date" class="error-message">
+                        {{ form.errors.exam_plan_date }}
+                    </span>
+                </div>
 
-                            <div class="form-grid grid-2">
-                                <div class="form-field">
-                                    <label class="field-label">Exam Plan Date</label>
-                                    <input
-                                        type="datetime-local"
-                                        v-model="form.exam_plan_date"
-                                        class="form-input"
-                                        :disabled="!isApplicantSelected"
-                                        :min="examPlanMin"
-                                    />
-                                    <span v-if="form.errors.exam_plan_date" class="error-message">{{ form.errors.exam_plan_date }}</span>
-                                </div>
+                <div class="form-field">
+                    <label class="field-label">Exam Actual Date</label>
+                    <input
+                        type="datetime-local"
+                        v-model="form.exam_actual_date"
+                        class="form-input"
+                        :disabled="!isApplicantSelected"
+                        :min="examActualMin"
+                    />
+                    <span v-if="form.errors.exam_actual_date" class="error-message">
+                        {{ form.errors.exam_actual_date }}
+                    </span>
+                </div>
+            </div>
 
-                                <div class="form-field">
-                                    <label class="field-label">Exam Actual Date</label>
-                                    <input
-                                        type="datetime-local"
-                                        v-model="form.exam_actual_date"
-                                        class="form-input"
-                                        :disabled="!isApplicantSelected"
-                                        :min="examActualMin"
-                                    />
-                                    <span v-if="form.errors.exam_actual_date" class="error-message">{{ form.errors.exam_actual_date }}</span>
-                                </div>
-                            </div>
+            <div class="form-field">
+                <label class="field-label">Exam Venue</label>
+                <select v-model="form.exam_venue" class="form-select" :disabled="!isApplicantSelected">
+                    <option value="">Select Venue</option>
+                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
+                        {{ venue.label }}
+                    </option>
+                </select>
+                <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue }}</span>
+            </div>
+    <div class="exam-section-layout">
+        <!-- LEFT SIDE -->
+        <div class="exam-form-column">
 
-                            <div class="form-field">
-                                <label class="field-label">Exam Venue</label>
-                                <select v-model="form.exam_venue" class="form-select" :disabled="!isApplicantSelected">
-                                    <option value="">Select Venue</option>
-                                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
-                                        {{ venue.label }}
-                                    </option>
-                                </select>
-                                <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue }}</span>
-                            </div>
 
-                            <div class="form-grid grid-3">
-                                <div class="form-field">
-                                    <label class="field-label">ATTP Result</label>
-                                    <input type="number" step="0.01" v-model="form.exam_atpp_result" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.exam_atpp_result" class="error-message">{{ form.errors.exam_atpp_result }}</span>
-                                    <span v-if="liveErrors.exam_atpp_result" class="error-message">{{ liveErrors.exam_atpp_result }}</span>
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">GIT Result</label>
-                                    <input type="number" step="0.01" v-model="form.exam_git_result" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.exam_git_result" class="error-message">{{ form.errors.exam_git_result }}</span>
-                                    <span v-if="liveErrors.exam_git_result" class="error-message">{{ liveErrors.exam_git_result }}</span>
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">PRG Result</label>
-                                    <input type="number" step="0.01" v-model="form.exam_prg_result" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.exam_prg_result" class="error-message">{{ form.errors.exam_prg_result }}</span>
-                                    <span v-if="liveErrors.exam_prg_result" class="error-message">{{ liveErrors.exam_prg_result }}</span>
-                                </div>
-                            </div>
-
-                            <div class="form-grid grid-2">
-                                <div class="form-field">
-                                    <label class="field-label">Exam Result</label>
-                                    <input
-                                        type="text"
-                                        class="form-input"
-                                        :value="examResultLabel || (!form.exam_application_status ? 'Auto-filled from application status' : '')"
-                                        readonly
-                                        :disabled="!isApplicantSelected || !form.exam_application_status"
-                                    />
-                                    <span v-if="form.errors.exam_result" class="error-message">{{ form.errors.exam_result }}</span>
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Exam Application Status</label>
-                                    <select
-                                        v-model="form.exam_application_status"
-                                        class="form-select"
-                                        :disabled="!isApplicantSelected || !selectedApplicant"
-                                    >
-                                        <option value="">Select Status</option>
-                                        <option v-for="status in examStatuses" :key="status.value" :value="status.value">
-                                            {{ status.label }}
-                                        </option>
-                                    </select>
-                                    <span v-if="form.errors.exam_application_status" class="error-message">{{ form.errors.exam_application_status }}</span>
-                                </div>
-                            </div>
-
-                            <div class="form-field">
-                                <label class="field-label">Exam Comments</label>
-                                <textarea v-model="form.exam_remarks" placeholder="Enter any remarks here..." rows="3" class="form-textarea" :disabled="!isApplicantSelected"></textarea>
-                                <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks }}</span>
-                            </div>
+            <div class="atpp-stack">
+                <div class="atpp-card">
+                    <div class="atpp-card-title">ATPP Part I </div>
+                    <div class="form-grid grid-2">
+                        <div class="form-field">
+                            <label class="field-label">Correct</label>
+                            <input
+                                type="number"
+                                step="1"
+                                min="0"
+                                v-model="form.exam_atpp_part1_correct"
+                                placeholder="0"
+                                class="form-input"
+                                :disabled="!isApplicantSelected"
+                            />
+                            <span v-if="form.errors.exam_atpp_part1_correct" class="error-message">
+                                {{ form.errors.exam_atpp_part1_correct }}
+                            </span>
+                            <span v-if="liveErrors.exam_atpp_part1_correct" class="error-message">
+                                {{ liveErrors.exam_atpp_part1_correct }}
+                            </span>
                         </div>
 
-                        <div class="form-section">
-                            <div class="section-header">
-                                <h3>Initial Interview</h3>
-                            </div>
+                        <div class="form-field">
+                            <label class="field-label">Wrong</label>
+                            <input
+                                type="number"
+                                step="1"
+                                min="0"
+                                v-model="form.exam_atpp_part1_wrong"
+                                placeholder="0"
+                                class="form-input"
+                                :disabled="!isApplicantSelected"
+                            />
+                            <span v-if="form.errors.exam_atpp_part1_wrong" class="error-message">
+                                {{ form.errors.exam_atpp_part1_wrong }}
+                            </span>
+                            <span v-if="liveErrors.exam_atpp_part1_wrong" class="error-message">
+                                {{ liveErrors.exam_atpp_part1_wrong }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="form-grid grid-2">
-                                <div class="form-field">
-                                    <label class="field-label">Plan Date</label>
-<input
-    type="datetime-local"
-    v-model="form.initial_interview_plan_date"
-    class="form-input"
-    :min="initialInterviewPlanMin || undefined"
-    :disabled="!isApplicantSelected"
-/>
-                                    <span v-if="form.errors.initial_interview_plan_date" class="error-message">{{ form.errors.initial_interview_plan_date }}</span>
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Actual Date</label>
-                                    <input
-                                        type="datetime-local"
-                                        v-model="form.initial_interview_actual_date"
-                                        class="form-input"
-                                        :disabled="!isApplicantSelected"
-                                        :min="initialInterviewActualMin"
-                                    />
-                                    <span v-if="form.errors.initial_interview_actual_date" class="error-message">{{ form.errors.initial_interview_actual_date }}</span>
-                                </div>
-                            </div>
-
-                            <div class="form-field">
-                                <label class="field-label">Venue</label>
-                                <select v-model="form.initial_interview_venue" class="form-select" :disabled="!isApplicantSelected">
-                                    <option value="">Select Venue</option>
-                                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
-                                        {{ venue.label }}
-                                    </option>
-                                </select>
-                                <span v-if="form.errors.initial_interview_venue" class="error-message">{{ form.errors.initial_interview_venue }}</span>
-                            </div>
-
-                            <div class="form-field">
-                                <label class="field-label">Initial Interview Final Score</label>
-                                <input type="number" step="0.01" v-model="form.initial_interview_final" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                <span v-if="form.errors.initial_interview_final" class="error-message">{{ form.errors.initial_interview_final }}</span>
-                                <span v-if="liveErrors.initial_interview_final" class="error-message">{{ liveErrors.initial_interview_final }}</span>
-                            </div>
-
-                            <div class="form-grid grid-2">
-                                <div class="form-field">
-                                    <label class="field-label">Result</label>
-                                    <input
-                                        type="text"
-                                        class="form-input"
-                                        :value="initialInterviewResultLabel || (!form.initial_interview_application_status ? 'Auto-filled from application status' : '')"
-                                        readonly
-                                        :disabled="!isApplicantSelected || !form.initial_interview_application_status"
-                                    />
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Application Status</label>
-                                    <select
-                                        v-model="form.initial_interview_application_status"
-                                        class="form-select"
-                                        :disabled="!isApplicantSelected"
-                                    >
-                                        <option value="">Select Status</option>
-                                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
-                                            {{ status.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-field">
-                                <label class="field-label">Initial Interview Comments</label>
-                                <textarea v-model="form.initial_interview_remarks" placeholder="Enter any remarks here..." rows="3" class="form-textarea" :disabled="!isApplicantSelected"></textarea>
-                                <span v-if="form.errors.initial_interview_remarks" class="error-message">{{ form.errors.initial_interview_remarks }}</span>
-                            </div>
+                <div class="atpp-card">
+                    <div class="atpp-card-title">ATPP Part II</div>
+                    <div class="form-grid grid-2">
+                        <div class="form-field">
+                            <label class="field-label">Correct</label>
+                            <input
+                                type="number"
+                                step="1"
+                                min="0"
+                                v-model="form.exam_atpp_part2_correct"
+                                placeholder="0"
+                                class="form-input"
+                                :disabled="!isApplicantSelected"
+                            />
+                            <span v-if="form.errors.exam_atpp_part2_correct" class="error-message">
+                                {{ form.errors.exam_atpp_part2_correct }}
+                            </span>
+                            <span v-if="liveErrors.exam_atpp_part2_correct" class="error-message">
+                                {{ liveErrors.exam_atpp_part2_correct }}
+                            </span>
                         </div>
 
-                        <div class="form-section">
-                            <div class="section-header">
-                                <h3>Final Interview</h3>
-                            </div>
-
-                            <div class="form-field">
-                                <label class="field-label">Date</label>
-                                <input
-                                    type="datetime-local"
-                                    v-model="form.final_interview_date"
-                                    class="form-input"
-                                    :disabled="!isApplicantSelected"
-                                    :min="finalInterviewMin"
-                                />
-                                <span v-if="form.errors.final_interview_date" class="error-message">{{ form.errors.final_interview_date }}</span>
-                            </div>
-
-                            <div class="form-grid grid-5">
-                                <div class="form-field">
-                                    <label class="field-label">Score 1</label>
-                                    <input type="number" step="0.01" v-model="form.final_interview_score_1" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.final_interview_score_1" class="error-message">{{ form.errors.final_interview_score_1 }}</span>
-                                    <span v-if="liveErrors.final_interview_score_1" class="error-message">{{ liveErrors.final_interview_score_1 }}</span>
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Score 2</label>
-                                    <input type="number" step="0.01" v-model="form.final_interview_score_2" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.final_interview_score_2" class="error-message">{{ form.errors.final_interview_score_2 }}</span>
-                                    <span v-if="liveErrors.final_interview_score_2" class="error-message">{{ liveErrors.final_interview_score_2 }}</span>
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Score 3</label>
-                                    <input type="number" step="0.01" v-model="form.final_interview_score_3" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.final_interview_score_3" class="error-message">{{ form.errors.final_interview_score_3 }}</span>
-                                    <span v-if="liveErrors.final_interview_score_3" class="error-message">{{ liveErrors.final_interview_score_3 }}</span>
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Score 4</label>
-                                    <input type="number" step="0.01" v-model="form.final_interview_score_4" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.final_interview_score_4" class="error-message">{{ form.errors.final_interview_score_4 }}</span>
-                                    <span v-if="liveErrors.final_interview_score_4" class="error-message">{{ liveErrors.final_interview_score_4 }}</span>
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Final Score</label>
-                                    <input type="number" step="0.01" v-model="form.final_interview_final" @input="handleFinalScoreManualInput" placeholder="0.00" class="form-input" :disabled="!isApplicantSelected" />
-                                    <span v-if="form.errors.final_interview_final" class="error-message">{{ form.errors.final_interview_final }}</span>
-                                    <span v-if="liveErrors.final_interview_final" class="error-message">{{ liveErrors.final_interview_final }}</span>
-                                </div>
-                            </div>
-
-                            <div class="form-grid grid-2">
-                                <div class="form-field">
-                                    <label class="field-label">Result</label>
-                                    <input
-                                        type="text"
-                                        class="form-input"
-                                        :value="finalInterviewResultLabel || (!form.final_interview_application_status ? 'Auto-filled from application status' : '')"
-                                        readonly
-                                        :disabled="!isApplicantSelected || !form.final_interview_application_status"
-                                    />
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Application Status</label>
-                                    <select
-                                        v-model="form.final_interview_application_status"
-                                        class="form-select"
-                                        :disabled="!isApplicantSelected"
-                                    >
-                                        <option value="">Select Status</option>
-                                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
-                                            {{ status.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-field">
-                                <label class="field-label">Final Interview Comments</label>
-                                <textarea v-model="form.final_interview_remarks" placeholder="Enter any remarks here..." rows="3" class="form-textarea" :disabled="!isApplicantSelected"></textarea>
-                                <span v-if="form.errors.final_interview_remarks" class="error-message">{{ form.errors.final_interview_remarks }}</span>
-                            </div>
+                        <div class="form-field">
+                            <label class="field-label">Wrong</label>
+                            <input
+                                type="number"
+                                step="1"
+                                min="0"
+                                v-model="form.exam_atpp_part2_wrong"
+                                placeholder="0"
+                                class="form-input"
+                                :disabled="!isApplicantSelected"
+                            />
+                            <span v-if="form.errors.exam_atpp_part2_wrong" class="error-message">
+                                {{ form.errors.exam_atpp_part2_wrong }}
+                            </span>
+                            <span v-if="liveErrors.exam_atpp_part2_wrong" class="error-message">
+                                {{ liveErrors.exam_atpp_part2_wrong }}
+                            </span>
                         </div>
+                    </div>
+                </div>
+
+                <div class="atpp-card">
+                    <div class="atpp-card-title">ATPP Part III</div>
+                    <div class="form-grid grid-2">
+                        <div class="form-field">
+                            <label class="field-label">Correct</label>
+                            <input
+                                type="number"
+                                step="1"
+                                min="0"
+                                v-model="form.exam_atpp_part3_correct"
+                                placeholder="0"
+                                class="form-input"
+                                :disabled="!isApplicantSelected"
+                            />
+                            <span v-if="form.errors.exam_atpp_part3_correct" class="error-message">
+                                {{ form.errors.exam_atpp_part3_correct }}
+                            </span>
+                            <span v-if="liveErrors.exam_atpp_part3_correct" class="error-message">
+                                {{ liveErrors.exam_atpp_part3_correct }}
+                            </span>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="field-label">Wrong</label>
+                            <input
+                                type="number"
+                                step="1"
+                                min="0"
+                                v-model="form.exam_atpp_part3_wrong"
+                                placeholder="0"
+                                class="form-input"
+                                :disabled="!isApplicantSelected"
+                            />
+                            <span v-if="form.errors.exam_atpp_part3_wrong" class="error-message">
+                                {{ form.errors.exam_atpp_part3_wrong }}
+                            </span>
+                            <span v-if="liveErrors.exam_atpp_part3_wrong" class="error-message">
+                                {{ liveErrors.exam_atpp_part3_wrong }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="exam-criteria-column">
+            <div class="criteria-panel">
+
+                <template v-if="examCriteriaDisplay">
+                    <div class="criteria-panel-header">
+                        <div class="criteria-panel-title">Exam Criteria</div>
+                    </div>
+
+
+
+                    <div class="criteria-rule passed">
+                        <div class="criteria-rule-title">PASSED</div>
+                        <ul class="criteria-list">
+                            <li>ATPP must be at least {{ examCriteriaDisplay.passed.attp }}</li>
+                            <li>GIT must be at least {{ examCriteriaDisplay.passed.git }}</li>
+                            <li>PRG must be at least {{ examCriteriaDisplay.passed.prg }}</li>
+                        </ul>
+                    </div>
+
+                    <div v-if="examCriteriaDisplay.p2" class="criteria-rule p2">
+                        <div class="criteria-rule-title">P2</div>
+                        <ul class="criteria-list">
+                            <li>ATPP must be at least {{ examCriteriaDisplay.p2.attp }}</li>
+                            <li>GIT must be at least {{ examCriteriaDisplay.p2.git }}</li>
+                            <li>PRG must be at least {{ examCriteriaDisplay.p2.prg }}</li>
+                        </ul>
+                    </div>
+
+                    <div class="criteria-rule failed">
+                        <div class="criteria-rule-title">FAILED</div>
+                        <ul class="criteria-list">
+                            <li>ATPP is below {{ examCriteriaDisplay.p2?.attp ?? examCriteriaDisplay.passed.attp }}</li>
+                            <li>or GIT is below {{ examCriteriaDisplay.p2?.git ?? examCriteriaDisplay.passed.git }}</li>
+                            <li>or PRG is below {{ examCriteriaDisplay.p2?.prg ?? examCriteriaDisplay.passed.prg }}</li>
+                        </ul>
+                    </div>
+                </template>
+
+                <template v-else>
+                    <div class="criteria-panel-header">
+                        <div class="criteria-panel-title">Exam Criteria</div>
+                        <div class="criteria-panel-subtitle">Select an applicant first</div>
+                    </div>
+
+                    <div class="criteria-empty">
+                        The applicable criteria depends on the applicant's age and degree category.
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+                <div class="form-grid grid-3 pt-5">
+                <div class="form-field">
+                    <label class="field-label">ATPP Final Result</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        :value="computedAtppResult"
+                        placeholder="0.00"
+                        class="form-input"
+                        readonly
+                    />
+                    <small class="helper-text">
+                        ATPP = Total Correct - (Total Wrong / 4)
+                    </small>
+                    <span v-if="form.errors.exam_atpp_result" class="error-message">
+                        {{ form.errors.exam_atpp_result }}
+                    </span>
+                    <span v-if="liveErrors.exam_atpp_result" class="error-message">
+                        {{ liveErrors.exam_atpp_result }}
+                    </span>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">GIT Result</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        v-model="form.exam_git_result"
+                        placeholder="0.00"
+                        class="form-input"
+                        :disabled="!isApplicantSelected"
+                    />
+                    <span v-if="form.errors.exam_git_result" class="error-message">{{ form.errors.exam_git_result }}</span>
+                    <span v-if="liveErrors.exam_git_result" class="error-message">{{ liveErrors.exam_git_result }}</span>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">PRG Result</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        v-model="form.exam_prg_result"
+                        placeholder="0.00"
+                        class="form-input"
+                        :disabled="!isApplicantSelected"
+                    />
+                    <span v-if="form.errors.exam_prg_result" class="error-message">{{ form.errors.exam_prg_result }}</span>
+                    <span v-if="liveErrors.exam_prg_result" class="error-message">{{ liveErrors.exam_prg_result }}</span>
+                </div>
+            </div>
+                <div class="form-grid grid-2">
+                <div class="form-field">
+                    <label class="field-label pt-5">Exam Result</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        :value="examResultLabel || (!form.exam_application_status ? 'Auto-filled from application status' : '')"
+                        readonly
+                        :disabled="!isApplicantSelected || !form.exam_application_status"
+                    />
+                    <span v-if="form.errors.exam_result" class="error-message">{{ form.errors.exam_result }}</span>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label pt-5">Exam Application Status</label>
+                    <select
+                        v-model="form.exam_application_status"
+                        class="form-select"
+                        :disabled="!isApplicantSelected || !selectedApplicant"
+                    >
+                        <option value="">Select Status</option>
+                        <option v-for="status in examStatuses" :key="status.value" :value="status.value">
+                            {{ status.label }}
+                        </option>
+                    </select>
+                    <span v-if="form.errors.exam_application_status" class="error-message">
+                        {{ form.errors.exam_application_status }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="field-label">Exam Comments</label>
+                <textarea
+                    v-model="form.exam_remarks"
+                    placeholder="Enter any remarks here..."
+                    rows="3"
+                    class="form-textarea"
+                    :disabled="!isApplicantSelected"
+                ></textarea>
+                <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks }}</span>
+            </div>
+</div>
+
+<div class="form-section">
+    <div class="section-header">
+        <h3>Initial Interview</h3>
+    </div>
+
+    <div class="exam-section-layout">
+        <!-- LEFT SIDE -->
+        <div class="exam-form-column">
+
+            <!-- Dates -->
+            <div class="form-grid grid-2">
+                <div class="form-field">
+                    <label class="field-label">Plan Date</label>
+                    <input type="datetime-local" v-model="form.initial_interview_plan_date" class="form-input" />
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">Actual Date</label>
+                    <input type="datetime-local" v-model="form.initial_interview_actual_date" class="form-input" />
+                </div>
+            </div>
+
+            <!-- Venue -->
+            <div class="form-field">
+                <label class="field-label">Venue</label>
+                <select v-model="form.initial_interview_venue" class="form-select">
+                    <option value="">Select Venue</option>
+                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
+                        {{ venue.label }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Final Score -->
+            <div class="form-field">
+                <label class="field-label">Initial Interview Final Score</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    v-model="form.initial_interview_final"
+                    placeholder="0.00"
+                    class="form-input"
+                />
+            </div>
+
+            <!-- ✅ MOVE RESULT UP -->
+
+
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="exam-criteria-column">
+            <div class="criteria-panel compact">
+                <div class="criteria-panel-title">Initial Interview Criteria</div>
+
+                    <div class="criteria-rule passed">
+        <div class="criteria-rule-title">1 - Highly Recommended</div>
+    </div>
+                        <div class="criteria-rule passed">
+        <div class="criteria-rule-title">2- Recommended</div>
+    </div>
+                        <div class="criteria-rule p2">
+        <div class="criteria-rule-title">3 - Average</div>
+    </div>
+                        <div class="criteria-rule failed">
+        <div class="criteria-rule-title">4 - Not Recommended</div>
+    </div>
+                            <div class="criteria-rule failed">
+        <div class="criteria-rule-title">5 - Never Recommended</div>
+    </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ COMMENTS FULL WIDTH -->
+             <div class="form-grid grid-2">
+                <div class="form-field">
+                    <label class="field-label">Result</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        :value="initialInterviewResultLabel || (!form.initial_interview_application_status ? 'Auto-filled' : '')"
+                        readonly
+                    />
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">Application Status</label>
+                    <select v-model="form.initial_interview_application_status" class="form-select">
+                        <option value="">Select Status</option>
+                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
+                            {{ status.label }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+    <div class="form-field mt-3">
+
+        <label class="field-label">Initial Interview Comments</label>
+        <textarea
+            v-model="form.initial_interview_remarks"
+            placeholder="Enter any remarks here..."
+            rows="3"
+            class="form-textarea"
+        ></textarea>
+    </div>
+</div>
+
+<div class="form-section">
+    <div class="section-header">
+        <h3>Final Interview</h3>
+    </div>
+
+    <div class="exam-section-layout">
+        <div class="exam-form-column">
+            <div class="form-field">
+                <label class="field-label">Date</label>
+                <input
+                    type="datetime-local"
+                    v-model="form.final_interview_date"
+                    class="form-input"
+                    :disabled="!isApplicantSelected"
+                    :min="finalInterviewMin"
+                />
+                <span v-if="form.errors.final_interview_date" class="error-message">
+                    {{ form.errors.final_interview_date }}
+                </span>
+            </div>
+
+            <div class="form-grid grid-5">
+                <div class="form-field">
+                    <label class="field-label">Score 1</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        v-model="form.final_interview_score_1"
+                        placeholder="0.00"
+                        class="form-input"
+                        :disabled="!isApplicantSelected"
+                    />
+                    <span v-if="form.errors.final_interview_score_1" class="error-message">
+                        {{ form.errors.final_interview_score_1 }}
+                    </span>
+                    <span v-if="liveErrors.final_interview_score_1" class="error-message">
+                        {{ liveErrors.final_interview_score_1 }}
+                    </span>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">Score 2</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        v-model="form.final_interview_score_2"
+                        placeholder="0.00"
+                        class="form-input"
+                        :disabled="!isApplicantSelected"
+                    />
+                    <span v-if="form.errors.final_interview_score_2" class="error-message">
+                        {{ form.errors.final_interview_score_2 }}
+                    </span>
+                    <span v-if="liveErrors.final_interview_score_2" class="error-message">
+                        {{ liveErrors.final_interview_score_2 }}
+                    </span>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">Score 3</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        v-model="form.final_interview_score_3"
+                        placeholder="0.00"
+                        class="form-input"
+                        :disabled="!isApplicantSelected"
+                    />
+                    <span v-if="form.errors.final_interview_score_3" class="error-message">
+                        {{ form.errors.final_interview_score_3 }}
+                    </span>
+                    <span v-if="liveErrors.final_interview_score_3" class="error-message">
+                        {{ liveErrors.final_interview_score_3 }}
+                    </span>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">Score 4</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        v-model="form.final_interview_score_4"
+                        placeholder="0.00"
+                        class="form-input"
+                        :disabled="!isApplicantSelected"
+                    />
+                    <span v-if="form.errors.final_interview_score_4" class="error-message">
+                        {{ form.errors.final_interview_score_4 }}
+                    </span>
+                    <span v-if="liveErrors.final_interview_score_4" class="error-message">
+                        {{ liveErrors.final_interview_score_4 }}
+                    </span>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">Final Score</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        v-model="form.final_interview_final"
+                        @input="handleFinalScoreManualInput"
+                        placeholder="0.00"
+                        class="form-input"
+                        :disabled="!isApplicantSelected"
+                    />
+                    <span v-if="form.errors.final_interview_final" class="error-message">
+                        {{ form.errors.final_interview_final }}
+                    </span>
+                    <span v-if="liveErrors.final_interview_final" class="error-message">
+                        {{ liveErrors.final_interview_final }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-grid grid-2">
+                <div class="form-field">
+                    <label class="field-label">Result</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        :value="finalInterviewResultLabel || (!form.final_interview_application_status ? 'Auto-filled from application status' : '')"
+                        readonly
+                        :disabled="!isApplicantSelected || !form.final_interview_application_status"
+                    />
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">Application Status</label>
+                    <select
+                        v-model="form.final_interview_application_status"
+                        class="form-select"
+                        :disabled="!isApplicantSelected"
+                    >
+                        <option value="">Select Status</option>
+                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
+                            {{ status.label }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+
+        </div>
+
+
+        <div class="exam-criteria-column">
+            <div class="criteria-panel compact">
+                <div class="criteria-panel-title">Final Interview Criteria</div>
+
+                    <div class="criteria-rule passed">
+        <div class="criteria-rule-title">1 - Highly Recommended</div>
+    </div>
+                        <div class="criteria-rule passed">
+        <div class="criteria-rule-title">2- Recommended</div>
+    </div>
+                        <div class="criteria-rule p2">
+        <div class="criteria-rule-title">3 - Average</div>
+    </div>
+                        <div class="criteria-rule failed">
+        <div class="criteria-rule-title">4 - Not Recommended</div>
+    </div>
+                            <div class="criteria-rule failed">
+        <div class="criteria-rule-title">5 - Never Recommended</div>
+    </div>
+            </div>
+        </div>
+
+    </div>
+                        <div class="form-field">
+                <label class="field-label">Final Interview Comments</label>
+                <textarea
+                    v-model="form.final_interview_remarks"
+                    placeholder="Enter any remarks here..."
+                    rows="3"
+                    class="form-textarea"
+                    :disabled="!isApplicantSelected"
+                ></textarea>
+                <span v-if="form.errors.final_interview_remarks" class="error-message">
+                    {{ form.errors.final_interview_remarks }}
+                </span>
+            </div>
+</div>
 
                         <div class="form-section">
                             <div class="section-header">
@@ -2021,4 +2450,261 @@ a.btn-secondary:hover {
         border: 1px solid #dddddd;
     }
 }
+
+.exam-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) 320px;
+    gap: 1rem;
+    align-items: start;
+}
+
+.exam-main {
+    min-width: 0;
+}
+
+.exam-side {
+    min-width: 0;
+}
+
+.criteria-side {
+    position: sticky;
+    top: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    font-size: 0.85rem;
+}
+
+.criteria-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.criteria-category {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 0.75rem;
+}
+
+.criteria-section {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.criteria-label {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.criteria-section.passed {
+    background: #ecfdf5;
+    color: #065f46;
+}
+
+.criteria-section.p2 {
+    background: #fffbeb;
+    color: #92400e;
+}
+
+.criteria-section.failed {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+@media (max-width: 1024px) {
+    .exam-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .criteria-side {
+        position: static;
+    }
+}
+
+.exam-section-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 1.25rem;
+    align-items: start;
+    margin-top: 1rem;
+}
+
+.exam-form-column {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.exam-criteria-column {
+    min-width: 0;
+}
+
+.atpp-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.atpp-card {
+    padding: 1rem;
+    border: 1px solid var(--ats-border-soft);
+    border-radius: 0.75rem;
+    background: #fafafa;
+}
+
+.atpp-card-title {
+    margin-bottom: 0.875rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.helper-text {
+    font-size: 0.75rem;
+    color: var(--ats-text-muted);
+    line-height: 1.4;
+}
+
+.criteria-panel {
+    position: sticky;
+    top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--ats-border-soft);
+    border-radius: 0.75rem;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.criteria-panel-header {
+    margin-bottom: 1rem;
+}
+
+.criteria-panel-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.criteria-panel-subtitle {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--ats-text-muted);
+    letter-spacing: 0.02em;
+}
+
+.criteria-formula {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.625rem;
+}
+
+.criteria-formula-title {
+    margin-bottom: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+}
+
+.criteria-formula-text {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: #475569;
+}
+
+.criteria-rule {
+    margin-bottom: 0.875rem;
+    padding: 0.85rem;
+    border-radius: 0.625rem;
+}
+
+.criteria-rule:last-child {
+    margin-bottom: 0;
+}
+
+.criteria-rule-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.criteria-list {
+    margin: 0;
+    padding-left: 1rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.criteria-list li + li {
+    margin-top: 0.2rem;
+}
+
+.criteria-rule.passed {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #bbf7d0;
+}
+
+.criteria-rule.p2 {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.criteria-rule.failed {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.criteria-empty {
+    padding: 0.85rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 0.625rem;
+}
+
+@media (max-width: 1100px) {
+    .exam-section-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .exam-criteria-column {
+        order: -1;
+    }
+
+    .criteria-panel {
+        position: static;
+    }
+}
+
+.criteria-panel.compact {
+    padding: 0.75rem;
+}
+
+.criteria-panel.compact .criteria-rule {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.criteria-panel.compact .criteria-rule-title {
+    font-size: 0.75rem;
+}
+
+.criteria-panel.compact .criteria-panel-title {
+    font-size: 0.9rem;
+}
+
+.criteria-panel.compact .criteria-panel-header {
+    margin-bottom: 0.5rem;
+}
+
+
 </style>

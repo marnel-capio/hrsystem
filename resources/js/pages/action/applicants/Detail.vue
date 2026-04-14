@@ -27,6 +27,7 @@ const formatDateTime = (dateString: string | null) => {
     if (!dateString) return ''
     const date = new Date(dateString)
     return date.toLocaleString('en-US', {
+        timeZone: 'Asia/Manila',
         month: 'long',
         day: 'numeric',
         year: 'numeric',

@@ -77,11 +77,12 @@ const submitBulkEditSchedule = async () => {
             `/action/applications/${application.value.id}/interviews/bulk-update-schedule`,
             {
                 interview_ids: selectedInterviewers.value,
-                scheduled_date: bulkEditScheduledDate.value,
+                scheduled_date: normalizeDateTimeForSubmit(bulkEditScheduledDate.value),
             }
         )
 
         interviews.value = response.data.interviews || interviews.value
+        syncApplicationDatesFromInterviews()
         showBulkEditScheduleModal.value = false
         selectedInterviewers.value = []
         selectAll.value = false
@@ -211,12 +212,36 @@ const filteredAvailableInterviewers = computed(() => {
     )
 })
 
+const normalizeDateTimeForSubmit = (value: string) => {
+    if (!value) return value
+
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
+        return value.replace('T', ' ') + ':00'
+    }
+
+    return value
+}
+
 const formatDateTime = (dateString: string | null) => {
     if (!dateString) return '-'
 
-    const date = new Date(dateString)
+    const raw = String(dateString).replace('T', ' ').replace('Z', '').slice(0, 16)
+    const [datePart, timePart] = raw.split(' ')
 
-    return date.toLocaleString('en-US', {
+    if (!datePart || !timePart) return String(dateString)
+
+    const [year, month, day] = datePart.split('-').map(Number)
+    const [hour, minute] = timePart.split(':').map(Number)
+
+    const localDate = new Date(
+        year,
+        (month || 1) - 1,
+        day || 1,
+        hour || 0,
+        minute || 0
+    )
+
+    return localDate.toLocaleString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
@@ -387,6 +412,16 @@ const closeDeclineReasonModal = () => {
     selectedDeclinedInterview.value = null
 }
 
+const syncApplicationDatesFromInterviews = () => {
+    const exam = interviews.value.find(i => Number(i.interview_type) === 1)
+    const initial = interviews.value.find(i => Number(i.interview_type) === 2)
+    const final = interviews.value.find(i => Number(i.interview_type) === 3)
+
+    if (exam) application.value.exam_plan_date = exam.scheduled_date
+    if (initial) application.value.initial_interview_plan_date = initial.scheduled_date
+    if (final) application.value.final_interview_date = final.scheduled_date
+}
+
 const submitBulkAdd = async () => {
     if (selectedBulkInterviewers.value.length === 0) {
         showToast('Please select at least one interviewer', 'error')
@@ -404,7 +439,7 @@ const submitBulkAdd = async () => {
         const payload = {
             interviewer_ids: selectedBulkInterviewers.value.map(i => i.id),
             interview_type: Number(bulkAddStage.value),
-            scheduled_date: bulkAddPlannedDate.value,
+            scheduled_date: normalizeDateTimeForSubmit(bulkAddPlannedDate.value),
         }
 
         const response = await axios.post(
@@ -413,6 +448,7 @@ const submitBulkAdd = async () => {
         )
 
         interviews.value = response.data.interviews || interviews.value
+        syncApplicationDatesFromInterviews()
 
         showBulkAddModal.value = false
         selectedBulkInterviewers.value = []
@@ -506,47 +542,7 @@ const pendingApprovalInterviewers = computed(() => {
     )
 })
 
-const examRows = computed(() =>
-    interviews.value.filter((i: any) => Number(i.interview_type) === 1)
-)
 
-const initialInterviewRows = computed(() =>
-    interviews.value.filter((i: any) => Number(i.interview_type) === 2)
-)
-
-const finalInterviewRows = computed(() =>
-    interviews.value.filter((i: any) => Number(i.interview_type) === 3)
-)
-
-const isApproved = (status: number) => Number(status) === 2
-const isDone = (status: number) => Number(status) === 4
-
-const examReadyForApplicantNotification = computed(() => {
-    if (examRows.value.length === 0) return false
-
-    const allApproved = examRows.value.every((i: any) => isApproved(i.status))
-    const anyDone = examRows.value.some((i: any) => isDone(i.status))
-
-    return allApproved && !anyDone
-})
-
-const initialReadyForApplicantNotification = computed(() => {
-    if (initialInterviewRows.value.length === 0) return false
-
-    const allApproved = initialInterviewRows.value.every((i: any) => isApproved(i.status))
-    const anyDone = initialInterviewRows.value.some((i: any) => isDone(i.status))
-
-    return allApproved && !anyDone
-})
-
-const finalReadyForApplicantNotification = computed(() => {
-    if (finalInterviewRows.value.length === 0) return false
-
-    const allApproved = finalInterviewRows.value.every((i: any) => isApproved(i.status))
-    const anyDone = finalInterviewRows.value.some((i: any) => isDone(i.status))
-
-    return allApproved && !anyDone
-})
 
 const failedStage = computed(() => {
     if (Number(application.value?.final_interview_result) === 3) {
@@ -583,30 +579,6 @@ const availableNotificationOptions = computed(() => {
         })
     }
 
-    if (examReadyForApplicantNotification.value) {
-        options.push({
-            value: 'applicant_exam_scheduled',
-            label: 'Send applicant exam schedule',
-            description: 'Notify the applicant about the approved exam schedule.',
-        })
-    }
-
-    if (initialReadyForApplicantNotification.value) {
-        options.push({
-            value: 'applicant_initial_scheduled',
-            label: 'Send applicant initial interview schedule',
-            description: 'Notify the applicant about the approved initial interview schedule.',
-        })
-    }
-
-    if (finalReadyForApplicantNotification.value) {
-        options.push({
-            value: 'applicant_final_scheduled',
-            label: 'Send applicant final interview schedule',
-            description: 'Notify the applicant about the approved final interview schedule.',
-        })
-    }
-
     if (failedStage.value) {
         options.push({
             value: 'applicant_failed',
@@ -639,45 +611,6 @@ const notificationPreview = computed(() => {
                 summary: `This email tells interviewer(s) that they have a pending interview assignment for ${applicantFullName.value} and includes a direct link to the application page so they can review and respond.`,
             }
 
-        case 'applicant_exam_scheduled':
-            return {
-                subject: '【HR System】AWS Application Schedule',
-                recipients: [
-                    {
-                        name: applicantFullName.value,
-                        email: application.value?.applicant?.email_address || '',
-                        extra: 'Applicant',
-                    }
-                ],
-                summary: `This email tells the applicant that their exam schedule has been confirmed.`,
-            }
-
-        case 'applicant_initial_scheduled':
-            return {
-                subject: '【HR System】AWS Application Schedule',
-                recipients: [
-                    {
-                        name: applicantFullName.value,
-                        email: application.value?.applicant?.email_address || '',
-                        extra: 'Applicant',
-                    }
-                ],
-                summary: `This email tells the applicant that their initial interview schedule has been confirmed.`,
-            }
-
-        case 'applicant_final_scheduled':
-            return {
-                subject: '【HR System】AWS Application Schedule',
-                recipients: [
-                    {
-                        name: applicantFullName.value,
-                        email: application.value?.applicant?.email_address || '',
-                        extra: 'Applicant',
-                    }
-                ],
-                summary: `This email tells the applicant that their final interview schedule has been confirmed.`,
-            }
-
         case 'applicant_failed':
             return {
                 subject: '【HR System】Application Update',
@@ -707,6 +640,23 @@ const notificationPreview = computed(() => {
         default:
             return null
     }
+})
+
+const willTriggerApplicantAutoEmail = computed(() => {
+    const current = acceptDeclineInterviewer.value
+    if (!current) return false
+
+    const sameStageRows = interviews.value.filter((i: any) =>
+        Number(i.interview_type) === Number(current.interview_type)
+    )
+
+    const otherRows = sameStageRows.filter((i: any) => i.id !== current.id)
+
+    return (
+        sameStageRows.length > 0 &&
+        Number(current.status) === 1 &&
+        otherRows.every((i: any) => Number(i.status) === 2)
+    )
 })
 
 watch(acceptDeclineReason, (newVal) => {
@@ -875,9 +825,8 @@ watch(errorMessage, (newVal) => {
                                 <User v-else class="w-10 h-10 text-blue-600" />
                             </div>
                             <h2 class="text-2xl font-extrabold tracking-wide drop-shadow">
-                                {{ application.applicant.last_name }}, {{ application.applicant.first_name }}
+                                {{ application.applicant.last_name }}, {{ application.applicant.first_name }} {{ application.applicant.middle_name }}
                             </h2>
-                            <p class="text-sm opacity-90 mt-1">{{ application.applicant.middle_name }}</p>
                             <p class="text-xs opacity-75 mt-2">{{ application.applicant.email_address }}</p>
                             <p class="text-xs opacity-75">{{ application.applicant.contact_number }}</p>
                         </div>
@@ -937,22 +886,6 @@ watch(errorMessage, (newVal) => {
                                     </a>
                                 </div>
 
-                                <div
-                                    v-if="application.upload_pic"
-                                    class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <Image class="w-4 h-4 text-purple-600" />
-                                        <span class="text-sm">2x2 Picture</span>
-                                    </div>
-                                    <a
-                                        :href="getFileUrl(application.upload_pic)"
-                                        target="_blank"
-                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                    >
-                                        View Image
-                                    </a>
-                                </div>
                             </div>
 
                             <div v-else class="text-sm text-gray-500 dark:text-gray-400">
@@ -969,40 +902,91 @@ watch(errorMessage, (newVal) => {
                         </h2>
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm border-collapse border">
-                                <tbody>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Plan Date</td>
-                                        <td class="px-3 py-2 border">{{ formatDateTime(application.exam_plan_date) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Actual Date</td>
-                                        <td class="px-3 py-2 border">{{ formatDateTime(application.exam_actual_date) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Venue</td>
-                                        <td class="px-3 py-2 border">{{ examVenues[application.exam_venue] ?? '-' }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Programming Result</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.exam_prg_result) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">ATPP Result</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_result) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">GIT Result</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.exam_git_result) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamResultLabel(application.exam_result))]">
-                                                {{ getExamResultLabel(application.exam_result) || '-' }}
-                                            </span>
-                                        </td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamApplicationStatusLabel(application.exam_application_status))]">
-                                                {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
+<tbody>
+    <!-- Dates -->
+    <tr class="border">
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Plan Date</td>
+        <td class="px-3 py-2 border">{{ formatDateTime(application.exam_plan_date) }}</td>
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Actual Date</td>
+        <td class="px-3 py-2 border">{{ formatDateTime(application.exam_actual_date) }}</td>
+    </tr>
+
+    <!-- Venue + PRG -->
+    <tr class="border">
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Venue</td>
+        <td class="px-3 py-2 border">{{ examVenues[application.exam_venue] ?? '-' }}</td>
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Programming Result</td>
+        <td class="px-3 py-2 border">{{ formatScore(application.exam_prg_result) }}</td>
+    </tr>
+
+    <!-- ===== ATPP PART I ===== -->
+    <tr class="border bg-zinc-100 dark:bg-zinc-700">
+        <td colspan="4" class="font-semibold px-3 py-2">
+            ATPP Part I (Sequence / Pattern Analysis)
+        </td>
+    </tr>
+    <tr class="border">
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Correct</td>
+        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_part1_correct) }}</td>
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Wrong</td>
+        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_part1_wrong) }}</td>
+    </tr>
+
+    <!-- ===== ATPP PART II ===== -->
+    <tr class="border bg-zinc-100 dark:bg-zinc-700">
+        <td colspan="4" class="font-semibold px-3 py-2">
+            ATPP Part II (Abstract Reasoning)
+        </td>
+    </tr>
+    <tr class="border">
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Correct</td>
+        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_part2_correct) }}</td>
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Wrong</td>
+        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_part2_wrong) }}</td>
+    </tr>
+
+    <!-- ===== ATPP PART III ===== -->
+    <tr class="border bg-zinc-100 dark:bg-zinc-700">
+        <td colspan="4" class="font-semibold px-3 py-2">
+            ATPP Part III (Problem Solving)
+        </td>
+    </tr>
+    <tr class="border">
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Correct</td>
+        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_part3_correct) }}</td>
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Wrong</td>
+        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_part3_wrong) }}</td>
+    </tr>
+
+    <!-- ===== FINAL SCORES ===== -->
+    <tr class="border bg-zinc-100 dark:bg-zinc-700">
+        <td colspan="4" class="font-semibold px-3 py-2">
+            Final Scores
+        </td>
+    </tr>
+    <tr class="border">
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">ATPP Final Result</td>
+        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_result) }}</td>
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">GIT Result</td>
+        <td class="px-3 py-2 border">{{ formatScore(application.exam_git_result) }}</td>
+    </tr>
+
+    <!-- RESULT -->
+    <tr class="border">
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
+        <td class="px-3 py-2 border">
+            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamResultLabel(application.exam_result))]">
+                {{ getExamResultLabel(application.exam_result) || '-' }}
+            </span>
+        </td>
+        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
+        <td class="px-3 py-2 border">
+            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamApplicationStatusLabel(application.exam_application_status))]">
+                {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
+            </span>
+        </td>
+    </tr>
+</tbody>
                             </table>
                         </div>
                         <div class="mt-4">
@@ -1506,6 +1490,7 @@ watch(errorMessage, (newVal) => {
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Date</label>
                             <input type="text" :value="formatDateTime(acceptDeclineInterviewer?.scheduled_date)" disabled class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100" />
                         </div>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Decision</label>
                             <div class="flex gap-4">
@@ -1534,6 +1519,12 @@ watch(errorMessage, (newVal) => {
                                 {{ acceptDeclineErrors.reason }}
                             </p>
                         </div>
+                                                <div
+    v-if="willTriggerApplicantAutoEmail"
+    class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-3 text-sm text-blue-800"
+>
+    Accepting will send an automatic email to the applicant, informing them of their scheduled assessment.
+</div>
                     </div>
 
                     <div class="flex gap-3 mt-6">
