@@ -583,7 +583,6 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
   </AppLayout>
 </template>
 
-
 <style scoped>
 .form-actions {
   margin-top: 2rem;

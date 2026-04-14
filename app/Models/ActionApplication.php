@@ -67,6 +67,7 @@ class ActionApplication extends Model
                 'action_applicant_applications.action_batch_id',
                 'action_batches.action_batch',
                 'action_applicants.first_name',
+                'action_applicants.middle_name',
                 'action_applicants.last_name'
             )
             ->join('action_batches', 'action_applicant_applications.action_batch_id', '=', 'action_batches.id')

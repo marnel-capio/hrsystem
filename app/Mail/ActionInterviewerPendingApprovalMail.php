@@ -30,7 +30,7 @@ public $senderRole;
 
     public function build()
     {
-        return $this->subject('【HR System】Exam/Interview Schedule Pending Approval')
+        return $this->subject("【HR System】Applicant Schedule Pending Approval")
             ->view('emails.action-interviewer-pending-approval')
             ->with([
                 'application' => $this->application,
