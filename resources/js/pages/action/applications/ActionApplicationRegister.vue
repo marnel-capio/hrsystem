@@ -1543,7 +1543,7 @@ function handleClickOutside(event: MouseEvent) {
                         readonly
                     />
                     <small class="helper-text">
-                        ATPP = Total Correct - (Total Wrong / 4)
+                        ATPP Final Result= Total Correct - (Total Wrong / 4)
                     </small>
                     <span v-if="form.errors.exam_atpp_result" class="error-message">
                         {{ form.errors.exam_atpp_result }}

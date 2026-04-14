@@ -179,6 +179,10 @@ class ActionApplicationController extends Controller
         $originalData = $application->toArray();
 
         $validated = $request->validated();
+// dd([
+//     'all_final_interview_assignments' => $request->all()['final_interview_assignments'] ?? null,
+//     'validated_final_interview_assignments' => $validated['final_interview_assignments'] ?? null,
+// ]);
         $validated = $this->handleUploads($request, $validated, true);
 
         $permission = (int) auth()->user()->permissions;
@@ -847,23 +851,28 @@ if (
         return $data;
     }
 
-    private function filterValidatedFieldsByEditableStages(array $validated, array $editableStages): array
-    {
-        $stageFields = config('constants.action_application_stage_fields', []);
-        $allowedFieldMap = [];
+private function filterValidatedFieldsByEditableStages(array $validated, array $editableStages): array
+{
+    $stageFields = config('constants.action_application_stage_fields', []);
+    $allowedFieldMap = [];
 
-        foreach ($editableStages as $stage => $isEditable) {
-            if (!$isEditable || empty($stageFields[$stage])) {
-                continue;
-            }
-
-            foreach ($stageFields[$stage] as $field) {
-                $allowedFieldMap[$field] = true;
-            }
+    foreach ($editableStages as $stage => $isEditable) {
+        if (!$isEditable || empty($stageFields[$stage])) {
+            continue;
         }
 
-        return array_intersect_key($validated, $allowedFieldMap);
+        foreach ($stageFields[$stage] as $field) {
+            $allowedFieldMap[$field] = true;
+        }
     }
+
+    // allow dynamic final interviewer rows when final interview stage is editable
+    if (!empty($editableStages['final_interview'])) {
+        $allowedFieldMap['final_interview_assignments'] = true;
+    }
+
+    return array_intersect_key($validated, $allowedFieldMap);
+}
 
     private function buildApplicationUpdateDetailLines(array $originalData, ActionApplication $application): array
     {

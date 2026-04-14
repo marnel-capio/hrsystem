@@ -18,7 +18,6 @@ protected $fillable = [
     'interviewer_id',
     'action_application_id',
     'interview_type',
-
     'scheduled_date',
     'actual_date',
     'status',

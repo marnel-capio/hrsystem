@@ -922,9 +922,35 @@ function submit() {
                 return
             }
 
+            if (key === 'final_interview_assignments') {
+                ;((value as any[]) || []).forEach((row: any, index: number) => {
+                    if (row.id !== null && row.id !== undefined) {
+                        formData.append(`final_interview_assignments[${index}][id]`, String(row.id))
+                    }
+
+                    formData.append(
+                        `final_interview_assignments[${index}][score]`,
+                        row.score !== null && row.score !== undefined ? String(row.score) : ''
+                    )
+
+                    formData.append(
+                        `final_interview_assignments[${index}][evaluation_result]`,
+                        row.evaluation_result !== null && row.evaluation_result !== undefined
+                            ? String(row.evaluation_result)
+                            : ''
+                    )
+
+                    formData.append(
+                        `final_interview_assignments[${index}][evaluation_remarks]`,
+                        row.evaluation_remarks ?? ''
+                    )
+                })
+                return
+            }
+
             if (value !== null && value !== undefined && value !== '') {
                 const normalizedValue = normalizeDateTimeForSubmit(value)
-formData.append(key, String(normalizedValue))
+                formData.append(key, String(normalizedValue))
             }
         })
 
@@ -937,7 +963,6 @@ formData.append(key, String(normalizedValue))
         preserveScroll: true,
     })
 }
-
 const examCriteriaDisplay = computed(() => {
     if (!currentApplicant.value) return null
 
@@ -1341,7 +1366,7 @@ const examCriteriaDisplay = computed(() => {
                 readonly
             />
             <small class="helper-text">
-                ATPP = Total Correct - (Total Wrong / 4)
+                ATPP Final Result = Total Correct - (Total Wrong / 4)
             </small>
             <span v-if="form.errors.exam_atpp_result" class="error-message">
                 {{ form.errors.exam_atpp_result }}
