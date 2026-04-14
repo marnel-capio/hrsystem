@@ -385,11 +385,18 @@ class IntermediateApplicantImportService
             $sourceValue = 5;
         } elseif (str_contains($sourceLower, 'job fairs')) {
             $sourceType = 4;
+            $otherSource = trim($row[$referralHeader] ?? '');
         } elseif (str_contains($sourceLower, 'website')) {
             $sourceType = 5;
+            $otherSource = trim($row[$referralHeader] ?? '');
         } elseif (str_contains($sourceLower, 'rehire')) {
             $sourceType = 6;
+            $otherSource = trim($row[$referralHeader] ?? '');
+        } elseif (str_contains($sourceLower, 'walk-in')) {
+            $sourceType = 7;
+            $otherSource = trim($row[$referralHeader] ?? '');
         }
+        
 
         return [$sourceType, $sourceValue, $otherSource];
     }
