@@ -75,6 +75,12 @@ const messages = {
         errorMessage: 'An error occurred while deleting the record. Please try again.',
     },
 }
+const showToastMessage = (message: string, type: 'success' | 'error') => {
+    toastMessage.value = message
+    toastType.value = type
+    showToast.value = true
+    setTimeout(() => (showToast.value = false), 5000)
+}
 
 // Map gender
 const genderLabel = (gender: number) => gender === 1 ? 'Male' : 'Female'
@@ -602,10 +608,20 @@ const saveSkillEdit = async () => {
         fetchSkills()
         closeEditSkillModal()
 
+        toastMessage.value = messages.record_updated_successfully.errorMessage
+        toastType.value = 'success'
+        showToast.value = true
+        setTimeout(() => (showToast.value = false), 5000)
+
     } catch (error: any) {
         if (error.response?.data?.errors) {
             editSkillNameError.value = error.response.data.errors.skill?.[0] || null
             editSkillRemarksError.value = error.response.data.errors.remarks?.[0] || null
+        } else {
+            toastMessage.value = messages.update_failed.errorMessage
+            toastType.value = 'error'
+            showToast.value = true
+            setTimeout(() => (showToast.value = false), 5000)
         }
     }
 }
@@ -636,6 +652,16 @@ const performSkillDelete = async () => {
 
         fetchSkills()
 
+        showToastMessage(
+            messages.record_deleted_successfully.errorMessage,
+            'success'
+        )
+
+    } catch (error) {
+        showToastMessage(
+            messages.record_deleted_failed.errorMessage,
+            'error'
+        )
     } finally {
         closeSkillDeleteModal()
     }
@@ -664,11 +690,21 @@ const saveNewSkill = async () => {
 
         fetchSkills()
         closeAddSkillModal()
+        // Show success toast
+        toastMessage.value = messages.record_created_successfully.errorMessage
+        toastType.value = 'success'
+        showToast.value = true
+        setTimeout(() => (showToast.value = false), 5000)
 
     } catch (error: any) {
         if (error.response?.data?.errors) {
             addSkillNameError.value = error.response.data.errors.skill?.[0] || null
             addSkillRemarksError.value = error.response.data.errors.remarks?.[0] || null
+        } else {
+            toastMessage.value = messages.transaction_failed.errorMessage
+            toastType.value = 'error'
+            showToast.value = true
+            setTimeout(() => (showToast.value = false), 5000)
         }
     }
 }
@@ -679,6 +715,8 @@ const toggleAllSkills = (e: Event) => {
         ? skills.value.map(s => s.id)
         : []
 }
+
+
 </script>
 
 <template>
