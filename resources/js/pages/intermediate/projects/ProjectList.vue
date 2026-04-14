@@ -2,6 +2,8 @@
 import { computed, ref, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
+import { debounce } from 'lodash'
+
 
 const page = usePage<any>()
 
@@ -10,12 +12,24 @@ const filters = computed(() => page.props.filters)
 const userPermissions = computed(() => Number(page.props.user_permissions))
 const search = ref(filters.value.search || '')
 
-watch(search, (value: string) => {
+
+
+const debouncedSearch = debounce((value: string) => {
   router.get(
     '/intermediate/projects',
-    { search: value },
-    { preserveState: true, replace: true }
+    {
+      search: value,
+      page: 1 // reset page
+    },
+    {
+      preserveState: true,
+      replace: true
+    }
   )
+}, 300)
+
+watch(search, (value: string) => {
+  debouncedSearch(value)
 })
 
 const currentPage = computed(() => projects.value.current_page)
@@ -47,6 +61,10 @@ function prevBlock() {
 
 function nextBlock() {
   if (endPage.value < lastPage.value) goToPage(endPage.value + 1)
+}
+function truncateText(text: string, limit = 50) {
+  if (!text) return ''
+  return text.length > limit ? text.slice(0, limit) + '...' : text
 }
 
 const shouldShowPagination = computed(() => projectsTotal.value > 20)
@@ -85,7 +103,7 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
         <!-- COUNT -->
         <div class="mb-2 text-xs text-gray-600">
           Showing {{ projects.data.length > 0 ? projects.from : 0 }}–{{ projects.data.length > 0 ? projects.to : 0 }}
-          out of {{ projectsTotal }} items
+out of {{ projectsTotal }} items
         </div>
 
         <!-- TABLE -->
@@ -93,8 +111,9 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
           <table class="ats-table w-full table-auto border-collapse border text-sm">
             <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
-                <th class="border px-3 py-2">Project Name</th>
-                <th class="border px-3 py-2">Remarks </th>
+                <th class="border px-3 py-2 w-50">Project Name</th>
+                <th class="border px-3 py-2 w-80">Project Description</th>
+                <th class="border px-3 py-2 w-95">Remarks </th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-zinc-900">
@@ -102,7 +121,12 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
                 <td class="border px-3 py-2">
                   <Link :href="`/intermediate/projects/${project.id}`" class="table-link">{{ project.project_name }}</Link>
                 </td>
-                <td class="border px-3 py-2">{{ project.remarks }}</td>
+               <td class="border px-3 py-2">
+                  {{ truncateText(project.project_description) }}
+                </td>
+                <td class="border px-3 py-2">
+                  {{ truncateText(project.remarks) }}
+                </td>
               </tr>
               <tr v-if="projects.data.length === 0">
                 <td colspan="4" class="text-center p-6 text-zinc-500">
@@ -198,5 +222,12 @@ const shouldShowPagination = computed(() => projectsTotal.value > 20)
   max-width: 1175px;
   margin: 0 auto;
   padding: 0 1.5rem;
+}
+.truncate-cell {
+  max-width: 200px;     
+  min-width: 160px;       
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
