@@ -199,22 +199,40 @@ const computedAtppResult = computed(() => {
     return finalScore.toFixed(2)
 })
 
+const isInitialBlocked = computed(() =>
+    Number(props.application.exam_result) === 3
+)
+
+const isFinalBlocked = computed(() =>
+    Number(props.application.exam_result) === 3 ||
+    Number(props.application.initial_interview_result) === 3
+)
+
+const isJobOfferBlocked = computed(() =>
+    Number(props.application.exam_result) === 3 ||
+    Number(props.application.initial_interview_result) === 3 ||
+    Number(props.application.final_interview_result) === 3
+)
+
 const canEditFinalInterviewDecision = computed(() => !!props.canEditFinalInterviewDecision)
 
-const isHrDecisionEditor = computed(() =>
-    [1, 2, 3].includes(Number(props.user_permissions || 0))
-)
+const isHrDecisionEditor = computed(() => !!props.canEditFinalInterviewDecision)
 
 const visibleFinalInterviewAssignments = computed(() => {
     const rows = form.final_interview_assignments || []
 
-    if (isHrDecisionEditor.value) {
-        return rows
-    }
+    return rows.filter((row: any) => {
+        const isApproved = Number(row.schedule_approved) === 1
 
-    return rows.filter((row: any) => Number(row.interviewer_id) === Number(props.user_id || 0))
+        if (!isApproved) return false
+
+        if (isHrDecisionEditor.value) {
+            return true
+        }
+
+        return Number(row.interviewer_id) === Number(props.user_id || 0)
+    })
 })
-
 const finalInterviewEvaluatedRows = computed(() => {
     return (form.final_interview_assignments || []).filter((row: any) =>
         [2, 3].includes(Number(row.evaluation_result))

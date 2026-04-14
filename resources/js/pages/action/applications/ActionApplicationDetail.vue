@@ -254,6 +254,7 @@ const formatDateTime = (dateString: string | null) => {
 
 const finalInterviewAssignments = computed(() => page.props.finalInterviewAssignments || [])
 
+
 const getEvaluationResultLabel = (result: number | null) => {
     const results: Record<number, string> = {
         1: 'Pending',
@@ -1072,6 +1073,7 @@ watch(errorMessage, (newVal) => {
     </h2>
 
     <div class="overflow-x-auto">
+
         <table class="w-full text-sm border-collapse border">
             <tbody>
                 <tr class="border">
@@ -1126,19 +1128,6 @@ watch(errorMessage, (newVal) => {
                                 </span>
                             </td>
 
-                            <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">
-                                Stage Status
-                            </td>
-                            <td class="px-3 py-2 border">
-                                <span
-                                    :class="[
-                                        'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
-                                        getInterviewStatusBadgeClass(assignment.status)
-                                    ]"
-                                >
-                                    {{ getInterviewStatusLabel(assignment.status) }}
-                                </span>
-                            </td>
                         </tr>
 
                         <tr class="border">

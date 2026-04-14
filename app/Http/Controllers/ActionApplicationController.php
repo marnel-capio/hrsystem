@@ -192,6 +192,37 @@ class ActionApplicationController extends Controller
             $validated = $this->filterValidatedFieldsByEditableStages($validated, $editableStages);
         }
 
+        //  BLOCK STAGES IF PREVIOUS FAILED
+if ($application->isStageBlocked('initial')) {
+    unset(
+        $validated['initial_interview_plan_date'],
+        $validated['initial_interview_actual_date'],
+        $validated['initial_interview_final'],
+        $validated['initial_interview_result'],
+        $validated['initial_interview_application_status'],
+        $validated['initial_interview_remarks']
+    );
+}
+
+if ($application->isStageBlocked('final')) {
+    unset(
+        $validated['final_interview_date'],
+        $validated['final_interview_final'],
+        $validated['final_interview_result'],
+        $validated['final_interview_application_status'],
+        $validated['final_interview_remarks'],
+        $validated['final_interview_assignments']
+    );
+}
+
+if ($application->isStageBlocked('job_offer')) {
+    unset(
+        $validated['job_offer_schedule'],
+        $validated['job_offer_status'],
+        $validated['job_offer_remarks']
+    );
+}
+
         DB::beginTransaction();
 
         try {
@@ -203,6 +234,9 @@ class ActionApplicationController extends Controller
 
             $application->updateApplication($validated);
             $application->refresh();
+
+            $application->clearBlockedStages();
+$application->refresh();
 
             $this->syncFinalInterviewOutcomeOnApplication($application, $validated);
             $application->refresh();
@@ -464,6 +498,7 @@ class ActionApplicationController extends Controller
     {
         $application = ActionApplication::with('applicant')->findOrFail($applicationId);
 
+
         DB::beginTransaction();
 
         try {
@@ -495,6 +530,17 @@ class ActionApplicationController extends Controller
                 ->pluck('interview_type')
                 ->unique()
                 ->values();
+
+                $stageType = $interviewsToUpdate->first()?->interview_type;
+
+if (
+    ($stageType == config('constants.interview_types.initial') && $application->isStageBlocked('initial')) ||
+    ($stageType == config('constants.interview_types.final') && $application->isStageBlocked('final'))
+) {
+    return response()->json([
+        'message' => 'Cannot update schedule. Previous stage is failed.',
+    ], 422);
+}
 
             foreach ($stageTypes as $stageType) {
                 if ((int) $stageType === config('constants.interview_types.exam')) {
@@ -561,8 +607,17 @@ class ActionApplicationController extends Controller
 
     public function bulkAddInterviews(BulkAddActionInterviewsRequest $request, $id)
     {
-        $application = ActionApplication::findOrFail($id);
 
+
+        $application = ActionApplication::findOrFail($id);
+if (
+    ($request->interview_type == config('constants.interview_types.initial') && $application->isStageBlocked('initial')) ||
+    ($request->interview_type == config('constants.interview_types.final') && $application->isStageBlocked('final'))
+) {
+    return response()->json([
+        'message' => 'Cannot assign interviewers. Previous stage is failed.',
+    ], 422);
+}
         DB::beginTransaction();
 
         try {
@@ -856,16 +911,21 @@ class ActionApplicationController extends Controller
         ], true);
     }
 
-    private function visibleFinalInterviewAssignments(ActionApplication $application)
-    {
-        $query = $application->finalInterviewAssignments()->with('interviewer');
+private function visibleFinalInterviewAssignments(ActionApplication $application)
+{
+    $query = $application->finalInterviewAssignments()
+        ->with('interviewer')
+        ->whereIn('status', [
+            config('constants.interview_assignment_status.approved'),
+            config('constants.interview_assignment_status.completed'),
+        ]);
 
-        if ($this->canOnlySeeOwnFinalInterviewEvaluation()) {
-            $query->where('interviewer_id', auth()->id());
-        }
-
-        return $query->orderBy('id')->get();
+    if ($this->canOnlySeeOwnFinalInterviewEvaluation()) {
+        $query->where('interviewer_id', auth()->id());
     }
+
+    return $query->orderBy('id')->get();
+}
 
     private function applyInterviewEvaluationStatus(array $updateData, ActionApplicationInterview $assignment): array
     {

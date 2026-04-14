@@ -216,9 +216,7 @@ const computedAtppResult = computed(() => {
 
 const canEditFinalInterviewDecision = computed(() => !!props.canEditFinalInterviewDecision)
 
-const isHrDecisionEditor = computed(() =>
-    [1, 2, 3].includes(Number(props.user_permissions || 0))
-)
+const isHrDecisionEditor = computed(() => !!props.canEditFinalInterviewDecision)
 
 const visibleFinalInterviewAssignments = computed(() => {
     const rows = form.final_interview_assignments || []
@@ -793,6 +791,21 @@ const handleResumeUpload = (event: Event) => {
         form.clearErrors('upload_resume')
     }
 }
+
+const isInitialBlocked = computed(() =>
+    Number(props.application.exam_result) === 3
+)
+
+const isFinalBlocked = computed(() =>
+    Number(props.application.exam_result) === 3 ||
+    Number(props.application.initial_interview_result) === 3
+)
+
+const isJobOfferBlocked = computed(() =>
+    Number(props.application.exam_result) === 3 ||
+    Number(props.application.initial_interview_result) === 3 ||
+    Number(props.application.final_interview_result) === 3
+)
 
 const handleTorUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
@@ -1408,9 +1421,13 @@ const examCriteriaDisplay = computed(() => {
         </span>
     </div>
 </div>
-<div class="form-section">
+<div class="form-section"
+     :class="{ 'opacity-50 pointer-events-none': isInitialBlocked }">
     <div class="section-header">
         <h3>Initial Interview</h3>
+        <div v-if="isInitialBlocked" class="text-red-500 text-sm mb-2">
+    Initial Interview is disabled because applicant failed previous stage.
+</div>
     </div>
 
     <div class="exam-section-layout">
@@ -1437,7 +1454,7 @@ const examCriteriaDisplay = computed(() => {
                         v-model="form.initial_interview_actual_date"
                         class="form-input"
                         :min="initialInterviewActualMin || undefined"
-                        :disabled="!editableStages.initial_interview"
+                        :disabled="!editableStages.initial_interview || isInitialBlocked"
                     />
                     <span v-if="form.errors.initial_interview_actual_date" class="error-message">
                         {{ form.errors.initial_interview_actual_date }}
@@ -1450,7 +1467,7 @@ const examCriteriaDisplay = computed(() => {
                 <select
                     v-model="form.initial_interview_venue"
                     class="form-select"
-                    :disabled="!editableStages.initial_interview"
+                    :disabled="!editableStages.initial_interview || isInitialBlocked"
                 >
                     <option value="">Select Venue</option>
                     <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
@@ -1469,7 +1486,7 @@ const examCriteriaDisplay = computed(() => {
                     step="0.01"
                     v-model="form.initial_interview_final"
                     class="form-input"
-                    :disabled="!editableStages.initial_interview"
+                    :disabled="!editableStages.initial_interview || isInitialBlocked"
                 />
                 <span v-if="form.errors.initial_interview_final" class="error-message">
                     {{ form.errors.initial_interview_final }}
@@ -1514,7 +1531,7 @@ const examCriteriaDisplay = computed(() => {
                         class="form-input"
                         :value="initialInterviewResultLabel || (!form.initial_interview_application_status ? 'Auto-filled from application status' : '')"
                         readonly
-                        :disabled="!editableStages.initial_interview"
+                        :disabled="!editableStages.initial_interview || isInitialBlocked"
                     />
                 </div>
 
@@ -1523,7 +1540,7 @@ const examCriteriaDisplay = computed(() => {
                     <select
                         v-model="form.initial_interview_application_status"
                         class="form-select"
-                        :disabled="!editableStages.initial_interview"
+                        :disabled="!editableStages.initial_interview || isInitialBlocked"
                     >
                         <option value="">Select Status</option>
                         <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
@@ -1539,16 +1556,20 @@ const examCriteriaDisplay = computed(() => {
             v-model="form.initial_interview_remarks"
             rows="3"
             class="form-textarea"
-            :disabled="!editableStages.initial_interview"
+            :disabled="!editableStages.initial_interview || isInitialBlocked"
         ></textarea>
         <span v-if="form.errors.initial_interview_remarks" class="error-message">
             {{ form.errors.initial_interview_remarks }}
         </span>
     </div>
 </div>
-<div class="form-section">
+<div class="form-section"
+     :class="{ 'opacity-50 pointer-events-none': isFinalBlocked }">
     <div class="section-header">
         <h3>Final Interview</h3>
+        <div v-if="isFinalBlocked" class="text-red-500 text-sm mb-2">
+    Final Interview is disabled because applicant failed previous stage.
+</div>
     </div>
 
     <div class="form-field">
@@ -1568,7 +1589,7 @@ const examCriteriaDisplay = computed(() => {
     <div class="exam-section-layout">
         <div class="exam-form-column">
             <div v-if="visibleFinalInterviewAssignments.length === 0" class="criteria-empty">
-                No final interviewers assigned yet.
+                No final interviewers approved yet.
             </div>
 
             <div v-else class="atpp-stack">
@@ -1720,9 +1741,13 @@ const examCriteriaDisplay = computed(() => {
     </div>
 </div>
 
-                        <div class="form-section">
+                        <div class="form-section"
+     :class="{ 'opacity-50 pointer-events-none': isJobOfferBlocked }">
                             <div class="section-header">
                                 <h3>Job Offer</h3>
+                                <div v-if="isJobOfferBlocked" class="text-red-500 text-sm mb-2">
+    Job Offer is disabled because applicant failed previous stage.
+</div>
                             </div>
 
                             <div class="form-grid grid-2">

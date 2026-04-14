@@ -612,4 +612,62 @@ public function syncOverallFinalInterviewResult(?int $manualResult = null, bool 
         'updated_time' => now(),
     ]);
 }
+
+public function hasFailedStage(string $stage): bool
+{
+    return match ($stage) {
+        'exam' => (int) $this->exam_result === config('constants.application_results.failed'),
+        'initial' => (int) $this->initial_interview_result === config('constants.application_results.failed'),
+        'final' => (int) $this->final_interview_result === config('constants.application_results.failed'),
+        default => false,
+    };
+}
+
+public function isStageBlocked(string $stage): bool
+{
+    return match ($stage) {
+        'initial' => $this->hasFailedStage('exam'),
+        'final'   => $this->hasFailedStage('exam') || $this->hasFailedStage('initial'),
+        'job_offer' => $this->hasFailedStage('exam')
+            || $this->hasFailedStage('initial')
+            || $this->hasFailedStage('final'),
+        default => false,
+    };
+}
+
+public function clearBlockedStages(): void
+{
+    if ($this->hasFailedStage('exam')) {
+        $this->update([
+            'initial_interview_plan_date' => null,
+            'initial_interview_actual_date' => null,
+            'initial_interview_final' => null,
+            'initial_interview_result' => null,
+            'initial_interview_application_status' => null,
+            'initial_interview_remarks' => null,
+        ]);
+    }
+
+    if ($this->hasFailedStage('exam') || $this->hasFailedStage('initial')) {
+        $this->update([
+            'final_interview_date' => null,
+            'final_interview_final' => null,
+            'final_interview_result' => null,
+            'final_interview_application_status' => null,
+            'final_interview_remarks' => null,
+        ]);
+
+        ActionApplicationInterview::where('action_application_id', $this->id)
+            ->where('interview_type', config('constants.interview_types.final'))
+            ->delete();
+    }
+
+    if ($this->hasFailedStage('exam') || $this->hasFailedStage('initial') || $this->hasFailedStage('final')) {
+        $this->update([
+            'job_offer_schedule' => null,
+            'job_offer_status' => null,
+            'job_offer_remarks' => null,
+        ]);
+    }
+}
 }
