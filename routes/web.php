@@ -230,6 +230,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'show'])->name('intermediate.requisitions.show');       
         Route::get('/intermediate/resource-requisitions/{id}/edit', [IntermediateRequisitionController::class, 'edit'])->name('intermediate.requisitions.edit');        
         Route::post('/intermediate/resource-requisitions/{id}/update', [IntermediateRequisitionController::class, 'update'])->name('intermediate.requisitions.update');
+        Route::post('/intermediate/resource-requisitions/{id}/send-notification', [IntermediateRequisitionController::class, 'sendResourceRequisitionNotification'])->name('intermediate.requisitions.notify');
+        Route::delete('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'destroy'])->name('intermediate.requisitions.destroy');
     });
 
 // ------------------------

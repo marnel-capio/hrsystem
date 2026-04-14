@@ -146,6 +146,49 @@ class IntermediateRequisitionModel extends Model
     }
 
 
+    protected $appends = [
+    'engagement_type_label',
+    'sourcing_type_label',
+    'request_type_label',
+    'replacement_due_to_label',
+    'location_assignment_label',
+    'project_name',
+    'project_description',
+];
+
+    public function getEngagementTypeLabelAttribute()
+    {
+        return config('constants.engagement_type.ET_' . $this->engagement_type . '_NAME');
+    }
+
+    public function getSourcingTypeLabelAttribute()
+    {
+        return config('constants.sourcing_type.ST_' . $this->sourcing_type . '_NAME');
+    }
+
+    public function getRequestTypeLabelAttribute()
+    {
+        return config('constants.request_type.RT_' . $this->request_type . '_NAME');
+    }
+
+    public function getReplacementDueToLabelAttribute()
+    {
+        return config('constants.replacement_due_to.RDT_' . $this->replacement_due_to . '_NAME');
+    }
+
+    public function getLocationAssignmentLabelAttr()
+    {
+        return config('constants.location_assignment.LA_' . $this->location_assignment . '_NAME');
+    }
+     public function getProjectNameAttribute()
+{
+    return $this->project?->project_name;
+}
+public function getProjectDescAttribute()
+{
+    return $this->project?->project_description;
+}
+
     const CREATED_AT = 'created_time';
     const UPDATED_AT = 'updated_time';
 }
