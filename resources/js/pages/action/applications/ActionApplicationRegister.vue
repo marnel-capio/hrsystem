@@ -1294,6 +1294,8 @@ function handleClickOutside(event: MouseEvent) {
                             </div>
                         </div>
 
+<div class="text-gray-500 field-label pb-6">(You may leave the following fields empty if this applicant has not yet started the recruitment process.)</div>
+
 <div class="form-section">
     <div class="section-header">
         <h3>Exam Details</h3>
