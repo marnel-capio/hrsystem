@@ -481,6 +481,30 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
     return '-'
 }
 
+const japaneseBackgroundMap: Record<number, string> = {
+    1: 'None',
+    2: 'Self Study / University Level',
+    3: 'JLPT Certification',
+}
+
+const japaneseLevelMap: Record<number, string> = {
+    5: 'N5',
+    4: 'N4',
+    3: 'N3',
+    2: 'N2',
+    1: 'N1',
+}
+
+const getJapaneseBackgroundLabel = (id: number | null) => {
+    if (id == null) return 'N/A'
+    return japaneseBackgroundMap[id] ?? 'N/A'
+}
+
+const getJapaneseLevelLabel = (id: number | null) => {
+    if (id == null) return 'N/A'
+    return japaneseLevelMap[id] ?? 'N/A'
+}
+
 </script>
 
 <template>
@@ -656,6 +680,37 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
                     <h4 class="text-xs font-bold mb-2 text-left">REMARKS</h4>
                     <p class="text-xs break-words">{{ applicant.remarks }}</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- JPLT Section -->
+        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6">
+            <h3 class="text-lg font-semibold mb-4">Japanese Language Background</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div>
+                    <p class="text-sm text-gray-500">Japanese Language Background</p>
+                    <p class="font-medium">
+                        {{ getJapaneseBackgroundLabel(applicant.japanese_background) }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-sm text-gray-500">Japanese Language Background Remarks</p>
+                    <p class="font-medium">
+                        {{ applicant.background_remarks ?? 'N/A' }}
+                        
+                    </p>
+                </div>
+
+                <div class="md:col-span-2">
+                    <p class="text-sm text-gray-500">JLPT Level</p>
+                    <p class="font-medium whitespace-pre-line">
+                        {{ getJapaneseLevelLabel(applicant.japanese_level) }}
+                    </p>
+                </div>
+
             </div>
         </div>
 

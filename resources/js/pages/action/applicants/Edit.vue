@@ -13,6 +13,8 @@ const props = defineProps<{
     sourceTypes?: Record<number, string>,
     sources?: Record<number, string>,
     genders?: Record<number, string>,
+    japaneseBackgrounds?: Record<number, string>,
+    japaneseLevels?: Record<number, string>,
     flash?: { error?: string }
 }>()
 
@@ -45,7 +47,10 @@ const form = useForm({
     other_examination_certificate: props.applicant?.other_examination_certificate || '',
     thesis_project: props.applicant?.thesis_project || '',
     extra_curricular: props.applicant?.extra_curricular || '',
-    remarks: props.applicant?.remarks || ''
+    remarks: props.applicant?.remarks || '',
+    japanese_background: props.applicant?.japanese_background || '',
+    japanese_level: props.applicant?.japanese_level || '',
+    background_remarks: props.applicant?.background_remarks || '',
 })
 
 const originalSourceType = props.applicant?.source_type || null
@@ -173,6 +178,36 @@ watch(
     { immediate: true, deep: true }
 )
 watch(() => form.expected_graduation, () => validateField('expected_graduation'));
+
+const japaneseBackgrounds = props.japaneseBackgrounds
+    ? Object.entries(props.japaneseBackgrounds).map(([value, label]) => ({
+        value: Number(value),
+        label
+    }))
+    : []
+
+const japaneseLevels = props.japaneseLevels
+    ? Object.entries(props.japaneseLevels).map(([value, label]) => ({
+        value: Number(value),
+        label
+    }))
+    : []
+const isJapaneseLevelDisabled = computed(() => {
+    return Number(form.japanese_background) !== 3
+})
+
+watch(() => form.japanese_background, (val) => {
+    const bg = Number(val)
+
+    if (bg === 3) {
+        // enable JLPT level
+        form.japanese_level = form.japanese_level
+    } else {
+        // clear when not JLPT
+        form.japanese_level = ''
+        form.clearErrors('japanese_level')
+    }
+})
 </script>
 
 <template>
@@ -303,6 +338,43 @@ watch(() => form.expected_graduation, () => validateField('expected_graduation')
                             }}</span>
                     </div>
 
+                    <!-- Japanese Background (RADIO) -->
+                    <div class="form-group">
+                        <label style="font-weight: bold;">Japanese Background *</label>
+
+                        <div class="radio-group">
+                            <label v-for="j in japaneseBackgrounds" :key="j.value">
+                                <input type="radio" :value="j.value" v-model="form.japanese_background" />
+                                {{ j.label }}
+                            </label>
+                        </div>
+
+                        <span v-if="form.errors.japanese_background" class="error">
+                            {{ form.errors.japanese_background }}
+                        </span>
+                    </div>
+
+                    <!-- Japanese Level (Conditional Dropdown) -->
+                    <div class="form-group">
+                        <label>Japanese Level</label>
+
+                        <select v-model="form.japanese_level" :disabled="isJapaneseLevelDisabled">
+                            <option disabled value="">Select Level</option>
+                            <option v-for="j in japaneseLevels" :key="j.value" :value="j.value">
+                                {{ j.label }}
+                            </option>
+                        </select>
+
+                        <span v-if="!isJapaneseLevelDisabled && form.errors.japanese_level" class="error">
+                            {{ form.errors.japanese_level }}
+                        </span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Japanese Background Remarks</label>
+                        <textarea v-model="form.background_remarks"></textarea>
+                    </div>
+
                     <div class="form-group">
                         <label>Other Exam Certificate</label>
                         <textarea v-model="form.other_examination_certificate"></textarea>
@@ -345,6 +417,20 @@ watch(() => form.expected_graduation, () => validateField('expected_graduation')
 </template>
 
 <style scoped>
+
+.radio-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
 /* Reuse the same User form styles */
 .form-row {
     display: flex;

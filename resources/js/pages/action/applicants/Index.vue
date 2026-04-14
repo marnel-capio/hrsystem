@@ -15,6 +15,8 @@ const props = defineProps<{
         degree: string
         expected_graduation: string
         remarks: string
+        japanese_background?: number | null
+        japanese_level?: number | null
         programming_languages?: Array<{
             id: number
             program_language: string
@@ -71,8 +73,19 @@ const filteredApplicants = computed(() => {
                 .map(pl => pl.program_language.toLowerCase())
                 .join(' ')
         }
+        const japaneseBg = getJapaneseBackground(
+            a.japanese_background,
+            a.japanese_level
+        ).toLowerCase()
 
-        return name.includes(q) || email.includes(q) || school.includes(q) || degree.includes(q) || languages.includes(q)
+        return (
+            name.includes(q) ||
+            email.includes(q) ||
+            school.includes(q) ||
+            degree.includes(q) ||
+            languages.includes(q) ||
+            japaneseBg.includes(q) // ✅ added
+        )
     })
 })
 
@@ -133,10 +146,41 @@ const canCreateApplicant = computed(() => {
 
 const searchPlaceholder = computed(() => {
     if (canViewProgrammingLanguages.value) {
-        return 'Search by name, email, school, degree, or programming language'
+        return 'Search by name, email, school, degree, japanese language background, or programming language'
     }
-    return 'Search by name, email, school, or degree'
+    return 'Search by name, email, school, japanese language background, or degree'
 })
+
+const japaneseBackgroundMap: Record<number, string> = {
+    1: 'None',
+    2: 'Self Study / University Level',
+    3: 'JLPT Certification',
+}
+
+const japaneseLevelMap: Record<number, string> = {
+    5: 'N5',
+    4: 'N4',
+    3: 'N3',
+    2: 'N2',
+    1: 'N1',
+}
+
+const getJapaneseBackground = (
+    background: number | null | undefined,
+    level: number | null | undefined
+) => {
+    if (background == null) return '—'
+
+    let label = japaneseBackgroundMap[background] ?? '—'
+
+    // ✅ special rule: JLPT Certification
+    if (background === 3 && level != null) {
+        const levelLabel = japaneseLevelMap[level] ?? 'N/A'
+        label += ` (${levelLabel})`
+    }
+
+    return label
+}
 </script>
 
 <template>
@@ -188,9 +232,11 @@ const searchPlaceholder = computed(() => {
                                 <th class="border px-3 py-2">School</th>
                                 <th class="border px-3 py-2">Degree</th>
                                 <th class="border px-3 py-2">Expected Graduation</th>
+                                <th class="border px-3 py-2">Japanese Language Background</th>
                                 <th v-if="canViewProgrammingLanguages" class="border px-3 py-2">
                                     Programming Languages
                                 </th>
+
                                 <th class="border px-3 py-2">Remarks</th>
                             </tr>
                         </thead>
@@ -202,19 +248,30 @@ const searchPlaceholder = computed(() => {
                                         {{ a.first_name }} {{ a.middle_name }} {{ a.last_name }}
                                     </Link>
                                 </td>
+
                                 <td class="border px-3 py-2">{{ a.email_address }}</td>
                                 <td class="border px-3 py-2">{{ a.school }}</td>
                                 <td class="border px-3 py-2">{{ a.degree }}</td>
-                                <td class="border px-3 py-2">{{ a.expected_graduation }}</td>
+
+                                <td class="border px-3 py-2">
+                                    {{ a.expected_graduation }}
+                                </td>
+
+                                <!-- ✅ FIXED COLUMN -->
+                                <td class="border px-3 py-2">
+                                    {{ getJapaneseBackground(a.japanese_background, a.japanese_level) }}
+                                </td>
+
                                 <td v-if="canViewProgrammingLanguages" class="border px-3 py-2">
                                     <div class="remarks-clamp"
                                         :title="a.programming_languages?.map(pl => pl.program_language).join(', ')">
                                         {{a.programming_languages?.map(pl => pl.program_language).join(', ') || '—'}}
                                     </div>
                                 </td>
+
                                 <td class="border px-3 py-2">
                                     <div class="remarks-clamp" :title="a.remarks">
-                                        {{ a.remarks }}
+                                        {{ a.remarks || '—' }}
                                     </div>
                                 </td>
                             </tr>
