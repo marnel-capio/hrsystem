@@ -716,6 +716,46 @@ const toggleAllSkills = (e: Event) => {
         : []
 }
 
+const getResultBadgeClass = (value: number | null | undefined) => {
+    switch (value) {
+        case 2:
+            return 'bg-green-100 text-green-700 border-green-300'
+        case 3:
+            return 'bg-red-100 text-red-700 border-red-300'
+        default:
+            return 'bg-gray-100 text-gray-700 border-gray-300'
+    }
+}
+
+const getJobOfferStatusClass = (value: number | null | undefined) => {
+    switch (value) {
+        case 2: // Done
+            return 'bg-blue-100 text-blue-700 border-blue-300'
+        case 3: // Accept
+            return 'bg-green-100 text-green-700 border-green-300'
+        case 4: // Decline
+            return 'bg-red-100 text-red-700 border-red-300'
+        case 5: // Withdraw
+            return 'bg-yellow-100 text-yellow-700 border-yellow-300'
+        case 6: // Retracted
+            return 'bg-purple-100 text-purple-700 border-purple-300'
+        default: // Pending (1)
+            return 'bg-gray-100 text-gray-700 border-gray-300'
+    }
+}
+
+const jobOfferStatusMap: Record<number, string> = {
+    1: 'Pending',
+    2: 'Done',
+    3: 'Accepted',
+    4: 'Declined',
+    5: 'Withdrawn',
+    6: 'Retracted',
+}
+
+const getJobOfferStatusLabel = (value: number | null | undefined) => {
+    return jobOfferStatusMap[value ?? 1] ?? 'Pending'
+}
 
 </script>
 
@@ -957,7 +997,10 @@ const toggleAllSkills = (e: Event) => {
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            {{ examResultLabel(app.exam_result) }}
+                            <span class="px-2 py-1 rounded-full text-xs border"
+                                :class="getResultBadgeClass(app.exam_result)">
+                                {{ examResultLabel(app.exam_result) }}
+                            </span>
                         </td>
 
                         <td class="px-2 py-2 text-center">
@@ -971,7 +1014,10 @@ const toggleAllSkills = (e: Event) => {
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            {{ initialInterviewResultLabel(app.initial_interview_result) }}
+                            <span class="px-2 py-1 rounded-full text-xs border"
+                                :class="getResultBadgeClass(app.initial_interview_result)">
+                                {{ initialInterviewResultLabel(app.initial_interview_result) }}
+                            </span>
                         </td>
 
                         <td class="px-2 py-2 text-center">
@@ -985,7 +1031,10 @@ const toggleAllSkills = (e: Event) => {
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            {{ finalInterviewResultLabel(app.final_interview_result) }}
+                            <span class="px-2 py-1 rounded-full text-xs border"
+                                :class="getResultBadgeClass(app.final_interview_result)">
+                                {{ finalInterviewResultLabel(app.final_interview_result) }}
+                            </span>
                         </td>
 
                         <td class="px-2 py-2 text-center">
@@ -999,7 +1048,10 @@ const toggleAllSkills = (e: Event) => {
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            {{ jobOfferStatusLabel(app.job_offer_status) }}
+                            <span class="px-2 py-1 rounded-full text-xs border"
+                                :class="getJobOfferStatusClass(app.job_offer_status)">
+                                {{ getJobOfferStatusLabel(app.job_offer_status) }}
+                            </span>
                         </td>
 
                         <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
