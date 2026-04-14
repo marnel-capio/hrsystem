@@ -162,8 +162,6 @@ const toggleAllLanguages = (e: Event) => {
     selectedLanguages.value = target.checked ? languages.value.map(l => l.id) : []
 }
 
-onMounted(fetchLanguages)
-
 // Modal state
 const editModalVisible = ref(false)
 const languageBeingEdited = ref<{ id: number, program_language: string, remarks: string | null } | null>(null)
@@ -505,6 +503,182 @@ const getJapaneseLevelLabel = (id: number | null) => {
     return japaneseLevelMap[id] ?? 'N/A'
 }
 
+const skills = ref<any[]>([])
+const selectedSkills = ref<number[]>([])
+const newSkillName = ref('')
+const newSkillRemarks = ref('')
+
+const fetchSkills = async () => {
+    const res = await axios.get(`/action/applicants/${applicant.value.id}/skills`)
+    skills.value = res.data
+}
+
+onMounted(() => {
+    fetchLanguages()
+    fetchSkills()
+})
+
+
+const deleteSkill = async (id: number) => {
+    await axios.delete(`/action/applicants/${applicant.value.id}/skills/${id}`)
+    fetchSkills()
+}
+
+const bulkDeleteSkills = async () => {
+    await axios.post(`/action/applicants/${applicant.value.id}/skills/bulk-delete`, {
+        ids: selectedSkills.value
+    })
+
+    selectedSkills.value = []
+    fetchSkills()
+}
+
+// =======================
+// SKILLS MODAL STATE
+// =======================
+const addSkillModalVisible = ref(false)
+
+const editSkillModalVisible = ref(false)
+const skillBeingEdited = ref<{ id: number, skill_name: string, remarks: string | null } | null>(null)
+const editedSkillName = ref('')
+const editedSkillRemarks = ref('')
+
+const deleteSkillModalVisible = ref(false)
+const deleteSkillTargetId = ref<number | null>(null)
+const isBulkDeleteSkillsModal = ref(false)
+
+const addSkillNameError = ref<string | null>(null)
+const addSkillRemarksError = ref<string | null>(null)
+
+const editSkillNameError = ref<string | null>(null)
+const editSkillRemarksError = ref<string | null>(null)
+
+const openEditSkillModal = (skill: any) => {
+    skillBeingEdited.value = skill
+    editedSkillName.value = skill.skill
+    editedSkillRemarks.value = skill.remarks || ''
+    editSkillModalVisible.value = true
+}
+
+const closeEditSkillModal = () => {
+    editSkillModalVisible.value = false
+    skillBeingEdited.value = null
+    editedSkillName.value = ''
+    editedSkillRemarks.value = ''
+    editSkillNameError.value = null
+    editSkillRemarksError.value = null
+}
+
+const openAddSkillModal = () => {
+    newSkillName.value = ''
+    newSkillRemarks.value = ''
+    addSkillModalVisible.value = true
+}
+
+const closeAddSkillModal = () => {
+    addSkillModalVisible.value = false
+    newSkillName.value = ''
+    newSkillRemarks.value = ''
+    addSkillNameError.value = null
+    addSkillRemarksError.value = null
+}
+
+const saveSkillEdit = async () => {
+    if (!skillBeingEdited.value) return
+
+    editSkillNameError.value = null
+    editSkillRemarksError.value = null
+
+    if (!editedSkillName.value.trim()) {
+        editSkillNameError.value = "Skill name is required"
+        return
+    }
+
+    try {
+        await axios.put(`/action/applicants/${applicant.value.id}/skills/${skillBeingEdited.value.id}`, {
+            skill: editedSkillName.value.trim(),
+            remarks: editedSkillRemarks.value.trim() || null
+        })
+        fetchSkills()
+        closeEditSkillModal()
+
+    } catch (error: any) {
+        if (error.response?.data?.errors) {
+            editSkillNameError.value = error.response.data.errors.skill?.[0] || null
+            editSkillRemarksError.value = error.response.data.errors.remarks?.[0] || null
+        }
+    }
+}
+
+const confirmDeleteSkill = (id: number) => {
+    deleteSkillTargetId.value = id
+    isBulkDeleteSkillsModal.value = false
+    deleteSkillModalVisible.value = true
+}
+
+const confirmBulkDeleteSkills = () => {
+    if (!selectedSkills.value.length) return
+    isBulkDeleteSkillsModal.value = true
+    deleteSkillTargetId.value = null
+    deleteSkillModalVisible.value = true
+}
+
+const performSkillDelete = async () => {
+    try {
+        if (isBulkDeleteSkillsModal.value) {
+            await axios.post(`/action/applicants/${applicant.value.id}/skills/bulk-delete`, {
+                ids: selectedSkills.value
+            })
+            selectedSkills.value = []
+        } else if (deleteSkillTargetId.value !== null) {
+            await axios.delete(`/action/applicants/${applicant.value.id}/skills/${deleteSkillTargetId.value}`)
+        }
+
+        fetchSkills()
+
+    } finally {
+        closeSkillDeleteModal()
+    }
+}
+
+const closeSkillDeleteModal = () => {
+    deleteSkillModalVisible.value = false
+    deleteSkillTargetId.value = null
+    isBulkDeleteSkillsModal.value = false
+}
+
+const saveNewSkill = async () => {
+    addSkillNameError.value = null
+    addSkillRemarksError.value = null
+
+    if (!newSkillName.value.trim()) {
+        addSkillNameError.value = "Skill name is required"
+        return
+    }
+
+    try {
+        await axios.post(`/action/applicants/${applicant.value.id}/skills`, {
+            skill: newSkillName.value.trim(),
+            remarks: newSkillRemarks.value.trim() || null
+        })
+
+        fetchSkills()
+        closeAddSkillModal()
+
+    } catch (error: any) {
+        if (error.response?.data?.errors) {
+            addSkillNameError.value = error.response.data.errors.skill?.[0] || null
+            addSkillRemarksError.value = error.response.data.errors.remarks?.[0] || null
+        }
+    }
+}
+
+const toggleAllSkills = (e: Event) => {
+    const target = e.target as HTMLInputElement
+    selectedSkills.value = target.checked
+        ? skills.value.map(s => s.id)
+        : []
+}
 </script>
 
 <template>
@@ -700,7 +874,7 @@ const getJapaneseLevelLabel = (id: number | null) => {
                     <p class="text-sm text-gray-500">Japanese Language Background Remarks</p>
                     <p class="font-medium">
                         {{ applicant.background_remarks ?? 'N/A' }}
-                        
+
                     </p>
                 </div>
 
@@ -826,41 +1000,268 @@ const getJapaneseLevelLabel = (id: number | null) => {
             </div>
 
             <!-- Languages Table -->
-            <table class="min-w-full table-auto text-xs border-collapse">
-                <thead class="bg-gray-100">
+            <table class="unified-table table-fixed">
+                <thead>
                     <tr>
-                        <th class="w-10 text-left px-3 py-2 font-semibold text-gray-700 ">
+                        <th class="col-checkbox">
                             <input type="checkbox" @change="toggleAllLanguages($event)" />
                         </th>
-                        <th class="text-left px-3 py-2 font-semibold text-gray-700 ">Language</th>
-                        <th class="text-left px-3 py-2 font-semibold text-gray-700 ">Remarks</th>
-                        <th class="w-24 px-3 py-2 font-semibold text-gray-700 ">Actions</th>
+                        <th class="col-main">Language</th>
+                        <th class="col-remarks">Remarks</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    <tr v-for="lang in languages" :key="lang.id" class="hover:bg-gray-50">
-                        <td class="px-3 py-2"><input type="checkbox" :value="lang.id" v-model="selectedLanguages" />
+                    <tr v-for="lang in languages" :key="lang.id">
+                        <td class="col-checkbox">
+                            <input type="checkbox" :value="lang.id" v-model="selectedLanguages" />
                         </td>
-                        <td class="px-3 py-2">{{ lang.program_language }}</td>
-                        <td class="px-3 py-2">{{ lang.remarks || '-' }}</td>
-                        <td class="flex gap-2 justify-center px-3 py-2">
-                            <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditModal(lang)"
-                                title="Edit" />
-                            <Trash class="w-5 h-5 text-red-500 cursor-pointer" @click="confirmDeleteLanguage(lang.id)"
-                                title="Delete" />
+
+                        <td>{{ lang.program_language }}</td>
+                        <td>{{ lang.remarks || '-' }}</td>
+
+                        <td class="text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditModal(lang)" />
+                                <Trash class="w-5 h-5 text-red-500 cursor-pointer"
+                                    @click="confirmDeleteLanguage(lang.id)" />
+                            </div>
                         </td>
                     </tr>
+
                     <tr v-if="!languages.length">
-                        <td colspan="4" class="text-center text-gray-500 py-2 italic">No programming languages found.
+                        <td colspan="4" class="unified-empty">
+                            No programming languages found.
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <!-- Skills Section -->
+        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6" v-if="![5, 6].includes(userPermissions)">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Technical Skills</h3>
+
+                <div class="flex gap-2">
+                    <button @click="openAddSkillModal" class="btn-primary btn-small">
+                        Add
+                    </button>
+                    <button @click="confirmBulkDeleteSkills" class="btn-red btn-small"
+                        :disabled="!selectedSkills.length">
+                        Delete Selected
+                    </button>
+                </div>
+            </div>
+
+            <table class="unified-table table-fixed">
+                <thead>
+                    <tr>
+                        <th class="col-checkbox">
+                            <input type="checkbox" @change="toggleAllSkills" />
+                        </th>
+                        <th class="col-main">Skill</th>
+                        <th class="col-remarks">Remarks</th>
+                        <th class="col-actions">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="skill in skills" :key="skill.id">
+                        <td class="col-checkbox">
+                            <input type="checkbox" :value="skill.id" v-model="selectedSkills" />
+                        </td>
+
+                        <td>{{ skill.skill }}</td>
+                        <td>{{ skill.remarks || '-' }}</td>
+
+                        <td class="text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditSkillModal(skill)" />
+                                <Trash class="w-5 h-5 text-red-500 cursor-pointer"
+                                    @click="confirmDeleteSkill(skill.id)" />
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr v-if="!skills.length">
+                        <td colspan="4" class="unified-empty">
+                            No skills found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add Skill Modal -->
+        <div v-if="addSkillModalVisible" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="modal-title">Add Technical Skill</h3>
+
+                <!-- Skill Name -->
+                <div class="modal-field">
+                    <label style="font-weight: bold;">Skill Name *</label>
+                    <input v-model="newSkillName" class="modal-input" placeholder="Technical Skills or Other Skills" />
+                    <span v-if="addSkillNameError" class="modal-error">
+                        {{ addSkillNameError }}
+                    </span>
+                </div>
+
+                <!-- Remarks -->
+                <div class="modal-field">
+                    <label>Remarks</label>
+                    <textarea v-model="newSkillRemarks" class="modal-textarea" placeholder="Optional"></textarea>
+                    <span v-if="addSkillRemarksError" class="modal-error">
+                        {{ addSkillRemarksError }}
+                    </span>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-red" @click="closeAddSkillModal">
+                        Cancel
+                    </button>
+                    <button class="btn-primary" @click="saveNewSkill">
+                        Add
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="editSkillModalVisible" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="modal-title">Edit Skill</h3>
+
+                <div class="modal-field">
+                    <label>Skill Name *</label>
+                    <input v-model="editedSkillName" class="modal-input" />
+                    <span class="modal-error">{{ editSkillNameError }}</span>
+                </div>
+
+                <div class="modal-field">
+                    <label>Remarks</label>
+                    <textarea v-model="editedSkillRemarks" class="modal-textarea"></textarea>
+                    <span class="modal-error">{{ editSkillRemarksError }}</span>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-red" @click="closeEditSkillModal">Cancel</button>
+                    <button class="btn-primary" @click="saveSkillEdit">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="deleteSkillModalVisible" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="modal-title text-red-500">Confirm Delete</h3>
+
+                <p class="text-center mb-4">
+                    Are you sure you want to delete
+                    <strong>
+                        {{ isBulkDeleteSkillsModal
+                            ? selectedSkills.length + ' selected skill(s)'
+                            : 'this skill' }}
+                    </strong>?
+                </p>
+
+                <div class="modal-actions">
+                    <button class="btn-red" @click="closeSkillDeleteModal">Cancel</button>
+                    <button class="btn-primary" @click="performSkillDelete">Delete</button>
+                </div>
+            </div>
+        </div>
     </AppLayout>
 </template>
 
 <style scoped>
+/* =========================
+   UNIFIED TABLE STYLE
+   ========================= */
+.unified-table input[type="checkbox"] {
+    margin: 0;
+    vertical-align: middle;
+}
+
+.unified-table th.col-checkbox,
+.unified-table td.col-checkbox {
+    width: 40px;
+    text-align: center;
+    vertical-align: middle;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.unified-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    table-layout: fixed;
+}
+
+.unified-table td,
+.unified-table th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.col-checkbox {
+    width: 40px;
+}
+
+.col-main {
+    width: 40%;
+}
+
+.col-remarks {
+    width: 40%;
+}
+
+.col-actions {
+    width: 100px;
+}
+
+.unified-table thead {
+    background-color: #f3f4f6;
+}
+
+.unified-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.unified-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+}
+
+.unified-table tr:hover {
+    background-color: #f9fafb;
+}
+
+.unified-table .col-checkbox {
+    width: 40px;
+    text-align: center;
+}
+
+.unified-table .col-actions {
+    width: 100px;
+    text-align: center;
+}
+
+/* Empty Row Style */
+.unified-empty {
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+    padding: 1rem;
+    background-color: #fafafa;
+}
+
 /* Modal fields wrapper for consistent spacing */
 .modal-field {
     display: flex;

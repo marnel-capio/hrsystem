@@ -718,6 +718,23 @@ namespace App\Models {
     /**
      * App\Models\ActionApplicantSkill
      *
+     * @property string $updated_time
+     * @property mixed $updated_by
+     * @property string $created_time
+     * @property mixed $created_by
+     * @property string|null $remarks
+     * @property string $skill
+     * @property mixed $action_applicant_id
+     * @property int $id
+     * @property-read \App\Models\ActionApplicant $applicant
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereActionApplicantId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereSkill($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereRemarks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereCreatedBy($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereCreatedTime($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereUpdatedBy($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereUpdatedTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill query()

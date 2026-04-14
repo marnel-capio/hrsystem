@@ -30,7 +30,7 @@ class ActionApplicantController extends Controller
     public function show($id)
     {
         // Fetch applicant with relations: updatedBy, application, programmingLanguages
-        $applicant = ActionApplicant::with(['updatedBy', 'applications', 'programmingLanguages'])
+        $applicant = ActionApplicant::with(['updatedBy', 'applications', 'programmingLanguages',  'skills'])
             ->findOrFail($id);
 
         // Fetch sources and source types from config/constants.php

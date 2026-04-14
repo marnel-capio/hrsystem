@@ -202,4 +202,30 @@ class LogService
             'update_time' => now(),
         ]);
     }
+
+    public function createSkillUpdateLog(array $oldData, array $newData, int $applicantId): void
+    {
+        $applicant = ActionApplicant::find($applicantId);
+        $ipAddress = request()->ip();
+        $activityLines = [];
+
+        $activityLines[] = "Updated skill for {$applicant->email_address}.";
+        $activityLines[] = 'Details:';
+
+        // Fields to track
+        $fields = ['skill', 'remarks'];
+
+        foreach ($fields as $field) {
+            $oldValue = $oldData[$field] ?? null;
+            $newValue = $newData[$field] ?? null;
+
+            if ((string) $oldValue !== (string) $newValue) {
+                $activityLines[] = "{$field}: {$oldValue} -> {$newValue}";
+            }
+        }
+
+        $activity = implode("\n", $activityLines);
+
+        Log::createLog('ACTION', $activity, $applicantId, $ipAddress);
+    }
 }
