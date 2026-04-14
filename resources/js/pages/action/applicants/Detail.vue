@@ -502,12 +502,14 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
 
                 <!-- Language Input -->
                 <div class="modal-field">
+                    <label style="font-weight: bold;">Programming Language Name *</label>
                     <input v-model="newLanguageName" class="modal-input" placeholder="Programming Language" />
                     <span v-if="addLanguageError" class="modal-error">{{ addLanguageError }}</span>
                 </div>
 
                 <!-- Remarks Textarea -->
                 <div class="modal-field">
+                    <label>Remarks</label>
                     <textarea v-model="newLanguageRemarks" class="modal-textarea"
                         placeholder="Remarks (optional)"></textarea>
                     <span v-if="addRemarksError" class="modal-error">{{ addRemarksError }}</span>
@@ -527,12 +529,14 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
 
                 <!-- Language Input -->
                 <div class="modal-field">
+                    <label style="font-weight: bold;">Programming Language Name *</label>
                     <input v-model="editedLanguage" class="modal-input" placeholder="Programming Language" />
                     <span v-if="editLanguageError" class="modal-error">{{ editLanguageError }}</span>
                 </div>
 
                 <!-- Remarks Textarea -->
                 <div class="modal-field">
+                    <label>Remarks</label>
                     <textarea v-model="editedRemarks" class="modal-textarea"
                         placeholder="Remarks (optional)"></textarea>
                     <span v-if="editRemarksError" class="modal-error">{{ editRemarksError }}</span>
@@ -632,13 +636,9 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
                             ? sourceLabel(applicant.source)
                             : applicant.other_source
                                 ? applicant.other_source
-                        : '-'
+                                : '-'
                         }}
                     </p>
-                </div>
-                <div v-if="applicant.remarks">
-                    <h4 class="text-xs font-bold mb-2 text-left">REMARKS</h4>
-                    <p class="text-xs break-words">{{ applicant.remarks }}</p>
                 </div>
                 <div v-if="applicant.awards_recognition">
                     <h4 class="text-xs font-bold mb-2 text-left">AWARDS / RECOGNITION</h4>
@@ -652,6 +652,10 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
                     <h4 class="text-xs font-bold mb-2 text-left">EXTRA CURRICULAR</h4>
                     <p class="text-xs break-words">{{ applicant.extra_curricular }}</p>
                 </div>
+                <div v-if="applicant.remarks">
+                    <h4 class="text-xs font-bold mb-2 text-left">REMARKS</h4>
+                    <p class="text-xs break-words">{{ applicant.remarks }}</p>
+                </div>
             </div>
         </div>
 
@@ -659,7 +663,7 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
         <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6">
             <h3 class="text-lg font-semibold mb-4">Application Details</h3>
 
-            <table class="min-w-full table-auto text-xs border-collapse">
+            <table class="w-full table-fixed border-collapse border text-sm">
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="px-2 py-2 font-semibold text-gray-600">No.</th>
@@ -680,28 +684,75 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
                 </thead>
                 <tbody>
                     <tr v-for="(app, index) in applications" :key="app.id">
-                        <td class="px-2 py-2 font-medium text-gray-700">{{ Number(index) + 1 }}</td>
-                        <td class="px-2 py-2">{{ examResultLabel(app.exam_result) }}</td>
-                        <td class="px-2 py-2">{{ examStatusLabel(app.exam_application_status) }}</td>
-                        <td v-if="canSeeRemarks">{{ app.exam_remarks || '-' }}</td>
-                        <td class="px-2 py-2">{{ initialInterviewResultLabel(app.initial_interview_result) }}</td>
-                        <td class="px-2 py-2">{{ initialInterviewStatusLabel(app.initial_interview_application_status)
-                            }}
+
+                        <td class="px-2 py-2 text-center font-medium text-gray-700">
+                            {{ Number(index) + 1 }}
                         </td>
-                        <td v-if="canSeeRemarks">{{ app.initial_interview_remarks || '-' }}</td>
-                        <td class="px-2 py-2">{{ finalInterviewResultLabel(app.final_interview_result) }}</td>
-                        <td class="px-2 py-2">{{ finalInterviewStatusLabel(app.final_interview_application_status) }}
+
+                        <td class="px-2 py-2 text-center">
+                            {{ examResultLabel(app.exam_result) }}
                         </td>
-                        <td v-if="canSeeRemarks">{{ app.final_interview_remarks || '-' }}</td>
-                        <td class="px-2 py-2">{{ jobOfferStatusLabel(app.job_offer_status) }}</td>
-                        <td v-if="canSeeRemarks">{{ app.job_offer_remarks || '-' }}</td>
-                        <td class="px-2 py-2 break-words">{{ app.remarks || '-' }}</td>
-                        <td class="flex justify-center px-2 py-2">
-                            <Link :href="`/action/applications/${app.id}`" class="cursor-pointer"
-                                title="View Application">
+
+                        <td class="px-2 py-2 text-center">
+                            {{ examStatusLabel(app.exam_application_status) }}
+                        </td>
+
+                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.exam_remarks || '-'">
+                                {{ app.exam_remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            {{ initialInterviewResultLabel(app.initial_interview_result) }}
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            {{ initialInterviewStatusLabel(app.initial_interview_application_status) }}
+                        </td>
+
+                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.initial_interview_remarks || '-'">
+                                {{ app.initial_interview_remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            {{ finalInterviewResultLabel(app.final_interview_result) }}
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            {{ finalInterviewStatusLabel(app.final_interview_application_status) }}
+                        </td>
+
+                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.final_interview_remarks || '-'">
+                                {{ app.final_interview_remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            {{ jobOfferStatusLabel(app.job_offer_status) }}
+                        </td>
+
+                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.job_offer_remarks || '-'">
+                                {{ app.job_offer_remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 max-w-[250px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.remarks || '-'">
+                                {{ app.remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            <Link :href="`/action/applications/${app.id}`" class="inline-flex justify-center">
                                 <Eye class="w-5 h-5 text-green-500 hover:text-green-600" />
                             </Link>
                         </td>
+
                     </tr>
                 </tbody>
             </table>
