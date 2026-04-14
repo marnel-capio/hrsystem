@@ -76,13 +76,13 @@ watch(successMessage, (val) => {
     <!-- Main Content -->
     <div class="mx-5 mt-6 grid grid-cols-3 gap-6">
       <!-- LEFT -->
-      <div class="col-span-1 space-y-4">
+      <div class="col-span-1 space-y-4 flex flex-col">
         <div class="bg-[#2F359E] text-white rounded-xl p-6 shadow">
           <h3 class="text-lg font-bold text-center">{{ project.project_name }}</h3>
           <p class="text-xs opacity-80 text-center">Project Name</p>
         </div>
 
-        <div class="bg-white rounded-xl p-4 shadow border">
+        <div class="bg-white rounded-xl p-4 shadow border flex-grow">
           <table class="min-w-full table-auto">
             <tbody>
               <tr class="mt-5">
@@ -103,9 +103,18 @@ watch(successMessage, (val) => {
       </div>
 
       <!-- RIGHT -->
-      <div class="col-span-2 bg-white rounded-xl shadow border p-6">
-        <h4 class="text-xs font-bold mb-3 text-center">REMARKS</h4>
-        <p class="text-xs break-all">{{ project.remarks }}</p>
+      <div class="col-span-2 flex space-x-6">
+        <!-- Project Description -->
+        <div class="bg-white rounded-xl shadow border p-6 flex-1">
+          <h4 class="text-xs font-bold mb-3 text-center">Project Description</h4>
+          <p class="text-xs break-all">{{ project.project_description }}</p>
+        </div>
+
+        <!-- Remarks -->
+        <div class="bg-white rounded-xl shadow border p-6 flex-1">
+          <h4 class="text-xs font-bold mb-3 text-center">Remarks</h4>
+          <p class="text-xs break-all">{{ project.remarks }}</p>
+        </div>
       </div>
     </div>
   </AppLayout>

@@ -26,11 +26,20 @@ function confirmDelete() {
 
 function deleteSchedule() {
   deleting.value = true;
+
   deleteForm.delete(`/action/schedules/${props.schedule.id}`, {
+    preserveScroll: false,
+    preserveState: false,
+    onSuccess: () => {
+      showDeleteModal.value = false;
+    },
     onError: () => {
       errorMessage.value = "Failed to delete the record.";
       showError.value = true;
       setTimeout(() => (showError.value = false), 5000);
+    },
+    onFinish: () => {
+      deleting.value = false;
     },
   });
 }
@@ -47,7 +56,7 @@ function sendNotification() {
       notificationSent.value = true;
 
       // Dynamic success message
-      successMessage.value = page.props.flash?.success || 
+      successMessage.value = page.props.flash?.success ||
         "Notification emails sent to all active HR recruiters successfully.";
       showSuccess.value = true;
 
@@ -136,7 +145,7 @@ function formatActivityName(key: string) {
     final_interviews: "Final Interviews",
     contract_offers: "Contract Offers",
     requirements: "Requirements",
-    training: "Training",
+    training: "Start of Training",
   };
   return names[key] || key;
 }
@@ -145,11 +154,11 @@ function formatActivityName(key: string) {
 const ganttForm = ref(
   Object.fromEntries(
     ganttActivities.map(a => [
-      a, 
-      { 
-        start: props.schedule.wbs?.[a]?.start || "", 
+      a,
+      {
+        start: props.schedule.wbs?.[a]?.start || "",
         end: props.schedule.wbs?.[a]?.end || "",
-        error: "" 
+        error: ""
       }
     ])
   )
@@ -237,7 +246,7 @@ const ganttRows = computed(() => {
 // Gantt preview colors
 const wbsColors: Record<string, string> = {
   contact_schools: '#166534',   // dark green
-  sourcing_testing: '#dc2626',  // red 
+  sourcing_testing: '#dc2626',  // red
   initial_interviews: '#f97316', // orange
   final_interviews: '#2563eb',  // blue
   contract_offers: '#7c3aed',   // purple
@@ -332,9 +341,9 @@ editForm.wbs = wbsPayload;
     <button type="button" class="close-btn" @click="showError = false">×</button>
   </div>
 </div>
-    
+
     <div class="flex flex-1 flex-col gap-6 p-8 bg-zinc-50/50 dark:bg-zinc-950 min-h-screen">
-      
+
       <!-- Header -->
       <div class="flex items-center justify-between">
         <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
@@ -343,7 +352,7 @@ editForm.wbs = wbsPayload;
         <div class="flex gap-3">
 
 
-          
+
 <button
     v-if="props.userPermissions !== 3"
     @click.prevent="sendNotification"
@@ -355,7 +364,7 @@ editForm.wbs = wbsPayload;
     <span v-else>Sent</span>
   </button>
 
-  <a 
+  <a
     v-if="props.userPermissions !== 3"
     :href="`/action/schedules/${props.schedule.id}/edit`"
     class="btn-edit"
@@ -376,24 +385,26 @@ editForm.wbs = wbsPayload;
       <!-- DELETE CONFIRMATION MODAL -->
 <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center">
   <!-- Backdrop -->
-  <div 
+  <div
     class="absolute inset-0 bg-black/50 backdrop-blur-sm"
     @click="showDeleteModal = false"
   ></div>
-  
+
   <!-- Modal Content -->
   <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
     <!-- Title -->
     <h3 class="text-xl font-bold text-center text-red-600 mb-2">
     Delete Resource Schedule?
     </h3>
-    
+
     <!-- Description -->
-    <p class="text-zinc-700 dark:text-zinc-700 text-center mb-6">
-      Are you sure you want to delete <strong>"{{ schedule.batch_name }}"</strong>?<br>
-      This action cannot be undone.
-    </p>
-    
+<p class="text-zinc-700 dark:text-zinc-700 text-center mb-6">
+  Are you sure you want to delete <strong>"{{ schedule.batch_name }}"</strong>?<br>
+  This action cannot be undone. <br>
+    <span class="text-[0.7rem]">This action will send an email notifying all HR managers and recruiters.</span><br>
+
+</p>
+
     <!-- Buttons -->
     <div class="flex gap-3">
       <button
@@ -420,9 +431,9 @@ editForm.wbs = wbsPayload;
 
         <!-- LEFT COLUMN: Batch Title + Target Trainees -->
         <div class="flex flex-col gap-4 h-full">
-          
+
           <!-- Batch Title Card -->
-          <div 
+          <div
             class="flex-1 text-white px-5 py-4 rounded-xl shadow-md flex flex-col items-center justify-center text-center"
             style="background-color: #2f359e;"
           >
@@ -610,7 +621,7 @@ editForm.wbs = wbsPayload;
             </tbody>
         </table>
     </div>
-    
+
     <!-- Placeholder note -->
     <p class="text-xs text-zinc-500 mt-4 text-center">
         <em>Recruitment data will be populated from Action Applications when available.</em>
@@ -623,7 +634,7 @@ editForm.wbs = wbsPayload;
 
         <div v-if="ganttWeeks.length" class="overflow-x-auto">
           <div class="overflow-x-auto border p-4 rounded-lg">
-            <div 
+            <div
               class="grid gap-0.5"
               :style="`grid-template-columns: 220px repeat(${ganttWeeks.length}, 1fr)`"
             >
@@ -634,7 +645,7 @@ editForm.wbs = wbsPayload;
 
               <!-- Header: Month spans -->
               <template v-for="m in monthSpans" :key="m.month">
-                <div 
+                <div
                   class="text-center font-bold text-base p-2 bg-blue-50 dark:bg-blue-900/20 border-b"
                   :style="`grid-column: span ${m.count}`"
                 >
@@ -657,7 +668,7 @@ editForm.wbs = wbsPayload;
                 </div>
                 <template v-for="(_, i) in ganttWeeks" :key="i">
                   <div class="border h-7 relative">
-<div 
+<div
   v-if="i >= row.startIndex && i <= row.endIndex && row.startIndex !== -1"
   class="absolute inset-0 rounded-sm"
   :style="`background-color: ${wbsColors[row.activity] || '#000'}; opacity: 0.8;`"
@@ -675,7 +686,7 @@ editForm.wbs = wbsPayload;
         </div>
       </div>
 
-      
+
 <!-- Remarks Field (Details Page) -->
 <div class="space-y-2 mt-6">
   <label class="text-sm font-semibold">Remarks</label>
@@ -691,7 +702,7 @@ editForm.wbs = wbsPayload;
     <span>Last updated by: {{ schedule.updated_by_name }}</span>
     <span class="ml-8">Last updated at: {{ schedule.updated_time }}</span>
   </div>
-      
+
 
     </div>
 

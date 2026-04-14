@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\IsoWeekFormat;
+use Carbon\Carbon;
 
 class ResourceScheduleRequest extends FormRequest
 {
@@ -33,10 +34,12 @@ class ResourceScheduleRequest extends FormRequest
             'remarks'         => 'nullable|string|max:1024',
         ];
 
-        // ✅ Remove 'required' from WBS fields - handled in validateWbsRanges()
         foreach ($wbsFields as $field) {
             $rules["{$field}_startdate"] = ['nullable', new IsoWeekFormat()];
-            $rules["{$field}_enddate"]   = ['nullable', new IsoWeekFormat()];
+
+            if ($field !== 'training') {
+                $rules["{$field}_enddate"] = ['nullable', new IsoWeekFormat()];
+            }
         }
 
         return $rules;
@@ -59,9 +62,20 @@ class ResourceScheduleRequest extends FormRequest
         });
     }
 
-    private function validateWbsRanges($validator)
+    private function validateWbsRanges($validator): void
     {
         $errors = config('errors');
+        $deploymentDate = $this->input('deployment_date');
+
+        if (empty($deploymentDate) || !preg_match('/^\d{4}-\d{2}$/', $deploymentDate)) {
+            return;
+        }
+
+        $deploymentMonth = Carbon::createFromFormat('Y-m', $deploymentDate);
+        $minimumAllowedDate = $deploymentMonth->copy()->startOfMonth()->subMonths(6);
+        $deploymentMonthStart = $deploymentMonth->copy()->startOfMonth();
+        $deploymentMonthEnd = $deploymentMonth->copy()->endOfMonth();
+
         $activities = [
             'contact_schools',
             'source_testing',
@@ -72,53 +86,128 @@ class ResourceScheduleRequest extends FormRequest
             'training',
         ];
 
+        $previousStartDate = null;
+        $previousActivityLabel = null;
+
         foreach ($activities as $act) {
             $start = $this->input("{$act}_startdate");
             $end   = $this->input("{$act}_enddate");
 
-            // Treat null or empty string as empty
             $startEmpty = $start === null || trim($start) === '';
             $endEmpty   = $end === null || trim($end) === '';
 
-            // Scenario 1: Both Start & End are empty
+            if ($act === 'training') {
+                if ($startEmpty) {
+                    $validator->errors()->add("{$act}_startdate", $errors['field_required']['errorMessage']);
+                    continue;
+                }
+
+                if (!preg_match('/^\d{4}-W\d{2}$/', $start)) {
+                    $validator->errors()->add("{$act}_startdate", $errors['wbs_invalid_format']['errorMessage']);
+                    continue;
+                }
+
+                [$startYear, $startWeek] = explode('-W', $start);
+
+                $weekStart = Carbon::now()
+                    ->setISODate((int)$startYear, (int)$startWeek)
+                    ->startOfWeek();
+
+                $weekEnd = $weekStart->copy()->endOfWeek();
+
+                if ($previousStartDate && $weekStart->lt($previousStartDate)) {
+                    $validator->errors()->add(
+                        "{$act}_startdate",
+                        ucfirst(str_replace('_', ' ', $act)) . " cannot start before {$previousActivityLabel}."
+                    );
+                }
+
+                $overlapsDeploymentMonth = $weekStart->lte($deploymentMonthEnd) && $weekEnd->gte($deploymentMonthStart);
+
+                if (!$overlapsDeploymentMonth) {
+                    $validator->errors()->add(
+                        "{$act}_startdate",
+                        'Training start must fall within or overlap the deployment month.'
+                    );
+                }
+
+                continue;
+            }
+
             if ($startEmpty && $endEmpty) {
                 $validator->errors()->add("{$act}_startdate", $errors['field_required']['errorMessage']);
                 $validator->errors()->add("{$act}_enddate", $errors['field_required']['errorMessage']);
                 continue;
             }
 
-            // Scenario 2: End is empty only (Start is filled)
             if (!$startEmpty && $endEmpty) {
                 $validator->errors()->add("{$act}_enddate", $errors['field_required']['errorMessage']);
                 continue;
             }
 
-            // Scenario 3: Start is empty only (End is filled)
             if ($startEmpty && !$endEmpty) {
-                $validator->errors()->add("{$act}_startdate", $errors['wbs_end_before_start']['errorMessage']);
+                $validator->errors()->add("{$act}_startdate", $errors['field_required']['errorMessage']);
                 continue;
             }
 
-            // Scenario 4: Both are filled - Check Format
             if (!preg_match('/^\d{4}-W\d{2}$/', $start)) {
                 $validator->errors()->add("{$act}_startdate", $errors['wbs_invalid_format']['errorMessage']);
                 continue;
             }
+
             if (!preg_match('/^\d{4}-W\d{2}$/', $end)) {
                 $validator->errors()->add("{$act}_enddate", $errors['wbs_invalid_format']['errorMessage']);
                 continue;
             }
 
-            // Scenario 5: Both are filled - Check Date Range
             [$startYear, $startWeek] = explode('-W', $start);
-            [$endYear, $endWeek]     = explode('-W', $end);
+            [$endYear, $endWeek] = explode('-W', $end);
 
-            $startDate = (new \DateTime())->setISODate((int)$startYear, (int)$startWeek);
-            $endDate   = (new \DateTime())->setISODate((int)$endYear, (int)$endWeek);
+            $startDate = Carbon::now()->setISODate((int)$startYear, (int)$startWeek)->startOfWeek();
+            $endDate = Carbon::now()->setISODate((int)$endYear, (int)$endWeek)->endOfWeek();
 
-            if ($endDate < $startDate) {
+            if ($endDate->lt($startDate)) {
                 $validator->errors()->add("{$act}_enddate", $errors['wbs_end_before_start']['errorMessage']);
+                continue;
             }
+
+            if ($startDate->lt($minimumAllowedDate)) {
+                $validator->errors()->add(
+                    "{$act}_startdate",
+                    'Activity cannot start earlier than 6 months before deployment date.'
+                );
+            }
+
+            if ($endDate->lt($minimumAllowedDate)) {
+                $validator->errors()->add(
+                    "{$act}_enddate",
+                    'Activity cannot end earlier than 6 months before deployment date.'
+                );
+            }
+
+            if ($startDate->gt($deploymentMonthEnd)) {
+                $validator->errors()->add(
+                    "{$act}_startdate",
+                    'Activity cannot start after the deployment month end.'
+                );
+            }
+
+            if ($endDate->gt($deploymentMonthEnd)) {
+                $validator->errors()->add(
+                    "{$act}_enddate",
+                    'Activity cannot end after the deployment month end.'
+                );
+            }
+
+            if ($previousStartDate && $startDate->lt($previousStartDate)) {
+                $validator->errors()->add(
+                    "{$act}_startdate",
+                    ucfirst(str_replace('_', ' ', $act)) . " cannot start before {$previousActivityLabel}."
+                );
+            }
+
+            $previousStartDate = $startDate;
+            $previousActivityLabel = str_replace('_', ' ', $act);
         }
     }
 }

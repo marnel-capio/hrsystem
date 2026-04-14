@@ -79,7 +79,8 @@ const onImportFileChange = (event: Event) => {
 
   // Frontend validation
   const maxSize = 10 * 1024 * 1024; // 10MB
-  const fileTooLarge = (page.props as any).errorsConfig?.file_too_large;
+const fileTooLarge =
+  (page.props as any).errorsConfig?.file_too_large ?? 'File is too large.';
 
   if (file.size > maxSize) {
     form.setError("file", fileTooLarge);
@@ -118,17 +119,15 @@ const processing = ref(false);
 // Submit import - FIXED
 // Submit import - FIXED
 const submitImport = () => {
-  // Clear old errors first
   form.clearErrors();
 
-  if (!form.file || !form.action_batch_id) {
-    // Use backend error config
-    const fieldRequired = (page.props as any).errorsConfig?.field_required;
+  const fieldRequired =
+    (page.props as any).errorsConfig?.field_required ?? 'This field is required.';
 
+  if (!form.file || !form.action_batch_id) {
     if (!form.file) form.setError('file', fieldRequired);
     if (!form.action_batch_id) form.setError('action_batch_id', fieldRequired);
-
-    return; // Stop submission
+    return;
   }
 
   const formData = new FormData();
@@ -137,53 +136,28 @@ const submitImport = () => {
 
   processing.value = true;
 
-  router.post('/applications/import', formData, {
-    forceFormData: true,      // required for file uploads
+  router.post('/action/applications/import', formData, {
+    forceFormData: true,
     preserveState: true,
     preserveScroll: true,
     onSuccess: () => {
       closeImportModal();
-      router.reload({ only: ['applications'] }); // refresh table after import
+      router.reload({ only: ['applications'] });
     },
     onError: (errors) => {
-      // Map backend validation errors to form fields exactly like your other example
-      console.log('Errors received:', errors); // Debug log
-
-      // Check if errors is an object with field-specific errors
-      if (errors && typeof errors === 'object') {
-        // Handle file validation errors
-        if (errors.file) {
-          // If errors.file is an array, take the first element
-          const fileError = Array.isArray(errors.file) ? errors.file[0] : errors.file;
-          form.setError('file', fileError);
-        }
-
-        // Handle batch_id validation errors
-        if (errors.batch_id) {
-          const batchError = Array.isArray(errors.batch_id) ? errors.batch_id[0] : errors.batch_id;
-          form.setError('action_batch_id', batchError);
-        }
-
-        // Handle any other fields that might have errors
-        Object.keys(errors).forEach((key) => {
-          if (key !== 'file' && key !== 'batch_id' && key in form) {
-            const errorValue = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
-            form.setError(key as any, errorValue);
-          }
-        });
-      } else if (typeof errors === 'string') {
-        // If it's a string error, show it as a flash message
-        flashMessages.value.error = errors;
-      } else {
-        // Fallback for any other error format
-        flashMessages.value.error = 'An error occurred during import. Please check the file format and try again.';
+      if (errors?.file) {
+        form.setError('file', Array.isArray(errors.file) ? errors.file[0] : errors.file);
       }
 
-      // Ensure the file input field is cleared on error to prevent re-submission of corrupted file
-      if (form.errors.file && fileInput.value) {
-        fileInput.value.value = '';
-        importFile.value = null;
-        form.file = null;
+      if (errors?.batch_id) {
+        form.setError(
+          'action_batch_id',
+          Array.isArray(errors.batch_id) ? errors.batch_id[0] : errors.batch_id
+        );
+      }
+
+      if (!errors || typeof errors !== 'object') {
+        flashMessages.value.error = 'An error occurred during import.';
       }
     },
     onFinish: () => {
@@ -204,15 +178,16 @@ function formatLocation(loc: number | null) {
 
 // Props from backend
 const props = defineProps<{
-  applications: Array<{
-    target_location: number
-    id: number;
-    action_applicant_id: number;
-    action_batch_id: number;
-    first_name: string;
-    last_name: string;
-    action_batch: string;
-    }>;
+applications: Array<{
+  target_location: number
+  id: number;
+  action_applicant_id: number;
+  action_batch_id: number;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  action_batch: string;
+}>
   filters: { search: string };
   userPermissions: number;
   actionBatches: Array<{
@@ -454,7 +429,7 @@ console.log('Received batches:', props.actionBatches);
               <!-- Application ID as clickable link -->
 <td class="border px-3 py-2">
   <Link :href="`/action/applications/${app.id}`" class="text-blue-600 hover:underline">
-    {{ app.first_name }} {{ app.last_name }}
+    {{ app.first_name }} {{ app.middle_name ? app.middle_name + ' ' : '' }}{{ app.last_name }}
   </Link>
 </td>
 

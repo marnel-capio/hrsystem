@@ -19,6 +19,7 @@ const props = defineProps<{
 }>()
 
 
+
 const sourceTypes = props.sourceTypes
     ? Object.entries(props.sourceTypes).map(([value, label]) => ({ value: Number(value), label }))
     : []
@@ -125,6 +126,14 @@ const rules = {
     age: (val: string) => /^\d+$/.test(val) || 'Age must be a valid number',
     school: (val: string) => !!val || 'School is required',
     degree: (val: string) => !!val || 'Degree is required',
+    expected_graduation: (val: string) => {
+        const currentYear = new Date().getFullYear();
+        if (!val || val.trim() === '') return 'Expected Graduation Year is required';
+        const year = Number(val);
+        if (isNaN(year)) return 'Expected Graduation Year must be numeric';
+        if (year < currentYear) return `Value must be greater than or equal to ${currentYear}`;
+        return true;
+    },
 };
 
 function validateField(field: keyof typeof rules) {
@@ -173,6 +182,8 @@ watch(
     },
     { immediate: true, deep: true }
 )
+watch(() => form.expected_graduation, () => validateField('expected_graduation'));
+
 
 </script>
 
@@ -215,7 +226,7 @@ watch(
 
                     <!-- Source Fields -->
                     <div class="form-group">
-                        <label>Source Type</label>
+                        <label style="font-weight: bold;">Source Type *</label>
                         <select v-model="form.source_type">
                             <option disabled value="">Select Source Type</option>
                             <option v-for="type in sourceTypes" :key="type.value" :value="type.value">{{ type.label }}
@@ -247,12 +258,12 @@ watch(
                     <!-- Name Fields -->
                     <div class="form-row name-fields">
                         <div class="form-group last-first">
-                            <label>Last Name</label>
+                            <label style="font-weight: bold;">Last Name *</label>
                             <input type="text" v-model="form.last_name" placeholder="Last Name" />
                             <span v-if="form.errors.last_name" class="error">{{ form.errors.last_name }}</span>
                         </div>
                         <div class="form-group last-first">
-                            <label>First Name</label>
+                            <label style="font-weight: bold;">First Name *</label>
                             <input type="text" v-model="form.first_name" placeholder="First Name" />
                             <span v-if="form.errors.first_name" class="error">{{ form.errors.first_name }}</span>
                         </div>
@@ -265,7 +276,7 @@ watch(
 
                     <!-- Email -->
                     <div class="form-group">
-                        <label>Email Address</label>
+                        <label style="font-weight: bold;">Email Address *</label>
                         <input type="text" v-model="form.email_address" placeholder="Email Address" />
                         <span v-if="form.errors.email_address" class="error">{{ form.errors.email_address }}</span>
                     </div>
@@ -273,7 +284,7 @@ watch(
                     <!-- Age & Gender -->
                     <div class="form-row">
                         <div class="form-group half">
-                            <label>Gender</label>
+                            <label style="font-weight: bold;">Gender *</label>
                             <select v-model="form.gender">
                                 <option disabled value="">Select Gender</option>
                                 <option v-for="g in genders" :key="g.value" :value="g.value">{{ g.label }}</option>
@@ -281,7 +292,7 @@ watch(
                             <span v-if="form.errors.gender" class="error">{{ form.errors.gender }}</span>
                         </div>
                         <div class="form-group half">
-                            <label>Age</label>
+                        <label style="font-weight: bold;">Age *</label>
                             <input type="number" v-model="form.age" placeholder="Age" @input="validateAge" />
                             <span v-if="form.errors.age" class="error">{{ form.errors.age }}</span>
                         </div>
@@ -290,12 +301,12 @@ watch(
                     <!-- School & Degree -->
                     <div class="form-row">
                         <div class="form-group half">
-                            <label>School</label>
+                            <label style="font-weight: bold;">School *</label>
                             <input type="text" v-model="form.school" placeholder="School" />
                             <span v-if="form.errors.school" class="error">{{ form.errors.school }}</span>
                         </div>
                         <div class="form-group half">
-                            <label>Degree</label>
+                            <label style="font-weight: bold;">Degree *</label>
                             <input type="text" v-model="form.degree" placeholder="Degree" />
                             <span v-if="form.errors.degree" class="error">{{ form.errors.degree }}</span>
                         </div>
@@ -309,10 +320,10 @@ watch(
 
                     <!-- Expected Graduation -->
                     <div class="form-group">
-                        <label>Expected Graduation</label>
-                        <input type="date" v-model="form.expected_graduation" :min="minGraduationDate" />
+                        <label style="font-weight: bold;">Expected Graduation (Year) *</label>
+                        <input type="text" v-model="form.expected_graduation" placeholder="YYYY" />
                         <span v-if="form.errors.expected_graduation" class="error">{{ form.errors.expected_graduation
-                            }}</span>
+                        }}</span>
                     </div>
 
                     <!-- Achievements / Remarks -->

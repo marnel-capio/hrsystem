@@ -123,6 +123,11 @@ return [
             'errorMessage' => 'An error occurred while uploading the following applicants:',
     ],
 
+    'ineligible_applicant' => [
+        'errorCode' => 'INELIGIBLE_APPLICANT',
+        'errorMessage' => 'This applicant cannot apply at this time. A previous application from the last 6 months shows a failed status.',
+    ],
+
 
 
 
@@ -159,6 +164,16 @@ return [
     'target_date_after_or_equal' => [
         'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
         'errorMessage' => 'The selected date must be in the future.',
+    ],
+
+    'TARGET_DATE_BETWEEN' => [
+        'errorCode' => 'TARGET_DATE_BETWEEN',
+        'errorMessage' => 'The selected date must be between the previous and next ACTION Batch.',
+    ],
+
+    'TARGET_DATE_MIN_ONLY' => [
+        'errorCode' => 'TARGET_DATE_MIN_ONLY',
+        'errorMessage' => 'The selected date must be after the previous ACTION Batch.',
     ],
 
 

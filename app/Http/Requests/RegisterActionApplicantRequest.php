@@ -46,7 +46,17 @@ class RegisterActionApplicantRequest extends FormRequest
 
             'last_name' => [new RequiredField, new MaxLength(80), new AlphaSpaceDash],
             'first_name' => [new RequiredField, new MaxLength(80), new AlphaSpaceDash],
-            'middle_name' => ['nullable', new MaxLength(80), new AlphaSpaceDash],
+            'middle_name' => [
+                'nullable',
+                'string',
+                new MaxLength(80),
+                function ($attribute, $value, $fail) {
+                    // Allow letters, spaces, and periods
+                    if (! preg_match('/^[A-Za-z\s\.]+$/', $value)) {
+                        $fail('Only letters, spaces, hyphens, and period are allowed.');
+                    }
+                },
+            ],
             'email_address' => [new RequiredField, 'email', new MaxLength(80), new GenEmail,],
             'gender' => [new RequiredField, 'numeric', 'in:1,2'],
             'age' => [new RequiredField, 'numeric', 'min:1', 'max:99'],
