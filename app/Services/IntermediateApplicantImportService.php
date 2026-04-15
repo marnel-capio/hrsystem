@@ -96,8 +96,257 @@ class IntermediateApplicantImportService
             return $this->createNewApplicant($row, $fullName);
         }
 
-        // SECOND PROCESS: Existing applicant
-        return $this->handleExistingApplicant($applicant, $row, $fullName);
+        // Get Excel timestamp for expiry check
+        $excelTimestamp = isset($row['Timestamp'])
+            ? $this->parseExcelDate($row['Timestamp'])
+            : null;
+
+        // Get OLD registered_date FIRST (before any updates)
+        $registeredDate = $applicant->registered_date
+            ? Carbon::parse($applicant->registered_date)
+            : null;
+
+        // 1. Parse + Update profile FIRST (always)
+        $parsedData = $this->parseApplicantData($row);
+        $updateData = $parsedData['applicant'];
+
+        unset($updateData['created_by'], $updateData['created_time'], $updateData['registered_by'], $updateData['source_type'], $updateData['source'], $updateData['other_source']);
+
+        $applicant->update(array_merge($updateData, [
+            'updated_by' => Auth::id(),
+            'updated_time' => now(),
+        ]));
+
+        $this->syncSkills($applicant, $row);
+
+        // 2. HIERARCHICAL ELIGIBILITY CHECK
+        if ($excelTimestamp && $registeredDate && $this->isExpired($excelTimestamp, $registeredDate)) {
+            // EXPIRED: Always create NEW application
+            return $this->handleExpiredApplicant($applicant, $row, $fullName);
+        }
+
+        // VALID: Update existing application with hierarchical progression
+        return $this->handleValidApplicant($applicant, $row, $fullName);
+    }
+
+    /**
+     * Handle EXPIRED applicant - Always NEW application with status-specific remarks
+     */
+    private function handleExpiredApplicant(IntermediateApplicant $applicant, array $row, string $fullName): array
+    {
+        $latestApp = $applicant->applications()->latest('created_time')->first();
+        
+        if (! $latestApp) {
+            return $this->createAppWithSync($applicant, $row, $fullName, 1, 'No existing application found. Created new application.');
+        }
+
+        // HIERARCHICAL STATUS CHECK → REMARKS + NEW APP
+        $result = $this->getExpiredHandlingResult($latestApp);
+        
+        return $this->createAppWithSync($applicant, $row, $fullName, 1, $result['remarks']);
+    }
+
+    /**
+     * Get handling result for expired applicant (status → remarks mapping)
+     */
+    private function getExpiredHandlingResult($latestApp): array
+    {
+        // paper_screening_status = 1 or 2
+        if (in_array($latestApp->paper_screening_status ?? 0, [1, 2])) {
+            return ['remarks' => 'Most recent application expired.'];
+        }
+
+        // paper_screening_status = 5 (failed)
+        if (($latestApp->paper_screening_status ?? 0) === 5) {
+            return ['remarks' => 'Most recent application paper screening failed and is expired.'];
+        }
+
+        // paper_screening_status = 3 or 4 → Check exam
+        if (in_array($latestApp->paper_screening_status ?? 0, [3, 4])) {
+            // exam_status = 1 or 2 OR 5
+            if (in_array($latestApp->exam_status ?? 0, [1, 2, 5])) {
+                $remarks = $latestApp->exam_status === 5 
+                    ? 'Most recent application exam failed and is expired.'
+                    : 'Most recent application exam expired.';
+                return ['remarks' => $remarks];
+            }
+
+            // exam_status = 3 or 4 → Check HR interview
+            if (in_array($latestApp->exam_status ?? 0, [3, 4])) {
+                // hr_interview_status = 1,2,5
+                if (in_array($latestApp->hr_interview_status ?? 0, [1, 2, 5])) {
+                    $remarks = $latestApp->hr_interview_status === 5
+                        ? 'Most recent application hr interview failed and is expired.'
+                        : 'Most recent application hr interview expired.';
+                    return ['remarks' => $remarks];
+                }
+
+                // hr_interview_status = 3 or 4 → Check BU interview
+                if (in_array($latestApp->hr_interview_status ?? 0, [3, 4])) {
+                    // bu_interview_status = 1,2,5
+                    if (in_array($latestApp->bu_interview_status ?? 0, [1, 2, 5])) {
+                        $remarks = $latestApp->bu_interview_status === 5
+                            ? 'Most recent application bu interview failed and is expired.'
+                            : 'Most recent application bu interview expired.';
+                        return ['remarks' => $remarks];
+                    }
+
+                    // bu_interview_status = 3 or 4 → Check final interview
+                    if (in_array($latestApp->bu_interview_status ?? 0, [3, 4])) {
+                        // final_interview_status = 1,2,5
+                        if (in_array($latestApp->final_interview_status ?? 0, [1, 2, 5])) {
+                            $remarks = $latestApp->final_interview_status === 5
+                                ? 'Most recent application final interview failed and is expired.'
+                                : 'Most recent application final interview expired.';
+                            return ['remarks' => $remarks];
+                        }
+
+                        // final_interview_status = 3 or 4 → Check job offer
+                        if (in_array($latestApp->final_interview_status ?? 0, [3, 4])) {
+                            // job_offer_status = 1 or 2
+                            if (in_array($latestApp->job_offer_status ?? 0, [1, 2])) {
+                                return ['remarks' => 'Most recent application job offer expired.'];
+                            }
+                            // job_offer_status = 3,4,5,6 → OUTSIDE SCOPE
+                            return ['remarks' => 'Most recent application reached job offer stage. Outside import scope.'];
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback
+        return ['remarks' => 'Most recent applicant application is expired.'];
+    }
+
+    private function handleValidApplicant(IntermediateApplicant $applicant, array $row, string $fullName): array
+    {
+        $latestApp = $applicant->applications()->latest('created_time')->first();
+
+        if (! $latestApp) {
+            return $this->createAppWithSync($applicant, $row, $fullName, 1, 'No existing application found. Created new application.');
+        }
+
+        // HIERARCHICAL STATUS CHECK → STAGE + REMARKS
+        $handling = $this->getValidHandlingResult($latestApp);
+        
+        $data = array_merge(
+            $this->buildApplicationData($row, $handling['stage'], true),
+            [
+                'application_stage' => $handling['stage'],
+                'remarks' => $handling['remarks']
+            ]
+        );
+
+        unset($data['created_by'], $data['created_time']);
+        $latestApp->update($data);
+
+        $this->syncWorkExperiences($applicant, $row);
+
+        return ['success' => "{$fullName} (UPDATED PROFILE + LATEST APP stage {$handling['stage']} - {$handling['remarks']})"];
+    }
+
+    private function getValidHandlingResult($latestApp): array
+    {
+        // paper_screening_status = 1 or 2
+        if (in_array($latestApp->paper_screening_status ?? 0, [1, 2])) {
+            return [
+                'stage' => 1,
+                'remarks' => 'Application still on screening.'
+            ];
+        }
+
+        // paper_screening_status = 5 (failed)
+        if (($latestApp->paper_screening_status ?? 0) === 5) {
+            return [
+                'stage' => 7,
+                'remarks' => 'Failed paper screening.'
+            ];
+        }
+
+        // paper_screening_status = 3 or 4 → Check exam
+        if (in_array($latestApp->paper_screening_status ?? 0, [3, 4])) {
+            // exam_status = 1,2,5
+            if (in_array($latestApp->exam_status ?? 0, [1, 2, 5])) {
+                $remarks = $latestApp->exam_status === 5 
+                    ? 'Failed exam.'
+                    : 'Application passed screening, now for exam.';
+                return [
+                    'stage' => $latestApp->exam_status === 5 ? 7 : 2,
+                    'remarks' => $remarks
+                ];
+            }
+
+            // exam_status = 3 or 4 → Check HR interview
+            if (in_array($latestApp->exam_status ?? 0, [3, 4])) {
+                // hr_interview_status = 1,2,5
+                if (in_array($latestApp->hr_interview_status ?? 0, [1, 2, 5])) {
+                    $remarks = $latestApp->hr_interview_status === 5
+                        ? 'Failed hr interview.'
+                        : 'Application passed exam, now for hr interview.';
+                    return [
+                        'stage' => $latestApp->hr_interview_status === 5 ? 7 : 3,
+                        'remarks' => $remarks
+                    ];
+                }
+
+                // hr_interview_status = 3 or 4 → Check BU interview
+                if (in_array($latestApp->hr_interview_status ?? 0, [3, 4])) {
+                    // bu_interview_status = 1,2,5
+                    if (in_array($latestApp->bu_interview_status ?? 0, [1, 2, 5])) {
+                        $remarks = $latestApp->bu_interview_status === 5
+                            ? 'Failed bu interview.'
+                            : 'Application passed hr interview, now for bu interview.';
+                        return [
+                            'stage' => $latestApp->bu_interview_status === 5 ? 7 : 4,
+                            'remarks' => $remarks
+                        ];
+                    }
+
+                    // bu_interview_status = 3 or 4 → Check final interview
+                    if (in_array($latestApp->bu_interview_status ?? 0, [3, 4])) {
+                        // final_interview_status = 1,2,5
+                        if (in_array($latestApp->final_interview_status ?? 0, [1, 2, 5])) {
+                            $remarks = $latestApp->final_interview_status === 5
+                                ? 'Failed final interview.'
+                                : 'Application passed bu interview, now for final interview.';
+                            return [
+                                'stage' => $latestApp->final_interview_status === 5 ? 7 : 5,
+                                'remarks' => $remarks
+                            ];
+                        }
+
+                        // final_interview_status = 3 or 4 → Check job offer
+                        if (in_array($latestApp->final_interview_status ?? 0, [3, 4])) {
+                            // job_offer_status = 1,2
+                            if (in_array($latestApp->job_offer_status ?? 0, [1, 2])) {
+                                return [
+                                    'stage' => 6,
+                                    'remarks' => 'Application passed final interview, now for job offer.'
+                                ];
+                            }
+                            // job_offer_status = 3,4,5,6
+                            $statusMap = [
+                                3 => 'Job offer accepted',
+                                4 => 'Job offer rejected',
+                                5 => 'Job offer pending',
+                                6 => 'Job offer withdrawn'
+                            ];
+                            return [
+                                'stage' => 6,
+                                'remarks' => $statusMap[$latestApp->job_offer_status] ?? 'Job offer stage.'
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback
+        return [
+            'stage' => 1,
+            'remarks' => 'Application updated - valid registration.'
+        ];
     }
 
     private function handleExistingApplicant(IntermediateApplicant $applicant, array $row, string $fullName): array
@@ -433,7 +682,7 @@ class IntermediateApplicantImportService
             'upload_resume' => $row['Upload your updated resume'] ?? null,
             'application_stage' => $stage,
             'fy_week' => $fyWeek,
-            'availability_date' => $this->parseExcelDate($row['Date Available to Report to Work'] ?? null),
+            'availability_date' => $row['Date Available to Report to Work'] ?? null,
             'desired_salary_range' => $row['Desired Salary Range'] ?? null,
             'work_preference' => $row['Please check your work preference:'] ?? null,
             'basic_pay' => $row['Basic Pay'] ?? null,

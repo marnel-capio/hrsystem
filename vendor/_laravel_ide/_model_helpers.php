@@ -3257,7 +3257,7 @@ namespace App\Models {
      * @property integer|null $bu_interview_status
      * @property integer|null $hr_interview_status
      * @property integer|null $exam_status
-     * @property integer|null $paper_screening_status
+     * @property integer $paper_screening_status
      * @property string|null $final_interview_week
      * @property \Illuminate\Support\Carbon|null $final_interview_datetime
      * @property string|null $bu_interview_week
@@ -3284,7 +3284,7 @@ namespace App\Models {
      * @property string|null $basic_pay
      * @property string|null $work_preference
      * @property string|null $desired_salary_range
-     * @property \Illuminate\Support\Carbon|null $availability_date
+     * @property string|null $availability_date
      * @property integer|null $answer_q4
      * @property integer|null $answer_q3
      * @property integer|null $answer_q2

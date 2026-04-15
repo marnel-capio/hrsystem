@@ -40,7 +40,6 @@ class IntermediateApplication extends Model
         'answer_q1' => 'integer', 'answer_q2' => 'integer', 'answer_q3' => 'integer',
         'answer_q4' => 'integer', 'answer_q5' => 'integer', 'answer_q6' => 'integer',
         'answer_q7' => 'integer',
-        'availability_date' => 'datetime',
         'testing_datetime' => 'datetime',
         'hr_interview_datetime' => 'datetime',
         'bu_interview_datetime' => 'datetime',
