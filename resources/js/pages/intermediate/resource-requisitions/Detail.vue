@@ -12,7 +12,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 
     <!-- Header -->
     <div class="flex justify-between mx-5 mb-3">
-      <h2 class="text-xl font-bold">Resource Requisition Detail of 
+      <h2 class="text-xl font-bold">Resource Requisition Detail
         
       </h2>
     </div>

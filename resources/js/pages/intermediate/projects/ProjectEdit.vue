@@ -71,7 +71,7 @@ const submit = () => {
     <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
       <div class="grid grid-cols-2 gap-4">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm font-bold mb-1">Project Name<label class="text-red-500">*</label></label>
+          <label class="text-sm font-bold mb-1">Project Name <label class="text-red-500">*</label></label>
           <input
             v-model="form.project_name"
             @input="validateProjectName"
@@ -88,12 +88,12 @@ const submit = () => {
 
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Project Description</label>
+          <label class="text-sm mb-1 text-gray-500">Project Description</label>
           <textarea
             v-model="form.project_description"
             rows="6"
              @input="validateDescription"
-            placeholder="Description"
+            placeholder="Project Description"
             class="border p-2 rounded w-full"
           />
           <span v-if="page.props.errors?.project_description" class="text-red-600 text-xs mt-1">
@@ -107,7 +107,7 @@ const submit = () => {
 
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Remarks</label>
+          <label class="text-sm mb-1 text-gray-500">Remarks</label>
           <textarea
             v-model="form.remarks"
             rows="6"
