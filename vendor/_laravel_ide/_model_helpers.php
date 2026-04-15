@@ -13,6 +13,9 @@ namespace App\Models {
      * @property string|null $extra_curricular
      * @property string|null $thesis_project
      * @property string|null $other_examination_certificate
+     * @property string|null $background_remarks
+     * @property integer|null $japanese_level
+     * @property integer $japanese_background
      * @property string|null $awards_recognition
      * @property string $expected_graduation
      * @property string|null $others_degree
@@ -51,6 +54,9 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereOthersDegree($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereExpectedGraduation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereAwardsRecognition($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereJapaneseBackground($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereJapaneseLevel($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereBackgroundRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereOtherExaminationCertificate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereThesisProject($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereExtraCurricular($value)
@@ -712,7 +718,23 @@ namespace App\Models {
     /**
      * App\Models\ActionApplicantSkill
      *
+     * @property string $updated_time
+     * @property mixed $updated_by
+     * @property string $created_time
+     * @property mixed $created_by
+     * @property string|null $remarks
+     * @property string $skill
+     * @property mixed $action_applicant_id
+     * @property int $id
      * @property-read \App\Models\ActionApplicant $applicant
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereActionApplicantId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereSkill($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereRemarks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereCreatedBy($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereCreatedTime($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereUpdatedBy($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereUpdatedTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill query()
