@@ -332,6 +332,12 @@ const selectedApplicantLabel = computed(() => {
     return 'Select Applicant';
 });
 
+const finalInterviewOverallManuallyEdited = ref(false)
+
+function markFinalInterviewOverallManualEdit() {
+    finalInterviewOverallManuallyEdited.value = true
+}
+
 const batchName = computed(
     () => props.application.batch?.action_batch || 'N/A',
 );
@@ -628,63 +634,65 @@ watch(
 watch(
     () => form.final_interview_assignments,
     (rows) => {
-        const list = rows || [];
+        const list = rows || []
 
         const numericScores = list
             .map((row: any) => Number(row.score))
-            .filter((value: number) => !Number.isNaN(value));
+            .filter((value: number) => !Number.isNaN(value))
 
-        if (numericScores.length === 0) {
-            if (!finalScoreManuallyEdited.value) {
-                form.final_interview_final = '';
+        if (!finalInterviewOverallManuallyEdited.value) {
+            if (numericScores.length === 0) {
+                form.final_interview_final = ''
+            } else {
+                const average =
+                    numericScores.reduce(
+                        (sum: number, value: number) => sum + value,
+                        0,
+                    ) / numericScores.length
+
+                form.final_interview_final = average.toFixed(2)
             }
-        } else if (!finalScoreManuallyEdited.value) {
-            const average =
-                numericScores.reduce(
-                    (sum: number, value: number) => sum + value,
-                    0,
-                ) / numericScores.length;
-
-            form.final_interview_final = average.toFixed(2);
         }
 
-        (list || []).forEach((row: any, index: number) => {
+        ;(list || []).forEach((row: any, index: number) => {
             validateScoreField(
                 `final_interview_assignments.${index}.score`,
                 `${row.name || 'Interviewer'} Score`,
                 row.score,
-            );
-        });
+            )
+        })
 
-        if (allFinalInterviewersPassed.value) {
-            form.final_interview_result = '2';
-            form.final_interview_application_status = '3';
-            return;
-        }
-
-        if (allFinalInterviewersFailed.value) {
-            form.final_interview_result = '3';
-            form.final_interview_application_status = '5';
-            return;
-        }
-
-        if (hasMixedFinalInterviewResults.value) {
-            form.final_interview_application_status = '2';
-            if (!isHrDecisionEditor.value) {
-                form.final_interview_result = '';
+        if (!finalInterviewOverallManuallyEdited.value) {
+            if (allFinalInterviewersPassed.value) {
+                form.final_interview_result = '2'
+                form.final_interview_application_status = '3'
+                return
             }
-            return;
-        }
 
-        if (form.final_interview_date) {
-            form.final_interview_application_status = '1';
-        } else {
-            form.final_interview_application_status = '';
-            form.final_interview_result = '';
+            if (allFinalInterviewersFailed.value) {
+                form.final_interview_result = '3'
+                form.final_interview_application_status = '5'
+                return
+            }
+
+            if (hasMixedFinalInterviewResults.value) {
+                form.final_interview_application_status = '2'
+                if (!isHrDecisionEditor.value) {
+                    form.final_interview_result = ''
+                }
+                return
+            }
+
+            if (form.final_interview_date) {
+                form.final_interview_application_status = '1'
+            } else {
+                form.final_interview_application_status = ''
+                form.final_interview_result = ''
+            }
         }
     },
     { deep: true },
-);
+)
 
 onMounted(() => {
     if (props.examVenues) {
@@ -2646,25 +2654,21 @@ const examCriteriaDisplay = computed(() => {
                                     <label class="field-label"
                                         >Final Score</label
                                     >
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="5"
-                                        v-model="form.final_interview_final"
-                                        @input="
-                                            handleFinalScoreManualInput();
-                                            clampScore(
-                                                form,
-                                                'final_interview_final',
-                                                5
-                                            );
-                                        "
-                                        class="form-input"
-                                        :disabled="
-                                            !editableStages.final_interview
-                                        "
-                                    />
+<input
+    type="number"
+    v-model="form.final_interview_final"
+    min="0"
+    max="5"
+    step="0.01"
+    class="form-input"
+    :readonly="!canEditFinalInterviewDecision"
+    :disabled="!editableStages.final_interview"
+    @input="
+        finalInterviewOverallManuallyEdited = true;
+        canEditFinalInterviewDecision && clampScore(form, 'final_interview_final', 5)
+    "
+/>
+
                                 </div>
 
                                 <div class="form-field">
@@ -2687,13 +2691,19 @@ const examCriteriaDisplay = computed(() => {
                                             !editableStages.final_interview
                                         "
                                     />
-
+                                        <p
+    v-if="!canEditFinalInterviewDecision"
+    class="mt-1 text-xs text-zinc-500"
+>
+    Final result is editable by HR Admins or HR Managers.
+</p>
                                     <select
                                         v-else-if="
                                             hasMixedFinalInterviewResults &&
                                             canEditFinalInterviewDecision
                                         "
                                         v-model="form.final_interview_result"
+                                        @change="markFinalInterviewOverallManualEdit()"
                                         class="form-select"
                                         :disabled="
                                             !editableStages.final_interview
