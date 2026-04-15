@@ -119,10 +119,13 @@ class IntermediateApplicantImportService
 
         // Update applicant profile
         unset($updateData['created_by'], $updateData['created_time'], $updateData['registered_by'], $updateData['source_type'], $updateData['source'], $updateData['other_source']);
+
         $applicant->update(array_merge($updateData, [
             'updated_by' => Auth::id(),
             'updated_time' => now(),
         ]));
+
+        $this->syncSkills($applicant, $row);
 
         // 2. Compare dates: if difference > 6 months, CREATE NEW APPLICATION
         if ($excelTimestamp && $registeredDate && $this->isExpired($excelTimestamp, $registeredDate)) {
@@ -256,6 +259,7 @@ class IntermediateApplicantImportService
 
         $this->createApplication($applicant, $row);
         $this->syncWorkExperiences($applicant, $row);
+        $this->syncSkills($applicant, $row);
 
         return ['success' => "{$fullName} (NEW APPLICANT)"];
     }
@@ -396,7 +400,6 @@ class IntermediateApplicantImportService
             $sourceType = 7;
             $otherSource = trim($row[$referralHeader] ?? '');
         }
-        
 
         return [$sourceType, $sourceValue, $otherSource];
     }
@@ -427,6 +430,7 @@ class IntermediateApplicantImportService
 
         $data = [
             'position' => $row['Position you are applying for'] ?? null,
+            'upload_resume' => $row['Upload your updated resume'] ?? null,
             'application_stage' => $stage,
             'fy_week' => $fyWeek,
             'availability_date' => $this->parseExcelDate($row['Date Available to Report to Work'] ?? null),
@@ -527,6 +531,55 @@ class IntermediateApplicantImportService
                     'updated_time' => now(),
                 ]);
             }
+        }
+    }
+
+    private function syncSkills($applicant, array $row): void
+    {
+        $rawSkills = $row['Please state any additional information/ skills relevant to your job application'] ?? null;
+
+        if (empty($rawSkills)) {
+            return;
+        }
+
+        // Mark existing skills as deleted
+        $applicant->skills()->update(['is_deleted' => 1]);
+
+        // Decode JSON if needed
+        if (is_string($rawSkills) && json_decode($rawSkills) !== null) {
+            $rawSkills = json_decode($rawSkills, true);
+        }
+
+        // Convert array → string
+        if (is_array($rawSkills)) {
+            $rawSkills = implode(', ', $rawSkills);
+        }
+
+        $rawSkills = trim($rawSkills ?? '');
+
+        if ($rawSkills === '') {
+            return;
+        }
+
+        // ✅ preg_split restored
+        $skills = preg_split('/[,;\n]+/', $rawSkills, -1, PREG_SPLIT_NO_EMPTY);
+
+        foreach ($skills as $skill) {
+            $skill = trim($skill);
+
+            if ($skill === '') {
+                continue;
+            }
+
+            $applicant->skills()->create([
+                'skill' => $skill,
+                'remarks' => null,
+                'is_deleted' => 0,
+                'created_by' => Auth::id() ?? 1,
+                'created_time' => now(),
+                'updated_by' => Auth::id() ?? 1,
+                'updated_time' => now(),
+            ]);
         }
     }
 

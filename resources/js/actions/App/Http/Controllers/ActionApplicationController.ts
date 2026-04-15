@@ -1091,9 +1091,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::print
-
  * @see app/Http/Controllers/ActionApplicationController.php:295
-
  * @route '/action/applications/{id}/print'
  */
         printForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -207,4 +207,9 @@ class IntermediateApplicant extends Model
     {
         return $this->hasMany(IntermediateApplicationWorkExperience::class, 'intermediate_applicant_id');
     }
+
+    public function skills()
+    {
+        return $this->hasMany(IntermediateApplicantSkill::class, 'intermediate_applicant_id');
+    }
 }

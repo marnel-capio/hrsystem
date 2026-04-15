@@ -21,7 +21,7 @@ class IntermediateApplication extends Model
 
     protected $fillable = [
         'application_stage', 'intermediate_applicant_id', 'resource_schedule_id', 'fy_week',
-        'position', 'source_project_id', 'answer_q1', 'answer_q2', 'answer_q3', 'answer_q4',
+        'position', 'source_project_id','upload_resume', 'upload_pic', 'answer_q1', 'answer_q2', 'answer_q3', 'answer_q4',
         'answer_q5', 'answer_q6', 'answer_q7', 'availability_date', 'desired_salary_range',
         'work_preference', 'basic_pay', 'bonuses', 'hmo', 'leaves', 'allowances',
         'other_benefits', 'targeted_company', 'industry_experience', 'current_employer',
@@ -121,7 +121,7 @@ class IntermediateApplication extends Model
 
     protected $appends = [
     'fullApplicantName',
-    'projectName',       // optional, if you want it as a computed prop in JSON
+    'projectName',       
     'stageLabel'
 ];
 
