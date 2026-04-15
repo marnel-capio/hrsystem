@@ -17,6 +17,7 @@ class IntermediateRequisitionModel extends Model
         'replacement_due_to',
         'person_to_replace',
         'location_assignment',
+        'custom_location',
         'project_id',
         'business_unit',
         'resource',

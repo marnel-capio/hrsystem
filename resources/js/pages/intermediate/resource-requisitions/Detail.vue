@@ -106,9 +106,10 @@ const props = defineProps<{
   replacement_due_to_label?: string;
 
   person_to_replace?: string;
-
-  location_assignment?: string;
-  location_assignment_label?: string;
+  
+  location_assignment: string | null;
+  location_assignment_label: string | null;
+  custom_location: string | null;
 
   project_id?: number;
   project_description?: string;
@@ -303,14 +304,21 @@ const formatDate = (dateString: string | null) => {
                   <th class="px-2 py-2 text-left font-bold">
                     Business Unit
                   </th>
-                  <td class="text-lg px-2">{{ requisition.business_unit }}</td>
+                  <td class=" px-2">{{ requisition.business_unit }}</td>
               </tr>
               <tr class="mt-5">
-                <th class="px-2 py-2 text-left font-bold mt-5">
-                  Location Assignment
-                </th>
-                <td class="text-lg px-2">{{ requisition.location_assignment_label }}</td> 
-              </tr>
+                  <th class="px-2 py-2 text-left font-bold mt-5">Location Assignment</th>
+                  <td class=" px-2">
+                    <!-- Check if location_assignment is 1 to 5 -->
+                    <span v-if="requisition.location_assignment && requisition.location_assignment >= '1' && requisition.location_assignment <= '5'">
+                      {{ requisition.location_assignment_label}}
+                    </span>
+                    <!-- If "Other" is selected, show the custom location -->
+                    <span v-else>
+                      {{ requisition.custom_location || 'No custom location provided' }}
+                    </span>
+                  </td>
+                </tr>
             </tbody></table>
           </div>
         </div>

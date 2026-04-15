@@ -25,7 +25,7 @@ const form = ref({
   replacement_due_to: props.requisition?.replacement_due_to || '',
   person_to_replace: props.requisition?.person_to_replace || '',
 
-  location_assignment: props.requisition?.location_assignment || '',
+  location_assignment: props.requisition?.location_assignment?.toString() || '',
   custom_location: props.requisition?.custom_location || '',
 
   project_id: props.requisition?.project_id
@@ -203,6 +203,13 @@ const submit = () => {
   remarksError.value = ''
   start_dateError.value = ''
 
+  if (form.value.location_assignment === '6' && !form.value.custom_location) {
+    custom_locationError.value = 'Custom location is required if you select "Other".';
+    form.value.processing = false;
+    loading.value = false;
+    return;
+  }
+
   form.value.processing = true
   loading.value = true
 
@@ -225,6 +232,24 @@ watch(() => form.value.request_type, (val) => {
     form.value.person_to_replace = '';
   }
 });
+
+watch(
+  () => form.value.location_assignment,
+  (val) => {
+    if (val !== '6') {
+      form.value.custom_location = ''
+    }
+  },
+  { immediate: true }
+)
+watch(
+  () => form.value.location_assignment,
+  (val) => {
+    if (val !== '6') {
+      form.value.custom_location = '';  
+    }
+  }
+)
 
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1); 

@@ -64,6 +64,7 @@ public function update($data, $request)
     {
         $requisition = IntermediateRequisitionModel::findOrFail($data['id']);
         $project = IntermediateProjectModel::find($data['project_id']);
+        
 
         $oldData = [
         'engagement_type' => $requisition->engagement_type,
@@ -73,6 +74,7 @@ public function update($data, $request)
         'person_to_replace' => $requisition->person_to_replace,
 
         'location_assignment' => $requisition->location_assignment,
+
         'project_id' => $requisition->project_id,
         'business_unit' => $requisition->business_unit,
 
@@ -97,6 +99,11 @@ public function update($data, $request)
         $requisition->replacement_due_to = $data['replacement_due_to'] ?? null;
         $requisition->person_to_replace = $data['person_to_replace'] ?? null;
 
+        if ($data['location_assignment'] == 6 && !empty($data['custom_location'])) {
+            $requisition->custom_location = $data['custom_location'];
+        } else {
+            $requisition->custom_location = null;
+        } 
         $requisition->location_assignment = $data['location_assignment'];
         $requisition->project_id = $data['project_id'];
         $requisition->business_unit = $data['business_unit'];
