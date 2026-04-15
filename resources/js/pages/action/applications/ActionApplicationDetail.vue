@@ -14,6 +14,7 @@ const canAcceptDecline = (interview: any) => {
         interview.status === 1
 }
 
+
 const bulkEditScheduleErrors = ref({
     selectedInterviewers: '',
     scheduledDate: '',
@@ -77,11 +78,12 @@ const submitBulkEditSchedule = async () => {
             `/action/applications/${application.value.id}/interviews/bulk-update-schedule`,
             {
                 interview_ids: selectedInterviewers.value,
-                scheduled_date: bulkEditScheduledDate.value,
+                scheduled_date: normalizeDateTimeForSubmit(bulkEditScheduledDate.value),
             }
         )
 
         interviews.value = response.data.interviews || interviews.value
+        syncApplicationDatesFromInterviews()
         showBulkEditScheduleModal.value = false
         selectedInterviewers.value = []
         selectAll.value = false
@@ -211,12 +213,36 @@ const filteredAvailableInterviewers = computed(() => {
     )
 })
 
+const normalizeDateTimeForSubmit = (value: string) => {
+    if (!value) return value
+
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
+        return value.replace('T', ' ') + ':00'
+    }
+
+    return value
+}
+
 const formatDateTime = (dateString: string | null) => {
     if (!dateString) return '-'
 
-    const date = new Date(dateString)
+    const raw = String(dateString).replace('T', ' ').replace('Z', '').slice(0, 16)
+    const [datePart, timePart] = raw.split(' ')
 
-    return date.toLocaleString('en-US', {
+    if (!datePart || !timePart) return String(dateString)
+
+    const [year, month, day] = datePart.split('-').map(Number)
+    const [hour, minute] = timePart.split(':').map(Number)
+
+    const localDate = new Date(
+        year,
+        (month || 1) - 1,
+        day || 1,
+        hour || 0,
+        minute || 0
+    )
+
+    return localDate.toLocaleString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
@@ -224,6 +250,31 @@ const formatDateTime = (dateString: string | null) => {
         minute: 'numeric',
         hour12: true,
     })
+}
+
+const finalInterviewAssignments = computed(() => page.props.finalInterviewAssignments || [])
+
+
+const getEvaluationResultLabel = (result: number | null) => {
+    const results: Record<number, string> = {
+        1: 'Pending',
+        2: 'Passed',
+        3: 'Failed',
+    }
+
+    if (!result) return '-'
+    return results[result] || '-'
+}
+
+const getEvaluationBadgeClass = (result: number | null) => {
+    const classes: Record<number, string> = {
+        1: 'bg-yellow-100 text-yellow-800',
+        2: 'bg-green-100 text-green-800',
+        3: 'bg-red-100 text-red-800',
+    }
+
+    if (!result) return 'bg-gray-100 text-gray-800'
+    return classes[result] || 'bg-gray-100 text-gray-800'
 }
 
 const formatScore = (score: number | null) => {
@@ -321,6 +372,31 @@ const getStatusBadgeColor = (status: string | null) => {
     return 'bg-gray-200 text-gray-700'
 }
 
+function getExamStatusBadgeClass(status: number | null | undefined) {
+    switch (Number(status)) {
+        case 1:
+            return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' // Pending
+
+        case 2:
+            return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' // Done
+
+                case 3:
+            return 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' // 2nd priority
+
+
+        case 5:
+            return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' //  PASSED (for exam only)
+
+
+        case 6:
+            return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' // failed
+
+
+        default:
+            return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
+    }
+}
+
 const getOverallStatus = () => {
     const jobStatus = Number(application.value.job_offer_status)
 
@@ -387,6 +463,16 @@ const closeDeclineReasonModal = () => {
     selectedDeclinedInterview.value = null
 }
 
+const syncApplicationDatesFromInterviews = () => {
+    const exam = interviews.value.find(i => Number(i.interview_type) === 1)
+    const initial = interviews.value.find(i => Number(i.interview_type) === 2)
+    const final = interviews.value.find(i => Number(i.interview_type) === 3)
+
+    if (exam) application.value.exam_plan_date = exam.scheduled_date
+    if (initial) application.value.initial_interview_plan_date = initial.scheduled_date
+    if (final) application.value.final_interview_date = final.scheduled_date
+}
+
 const submitBulkAdd = async () => {
     if (selectedBulkInterviewers.value.length === 0) {
         showToast('Please select at least one interviewer', 'error')
@@ -404,7 +490,7 @@ const submitBulkAdd = async () => {
         const payload = {
             interviewer_ids: selectedBulkInterviewers.value.map(i => i.id),
             interview_type: Number(bulkAddStage.value),
-            scheduled_date: bulkAddPlannedDate.value,
+            scheduled_date: normalizeDateTimeForSubmit(bulkAddPlannedDate.value),
         }
 
         const response = await axios.post(
@@ -413,6 +499,7 @@ const submitBulkAdd = async () => {
         )
 
         interviews.value = response.data.interviews || interviews.value
+        syncApplicationDatesFromInterviews()
 
         showBulkAddModal.value = false
         selectedBulkInterviewers.value = []
@@ -506,47 +593,7 @@ const pendingApprovalInterviewers = computed(() => {
     )
 })
 
-const examRows = computed(() =>
-    interviews.value.filter((i: any) => Number(i.interview_type) === 1)
-)
 
-const initialInterviewRows = computed(() =>
-    interviews.value.filter((i: any) => Number(i.interview_type) === 2)
-)
-
-const finalInterviewRows = computed(() =>
-    interviews.value.filter((i: any) => Number(i.interview_type) === 3)
-)
-
-const isApproved = (status: number) => Number(status) === 2
-const isDone = (status: number) => Number(status) === 4
-
-const examReadyForApplicantNotification = computed(() => {
-    if (examRows.value.length === 0) return false
-
-    const allApproved = examRows.value.every((i: any) => isApproved(i.status))
-    const anyDone = examRows.value.some((i: any) => isDone(i.status))
-
-    return allApproved && !anyDone
-})
-
-const initialReadyForApplicantNotification = computed(() => {
-    if (initialInterviewRows.value.length === 0) return false
-
-    const allApproved = initialInterviewRows.value.every((i: any) => isApproved(i.status))
-    const anyDone = initialInterviewRows.value.some((i: any) => isDone(i.status))
-
-    return allApproved && !anyDone
-})
-
-const finalReadyForApplicantNotification = computed(() => {
-    if (finalInterviewRows.value.length === 0) return false
-
-    const allApproved = finalInterviewRows.value.every((i: any) => isApproved(i.status))
-    const anyDone = finalInterviewRows.value.some((i: any) => isDone(i.status))
-
-    return allApproved && !anyDone
-})
 
 const failedStage = computed(() => {
     if (Number(application.value?.final_interview_result) === 3) {
@@ -583,30 +630,6 @@ const availableNotificationOptions = computed(() => {
         })
     }
 
-    if (examReadyForApplicantNotification.value) {
-        options.push({
-            value: 'applicant_exam_scheduled',
-            label: 'Send applicant exam schedule',
-            description: 'Notify the applicant about the approved exam schedule.',
-        })
-    }
-
-    if (initialReadyForApplicantNotification.value) {
-        options.push({
-            value: 'applicant_initial_scheduled',
-            label: 'Send applicant initial interview schedule',
-            description: 'Notify the applicant about the approved initial interview schedule.',
-        })
-    }
-
-    if (finalReadyForApplicantNotification.value) {
-        options.push({
-            value: 'applicant_final_scheduled',
-            label: 'Send applicant final interview schedule',
-            description: 'Notify the applicant about the approved final interview schedule.',
-        })
-    }
-
     if (failedStage.value) {
         options.push({
             value: 'applicant_failed',
@@ -639,45 +662,6 @@ const notificationPreview = computed(() => {
                 summary: `This email tells interviewer(s) that they have a pending interview assignment for ${applicantFullName.value} and includes a direct link to the application page so they can review and respond.`,
             }
 
-        case 'applicant_exam_scheduled':
-            return {
-                subject: '【HR System】AWS Application Schedule',
-                recipients: [
-                    {
-                        name: applicantFullName.value,
-                        email: application.value?.applicant?.email_address || '',
-                        extra: 'Applicant',
-                    }
-                ],
-                summary: `This email tells the applicant that their exam schedule has been confirmed.`,
-            }
-
-        case 'applicant_initial_scheduled':
-            return {
-                subject: '【HR System】AWS Application Schedule',
-                recipients: [
-                    {
-                        name: applicantFullName.value,
-                        email: application.value?.applicant?.email_address || '',
-                        extra: 'Applicant',
-                    }
-                ],
-                summary: `This email tells the applicant that their initial interview schedule has been confirmed.`,
-            }
-
-        case 'applicant_final_scheduled':
-            return {
-                subject: '【HR System】AWS Application Schedule',
-                recipients: [
-                    {
-                        name: applicantFullName.value,
-                        email: application.value?.applicant?.email_address || '',
-                        extra: 'Applicant',
-                    }
-                ],
-                summary: `This email tells the applicant that their final interview schedule has been confirmed.`,
-            }
-
         case 'applicant_failed':
             return {
                 subject: '【HR System】Application Update',
@@ -707,6 +691,23 @@ const notificationPreview = computed(() => {
         default:
             return null
     }
+})
+
+const willTriggerApplicantAutoEmail = computed(() => {
+    const current = acceptDeclineInterviewer.value
+    if (!current) return false
+
+    const sameStageRows = interviews.value.filter((i: any) =>
+        Number(i.interview_type) === Number(current.interview_type)
+    )
+
+    const otherRows = sameStageRows.filter((i: any) => i.id !== current.id)
+
+    return (
+        sameStageRows.length > 0 &&
+        Number(current.status) === 1 &&
+        otherRows.every((i: any) => Number(i.status) === 2)
+    )
 })
 
 watch(acceptDeclineReason, (newVal) => {
@@ -785,6 +786,28 @@ const submitAcceptDecline = async () => {
 const toastMessage = ref<string | null>(null)
 const toastType = ref<'success' | 'error'>('success')
 const showToastMessage = ref(false)
+
+function getApplicationStatusBadgeClass(status: number | null | undefined) {
+    switch (Number(status)) {
+        case 1: // Pending
+            return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+
+        case 2: // For deliberation / done
+            return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+
+        case 3: // Passed
+            return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+
+        case 4: // P2 (if used)
+            return 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+
+        case 5: // Failed
+            return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+
+        default:
+            return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
+    }
+}
 
 const showToast = (message: string, type: 'success' | 'error') => {
     toastMessage.value = message
@@ -875,9 +898,8 @@ watch(errorMessage, (newVal) => {
                                 <User v-else class="w-10 h-10 text-blue-600" />
                             </div>
                             <h2 class="text-2xl font-extrabold tracking-wide drop-shadow">
-                                {{ application.applicant.last_name }}, {{ application.applicant.first_name }}
+                                {{ application.applicant.last_name }}, {{ application.applicant.first_name }} {{ application.applicant.middle_name }}
                             </h2>
-                            <p class="text-sm opacity-90 mt-1">{{ application.applicant.middle_name }}</p>
                             <p class="text-xs opacity-75 mt-2">{{ application.applicant.email_address }}</p>
                             <p class="text-xs opacity-75">{{ application.applicant.contact_number }}</p>
                         </div>
@@ -937,22 +959,6 @@ watch(errorMessage, (newVal) => {
                                     </a>
                                 </div>
 
-                                <div
-                                    v-if="application.upload_pic"
-                                    class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <Image class="w-4 h-4 text-purple-600" />
-                                        <span class="text-sm">2x2 Picture</span>
-                                    </div>
-                                    <a
-                                        :href="getFileUrl(application.upload_pic)"
-                                        target="_blank"
-                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                    >
-                                        View Image
-                                    </a>
-                                </div>
                             </div>
 
                             <div v-else class="text-sm text-gray-500 dark:text-gray-400">
@@ -962,176 +968,309 @@ watch(errorMessage, (newVal) => {
                     </div>
                 </div>
 
-                <div class="space-y-6">
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                        <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                            <Award class="w-5 h-5 text-blue-600" /> EXAM DETAILS
-                        </h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm border-collapse border">
-                                <tbody>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Plan Date</td>
-                                        <td class="px-3 py-2 border">{{ formatDateTime(application.exam_plan_date) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Actual Date</td>
-                                        <td class="px-3 py-2 border">{{ formatDateTime(application.exam_actual_date) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Venue</td>
-                                        <td class="px-3 py-2 border">{{ examVenues[application.exam_venue] ?? '-' }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Programming Result</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.exam_prg_result) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">ATPP Result</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.exam_atpp_result) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">GIT Result</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.exam_git_result) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamResultLabel(application.exam_result))]">
-                                                {{ getExamResultLabel(application.exam_result) || '-' }}
-                                            </span>
-                                        </td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getExamApplicationStatusLabel(application.exam_application_status))]">
-                                                {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-4">
-                            <strong class="text-sm">Comments:</strong>
-                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.exam_remarks || 'No comments' }}</p>
-                        </div>
-                    </div>
+<div class="space-y-6">
+    <!-- EXAM DETAILS -->
+    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold flex items-center gap-2">
+                <Award class="w-5 h-5 text-blue-600" /> EXAM DETAILS
+            </h2>
+            <!-- <span
+                :class="[
+                    'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
+                    getStatusBadgeColor(getExamResultLabel(application.exam_result))
+                ]"
+            >
+                {{ getExamResultLabel(application.exam_result) || 'Pending' }}
+            </span> -->
+        </div>
 
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                        <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                            <Calendar class="w-5 h-5 text-blue-600" /> INITIAL INTERVIEW DETAILS
-                        </h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm border-collapse border">
-                                <tbody>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Plan Date</td>
-                                        <td class="px-3 py-2 border">{{ formatDateTime(application.initial_interview_plan_date) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Actual Date</td>
-                                        <td class="px-3 py-2 border">{{ formatDateTime(application.initial_interview_actual_date) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Venue</td>
-                                        <td class="px-3 py-2 border">{{ getVenueLabel(application.initial_interview_venue) || '-' }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Final Score</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.initial_interview_final) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.initial_interview_result))]">
-                                                {{ getInterviewResultLabel(application.initial_interview_result) || '-' }}
-                                            </span>
-                                        </td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.initial_interview_application_status))]">
-                                                {{ getInterviewApplicationStatusLabel(application.initial_interview_application_status) || '-' }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-4">
-                            <strong class="text-sm">Comments:</strong>
-                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.initial_interview_remarks || 'No comments' }}</p>
-                        </div>
-                    </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Plan Date</div>
+                <div class="text-sm font-medium">{{ formatDateTime(application.exam_plan_date) }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Actual Date</div>
+                <div class="text-sm font-medium">{{ formatDateTime(application.exam_actual_date) }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Venue</div>
+                <div class="text-sm font-medium">{{ examVenues[application.exam_venue] ?? '-' }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Application Status</div>
+<div>
+    <span
+        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+:class="getExamStatusBadgeClass(application.exam_application_status)"    >
+        {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
+    </span>
+</div>
+            </div>
+        </div>
 
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                        <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                            <Star class="w-5 h-5 text-blue-600" /> FINAL INTERVIEW DETAILS
-                        </h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm border-collapse border">
-                                <tbody>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Interview Date</td>
-                                        <td class="px-3 py-2 border">{{ formatDateTime(application.final_interview_date) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Final Score</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_final) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 1</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_1) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 2</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_2) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 3</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_3) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Score 4</td>
-                                        <td class="px-3 py-2 border">{{ formatScore(application.final_interview_score_4) }}</td>
-                                    </tr>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Result</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewResultLabel(application.final_interview_result))]">
-                                                {{ getInterviewResultLabel(application.final_interview_result) || '-' }}
-                                            </span>
-                                        </td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800">Application Status</td>
-                                        <td class="px-3 py-2 border">
-                                            <span :class="['inline-flex px-2 py-1 text-xs font-semibold rounded-full', getStatusBadgeColor(getInterviewApplicationStatusLabel(application.final_interview_application_status))]">
-                                                {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-4">
-                            <strong class="text-sm">Comments:</strong>
-                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.final_interview_remarks || 'No comments' }}</p>
-                        </div>
-                    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div>
+                <div class="text-sm font-semibold mb-3">ATPP Breakdown</div>
+                <div class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+                    <table class="w-full text-sm">
+                        <thead class="bg-zinc-50 dark:bg-zinc-800">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold">Part</th>
+                                <th class="px-4 py-3 text-left font-semibold">Correct</th>
+                                <th class="px-4 py-3 text-left font-semibold">Wrong</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-t border-zinc-200 dark:border-zinc-700">
+                                <td class="px-4 py-3">
+                                    <div class="font-medium">Part I</div>
+                                    <div class="text-xs text-zinc-500">Sequence / Pattern Analysis</div>
+                                </td>
+                                <td class="px-4 py-3">{{ formatScore(application.exam_atpp_part1_correct) }}</td>
+                                <td class="px-4 py-3">{{ formatScore(application.exam_atpp_part1_wrong) }}</td>
+                            </tr>
+                            <tr class="border-t border-zinc-200 dark:border-zinc-700">
+                                <td class="px-4 py-3">
+                                    <div class="font-medium">Part II</div>
+                                    <div class="text-xs text-zinc-500">Abstract Reasoning</div>
+                                </td>
+                                <td class="px-4 py-3">{{ formatScore(application.exam_atpp_part2_correct) }}</td>
+                                <td class="px-4 py-3">{{ formatScore(application.exam_atpp_part2_wrong) }}</td>
+                            </tr>
+                            <tr class="border-t border-zinc-200 dark:border-zinc-700">
+                                <td class="px-4 py-3">
+                                    <div class="font-medium">Part III</div>
+                                    <div class="text-xs text-zinc-500">Problem Solving</div>
+                                </td>
+                                <td class="px-4 py-3">{{ formatScore(application.exam_atpp_part3_correct) }}</td>
+                                <td class="px-4 py-3">{{ formatScore(application.exam_atpp_part3_wrong) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                        <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                            <CheckCircle class="w-5 h-5 text-blue-600" /> JOB OFFER DETAILS
-                        </h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm border-collapse border">
-                                <tbody>
-                                    <tr class="border">
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Schedule</td>
-                                        <td class="px-3 py-2 border">{{ formatDateTime(application.job_offer_schedule) }}</td>
-                                        <td class="font-semibold px-3 py-2 border bg-zinc-50 dark:bg-zinc-800 w-1/3">Status</td>
-                                        <td class="px-3 py-2 border">
-<span
-    :class="[
-        'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
-        getJobOfferStatusBadgeClass(application.job_offer_status)
-    ]"
+            <div>
+                <div class="text-sm font-semibold mb-3">Scores Summary</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                        <div class="text-xs text-zinc-500 mb-1">ATPP Final Result</div>
+                        <div class="text-lg font-bold">{{ formatScore(application.exam_atpp_result) }}</div>
+                    </div>
+                    <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                        <div class="text-xs text-zinc-500 mb-1">GIT Result</div>
+                        <div class="text-lg font-bold">{{ formatScore(application.exam_git_result) }}</div>
+                    </div>
+                    <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 sm:col-span-2">
+                        <div class="text-xs text-zinc-500 mb-1">Programming Result</div>
+                        <div class="text-lg font-bold">{{ formatScore(application.exam_prg_result) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <div class="text-sm font-semibold mb-2">Comments</div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 text-sm">
+                {{ application.exam_remarks || 'No comments' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- INITIAL INTERVIEW DETAILS -->
+    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold flex items-center gap-2">
+                <Calendar class="w-5 h-5 text-blue-600" /> INITIAL INTERVIEW DETAILS
+            </h2>
+            <!-- <span
+                :class="[
+                    'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
+                    getStatusBadgeColor(getInterviewResultLabel(application.initial_interview_result))
+                ]"
+            >
+                {{ getInterviewResultLabel(application.initial_interview_result) || 'Pending' }}
+            </span> -->
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Plan Date</div>
+                <div class="text-sm font-medium">{{ formatDateTime(application.initial_interview_plan_date) }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Actual Date</div>
+                <div class="text-sm font-medium">{{ formatDateTime(application.initial_interview_actual_date) }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Venue</div>
+                <div class="text-sm font-medium">{{ getVenueLabel(application.initial_interview_venue) || '-' }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Final Score</div>
+                <div class="text-lg font-bold">{{ formatScore(application.initial_interview_final) }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Application Status</div>
+<div>
+    <span
+        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+        :class="getApplicationStatusBadgeClass(application.initial_interview_application_status)"
+    >
+        {{ getInterviewApplicationStatusLabel(application.initial_interview_application_status) || '-' }}
+    </span>
+</div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <div class="text-sm font-semibold mb-2">Comments</div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 text-sm">
+                {{ application.initial_interview_remarks || 'No comments' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- FINAL INTERVIEW DETAILS -->
+    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold flex items-center gap-2">
+                <Star class="w-5 h-5 text-blue-600" /> FINAL INTERVIEW DETAILS
+            </h2>
+            <!-- <span
+                :class="[
+                    'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
+                    getStatusBadgeColor(getInterviewResultLabel(application.final_interview_result))
+                ]"
+            >
+                {{ getInterviewResultLabel(application.final_interview_result) || 'Pending' }}
+            </span> -->
+        </div>
+
+        <div v-if="page.props.hasMixedFinalInterviewResults" class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Mixed interviewer results. Final score is up to HR deliberation.
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Interview Date</div>
+                <div class="text-sm font-medium">{{ formatDateTime(application.final_interview_date) }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Final Score</div>
+                <div class="text-lg font-bold">{{ formatScore(application.final_interview_final) }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Application Status</div>
+<div>
+    <span
+        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+        :class="getApplicationStatusBadgeClass(application.final_interview_application_status)"
+    >
+        {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
+    </span>
+</div>
+            </div>
+        </div>
+
+        <div class="mb-5">
+            <div class="text-sm font-semibold mb-3">Approved Final Interviewers</div>
+
+            <div v-if="finalInterviewAssignments.length === 0" class="rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 p-4 text-sm text-zinc-500">
+                No final interviewers assigned.
+            </div>
+
+            <div v-else class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+                <table class="w-full text-sm">
+                    <thead class="bg-zinc-50 dark:bg-zinc-800">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Interviewer</th>
+                            <th class="px-4 py-3 text-left font-semibold">Role</th>
+                            <th class="px-4 py-3 text-left font-semibold">Score</th>
+                            <th class="px-4 py-3 text-left font-semibold">Result</th>
+                            <th class="px-4 py-3 text-left font-semibold">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            v-for="assignment in finalInterviewAssignments"
+                            :key="assignment.id"
+                            class="border-t border-zinc-200 dark:border-zinc-700"
+                        >
+                            <td class="px-4 py-3 font-medium">{{ assignment.name || '-' }}</td>
+                            <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ assignment.role_label || '-' }}</td>
+                            <td class="px-4 py-3">{{ formatScore(assignment.score) }}</td>
+                            <td class="px-4 py-3">
+                                <span
+                                    :class="[
+                                        'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+                                        getEvaluationBadgeClass(assignment.evaluation_result)
+                                    ]"
+                                >
+                                    {{ getEvaluationResultLabel(assignment.evaluation_result) }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                                {{ assignment.evaluation_remarks || '—' }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div>
+            <div class="text-sm font-semibold mb-2">Comments</div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 text-sm">
+                {{ application.final_interview_remarks || 'No comments' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- JOB OFFER DETAILS -->
+    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold flex items-center gap-2">
+                <CheckCircle class="w-5 h-5 text-blue-600" /> JOB OFFER DETAILS
+            </h2>
+            <!-- <span
+                :class="[
+                    'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
+                    getJobOfferStatusBadgeClass(application.job_offer_status)
+                ]"
+            >
+                {{ getJobOfferStatusLabel(application.job_offer_status) || 'Pending' }}
+            </span> -->
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Schedule</div>
+                <div class="text-sm font-medium">{{ formatDateTime(application.job_offer_schedule) }}</div>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
+                <div class="text-xs text-zinc-500 mb-1">Status</div>
+<div>
+    <span
+    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+    :class="getApplicationStatusBadgeClass(application.job_offer_status)"
 >
     {{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}
-</span>                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-4">
-                            <strong class="text-sm">Comments:</strong>
-                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.job_offer_remarks || 'No comments' }}</p>
-                        </div>
-                    </div>
+</span>
+</div>            </div>
+        </div>
 
-                    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow overflow-hidden">
+        <div class="mt-5">
+            <div class="text-sm font-semibold mb-2">Comments</div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 text-sm">
+                {{ application.job_offer_remarks || 'No comments' }}
+            </div>
+        </div>
+    </div>
+
+                        <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow overflow-hidden">
                         <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-800 dark:to-zinc-800/50 px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
                             <div class="flex justify-between items-center">
                                 <div>
@@ -1241,16 +1380,21 @@ watch(errorMessage, (newVal) => {
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
-                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-                            <Users class="w-5 h-5 text-blue-600" /> ADDITIONAL INFORMATION
-                        </h2>
-                        <div class="mb-4">
-                            <strong class="text-sm">General Remarks:</strong>
-                            <p class="text-sm mt-1 bg-zinc-50 dark:bg-zinc-800 p-3 rounded">{{ application.remarks || '-' }}</p>
-                        </div>
-                    </div>
-                </div>
+    <!-- ADDITIONAL INFORMATION -->
+    <div class="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <Users class="w-5 h-5 text-blue-600" /> ADDITIONAL INFORMATION
+        </h2>
+
+        <div>
+            <div class="text-sm font-semibold mb-2">General Remarks</div>
+            <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 text-sm">
+                {{ application.remarks }}
+            </div>
+        </div>
+    </div>
+
+</div>
             </div>
 
             <div v-if="showDeclineReasonModal" class="fixed inset-0 z-50 flex items-center justify-center">
@@ -1506,6 +1650,7 @@ watch(errorMessage, (newVal) => {
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduled Date</label>
                             <input type="text" :value="formatDateTime(acceptDeclineInterviewer?.scheduled_date)" disabled class="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-gray-100" />
                         </div>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Decision</label>
                             <div class="flex gap-4">
@@ -1534,6 +1679,12 @@ watch(errorMessage, (newVal) => {
                                 {{ acceptDeclineErrors.reason }}
                             </p>
                         </div>
+                                                <div
+    v-if="willTriggerApplicantAutoEmail"
+    class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-3 text-sm text-blue-800"
+>
+    Accepting will send an automatic email to the applicant, informing them of their scheduled assessment.
+</div>
                     </div>
 
                     <div class="flex gap-3 mt-6">
