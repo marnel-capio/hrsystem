@@ -186,7 +186,7 @@ function submit() {
                     </div>
 
                     <div class="form-group">
-                        <label>Middle Name</label>
+                        <label style="color: gray;">Middle Name</label>
                         <input v-model="form.middle_name" type="text" placeholder="Enter middle name (optional)" />
                         <span v-if="middleNameError || form.errors.middle_name" class="error">
                             {{ middleNameError ?? form.errors.middle_name }}
