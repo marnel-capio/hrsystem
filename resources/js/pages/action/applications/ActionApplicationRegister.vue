@@ -1149,22 +1149,22 @@ function getFinalInterviewApplicationStatus(score: number): string {
     return '1'
 }
 
-function clampScore(obj: any, field: string) {
-    let value = obj[field]
+function clampScore(obj: any, field: string, max: number) {
+    let value = obj[field];
 
-    if (value === '' || value === null || value === undefined) return
+    if (value === '' || value === null || value === undefined) return;
 
-    let num = Number(value)
+    let num = Number(value);
 
     if (Number.isNaN(num)) {
-        obj[field] = ''
-        return
+        obj[field] = '';
+        return;
     }
 
-    if (num < 0) num = 0
-    if (num > 5) num = 5
+    if (num < 0) num = 0;
+    if (num > max) num = max;
 
-    obj[field] = num
+    obj[field] = num;
 }
 
 watch(
@@ -1416,9 +1416,17 @@ watch(
                                 type="number"
                                 step="1"
                                 min="0"
+                                max="40"
                                 v-model="form.exam_atpp_part1_correct"
                                 placeholder="0"
                                 class="form-input"
+                                @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part1_correct',
+                                                                40,
+                                                            )
+                                                        "
                                 :disabled="!isApplicantSelected"
                             />
                             <span v-if="form.errors.exam_atpp_part1_correct" class="error-message">
@@ -1435,9 +1443,17 @@ watch(
                                 type="number"
                                 step="1"
                                 min="0"
+                                max="40"
                                 v-model="form.exam_atpp_part1_wrong"
                                 placeholder="0"
                                 class="form-input"
+                                @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part1_wrong',
+                                                                40,
+                                                            )
+                                                        "
                                 :disabled="!isApplicantSelected"
                             />
                             <span v-if="form.errors.exam_atpp_part1_wrong" class="error-message">
@@ -1459,9 +1475,17 @@ watch(
                                 type="number"
                                 step="1"
                                 min="0"
+                                max="30"
                                 v-model="form.exam_atpp_part2_correct"
                                 placeholder="0"
                                 class="form-input"
+                                @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part2_correct',
+                                                                30,
+                                                            )
+                                                        "
                                 :disabled="!isApplicantSelected"
                             />
                             <span v-if="form.errors.exam_atpp_part2_correct" class="error-message">
@@ -1478,9 +1502,17 @@ watch(
                                 type="number"
                                 step="1"
                                 min="0"
+                                max="30"
                                 v-model="form.exam_atpp_part2_wrong"
                                 placeholder="0"
                                 class="form-input"
+                                @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part2_wrong',
+                                                                30,
+                                                            )
+                                                        "
                                 :disabled="!isApplicantSelected"
                             />
                             <span v-if="form.errors.exam_atpp_part2_wrong" class="error-message">
@@ -1502,9 +1534,17 @@ watch(
                                 type="number"
                                 step="1"
                                 min="0"
+                                max="25"
                                 v-model="form.exam_atpp_part3_correct"
                                 placeholder="0"
                                 class="form-input"
+                                @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part3_correct',
+                                                                25,
+                                                            )
+                                                        "
                                 :disabled="!isApplicantSelected"
                             />
                             <span v-if="form.errors.exam_atpp_part3_correct" class="error-message">
@@ -1521,9 +1561,17 @@ watch(
                                 type="number"
                                 step="1"
                                 min="0"
+                                max="25"
                                 v-model="form.exam_atpp_part3_wrong"
                                 placeholder="0"
                                 class="form-input"
+                                @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part3_wrong',
+                                                                25,
+                                                            )
+                                                        "
                                 :disabled="!isApplicantSelected"
                             />
                             <span v-if="form.errors.exam_atpp_part3_wrong" class="error-message">
@@ -1621,6 +1669,9 @@ watch(
                     <input
                         type="number"
                         step="0.01"
+                                                                 min="0"
+                                        max="12"
+                                        @input="clampScore(form, 'exam_git_result', 12)"
                         v-model="form.exam_git_result"
                         placeholder="0.00"
                         class="form-input"
@@ -1635,6 +1686,9 @@ watch(
                     <input
                         type="number"
                         step="0.01"
+                                                                min="0"
+                                        max="80"
+                                        @input="clampScore(form, 'exam_prg_result', 80)"
                         v-model="form.exam_prg_result"
                         placeholder="0.00"
                         class="form-input"
@@ -1732,7 +1786,7 @@ watch(
                     v-model="form.initial_interview_final"
                     placeholder="0.00"
                     class="form-input"
-                    @input="clampScore(form, 'initial_interview_final')"
+                    @input="clampScore(form, 'initial_interview_final', 5)"
                 />
             </div>
 
@@ -1844,7 +1898,7 @@ watch(
     min="0"
     max="5"
     step="0.01"
-    @input="clampScore(assignment, 'score')"
+    @input="clampScore(assignment, 'score', 5)"
 />
                         </div>
 
@@ -1910,9 +1964,8 @@ watch(
                 type="number"
                 step="0.01"
                 min="0"
-    max="5"
                 v-model="form.final_interview_final"
-                @input="handleFinalScoreManualInput"
+@input="handleFinalScoreManualInput(); clampScore(form, 'final_interview_final', 5)"
                 class="form-input"
                 :disabled="!isApplicantSelected"
 
