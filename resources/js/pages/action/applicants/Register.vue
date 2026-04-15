@@ -11,7 +11,9 @@ axios.defaults.headers.common['X-CSRF-TOKEN'] =
 const props = defineProps<{
     sourceTypes?: Record<number, string>,
     sources?: Record<number, string>,
-    genders?: Record<number, string>
+    genders?: Record<number, string>,
+    japaneseBackgrounds?: Record<number, string>,
+    japaneseLevels?: Record<number, string>,
     users?: Array<any>;
     flash?: {
         error?: string
@@ -48,7 +50,10 @@ const form = useForm({
     other_examination_certificate: '',
     thesis_project: '',
     extra_curricular: '',
-    remarks: ''
+    remarks: '',
+    japanese_background: '',
+    japanese_level: '',
+    background_remarks: '',
 })
 
 const isSourceDisabled = computed(() => Number(form.source_type) !== 3)
@@ -134,6 +139,14 @@ const rules = {
         if (year < currentYear) return `Value must be greater than or equal to ${currentYear}`;
         return true;
     },
+    japanese_background: (val: string) => !!val || 'This is a required field',
+
+    japanese_level: (val: string) => {
+        if (Number(form.japanese_background) === 3 && !val) {
+            return 'This is a required field'
+        }
+        return true
+    },
 };
 
 function validateField(field: keyof typeof rules) {
@@ -183,6 +196,32 @@ watch(
     { immediate: true, deep: true }
 )
 watch(() => form.expected_graduation, () => validateField('expected_graduation'));
+
+const japaneseBackgrounds = props.japaneseBackgrounds
+    ? Object.entries(props.japaneseBackgrounds).map(([value, label]) => ({
+        value: Number(value),
+        label
+    }))
+    : []
+
+const japaneseLevels = props.japaneseLevels
+    ? Object.entries(props.japaneseLevels).map(([value, label]) => ({
+        value: Number(value),
+        label
+    }))
+    : []
+
+const isJapaneseLevelDisabled = computed(() => Number(form.japanese_background) !== 3)
+
+watch(() => form.japanese_background, (val) => {
+    if (Number(val) !== 3) {
+        form.japanese_level = ''
+        form.clearErrors('japanese_level')
+    }
+})
+
+watch(() => form.japanese_background, () => validateField('japanese_background'))
+watch(() => form.japanese_level, () => validateField('japanese_level'))
 
 
 </script>
@@ -243,7 +282,7 @@ watch(() => form.expected_graduation, () => validateField('expected_graduation')
                                 <option v-for="s in sources" :key="s.value" :value="s.value">{{ s.label }}</option>
                             </select>
                             <span v-if="!isSourceDisabled && form.errors.source" class="error">{{ form.errors.source
-                                }}</span>
+                            }}</span>
                         </div>
 
                         <div class="form-group half">
@@ -292,7 +331,7 @@ watch(() => form.expected_graduation, () => validateField('expected_graduation')
                             <span v-if="form.errors.gender" class="error">{{ form.errors.gender }}</span>
                         </div>
                         <div class="form-group half">
-                        <label style="font-weight: bold;">Age *</label>
+                            <label style="font-weight: bold;">Age *</label>
                             <input type="number" v-model="form.age" placeholder="Age" @input="validateAge" />
                             <span v-if="form.errors.age" class="error">{{ form.errors.age }}</span>
                         </div>
@@ -323,7 +362,7 @@ watch(() => form.expected_graduation, () => validateField('expected_graduation')
                         <label style="font-weight: bold;">Expected Graduation (Year) *</label>
                         <input type="text" v-model="form.expected_graduation" placeholder="YYYY" />
                         <span v-if="form.errors.expected_graduation" class="error">{{ form.errors.expected_graduation
-                        }}</span>
+                            }}</span>
                     </div>
 
                     <!-- Achievements / Remarks -->
@@ -331,7 +370,44 @@ watch(() => form.expected_graduation, () => validateField('expected_graduation')
                         <label>Awards / Recognition</label>
                         <textarea v-model="form.awards_recognition" placeholder="Awards or recognition"></textarea>
                         <span v-if="form.errors.awards_recognition" class="error">{{ form.errors.awards_recognition
-                            }}</span>
+                        }}</span>
+                    </div>
+
+                    <!-- Japanese Background (RADIO) -->
+                    <div class="form-group">
+                        <label style="font-weight: bold;">Japanese Background *</label>
+
+                        <div class="radio-group">
+                            <label v-for="j in japaneseBackgrounds" :key="j.value">
+                                <input type="radio" :value="j.value" v-model="form.japanese_background" />
+                                {{ j.label }}
+                            </label>
+                        </div>
+
+                        <span v-if="form.errors.japanese_background" class="error">
+                            {{ form.errors.japanese_background }}
+                        </span>
+                    </div>
+
+                    <!-- Japanese Level (Conditional Dropdown) -->
+                    <div class="form-group">
+                        <label>Japanese Level</label>
+
+                        <select v-model="form.japanese_level" :disabled="isJapaneseLevelDisabled">
+                            <option disabled value="">Select Level</option>
+                            <option v-for="j in japaneseLevels" :key="j.value" :value="j.value">
+                                {{ j.label }}
+                            </option>
+                        </select>
+
+                        <span v-if="!isJapaneseLevelDisabled && form.errors.japanese_level" class="error">
+                            {{ form.errors.japanese_level }}
+                        </span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Japanese Background Remarks</label>
+                        <textarea v-model="form.background_remarks"></textarea>
                     </div>
 
                     <div class="form-group">
@@ -351,7 +427,7 @@ watch(() => form.expected_graduation, () => validateField('expected_graduation')
                         <label>Extra Curricular</label>
                         <textarea v-model="form.extra_curricular"></textarea>
                         <span v-if="form.errors.extra_curricular" class="error">{{ form.errors.extra_curricular
-                            }}</span>
+                        }}</span>
                     </div>
 
                     <div class="form-group">
@@ -374,6 +450,21 @@ watch(() => form.expected_graduation, () => validateField('expected_graduation')
 </template>
 
 <style scoped>
+
+.radio-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
 /* Reuse the same User form styles */
 .form-row {
     display: flex;
