@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Http\Requests;
+
+use App\Rules\AlphaSpaceDash;
+use App\Rules\MaxLength;
+use App\Rules\RequiredField;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class UpdateActionApplicantRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        // You can add authorization logic here if needed
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'source_type' => [new RequiredField, 'numeric'],
+            'source' => 'nullable|numeric|required_if:source_type,3',
+            'other_source' => ['nullable', 'string', new MaxLength(80), 'required_if:source_type,1,2,4,5'],
+            'last_name' => [new RequiredField, 'string', new MaxLength(80), new AlphaSpaceDash],
+            'first_name' => [new RequiredField, 'string', new MaxLength(80), new AlphaSpaceDash],
+            'middle_name' => [
+                'nullable',
+                'string',
+                new MaxLength(80),
+                function ($attribute, $value, $fail) {
+                    // Allow letters, spaces, and periods
+                    if (! preg_match('/^[A-Za-z\s\.]+$/', $value)) {
+                        $fail('Only letters, spaces, hyphens, and period are allowed.');
+                    }
+                },
+            ],
+            'email_address' => [new RequiredField, 'email', new MaxLength(80), Rule::unique('action_applicants', 'email_address')->ignore($this->route('id'))],
+            'gender' => [new RequiredField, 'numeric', 'in:1,2'],
+            'age' => [new RequiredField, 'numeric', 'min:1', 'max:99'],
+            'school' => [new RequiredField, 'string', new MaxLength(80)],
+            'degree' => [new RequiredField, 'string', new MaxLength(80)],
+            'others_degree' => ['nullable', 'string', new MaxLength(80)],
+            'expected_graduation' => [new RequiredField],
+            'awards_recognition' => ['nullable', 'string', new MaxLength(1024)],
+            'japanese_background' => [
+                new RequiredField,
+                Rule::in(array_keys(config('constants.japanese_backgrounds'))),
+            ],
+
+            'japanese_level' => [
+                Rule::requiredIf($this->japanese_background == 3),
+                'nullable',
+                Rule::in(array_keys(config('constants.japanese_levels'))),
+            ],
+
+            'background_remarks' => ['nullable', 'string', new MaxLength(255)],
+            'other_examination_certificate' => ['nullable', 'string', new MaxLength(1024)],
+            'thesis_project' => ['nullable', 'string', new MaxLength(1024)],
+            'extra_curricular' => ['nullable', 'string', new MaxLength(1024)],
+            'remarks' => ['nullable', 'string', new MaxLength(1024)],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'source.required_if' => config('errors.field_required.errorMessage'),
+            'other_source.required_if' => config('errors.field_required.errorMessage'),
+        ];
+    }
+}

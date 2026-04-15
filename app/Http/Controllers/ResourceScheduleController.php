@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResourceScheduleNotificationMail;
 use App\Models\User;
+use App\Mail\ResourceScheduleDeletedMail;
 
 class ResourceScheduleController extends Controller
 {
@@ -46,10 +47,7 @@ class ResourceScheduleController extends Controller
         $user = auth()->user();
         $validated = $request->validated();
 
-        $locations = config('constants.trainingLocation');
-        $validated['target_location'] = $validated['target_location'] === 'Manila' 
-        ? $locations['LOCATION_MANILA_VALUE'] 
-        : $locations['LOCATION_CEBU_VALUE'];
+        $validated['target_location'] = (int) $validated['target_location'];
         $validated['created_by'] = $user->id;
         $validated['created_time'] = now();
         $validated['updated_by'] = $user->id;
@@ -77,32 +75,40 @@ class ResourceScheduleController extends Controller
 
             return redirect()->route('action.schedules.show', $schedule->id)
                              ->with('success', config('errors.record_created_successfully.errorMessage'));
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with([
-                'error' => config('errors.transaction_failed.errorMessage'),
-                'flash_time' => microtime(true)
-            ])->withInput();
-        }
+} catch (\Exception $e) {
+    DB::rollBack();
+
+    \Log::error('Resource schedule create failed', [
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
+    ]);
+
+    return back()->with([
+        'error' => $e->getMessage(),
+        'flash_time' => microtime(true)
+    ])->withInput();
+}
     }
 
     public function show($id)
     {
         // Load schedule with relationships
         $schedule = ResourceSchedule::with(['actionBatch', 'updater'])->findOrFail($id);
-        
+
         // Get previous schedule by finding resource schedule with the action_batch_id equal to prev_batch_id
         $prevSchedule = null;
         if ($schedule->prev_batch_id) {
             $prevSchedule = ResourceSchedule::where('action_batch_id', $schedule->prev_batch_id)->first();
         }
-        
+
         // Get projection data
         $projection = $schedule->getProjection($prevSchedule);
-        
+
         // Format schedule for show
         $formattedSchedule = $schedule->formattedForShow();
-        
+
         return inertia('action/schedules/ResourceScheduleDetails', [
             'schedule' => $formattedSchedule,
             'projection' => $projection,
@@ -110,14 +116,14 @@ class ResourceScheduleController extends Controller
         ])->with('success', session('success'))
           ->with('error', session('error'));
     }
-    
+
     public function edit($id)
     {
         $schedule = ResourceSchedule::getWithActionBatch($id);
-        
+
         // Get previous batches with their names
         $prevBatches = ResourceSchedule::getAllBatchFromExistingResourceSchedule($id);
-        
+
         return inertia('action/schedules/ResourceScheduleEdit', [
             'schedule' => $schedule->formattedForEdit(),
             'newBatches' => ActionBatchModel::getActionBatches(true),
@@ -127,7 +133,7 @@ class ResourceScheduleController extends Controller
         ])->with('success', session('success'))
           ->with('error', session('error'));
     }
-    
+
     public function update(ResourceScheduleRequest $request, $id)
     {
         $schedule = ResourceSchedule::findOrFail($id);
@@ -183,8 +189,8 @@ class ResourceScheduleController extends Controller
 
         $batchName = optional($schedule->actionBatch)->action_batch ?? 'Unknown';
 
-        $hrRecruiters = User::hrRecruiters();        
-        
+        $hrRecruiters = User::hrRecruiters();
+
         $emails = $hrRecruiters->pluck('email_address')->toArray();
 
         //if no hr recruiters found
@@ -206,26 +212,74 @@ class ResourceScheduleController extends Controller
         }
     }
 
-    public function destroy($id)
-    {
-        $schedule = ResourceSchedule::findOrFail($id);
+public function destroy($id)
+{
+    $schedule = ResourceSchedule::with('actionBatch')->findOrFail($id);
 
+    $actionBatchName = $schedule->actionBatch->action_batch ?? '';
+    $targetLocation = $schedule->target_location == 1 ? 'Manila' : 'Cebu';
+    $deploymentDate = $schedule->deployment_date;
+    $emails = $this->getDeleteNotificationEmails();
+
+    try {
+        DB::beginTransaction();
+
+        Log::createLog('ResourceSchedules', "Deleted resource schedule for {$actionBatchName}", $schedule->id);
+
+        $schedule->delete();
+
+        DB::commit();
+
+        // Mail should not block redirect
+    if (!empty($emails)) {
         try {
-            DB::beginTransaction();
-
-            $actionBatchName = $schedule->actionBatch->action_batch ?? '';
-
-            Log::createLog('ResourceSchedules', "Deleted resource schedule for {$actionBatchName}", $schedule->id);
-
-            $schedule->delete();
-
-            DB::commit();
-
-            return redirect()->route('action.schedules.index')
-                             ->with('success', config('errors.record_deleted_successfully.errorMessage'));
+            Mail::to($emails)->send(new ResourceScheduleDeletedMail(
+                $actionBatchName,
+                $targetLocation,
+                $deploymentDate
+            ));
         } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', config('errors.record_deleted_failed.errorMessage'));
+            \Log::info('Resource schedule delete mail failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
         }
     }
-}   
+
+    return redirect()->route('action.schedules.index')
+        ->with('success', config('errors.record_deleted_successfully.errorMessage'));
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        \Log::info('Resource schedule delete failed', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+
+        return back()->with('error', config('errors.record_deleted_failed.errorMessage'));
+    }
+
+
+}
+
+    private function getDeleteNotificationEmails(): array
+{
+    $permissionIds = [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+        config('constants.HR_MANAGER_PERMISSION.value'),
+        config('constants.HR_RECRUITER_PERMISSION.value'),
+    ];
+
+    return User::query()
+        ->whereIn('permissions', $permissionIds)
+        ->whereNotNull('email_address')
+        ->pluck('email_address')
+        ->filter()
+        ->unique()
+        ->values()
+        ->toArray();
+}
+}

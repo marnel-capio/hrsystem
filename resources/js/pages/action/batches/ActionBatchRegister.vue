@@ -1,153 +1,281 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { router, usePage } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Head } from '@inertiajs/vue3'
 
 const page = usePage<any>()
 const loading = ref(false)
 
 const form = ref({
-  action_batch: '',
+  action_batch: page.props.batchOptions?.[0] || '',
   target_trainees: '',
   target_date: '',
-  remarks: ''
+  remarks: '',
+  processing: false,
 })
 
-const formatToUppercase = () => {
-  form.value.action_batch = form.value.action_batch.toUpperCase()
+const targetTraineesError = ref('')
+const remarksError = ref('')
+const targetDateError = ref('')
+const lastBatchTargetDate = page.props.lastBatchTargetDate || null
+
+
+const maxTargetTrainees = 100  
+const maxRemarksLength = 1024 
+const today = new Date().toISOString().slice(0, 10)  
+
+const handleTraineesInput = (event: Event) => {
+  const el = event.target as HTMLInputElement;
+  let value = el.value;
+
+  if (value === '0') {
+    el.value = '';
+    form.value.target_trainees = '';
+  } else if (value === '') {
+    form.value.target_trainees = '';
+  } else {
+    const num = Number(value);
+
+    if (num < 1) {
+      el.value = '';
+      form.value.target_trainees = '';
+    } else {
+      form.value.target_trainees = num;
+    }
+  }
+
+  validateTargetTrainees();
 }
 
+const validateTargetTrainees = () => {
+  targetTraineesError.value = form.value.target_trainees && form.value.target_trainees > maxTargetTrainees
+    ? `This field exceeds the maximum allowed length.`
+    : ''
+}
+
+const formatMonth = (date: Date) => {
+  return date.toISOString().slice(0, 7)
+}
+
+const addMonths = (date: Date, months: number) => {
+  const d = new Date(date)
+  d.setMonth(d.getMonth() + months)
+  return d
+}
+
+const getMinTargetDate = () => {
+  if (lastBatchTargetDate) {
+    const last = new Date(lastBatchTargetDate)
+    const minFromLastBatch = addMonths(last, 1)
+    return formatMonth(minFromLastBatch)
+  }
+
+  const today = new Date()
+  const nextMonth = addMonths(today, 1)
+  return formatMonth(nextMonth)
+}
+
+const isTargetDateValid = computed(() => {
+  const minDate = getMinTargetDate()
+
+  if (form.value.target_date && form.value.target_date <= today) {
+    targetDateError.value = 'The selected date must be in the future.'
+    return false
+  }
+
+  if (form.value.target_date && form.value.target_date < minDate) {
+    targetDateError.value =
+      'The selected date must be after the previous ACTION Batch`s date.'
+    return false
+  }
+
+  targetDateError.value = ''
+  return true
+})
+
+const sanitizedTargetDate = computed({
+  get: () => form.value.target_date,
+  set: (newDate: string) => {
+    form.value.target_date = newDate;
+    isTargetDateValid.value; 
+  },
+});
+
+
 const submit = () => {
+  targetTraineesError.value = ''
+  remarksError.value = ''
+  targetDateError.value = ''  
+
+  form.value.processing = true
   loading.value = true
+
   router.post('/action/batches', form.value, {
-      onFinish: () => {
-          loading.value = false
-      }
+    onFinish: () => {
+      form.value.processing = false
+      loading.value = false
+    }
   })
 }
 </script>
 
 <template>
+  <Head title="ACTION Batch Register" />
 
-    <Head title="ACTION Batch Register" />
-    <AppLayout :errors="page.props.errors">
-        <div class="flex justify-between items-center mx-5 mb-3">
-            <h2 class="text-xl font-bold">Create ACTION Batch</h2>
+  <AppLayout :errors="page.props.errors">
+    <div class="flex justify-between items-center mx-5 mb-3">
+      <h2 class="text-xl font-bold">Create ACTION Batch</h2>
+    </div>
+
+    <!-- Form -->
+    <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
+
+      <!-- ACTION Batch Dropdown -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col col-span-2">
+          <label class="text-xs font-bold mb-1">ACTION Batch <label class="text-red-500">*</label></label>
+          <select v-model="form.action_batch" class="border p-2 rounded w-full">
+            <option disabled value="">Select ACTION Batch</option>
+            <option v-for="option in page.props.batchOptions" :key="option" :value="option">
+              {{ option }}
+            </option>
+          </select>
+          <span v-if="page.props.errors?.action_batch" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.action_batch }}
+          </span>
         </div>
+      </div>
 
-        <!-- Form Fields -->
-        <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="flex flex-col col-span-2">
-                    <label class="text-xs font-semibold mb-1">ACTION Batch</label>
-                    <input v-model="form.action_batch" @input="formatToUppercase" placeholder="ACTION batch"
-                        class="border p-2 rounded w-full" />
-                    <span v-if="page.props.errors?.action_batch" class="text-red-600 text-xs mt-1">
-                        {{ page.props.errors.action_batch }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mt-5">
-                <div class="flex flex-col col-span-2">
-                    <label class="text-xs font-semibold mb-1">Target Trainees</label>
-                    <input v-model="form.target_trainees" placeholder="Target Trainees" type="number"
-                        class="border p-2 rounded w-full" />
-                    <span v-if="page.props.errors?.target_trainees" class="text-red-600 text-xs mt-1">
-                        {{ page.props.errors.target_trainees }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mt-5">
-                <div class="flex flex-col col-span-2">
-                    <label class="text-xs font-semibold mb-1">Target Start Date</label>
-                    <input v-model="form.target_date" type="month" placeholder="Target Start Date"
-                        class="border p-2 rounded w-full" />
-                    <span v-if="page.props.errors?.target_date" class="text-red-600 text-xs mt-1">
-                        {{ page.props.errors.target_date }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mt-5">
-                <div class="flex flex-col col-span-2">
-                    <label class="text-xs font-semibold mb-1">Remarks</label>
-                    <textarea v-model="form.remarks" rows="6" placeholder="Remarks" class="border p-2 rounded w-full" />
-                    <span v-if="page.props.errors?.remarks" class="text-red-600 text-xs mt-1">
-                        {{ page.props.errors.remarks }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <span class="btn btn-secondary cursor-pointer"
-                    @click="$inertia.get('/action/batches')">
-                    Cancel
-                </span>
-
-                <span class="btn btn-primary cursor-pointer"
-                    @click="submit">
-                    Create
-                </span>
-            </div>
+      <!-- Target Trainees -->
+      <div class="grid grid-cols-2 gap-4 mt-5">
+        <div class="flex flex-col col-span-2">
+          <label class="text-xs font-bold mb-1">Target Trainees<label class="text-red-500">*</label></label>
+          <input
+            v-model="form.target_trainees"
+            placeholder="Target Trainees"
+            type="number"
+            class="border p-2 rounded w-full"
+            min="1"
+            @input="handleTraineesInput"
+          />
+          <span v-if="targetTraineesError" class="text-red-600 text-xs mt-1">
+            {{ targetTraineesError }}
+          </span>
+          <span v-if="page.props.errors?.target_trainees" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.target_trainees }}
+          </span>
         </div>
-    </AppLayout>
+      </div>
+
+      <!-- Target Date -->
+      <div class="grid grid-cols-2 gap-4 mt-5 w-40">
+        <div class="flex flex-col col-span-2">
+          <label class="text-xs font-bold mb-1">Target Start Date<label class="text-red-500">*</label></label>
+          <input
+            v-model="sanitizedTargetDate"
+            type="month"
+            :min="getMinTargetDate()"
+            class="border p-2 rounded w-full"
+          />
+          <span v-if="targetDateError" class="text-red-600 text-xs mt-1">
+            {{ targetDateError }}
+          </span>
+          <span v-if="page.props.errors?.target_date" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.target_date }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Remarks -->
+      <div class="grid grid-cols-2 gap-4 mt-5">
+        <div class="flex flex-col col-span-2">
+          <label class="text-xs mb-1">Remarks</label>
+          <textarea
+            v-model="form.remarks"
+            rows="6"
+            placeholder="Remarks"
+            class="border p-2 rounded w-full"
+          />
+          <span v-if="remarksError" class="text-red-600 text-xs mt-1">
+            {{ remarksError }}
+          </span>
+          <span v-if="page.props.errors?.remarks" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.remarks }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="form-actions">
+        <button
+          class="btn btn-secondary cursor-pointer"
+          @click="$inertia.get('/action/batches')"
+        >
+          Cancel
+        </button>
+
+        <button type="button" class="btn btn-primary"
+          @click="submit" :disabled="form.processing" > 
+          {{ form.processing ? 'Creating…' : 'Create' }} 
+        </button>
+      </div>
+
+    </div>
+  </AppLayout>
 </template>
 
-<style lang="css" scoped>
-/* Form actions */
+<style scoped>
 .form-actions {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.5rem;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .form-actions button,
 .form-actions a {
-    flex: 0 0 auto;
-    width: auto;
-}
-
-/* Buttons */
-button[type="submit"],
-.btn-secondary {
-    padding: 0.5rem 1.2rem;
-    font-size: 0.85rem;
-    border-radius: 5px;
-    font-weight: 500;
-    white-space: nowrap;
-    transition: background 0.15s ease;
-}
-
-button[type="submit"] {
-    border: none;
-    background: var(--ats-primary);
-    color: #fff;
-    cursor: pointer;
+  flex: 0 0 auto;
+  width: auto;
 }
 
 button[type="submit"]:hover:not(:disabled) {
-    background: var(--ats-accent);
+  background: var(--ats-accent);
+}
+
+button[type="submit"],
+.btn-secondary {
+  padding: 0.5rem 1.2rem;
+  font-size: 0.85rem;
+  border-radius: 5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+button[type="submit"] {
+  border: none;
+  background: var(--ats-primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background: var(--ats-accent);
 }
 
 button[type="submit"]:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-secondary {
-    border: 1px solid #d1d5db;
-    background: #f3f4f6;
-    color: #374151;
-    text-decoration: none;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  color: #374151;
 }
 
 .btn-secondary:hover {
-    background: #e5e7eb;
+  background: #e5e7eb;
 }
-
 </style>

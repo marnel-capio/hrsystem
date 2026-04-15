@@ -2,7 +2,7 @@
 import { Head, router, usePage, Link } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
- 
+
 const page = usePage<any>()
 const batch = computed(() => page.props.batch);
 const userPermissions = computed(() => Number(page.props.user_permissions))
@@ -31,8 +31,13 @@ const formatDateTime = (dateString: string | null) => {
   }
   return date.toLocaleString('en-US', options) 
 }
-const successMessage = computed(() => page.props.flash?.success) 
-const closeModal = () => { showSuccess.value = false }
+
+const successMessage = computed(() => page.props.flash?.success)
+
+const closeModal = () => { 
+  showSuccess.value = false 
+}
+
 watch(successMessage, (val) => {
   if (val) {
     showSuccess.value = true;
@@ -41,34 +46,19 @@ watch(successMessage, (val) => {
     }, 5000);
   }
 }, { immediate: true });
-const goToEdit = () => {
-router.get(`/action/batches/${batch.value.id}/edit`)
-}
 </script>
 
 <template>
   <Head title="Action Batch Detail"/>
 
   <AppLayout>
-    <div v-if="showSuccess" 
-         class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-full px-4">
-
-      <div class="relative bg-green-500 border border-green-200 rounded-lg shadow-md p-4 flex items-left gap-4 animate-slide-down"> 
-
-        <div class="flex-1 flex justify-start items-left gap-3"> 
-          <span class="text-white text-xl"> </span> 
-          <p class="text-white text-m font-medium text-left">
-            {{ successMessage }} 
-          </p>
-        </div>
-
-        <button
-          style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0, 0, 0, 0.3); color: white; font-weight: bold; font-size: 1rem;"
-          @click="closeModal">
-          X
-        </button>
-      </div>  
-    </div>
+    <!-- Success Toast -->
+    <div v-if="showSuccess" class="full-width-alert">
+      <div class="alert-banner alert-success-banner">
+        <div class="alert-body">{{ successMessage }}</div>
+        <button type="button" class="close-btn" @click="closeModal">×</button>
+      </div>
+    </div> 
 
     <!-- Header -->
     <div class="flex justify-between mx-5 mb-3">
@@ -81,14 +71,12 @@ router.get(`/action/batches/${batch.value.id}/edit`)
       >
         Edit
       </Link>
-    </div> 
+    </div>
 
     <!-- Main Content -->
     <div class="mx-5 mt-6 grid grid-cols-3 gap-6">
-
       <!-- LEFT -->
       <div class="col-span-1 space-y-4">
-
         <div class="bg-[#2F359E] text-white rounded-xl p-6 shadow">
           <h3 class="text-lg font-bold text-center">{{ batch.action_batch }}</h3>
           <p class="text-xs opacity-80 text-center">ACTION Batch Name</p>
@@ -131,15 +119,12 @@ router.get(`/action/batches/${batch.value.id}/edit`)
             </tbody>
           </table>
         </div>
-
       </div>
 
       <!-- RIGHT -->
       <div class="col-span-2 bg-white rounded-xl shadow border p-6">
-
         <h4 class="text-xs font-bold mb-3 text-center">REMARKS</h4>
-        <p class="text-xs">{{ batch.remarks }}</p>
-
+        <p class="text-xs break-all">{{ batch.remarks }}</p>
       </div>
     </div>
   </AppLayout>
