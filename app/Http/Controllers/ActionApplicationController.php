@@ -66,7 +66,7 @@ class ActionApplicationController extends Controller
         try {
 
             $data = $request->validated();
-            
+
             $batch = ActionBatchModel::with('resourceSchedule')->findOrFail($data['action_batch_id']);
             $data['trainees_from'] = $batch->resourceSchedule?->target_location;
 
@@ -177,53 +177,120 @@ class ActionApplicationController extends Controller
     /**
      * Update the specified application.
      */
-    public function update(UpdateActionApplicationRequest $request, $id)
-    {
-        $application = ActionApplication::with(['interviews', 'applicant'])->findOrFail($id);
-        $originalData = $application->toArray();
+public function update(UpdateActionApplicationRequest $request, $id)
+{
+    $application = ActionApplication::with(['interviews', 'applicant'])->findOrFail($id);
+    $originalData = $application->toArray();
 
-        $validated = $request->validated();
-        $validated = $this->handleUploads($request, $validated, true);
+    $validated = $request->validated();
+    $validated = $this->handleUploads($request, $validated, true);
 
-        $permission = (int) auth()->user()->permissions;
-        $editableStages = $application->getEditableStagesFor(auth()->user());
+    $permission = (int) auth()->user()->permissions;
+    $editableStages = $application->getEditableStagesFor(auth()->user());
 
-        if (!in_array(true, $editableStages, true)) {
-            abort(403, 'You are not allowed to update this application.');
-        }
-
-        if (!in_array($permission, config('constants.full_edit_permissions', []), true)) {
-            $validated = $this->filterValidatedFieldsByEditableStages($validated, $editableStages);
-        }
-
-        $validated = ActionApplication::normalizeComputedFields(
-            array_merge($application->toArray(), $validated)
-        );
-
-        $application->updateApplication($validated);
-        $application->syncInterviewStatusesFromStageResults();
-
-        $application->refresh();
-        $application->load('applicant');
-
-        $detailLines = $this->buildApplicationUpdateDetailLines($originalData, $application);
-
-        $activity = 'Updated ACTION Application: ' .
-            ($application->applicant->first_name ?? '') . ' ' .
-            ($application->applicant->last_name ?? '') . ".\n" .
-            "Details:\n" .
-            implode("\n", $detailLines);
-
-        Log::createLog(
-            'ACTION',
-            $activity,
-            auth()->id()
-        );
-
-        return redirect()
-            ->route('action.applications.show', $application->id)
-            ->with('success', config('errors.record_updated_successfully.errorMessage'));
+    if (!in_array(true, $editableStages, true)) {
+        abort(403, 'You are not allowed to update this application.');
     }
+
+    if (!in_array($permission, config('constants.full_edit_permissions', []), true)) {
+        $validated = $this->filterValidatedFieldsByEditableStages($validated, $editableStages);
+    }
+
+    $validated = ActionApplication::normalizeComputedFields(
+        array_merge($application->toArray(), $validated)
+    );
+
+    $application->updateApplication($validated);
+    $application->syncInterviewStatusesFromStageResults();
+
+    $application->refresh();
+    $application->load('applicant');
+
+    // 🔽 INLINE DETAIL BUILDING + TRUNCATION
+    $fieldsToTrack = [
+        'exam_plan_date',
+        'exam_actual_date',
+        'exam_venue',
+        'exam_atpp_result',
+        'exam_git_result',
+        'exam_prg_result',
+        'exam_result',
+        'exam_application_status',
+        'exam_remarks',
+
+        'initial_interview_plan_date',
+        'initial_interview_actual_date',
+        'initial_interview_venue',
+        'initial_interview_final',
+        'initial_interview_result',
+        'initial_interview_application_status',
+        'initial_interview_remarks',
+
+        'final_interview_date',
+        'final_interview_sf',
+        'final_interview_ib',
+        'final_interview_rv',
+        'final_interview_ma',
+        'final_interview_final',
+        'final_interview_result',
+        'final_interview_application_status',
+        'final_interview_remarks',
+
+        'job_offer_schedule',
+        'job_offer_status',
+        'job_offer_remarks',
+
+        'remarks',
+    ];
+
+    $detailLines = [];
+
+    foreach ($fieldsToTrack as $field) {
+        $oldValue = $originalData[$field] ?? null;
+        $newValue = $application->{$field} ?? null;
+
+        $oldText = ($oldValue === null || $oldValue === '') ? '-' : (string) $oldValue;
+        $newText = ($newValue === null || $newValue === '') ? '-' : (string) $newValue;
+
+        if ($oldText !== $newText) {
+
+            // 🔽 truncate individual values
+            if (mb_strlen($oldText) > 100) {
+                $oldText = mb_substr($oldText, 0, 100) . '...';
+            }
+
+            if (mb_strlen($newText) > 100) {
+                $newText = mb_substr($newText, 0, 100) . '...';
+            }
+
+            $label = str_replace('_', ' ', $field);
+            $label = ucwords($label);
+
+            $detailLines[] = $label . ': ' . $oldText . ' -> ' . $newText;
+        }
+    }
+
+    $activity = 'Updated ACTION Application: ' .
+        ($application->applicant->first_name ?? '') . ' ' .
+        ($application->applicant->last_name ?? '') . ".\n" .
+        "Details:\n" .
+        (count($detailLines) ? implode("\n", $detailLines) : 'No field changes detected.');
+
+    // truncate remarks too long
+    if (mb_strlen($activity) > 1000) {
+        $activity = mb_substr($activity, 0, 1000) . '...';
+    }
+
+    Log::createLog(
+        'ACTION',
+        $activity,
+        auth()->id()
+    );
+
+    return redirect()
+        ->route('action.applications.show', $application->id)
+        ->with('success', config('errors.record_updated_successfully.errorMessage'));
+}
 
     public function print($id)
     {

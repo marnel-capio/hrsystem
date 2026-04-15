@@ -43,6 +43,18 @@ class UpdateActionApplicantRequest extends FormRequest
             'others_degree' => ['nullable', 'string', new MaxLength(80)],
             'expected_graduation' => [new RequiredField],
             'awards_recognition' => ['nullable', 'string', new MaxLength(1024)],
+            'japanese_background' => [
+                new RequiredField,
+                Rule::in(array_keys(config('constants.japanese_backgrounds'))),
+            ],
+
+            'japanese_level' => [
+                Rule::requiredIf($this->japanese_background == 3),
+                'nullable',
+                Rule::in(array_keys(config('constants.japanese_levels'))),
+            ],
+
+            'background_remarks' => ['nullable', 'string', new MaxLength(255)],
             'other_examination_certificate' => ['nullable', 'string', new MaxLength(1024)],
             'thesis_project' => ['nullable', 'string', new MaxLength(1024)],
             'extra_curricular' => ['nullable', 'string', new MaxLength(1024)],

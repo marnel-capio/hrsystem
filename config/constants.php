@@ -291,10 +291,10 @@ return [
         ],
         'final_interview' => [
             'final_interview_date',
-            'final_interview_sf',
-            'final_interview_ib',
-            'final_interview_rv',
-            'final_interview_ma',
+            'final_interview_score_1',
+            'final_interview_score_2',
+            'final_interview_score_3',
+            'final_interview_score_4',
             'final_interview_final',
             'final_interview_result',
             'final_interview_application_status',
@@ -541,6 +541,19 @@ return [
         'type1' => ['Foundit', 'LinkedIn', 'Facebook', 'Mynimo', 'Kalibrr'],
         'type2' => ['Referral', 'Recruitment Network', 'Job Fairs', 'Website', 'Rehire'],
         'type3' => ['AAISI', 'Primover', 'Tech Tierra', 'Spring Valley', 'YENS'],
+
+    'japanese_backgrounds' => [
+        1 => 'None',
+        2 => 'Self Study / University Level',
+        3 => 'JLPT Certification',
+    ],
+
+    'japanese_levels' => [
+        5 => 'N5',
+        4 => 'N4',
+        3 => 'N3',
+        2 => 'N2',
+        1 => 'N1',
     ],
 
 ];

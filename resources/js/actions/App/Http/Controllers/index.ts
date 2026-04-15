@@ -2,6 +2,7 @@ import AuthController from './AuthController'
 import ForgotPasswordController from './ForgotPasswordController'
 import DashboardController from './DashboardController'
 import ActionApplicantProgrammingLanguageController from './ActionApplicantProgrammingLanguageController'
+import ActionApplicantSkillController from './ActionApplicantSkillController'
 import UserController from './UserController'
 import ResourceScheduleController from './ResourceScheduleController'
 import ActionApplicationController from './ActionApplicationController'
@@ -17,6 +18,7 @@ const Controllers = {
 ForgotPasswordController: Object.assign(ForgotPasswordController, ForgotPasswordController),
 DashboardController: Object.assign(DashboardController, DashboardController),
 ActionApplicantProgrammingLanguageController: Object.assign(ActionApplicantProgrammingLanguageController, ActionApplicantProgrammingLanguageController),
+ActionApplicantSkillController: Object.assign(ActionApplicantSkillController, ActionApplicantSkillController),
 UserController: Object.assign(UserController, UserController),
 ResourceScheduleController: Object.assign(ResourceScheduleController, ResourceScheduleController),
 ActionApplicationController: Object.assign(ActionApplicationController, ActionApplicationController),

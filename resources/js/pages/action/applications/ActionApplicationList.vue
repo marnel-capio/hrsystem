@@ -178,15 +178,16 @@ function formatLocation(loc: number | null) {
 
 // Props from backend
 const props = defineProps<{
-  applications: Array<{
-    target_location: number
-    id: number;
-    action_applicant_id: number;
-    action_batch_id: number;
-    first_name: string;
-    last_name: string;
-    action_batch: string;
-    }>;
+applications: Array<{
+  target_location: number
+  id: number;
+  action_applicant_id: number;
+  action_batch_id: number;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  action_batch: string;
+}>
   filters: { search: string };
   userPermissions: number;
   actionBatches: Array<{
@@ -428,7 +429,7 @@ console.log('Received batches:', props.actionBatches);
               <!-- Application ID as clickable link -->
 <td class="border px-3 py-2">
   <Link :href="`/action/applications/${app.id}`" class="text-blue-600 hover:underline">
-    {{ app.first_name }} {{ app.last_name }}
+    {{ app.first_name }} {{ app.middle_name ? app.middle_name + ' ' : '' }}{{ app.last_name }}
   </Link>
 </td>
 

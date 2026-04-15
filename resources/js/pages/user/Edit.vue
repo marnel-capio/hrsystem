@@ -222,7 +222,7 @@ watch(() => form.active_status, (value) => {
                 <form @submit.prevent="submit">
                     <!-- First Name -->
                     <div class="detail-row">
-                        <label>First Name</label>
+                        <label style="font-weight: bold;">First Name *</label>
                         <input type="text" v-model="form.first_name" class="input-field"
                             :readonly="personalFieldReadonly()" />
                         <span v-if="firstNameError || form.errors.first_name" class="error">
@@ -241,7 +241,7 @@ watch(() => form.active_status, (value) => {
 
                     <!-- Last Name -->
                     <div class="detail-row">
-                        <label>Last Name</label>
+                        <label style="font-weight: bold;">Last Name *</label>
                         <input type="text" v-model="form.last_name" class="input-field"
                             :readonly="personalFieldReadonly()" />
                         <span v-if="lastNameError || form.errors.last_name" class="error">{{ lastNameError ??
@@ -250,7 +250,7 @@ watch(() => form.active_status, (value) => {
 
                     <!-- Email -->
                     <div class="detail-row">
-                        <label>Email Address</label>
+                        <label style="font-weight: bold;">Email Address *</label>
                         <input type="text" v-model="form.email_address" class="input-field"
                             :readonly="fieldReadonly('email')" />
                         <span v-if="emailError || form.errors.email_address" class="error">{{ emailError ?? form.errors.email_address }}</span>
@@ -258,14 +258,14 @@ watch(() => form.active_status, (value) => {
 
                     <!-- Contact & Address -->
                     <div class="detail-row">
-                        <label>Contact Number</label>
+                        <label style="font-weight: bold;">Contact Number *</label>
                         <input type="text" v-model="form.contact_no" class="input-field"
                             :readonly="personalFieldReadonly()" />
                         <span v-if="contactError || form.errors.contact_no" class="error">{{ contactError ?? form.errors.contact_no }}</span>
                     </div>
 
                     <div class="detail-row">
-                        <label>Address</label>
+                        <label style="font-weight: bold;">Address *</label>
                         <input type="text" v-model="form.address" class="input-field"
                             :readonly="personalFieldReadonly()" />
                         <span v-if="addressError || form.errors.address" class="error">{{ addressError ?? form.errors.address }}</span>
