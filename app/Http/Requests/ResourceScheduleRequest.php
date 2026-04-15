@@ -87,7 +87,9 @@ class ResourceScheduleRequest extends FormRequest
         ];
 
         $previousStartDate = null;
+        $previousEndDate = null;
         $previousActivityLabel = null;
+
 
         foreach ($activities as $act) {
             $start = $this->input("{$act}_startdate");
@@ -119,6 +121,12 @@ class ResourceScheduleRequest extends FormRequest
                     $validator->errors()->add(
                         "{$act}_startdate",
                         ucfirst(str_replace('_', ' ', $act)) . " cannot start before {$previousActivityLabel}."
+                    );
+                }
+                if ($previousEndDate && $weekStart->lt($previousEndDate)) {
+                    $validator->errors()->add(
+                        "{$act}_startdate",
+                        ucfirst(str_replace('_', ' ', $act)) . " cannot start before {$previousActivityLabel} ends."
                     );
                 }
 
@@ -171,7 +179,7 @@ class ResourceScheduleRequest extends FormRequest
                 continue;
             }
 
-            if ($startDate->lt($minimumAllowedDate)) {
+            if ($endDate->lt($minimumAllowedDate)) {
                 $validator->errors()->add(
                     "{$act}_startdate",
                     'Activity cannot start earlier than 6 months before deployment date.'
@@ -205,8 +213,15 @@ class ResourceScheduleRequest extends FormRequest
                     ucfirst(str_replace('_', ' ', $act)) . " cannot start before {$previousActivityLabel}."
                 );
             }
+            if ($previousEndDate && $endDate->lt($previousEndDate)) {
+    $validator->errors()->add(
+        "{$act}_enddate",
+        ucfirst(str_replace('_', ' ', $act)) . " cannot end before {$previousActivityLabel} ends."
+    );
+}
 
             $previousStartDate = $startDate;
+            $previousEndDate = $endDate;
             $previousActivityLabel = str_replace('_', ' ', $act);
         }
     }

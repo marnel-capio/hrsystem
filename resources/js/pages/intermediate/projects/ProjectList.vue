@@ -2,6 +2,8 @@
 import { computed, ref, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
+import { debounce } from 'lodash'
+
 
 const page = usePage<any>()
 
@@ -10,12 +12,24 @@ const filters = computed(() => page.props.filters)
 const userPermissions = computed(() => Number(page.props.user_permissions))
 const search = ref(filters.value.search || '')
 
-watch(search, (value: string) => {
+
+
+const debouncedSearch = debounce((value: string) => {
   router.get(
     '/intermediate/projects',
-    { search: value },
-    { preserveState: true, replace: true }
+    {
+      search: value,
+      page: 1 // reset page
+    },
+    {
+      preserveState: true,
+      replace: true
+    }
   )
+}, 300)
+
+watch(search, (value: string) => {
+  debouncedSearch(value)
 })
 
 const currentPage = computed(() => projects.value.current_page)
@@ -47,6 +61,10 @@ function prevBlock() {
 
 function nextBlock() {
   if (endPage.value < lastPage.value) goToPage(endPage.value + 1)
+}
+function truncateText(text: string, limit = 50) {
+  if (!text) return ''
+  return text.length > limit ? text.slice(0, limit) + '...' : text
 }
 
 const shouldShowPagination = computed(() => projectsTotal.value > 20)
@@ -81,7 +99,7 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
                 d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
             </svg>
           </span>
-          <input v-model="search" type="text" placeholder="Search by Project Name"
+          <input v-model="search" type="text" placeholder="Search by Project Name and Project Description"
             class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
         </div>
       </div>
@@ -91,7 +109,7 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
         <!-- COUNT -->
         <div class="mb-2 text-xs text-gray-600">
           Showing {{ projects.data.length > 0 ? projects.from : 0 }}–{{ projects.data.length > 0 ? projects.to : 0 }}
-          out of {{ projectsTotal }} items
+out of {{ projectsTotal }} items
         </div>
 
         <!-- TABLE -->
@@ -99,9 +117,9 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
           <table class="ats-table w-full table-auto border-collapse border text-sm">
             <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
-                <th class="border px-3 py-2 w-70">Project Name</th>
-                <th class="border px-3 py-2 w-90">Project Description</th>
-                <th class="border px-3 py-2">Remarks </th>
+                <th class="border px-3 py-2 w-50">Project Name</th>
+                <th class="border px-3 py-2 w-80">Project Description</th>
+                <th class="border px-3 py-2 w-95">Remarks </th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-zinc-900">
@@ -109,8 +127,12 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
                 <td class="border px-3 py-2">
                   <Link :href="`/intermediate/projects/${project.id}`" class="table-link">{{ project.project_name }}</Link>
                 </td>
-                <td class="border px-3 py-2">{{ project.project_description }}</td>
-                <td class="border px-3 py-2">{{ project.remarks }}</td>
+               <td class="border px-3 py-2">
+                  {{ truncateText(project.project_description) }}
+                </td>
+                <td class="border px-3 py-2">
+                  {{ truncateText(project.remarks) }}
+                </td>
               </tr>
               <tr v-if="projects.data.length === 0">
                 <td colspan="4" class="text-center p-6 text-zinc-500">
@@ -205,5 +227,12 @@ const options = ['Option 1', 'Option 2', 'Option 3', 'Other']
   max-width: 1175px;
   margin: 0 auto;
   padding: 0 1.5rem;
+}
+.truncate-cell {
+  max-width: 200px;     
+  min-width: 160px;       
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

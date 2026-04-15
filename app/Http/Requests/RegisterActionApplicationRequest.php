@@ -16,46 +16,54 @@ class RegisterActionApplicationRequest extends FormRequest
 public function rules(): array
 {
     return [
-        'action_applicant_id' => [new RequiredField, 'exists:action_applicants,id'],
-        'action_batch_id' => [new RequiredField, 'exists:action_batches,id'],
+        'action_applicant_id' => 'required|integer|exists:action_applicants,id',
+        'action_batch_id' => 'required|integer|exists:action_batches,id',
 
-        'upload_resume' => ['nullable', 'file', 'mimes:pdf,doc,docx', new MaxLength(5120)],
-        'upload_tor' => ['nullable', 'file', 'mimes:pdf,doc,docx,jpg,png', new MaxLength(5120)],
-        'upload_pic' => ['nullable', 'file', 'mimes:jpg,png', new MaxLength(5120)],
-
-        'exam_plan_date' => ['nullable', 'date', 'after:today'],
-        'exam_actual_date' => ['nullable', 'date', 'after_or_equal:exam_plan_date'],
-        'exam_venue' => ['nullable', 'in:1,2,3,4'],
-        'exam_atpp_result' => ['nullable', 'numeric', 'between:0,999.99'],
-        'exam_git_result' => ['nullable', 'numeric', 'between:0,999.99'],
-        'exam_prg_result' => ['nullable', 'numeric', 'between:0,999.99'],
-        'exam_result' => ['nullable', 'in:1,2,3'],
-        'exam_application_status' => ['nullable', 'in:1,3,4,5,6'],
+        'exam_plan_date' => 'nullable|date|after:today',
+        'exam_actual_date' => 'nullable|date|after_or_equal:exam_plan_date',
+        'exam_venue' => 'nullable|integer',
+        'exam_atpp_part1_correct' => 'nullable|numeric|between:0,999.99',
+        'exam_atpp_part1_wrong' => 'nullable|numeric|between:0,999.99',
+        'exam_atpp_part2_correct' => 'nullable|numeric|between:0,999.99',
+        'exam_atpp_part2_wrong' => 'nullable|numeric|between:0,999.99',
+        'exam_atpp_part3_correct' => 'nullable|numeric|between:0,999.99',
+        'exam_atpp_part3_wrong' => 'nullable|numeric|between:0,999.99',
+        'exam_atpp_result' => 'nullable|numeric|between:0,999.99',
+        'exam_git_result' => 'nullable|numeric|between:0,999.99',
+        'exam_prg_result' => 'nullable|numeric|between:0,999.99',
+        'exam_result' => 'nullable|integer',
+        'exam_application_status' => 'nullable|integer',
         'exam_remarks' => ['nullable', 'string', new MaxLength(1024)],
 
-'initial_interview_plan_date' => ['nullable', 'date', 'after:exam_plan_date'],
-        'initial_interview_actual_date' => ['nullable', 'date', 'after_or_equal:initial_interview_plan_date'],
-        'initial_interview_venue' => ['nullable', 'in:1,2,3,4'],
-        'initial_interview_final' => ['nullable', 'numeric', 'between:0,999.99'],
-        'initial_interview_result' => ['nullable', 'in:1,2,3'],
-        'initial_interview_application_status' => ['nullable', 'in:1,2,3,4,5'],
+        'initial_interview_plan_date' => 'nullable|date|after:exam_plan_date',
+        'initial_interview_actual_date' => 'nullable|date|after_or_equal:initial_interview_plan_date',
+        'initial_interview_venue' => 'nullable|integer',
+'initial_interview_final' => 'nullable|numeric|between:0,5',
+        'initial_interview_result' => 'nullable|integer',
+        'initial_interview_application_status' => 'nullable|integer',
         'initial_interview_remarks' => ['nullable', 'string', new MaxLength(1024)],
 
-        'final_interview_date' => ['nullable', 'date', 'after_or_equal:initial_interview_plan_date'],
-        'final_interview_score_1' => ['nullable', 'numeric', 'between:0,999.99'],
-        'final_interview_score_2' => ['nullable', 'numeric', 'between:0,999.99'],
-        'final_interview_score_3' => ['nullable', 'numeric', 'between:0,999.99'],
-        'final_interview_score_4' => ['nullable', 'numeric', 'between:0,999.99'],
-        'final_interview_final' => ['nullable', 'numeric', 'between:0,999.99'],
-        'final_interview_result' => ['nullable', 'in:1,2,3'],
-        'final_interview_application_status' => ['nullable', 'in:1,2,3,4,5'],
+        'final_interview_date' => 'nullable|date|after_or_equal:initial_interview_plan_date',
+'final_interview_final' => 'nullable|numeric|between:0,5',
+        'final_interview_result' => 'nullable|integer',
+        'final_interview_application_status' => 'nullable|integer',
         'final_interview_remarks' => ['nullable', 'string', new MaxLength(1024)],
 
-        'job_offer_schedule' => ['nullable', 'date', 'after_or_equal:final_interview_date'],
-        'job_offer_status' => ['nullable', 'in:1,2,3,4,5,6'],
+        'final_interview_assignments' => 'nullable|array',
+        'final_interview_assignments.*.id' => 'required|integer|exists:action_application_interviews,id',
+'final_interview_assignments.*.score' => 'nullable|numeric|between:0,5',
+        'final_interview_assignments.*.evaluation_result' => 'nullable|integer|in:1,2,3',
+        'final_interview_assignments.*.evaluation_remarks' => ['nullable', 'string', new MaxLength(1024)],
+
+        'job_offer_schedule' => 'nullable|date|after_or_equal:final_interview_date',
+        'job_offer_status' => 'nullable|integer',
         'job_offer_remarks' => ['nullable', 'string', new MaxLength(1024)],
 
         'remarks' => ['nullable', 'string', new MaxLength(1024)],
+
+        'upload_resume' => 'nullable',
+        'upload_tor' => 'nullable',
+        'upload_pic' => 'nullable',
     ];
 }
 
@@ -64,6 +72,11 @@ public function rules(): array
         $errors = config('errors');
 
         return [
+             'final_interview_assignments.*.id.exists' => 'One of the final interview assignments is invalid.',
+        'final_interview_assignments.*.score.numeric' => 'Final interviewer score must be a valid number.',
+        'final_interview_assignments.*.score.between' => 'Final interviewer score must be between 0 and 5.',
+        'final_interview_assignments.*.evaluation_result.in' => 'Final interviewer result must be Pending, Passed, or Failed.',
+
             'action_applicant_id.required' => $errors['field_required']['errorMessage'],
             'action_batch_id.required' => $errors['field_required']['errorMessage'],
 

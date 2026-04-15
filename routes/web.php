@@ -14,6 +14,7 @@ use App\Http\Controllers\ApplicationImportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
+use App\Http\Controllers\ActionApplicantSkillController;
 
 /**
  * Web Routes
@@ -62,6 +63,15 @@ Route::middleware(['auth'])->group(function () {
 
         //action-applicants proglang delete bulk api
         Route::post('/action/applicants/{applicantId}/languages/bulk-delete', [ActionApplicantProgrammingLanguageController::class, 'bulkDelete']);
+
+    Route::prefix('action/applicants/{applicantId}/skills')->group(function () {
+        Route::get('/', [ActionApplicantSkillController::class, 'index']);
+        Route::post('/', [ActionApplicantSkillController::class, 'store']);
+        Route::put('/{skillId}', [ActionApplicantSkillController::class, 'update']);
+        Route::delete('/{skillId}', [ActionApplicantSkillController::class, 'destroy']);
+        Route::post('/bulk-delete', [ActionApplicantSkillController::class, 'bulkDelete']);
+    });
+
 });
 
     // Update user

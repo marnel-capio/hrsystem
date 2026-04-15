@@ -95,7 +95,7 @@ const submit = () => {
             v-model="form.project_description"
             @input="validateDescription"
             rows="6"
-            placeholder="Remarks"
+            placeholder="Project Description"
             class="border p-2 rounded w-full"
           />
           <span v-if="descriptionError" class="text-red-600 text-xs mt-1">

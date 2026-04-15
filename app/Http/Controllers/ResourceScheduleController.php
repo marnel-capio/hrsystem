@@ -47,10 +47,7 @@ class ResourceScheduleController extends Controller
         $user = auth()->user();
         $validated = $request->validated();
 
-        $locations = config('constants.trainingLocation');
-        $validated['target_location'] = $validated['target_location'] === 'Manila'
-        ? $locations['LOCATION_MANILA_VALUE']
-        : $locations['LOCATION_CEBU_VALUE'];
+        $validated['target_location'] = (int) $validated['target_location'];
         $validated['created_by'] = $user->id;
         $validated['created_time'] = now();
         $validated['updated_by'] = $user->id;
@@ -78,13 +75,21 @@ class ResourceScheduleController extends Controller
 
             return redirect()->route('action.schedules.show', $schedule->id)
                              ->with('success', config('errors.record_created_successfully.errorMessage'));
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with([
-                'error' => config('errors.transaction_failed.errorMessage'),
-                'flash_time' => microtime(true)
-            ])->withInput();
-        }
+} catch (\Exception $e) {
+    DB::rollBack();
+
+    \Log::error('Resource schedule create failed', [
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
+    ]);
+
+    return back()->with([
+        'error' => $e->getMessage(),
+        'flash_time' => microtime(true)
+    ])->withInput();
+}
     }
 
     public function show($id)
