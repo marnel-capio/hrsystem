@@ -13,9 +13,6 @@ namespace App\Models {
      * @property string|null $extra_curricular
      * @property string|null $thesis_project
      * @property string|null $other_examination_certificate
-     * @property string|null $background_remarks
-     * @property integer|null $japanese_level
-     * @property integer $japanese_background
      * @property string|null $awards_recognition
      * @property string $expected_graduation
      * @property string|null $others_degree
@@ -54,9 +51,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereOthersDegree($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereExpectedGraduation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereAwardsRecognition($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereJapaneseBackground($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereJapaneseLevel($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereBackgroundRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereOtherExaminationCertificate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereThesisProject($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereExtraCurricular($value)
@@ -718,23 +712,7 @@ namespace App\Models {
     /**
      * App\Models\ActionApplicantSkill
      *
-     * @property string $updated_time
-     * @property mixed $updated_by
-     * @property string $created_time
-     * @property mixed $created_by
-     * @property string|null $remarks
-     * @property string $skill
-     * @property mixed $action_applicant_id
-     * @property int $id
      * @property-read \App\Models\ActionApplicant $applicant
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereActionApplicantId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereSkill($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereRemarks($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereCreatedBy($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereCreatedTime($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereUpdatedBy($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereUpdatedTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill query()
@@ -1067,10 +1045,10 @@ namespace App\Models {
      * @property bool|null $final_interview_application_status
      * @property bool|null $final_interview_result
      * @property float|null $final_interview_final
-     * @property float|null $final_interview_score_4
-     * @property float|null $final_interview_score_3
-     * @property float|null $final_interview_score_2
-     * @property float|null $final_interview_score_1
+     * @property float|null $final_interview_ma
+     * @property float|null $final_interview_rv
+     * @property float|null $final_interview_ib
+     * @property float|null $final_interview_sf
      * @property string|null $final_interview_date
      * @property string|null $initial_interview_remarks
      * @property bool|null $initial_interview_application_status
@@ -1085,6 +1063,12 @@ namespace App\Models {
      * @property float|null $exam_prg_result
      * @property float|null $exam_git_result
      * @property float|null $exam_atpp_result
+     * @property mixed $exam_atpp_part3_wrong
+     * @property mixed $exam_atpp_part3_correct
+     * @property mixed $exam_atpp_part2_wrong
+     * @property mixed $exam_atpp_part2_correct
+     * @property mixed $exam_atpp_part1_wrong
+     * @property mixed $exam_atpp_part1_correct
      * @property bool|null $exam_venue
      * @property string|null $exam_actual_date
      * @property string|null $exam_plan_date
@@ -1098,6 +1082,12 @@ namespace App\Models {
      * @property-read \App\Models\ActionBatchModel $batch
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplicationInterview> $interviews
      * @property-read int|null $interviews_count
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplicationInterview> $finalInterviewAssignments
+     * @property-read int|null $final_interview_assignments_count
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplicationInterview> $initialInterviewAssignments
+     * @property-read int|null $initial_interview_assignments_count
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplicationInterview> $examAssignments
+     * @property-read int|null $exam_assignments_count
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereActionApplicantId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereActionBatchId($value)
@@ -1107,6 +1097,12 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamPlanDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamActualDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamVenue($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamAtppPart1Correct($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamAtppPart1Wrong($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamAtppPart2Correct($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamAtppPart2Wrong($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamAtppPart3Correct($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamAtppPart3Wrong($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamAtppResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamGitResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereExamPrgResult($value)
@@ -1121,10 +1117,10 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereInitialInterviewApplicationStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereInitialInterviewRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewDate($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore1($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore2($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore3($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewScore4($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewSf($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewIb($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewRv($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewMa($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewFinal($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewApplicationStatus($value)
@@ -1463,6 +1459,9 @@ namespace App\Models {
      * @property mixed $created_by
      * @property string|null $remarks
      * @property string|null $final_interview_remarks
+     * @property string|null $evaluation_remarks
+     * @property integer|null $evaluation_result
+     * @property float|null $score
      * @property float|null $final_interview_result
      * @property string|null $initial_interview_remark
      * @property float|null $initial_interview_result
@@ -1473,7 +1472,7 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $pending_approval_notified_at
      * @property string|null $decline_reason
      * @property bool $status
-     * @property string|null $actual_date
+     * @property \Illuminate\Support\Carbon|null $actual_date
      * @property \Illuminate\Support\Carbon|null $scheduled_date
      * @property bool|null $interview_type
      * @property mixed $action_application_id
@@ -1497,6 +1496,9 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereInitialInterviewResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereInitialInterviewRemark($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereFinalInterviewResult($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereScore($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereEvaluationResult($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereEvaluationRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereFinalInterviewRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicationInterview>|ActionApplicationInterview whereCreatedBy($value)
@@ -3163,8 +3165,10 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
+     * @property string|null $custom_location
+     * @property string|null $expected_salary_range
      * @property string|null $role
-     * @property string|null $preferred_skilss
+     * @property string|null $preferred_skills
      * @property string|null $required_skills
      * @property string|null $duration_project_engagement
      * @property string|null $start_date
@@ -3199,8 +3203,10 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereStartDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereDurationProjectEngagement($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRequiredSkills($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkilss($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRole($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereExpectedSalaryRange($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCustomLocation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedTime($value)
@@ -4235,7 +4241,7 @@ namespace App\Models {
      * @property mixed $created_by
      * @property boolean $active_status
      * @property mixed $permissions
-     * @property bool $position
+     * @property string $position
      * @property string $email_address
      * @property string $contact_no
      * @property string $address
