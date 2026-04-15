@@ -525,7 +525,7 @@ watch(
             </div>
 
             <div>
-              <label class="text-sm font-semibold text-gray-500">Compare with Previous Batch</label>
+              <label class="text-sm text-gray-500">Compare with Previous Batch</label>
               <select v-model="form.prev_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5">
                 <option value="">Select</option>
                 <option v-for="batch in prevBatches" :key="batch.id" :value="batch.action_batch_id ?? batch.id">
@@ -648,7 +648,7 @@ watch(
           </div>
 
           <div class="mt-10">
-            <label class="text-sm font-semibold text-gray-500">Remarks</label>
+            <label class="text-sm text-gray-500">Remarks</label>
             <textarea
               v-model="form.remarks"
               class="w-full bg-zinc-50 border rounded-lg p-2.5 mt-1"

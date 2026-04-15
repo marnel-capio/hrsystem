@@ -1114,7 +1114,7 @@ const examCriteriaDisplay = computed(() => {
 
                             <div class="form-grid grid-3">
                                 <div class="form-field">
-                                    <label class="field-label">Upload Resume</label>
+                                    <label class="field-label !text-gray-500">Upload Resume</label>
 
                                     <div v-if="form.upload_resume && !resumeFile" class="file-info">
                                         <span class="file-name">{{ form.upload_resume }}</span>
@@ -1154,7 +1154,7 @@ const examCriteriaDisplay = computed(() => {
                                 </div>
 
                                 <div class="form-field">
-                                    <label class="field-label">Upload TOR</label>
+                                    <label class="field-label !text-gray-500">Upload TOR</label>
 
                                     <div v-if="form.upload_tor && !torFile" class="file-info">
                                         <span class="file-name">{{ form.upload_tor }}</span>
@@ -1194,7 +1194,7 @@ const examCriteriaDisplay = computed(() => {
                                 </div>
 
                                 <div class="form-field">
-                                    <label class="field-label">Upload 2x2 Pic</label>
+                                    <label class="field-label !text-gray-500">Upload 2x2 Pic</label>
 
                                     <div v-if="form.upload_pic && !pictureFile" class="file-info">
                                         <span class="file-name">{{ form.upload_pic }}</span>
@@ -1242,7 +1242,7 @@ const examCriteriaDisplay = computed(() => {
 
     <div class="form-grid grid-2">
         <div class="form-field">
-            <label class="field-label">Exam Plan Date</label>
+            <label class="field-label !text-gray-500">Exam Plan Date</label>
             <input
                 type="datetime-local"
                 v-model="form.exam_plan_date"
@@ -1256,7 +1256,7 @@ const examCriteriaDisplay = computed(() => {
         </div>
 
         <div class="form-field">
-            <label class="field-label">Exam Actual Date</label>
+            <label class="field-label !text-gray-500">Exam Actual Date</label>
             <input
                 type="datetime-local"
                 v-model="form.exam_actual_date"
@@ -1271,7 +1271,7 @@ const examCriteriaDisplay = computed(() => {
     </div>
 
     <div class="form-field">
-        <label class="field-label">Exam Venue</label>
+        <label class="field-label !text-gray-500">Exam Venue</label>
         <select
             v-model="form.exam_venue"
             class="form-select"
@@ -1294,7 +1294,7 @@ const examCriteriaDisplay = computed(() => {
                     <div class="atpp-card-title">ATPP Part I (Sequence / Pattern Analysis)</div>
                     <div class="form-grid grid-2">
                         <div class="form-field">
-                            <label class="field-label">Correct</label>
+                            <label class="field-label !text-gray-500">Correct</label>
                             <input
                                 type="number"
                                 step="1"
@@ -1309,7 +1309,7 @@ const examCriteriaDisplay = computed(() => {
                         </div>
 
                         <div class="form-field">
-                            <label class="field-label">Wrong</label>
+                            <label class="field-label !text-gray-500">Wrong</label>
                             <input
                                 type="number"
                                 step="1"
@@ -1329,7 +1329,7 @@ const examCriteriaDisplay = computed(() => {
                     <div class="atpp-card-title">ATPP Part II (Abstract Reasoning)</div>
                     <div class="form-grid grid-2">
                         <div class="form-field">
-                            <label class="field-label">Correct</label>
+                            <label class="field-label !text-gray-500">Correct</label>
                             <input
                                 type="number"
                                 step="1"
@@ -1344,7 +1344,7 @@ const examCriteriaDisplay = computed(() => {
                         </div>
 
                         <div class="form-field">
-                            <label class="field-label">Wrong</label>
+                            <label class="field-label !text-gray-500">Wrong</label>
                             <input
                                 type="number"
                                 step="1"
@@ -1364,7 +1364,7 @@ const examCriteriaDisplay = computed(() => {
                     <div class="atpp-card-title">ATPP Part III (Problem Solving)</div>
                     <div class="form-grid grid-2">
                         <div class="form-field">
-                            <label class="field-label">Correct</label>
+                            <label class="field-label !text-gray-500">Correct</label>
                             <input
                                 type="number"
                                 step="1"
@@ -1379,7 +1379,7 @@ const examCriteriaDisplay = computed(() => {
                         </div>
 
                         <div class="form-field">
-                            <label class="field-label">Wrong</label>
+                            <label class="field-label !text-gray-500">Wrong</label>
                             <input
                                 type="number"
                                 step="1"
@@ -1448,7 +1448,7 @@ const examCriteriaDisplay = computed(() => {
 
     <div class="form-grid grid-3 pt-5">
         <div class="form-field">
-            <label class="field-label">ATPP Final Result</label>
+            <label class="field-label !text-gray-500">ATPP Final Result</label>
             <input
                 type="number"
                 step="0.01"
@@ -1465,7 +1465,7 @@ const examCriteriaDisplay = computed(() => {
         </div>
 
         <div class="form-field">
-            <label class="field-label">GIT Result</label>
+            <label class="field-label !text-gray-500">GIT Result</label>
             <input
                 type="number"
                 step="0.01"
@@ -1479,7 +1479,7 @@ const examCriteriaDisplay = computed(() => {
         </div>
 
         <div class="form-field">
-            <label class="field-label">PRG Result</label>
+            <label class="field-label !text-gray-500">PRG Result</label>
             <input
                 type="number"
                 step="0.01"
@@ -1495,7 +1495,7 @@ const examCriteriaDisplay = computed(() => {
 
     <div class="form-grid grid-2">
         <div class="form-field">
-            <label class="field-label">Exam Result</label>
+            <label class="field-label !text-gray-500">Exam Result</label>
             <input
                 type="text"
                 class="form-input"
@@ -1507,7 +1507,7 @@ const examCriteriaDisplay = computed(() => {
         </div>
 
         <div class="form-field">
-            <label class="field-label">Exam Application Status</label>
+            <label class="field-label !text-gray-500">Exam Application Status</label>
             <select
                 v-model="form.exam_application_status"
                 class="form-select"
@@ -1525,7 +1525,7 @@ const examCriteriaDisplay = computed(() => {
     </div>
 
     <div class="form-field">
-        <label class="field-label">Exam Comments</label>
+        <label class="field-label !text-gray-500">Exam Comments</label>
         <textarea
             v-model="form.exam_remarks"
             rows="3"
@@ -1550,7 +1550,7 @@ const examCriteriaDisplay = computed(() => {
         <div class="exam-form-column">
             <div class="form-grid grid-2">
                 <div class="form-field">
-                    <label class="field-label">Plan Date</label>
+                    <label class="field-label !text-gray-500">Plan Date</label>
                     <input
                         type="datetime-local"
                         v-model="form.initial_interview_plan_date"
@@ -1564,7 +1564,7 @@ const examCriteriaDisplay = computed(() => {
                 </div>
 
                 <div class="form-field">
-                    <label class="field-label">Actual Date</label>
+                    <label class="field-label !text-gray-500">Actual Date</label>
                     <input
                         type="datetime-local"
                         v-model="form.initial_interview_actual_date"
@@ -1579,7 +1579,7 @@ const examCriteriaDisplay = computed(() => {
             </div>
 
             <div class="form-field">
-                <label class="field-label">Venue</label>
+                <label class="field-label !text-gray-500">Venue</label>
                 <select
                     v-model="form.initial_interview_venue"
                     class="form-select"
@@ -1596,7 +1596,7 @@ const examCriteriaDisplay = computed(() => {
             </div>
 
             <div class="form-field">
-                <label class="field-label">Initial Interview Final Score</label>
+                <label class="field-label !text-gray-500">Initial Interview Final Score</label>
                 <input
                     type="number"
                     step="0.01"
@@ -1644,7 +1644,7 @@ const examCriteriaDisplay = computed(() => {
 
                 <div class="form-grid grid-2">
                 <div class="form-field">
-                    <label class="field-label">Result</label>
+                    <label class="field-label !text-gray-500">Result</label>
                     <input
                         type="text"
                         class="form-input"
@@ -1655,7 +1655,7 @@ const examCriteriaDisplay = computed(() => {
                 </div>
 
                 <div class="form-field">
-                    <label class="field-label">Application Status</label>
+                    <label class="field-label !text-gray-500">Application Status</label>
                     <select
                         v-model="form.initial_interview_application_status"
                         class="form-select"
@@ -1670,7 +1670,7 @@ const examCriteriaDisplay = computed(() => {
             </div>
 
     <div class="form-field mt-3">
-        <label class="field-label">Initial Interview Comments</label>
+        <label class="field-label !text-gray-500">Initial Interview Comments</label>
         <textarea
             v-model="form.initial_interview_remarks"
             rows="3"
@@ -1692,7 +1692,7 @@ const examCriteriaDisplay = computed(() => {
     </div>
 
     <div class="form-field">
-        <label class="field-label">Date</label>
+        <label class="field-label !text-gray-500">Date</label>
         <input
             type="datetime-local"
             v-model="form.final_interview_date"
@@ -1724,7 +1724,7 @@ const examCriteriaDisplay = computed(() => {
 
                     <div class="form-grid grid-2">
                         <div class="form-field">
-                            <label class="field-label">Score</label>
+                            <label class="field-label !text-gray-500">Score</label>
 <input
     type="number"
     v-model="assignment.score"
@@ -1737,7 +1737,7 @@ const examCriteriaDisplay = computed(() => {
                         </div>
 
                         <div class="form-field">
-                            <label class="field-label">Result</label>
+                            <label class="field-label !text-gray-500">Result</label>
                             <select
                                 v-model="assignment.evaluation_result"
                                 class="form-select"
@@ -1752,7 +1752,7 @@ const examCriteriaDisplay = computed(() => {
                     </div>
 
                     <div class="form-field">
-                        <label class="field-label">Interviewer Remarks</label>
+                        <label class="field-label !text-gray-500">Interviewer Remarks</label>
                         <textarea
                             v-model="assignment.evaluation_remarks"
                             rows="2"
@@ -1793,7 +1793,7 @@ const examCriteriaDisplay = computed(() => {
 
     <div class="form-grid grid-3 mt-3">
         <div class="form-field">
-            <label class="field-label">Final Score</label>
+            <label class="field-label !text-gray-500">Final Score</label>
             <input
                 type="number"
                 step="0.01"
@@ -1807,7 +1807,7 @@ const examCriteriaDisplay = computed(() => {
         </div>
 
         <div class="form-field">
-            <label class="field-label">Result</label>
+            <label class="field-label !text-gray-500">Result</label>
             <input
                 v-if="allFinalInterviewersPassed || allFinalInterviewersFailed"
                 type="text"
@@ -1839,7 +1839,7 @@ const examCriteriaDisplay = computed(() => {
         </div>
 
         <div class="form-field">
-            <label class="field-label">Application Status</label>
+            <label class="field-label !text-gray-500">Application Status</label>
             <input
                 type="text"
                 class="form-input"
@@ -1851,7 +1851,7 @@ const examCriteriaDisplay = computed(() => {
     </div>
 
     <div class="form-field mt-3">
-        <label class="field-label">Final Interview Comments</label>
+        <label class="field-label !text-gray-500">Final Interview Comments</label>
         <textarea
             v-model="form.final_interview_remarks"
             rows="3"
@@ -1875,7 +1875,7 @@ const examCriteriaDisplay = computed(() => {
 
                             <div class="form-grid grid-2">
                                 <div class="form-field">
-                                    <label class="field-label">Schedule</label>
+                                    <label class="field-label !text-gray-500">Schedule</label>
                                     <input
                                         type="datetime-local"
                                         v-model="form.job_offer_schedule"
@@ -1886,7 +1886,7 @@ const examCriteriaDisplay = computed(() => {
                                     <span v-if="form.errors.job_offer_schedule" class="error-message">{{ form.errors.job_offer_schedule }}</span>
                                 </div>
                                 <div class="form-field">
-                                    <label class="field-label">Status</label>
+                                    <label class="field-label !text-gray-500">Status</label>
                                     <select v-model="form.job_offer_status" class="form-select" :disabled="!editableStages.job_offer">
                                         <option value="">Select Status</option>
                                         <option v-for="status in jobOfferStatuses" :key="status.value" :value="status.value">{{ status.label }}</option>
@@ -1895,7 +1895,7 @@ const examCriteriaDisplay = computed(() => {
                             </div>
 
                             <div class="form-field">
-                                <label class="field-label">Job Offer Comments</label>
+                                <label class="field-label !text-gray-500">Job Offer Comments</label>
                                 <textarea v-model="form.job_offer_remarks" rows="3" class="form-textarea" :disabled="!editableStages.job_offer"></textarea>
                                 <span v-if="form.errors.job_offer_remarks" class="error-message">
                                     {{ form.errors.job_offer_remarks }}
@@ -1909,7 +1909,7 @@ const examCriteriaDisplay = computed(() => {
                             </div>
 
                             <div class="form-field">
-                                <label class="field-label">General Remarks</label>
+                                <label class="field-label !text-gray-500">General Remarks</label>
                                 <textarea v-model="form.remarks" rows="3" class="form-textarea" :disabled="!editableStages.general"></textarea>
                                 <span v-if="form.errors.remarks" class="error-message">
                                     {{ form.errors.remarks }}
@@ -2101,7 +2101,6 @@ const examCriteriaDisplay = computed(() => {
 .field-label {
     margin: 0;
     font-size: 0.875rem;
-    font-weight: 500;
     color: var(--ats-text);
     line-height: 1.4;
 }
