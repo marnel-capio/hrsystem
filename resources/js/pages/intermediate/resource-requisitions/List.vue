@@ -89,7 +89,12 @@ const showError = ref(false);
 onMounted(() => {
   if (successMessage.value) {
     showSuccess.value = true;
+
+    setTimeout(() => {
+      showSuccess.value = false;
+    }, 3000); 
   }
+
   if (errorMessage.value) {
     showError.value = true;
   }

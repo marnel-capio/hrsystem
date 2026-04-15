@@ -135,6 +135,7 @@ class IntermediateRequisitionModel extends Model
                 'created_by',
                 'created_time',
             ])
+            ->whereHas('project') 
             ->with([
                 'project:id,project_name,project_description',
                 'requestedBy:id,first_name,last_name',

@@ -34,7 +34,9 @@ class IntermediateRequisitionController extends Controller
         $search = $request->input('search');
 
         $requisitions = IntermediateRequisitionModel::getPaginated($search, perPage: 20);
-        $requisitionsTotal = IntermediateRequisitionModel::search($search)->count();
+        $requisitionsTotal = IntermediateRequisitionModel::whereHas('project')
+        ->search($search)
+        ->count();
 
         return Inertia::render('intermediate/resource-requisitions/List', [
             'requisitions' => $requisitions,
@@ -209,5 +211,47 @@ class IntermediateRequisitionController extends Controller
             ->unique()
             ->values()
             ->toArray();
+    }
+
+
+    
+    public function edit($id)
+    {
+        $requisition = IntermediateRequisitionModel::findOrFail($id);
+    
+        return Inertia::render('intermediate/resource-requisitions/Edit', [
+            'requisition' => $requisition,
+            'user_permissions' => auth()->user()->permissions,
+        ]);
+    }
+    
+
+    public function update(IntermediateRequisitionRequest $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+    
+            // TEST ERROR
+            //throw new \Exception("Test error");
+    
+            $data = $request->validated();
+            $data['id'] = $id;
+    
+            $requisition = $this->intermediateRequisitionService->update($data, $request);
+    
+            DB::commit();
+    
+            return redirect()
+                ->route('intermediate.requisitions.show', $requisition->id)
+                ->with('success', config('errors.record_updated_successfully.errorMessage'));
+    
+        } catch (\Exception $e) {
+    
+            DB::rollBack();
+
+            return back()->withErrors([
+                'error' => config('errors.record_updated_failed.errorMessage')
+            ]);
+        }
     }
 }
