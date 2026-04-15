@@ -745,6 +745,8 @@ function getExamCategory(applicant: any): 'young_it' | 'young_other' | 'adult' {
     return isTechDegree(rawDegree) ? 'young_it' : 'young_other'
 }
 
+
+
 function getExamApplicationStatus(attp: number, git: number, prg: number, category: 'young_it' | 'young_other' | 'adult'): string {
     const rules = props.applicationScoreRules?.exam?.[category]
 
@@ -779,12 +781,14 @@ function getInitialInterviewApplicationStatus(score: number): string {
 
     const passedMax = Number(rules?.passed_min ?? 2.0)
     const p2Max = Number(rules?.p2_min ?? 2.5)
-    const failedMax = Number(rules?.failed_min ?? 4.0)
+    const failedMax = 5.0
 
-    if (score <= passedMax) return '3' // Passed
-    if (score <= p2Max) return '4'     // P2
-    if (score <= failedMax) return '5' // Failed
-    return '2'                         // Done / fallback
+    if (score === 0) return '1'
+    if (score > 0 && score <= passedMax) return '3'
+    if (score > passedMax && score <= p2Max) return '4'
+    if (score > p2Max && score <= failedMax) return '5'
+
+    return '1'
 }
 
 watch(() => form.exam_plan_date, (newPlanDate) => {
@@ -1129,6 +1133,63 @@ function handleClickOutside(event: MouseEvent) {
         isDropdownOpen.value = false
     }
 }
+
+function getFinalInterviewApplicationStatus(score: number): string {
+    const rules = props.applicationScoreRules?.initial_interview
+
+    const passedMax = Number(rules?.passed_min ?? 2.0)
+    const p2Max = Number(rules?.p2_min ?? 2.5)
+    const failedMax = 5.0
+
+    if (score === 0) return '1'
+    if (score > 0 && score <= passedMax) return '3'
+    if (score > passedMax && score <= p2Max) return '4'
+    if (score > p2Max && score <= failedMax) return '5'
+
+    return '1'
+}
+
+function clampScore(obj: any, field: string) {
+    let value = obj[field]
+
+    if (value === '' || value === null || value === undefined) return
+
+    let num = Number(value)
+
+    if (Number.isNaN(num)) {
+        obj[field] = ''
+        return
+    }
+
+    if (num < 0) num = 0
+    if (num > 5) num = 5
+
+    obj[field] = num
+}
+
+watch(
+    [
+        () => form.final_interview_final,
+        () => form.final_interview_date,
+    ],
+    ([score, finalDate]) => {
+        if (!score) {
+            form.final_interview_application_status = finalDate ? '1' : ''
+            form.final_interview_result = finalDate ? '1' : ''
+            return
+        }
+
+        const numericScore = Number(score)
+
+        if (Number.isNaN(numericScore)) {
+            form.final_interview_application_status = finalDate ? '1' : ''
+            form.final_interview_result = finalDate ? '1' : ''
+            return
+        }
+
+        form.final_interview_application_status = getFinalInterviewApplicationStatus(numericScore)
+    }
+)
 </script>
 
 <template>
@@ -1666,9 +1727,12 @@ function handleClickOutside(event: MouseEvent) {
                 <input
                     type="number"
                     step="0.01"
+                        min="0"
+    max="5"
                     v-model="form.initial_interview_final"
                     placeholder="0.00"
                     class="form-input"
+                    @input="clampScore(form, 'initial_interview_final')"
                 />
             </div>
 
@@ -1774,13 +1838,14 @@ function handleClickOutside(event: MouseEvent) {
                     <div class="form-grid grid-2">
                         <div class="form-field">
                             <label class="field-label">Score</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                v-model="assignment.score"
-                                class="form-input"
-                                :disabled="!isApplicantSelected"
-                            />
+<input
+    type="number"
+    v-model="assignment.score"
+    min="0"
+    max="5"
+    step="0.01"
+    @input="clampScore(assignment, 'score')"
+/>
                         </div>
 
                         <div class="form-field">
@@ -1844,10 +1909,13 @@ function handleClickOutside(event: MouseEvent) {
             <input
                 type="number"
                 step="0.01"
+                min="0"
+    max="5"
                 v-model="form.final_interview_final"
                 @input="handleFinalScoreManualInput"
                 class="form-input"
                 :disabled="!isApplicantSelected"
+
             />
         </div>
 

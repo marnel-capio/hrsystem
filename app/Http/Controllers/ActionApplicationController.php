@@ -179,10 +179,6 @@ class ActionApplicationController extends Controller
         $originalData = $application->toArray();
 
         $validated = $request->validated();
-// dd([
-//     'all_final_interview_assignments' => $request->all()['final_interview_assignments'] ?? null,
-//     'validated_final_interview_assignments' => $validated['final_interview_assignments'] ?? null,
-// ]);
         $validated = $this->handleUploads($request, $validated, true);
 
         $permission = (int) auth()->user()->permissions;
@@ -230,11 +226,25 @@ if ($application->isStageBlocked('job_offer')) {
         DB::beginTransaction();
 
         try {
-            $this->syncFinalInterviewEvaluationFromRequest($application, $validated);
+$this->syncFinalInterviewEvaluationFromRequest($application, $validated);
 
-            $validated = ActionApplication::normalizeComputedFields(
-                array_merge($application->toArray(), $validated)
-            );
+$application->refresh();
+$application->load('finalInterviewAssignments');
+
+$validated['final_interview_assignments'] = $application->finalInterviewAssignments
+    ->map(function ($row) {
+        return [
+            'id' => $row->id,
+            'score' => $row->score,
+            'evaluation_result' => $row->evaluation_result,
+            'evaluation_remarks' => $row->evaluation_remarks,
+        ];
+    })
+    ->toArray();
+
+$validated = ActionApplication::normalizeComputedFields(
+    array_merge($application->toArray(), $validated)
+);
 
             $application->updateApplication($validated);
             $application->refresh();

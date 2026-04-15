@@ -181,7 +181,7 @@ protected static function computeAtppResult(array $data): ?float
     return $totalCorrect - $totalWrong;
 }
 
-    public static function normalizeComputedFields(array $data): array
+public static function normalizeComputedFields(array $data): array
 {
     $applicant = ActionApplicant::find($data['action_applicant_id'] ?? null);
 
@@ -189,6 +189,9 @@ protected static function computeAtppResult(array $data): ?float
         return $data;
     }
 
+    // =========================
+    // EXAM
+    // =========================
     $data['exam_atpp_result'] = static::computeAtppResult($data);
 
     if (
@@ -196,15 +199,12 @@ protected static function computeAtppResult(array $data): ?float
         static::hasValue($data, 'exam_git_result') &&
         static::hasValue($data, 'exam_prg_result')
     ) {
-$computedExamStatus = static::computeExamApplicationStatus(
-    (float) $data['exam_atpp_result'],
-    (float) $data['exam_git_result'],
-    (float) $data['exam_prg_result'],
-    $applicant
-);
-
-
-$data['exam_application_status'] = $computedExamStatus;
+        $data['exam_application_status'] = static::computeExamApplicationStatus(
+            (float) $data['exam_atpp_result'],
+            (float) $data['exam_git_result'],
+            (float) $data['exam_prg_result'],
+            $applicant
+        );
     } elseif (static::hasValue($data, 'exam_plan_date')) {
         $data['exam_application_status'] = config('constants.exam_status.pending');
     } else {
@@ -215,6 +215,9 @@ $data['exam_application_status'] = $computedExamStatus;
         ? static::mapResultFromStatus('exam', (int) $data['exam_application_status'])
         : null;
 
+    // =========================
+    // INITIAL INTERVIEW
+    // =========================
     if (static::hasValue($data, 'initial_interview_final')) {
         $data['initial_interview_application_status'] = static::computeInitialInterviewApplicationStatus(
             (float) $data['initial_interview_final']
@@ -229,21 +232,46 @@ $data['exam_application_status'] = $computedExamStatus;
         ? static::mapResultFromStatus('initial_interview', (int) $data['initial_interview_application_status'])
         : null;
 
-    if (!static::hasValue($data, 'final_interview_application_status') && static::hasValue($data, 'final_interview_date')) {
-        $data['final_interview_application_status'] = 1;
+    // =========================
+    // FINAL INTERVIEW
+    // auto-compute final score from interviewer scores first
+    // =========================
+    $data['final_interview_final'] = static::computeFinalInterviewFinalFromAssignments($data);
+
+    $hasFinalAssignmentEvaluations = false;
+
+    if (isset($data['final_interview_assignments']) && is_array($data['final_interview_assignments'])) {
+        $hasFinalAssignmentEvaluations = collect($data['final_interview_assignments'])->contains(function ($row) {
+            return isset($row['evaluation_result'])
+                && $row['evaluation_result'] !== ''
+                && $row['evaluation_result'] !== null;
+        });
     }
 
-    $data['final_interview_result'] = static::hasValue($data, 'final_interview_application_status')
-        ? static::mapResultFromStatus('final_interview', (int) $data['final_interview_application_status'])
-        : null;
+    if (!$hasFinalAssignmentEvaluations) {
+        if (static::hasValue($data, 'final_interview_final')) {
+            $data['final_interview_application_status'] = static::computeFinalInterviewApplicationStatus(
+                (float) $data['final_interview_final']
+            );
+        } elseif (static::hasValue($data, 'final_interview_date')) {
+            $data['final_interview_application_status'] = 1;
+        } else {
+            $data['final_interview_application_status'] = null;
+        }
 
+        $data['final_interview_result'] = static::hasValue($data, 'final_interview_application_status')
+            ? static::mapResultFromStatus('final_interview', (int) $data['final_interview_application_status'])
+            : null;
+    }
+
+    // =========================
+    // JOB OFFER
+    // =========================
     if (!static::hasValue($data, 'job_offer_status') && static::hasValue($data, 'job_offer_schedule')) {
         $data['job_offer_status'] = 1;
     }
 
     return $data;
-
-
 }
 
 
@@ -294,21 +322,25 @@ protected static function computeInitialInterviewApplicationStatus(float $score)
 
     $passedMax = (float) ($rules['passed_min'] ?? 2.0);
     $p2Max = (float) ($rules['p2_min'] ?? 2.5);
-    $failedMax = (float) ($rules['failed_min'] ?? 4.0);
+    $failedMax = 5.0;
 
-    if ($score <= $passedMax) {
-        return 3;
+    if ($score == 0.0) {
+        return 1; // Pending
     }
 
-    if ($score <= $p2Max) {
-        return 4;
+    if ($score > 0 && $score <= $passedMax) {
+        return 3; // Passed
     }
 
-    if ($score <= $failedMax) {
-        return 5;
+    if ($score > $passedMax && $score <= $p2Max) {
+        return 4; // P2
     }
 
-    return 2;
+    if ($score > $p2Max && $score <= $failedMax) {
+        return 5; // Failed
+    }
+
+    return 1; // Pending fallback
 }
 
 protected static function mapResultFromStatus(string $type, int $status): ?int
@@ -669,5 +701,58 @@ public function clearBlockedStages(): void
             'job_offer_remarks' => null,
         ]);
     }
+}
+
+protected static function computeFinalInterviewFinalFromAssignments(array $data): ?float
+{
+    if (
+        !isset($data['final_interview_assignments']) ||
+        !is_array($data['final_interview_assignments'])
+    ) {
+        return isset($data['final_interview_final']) && $data['final_interview_final'] !== ''
+            ? (float) $data['final_interview_final']
+            : null;
+    }
+
+    $scores = collect($data['final_interview_assignments'])
+        ->pluck('score')
+        ->filter(fn ($score) => $score !== null && $score !== '')
+        ->map(fn ($score) => (float) $score)
+        ->values();
+
+    if ($scores->isEmpty()) {
+        return isset($data['final_interview_final']) && $data['final_interview_final'] !== ''
+            ? (float) $data['final_interview_final']
+            : null;
+    }
+
+    return round($scores->avg(), 2);
+}
+
+protected static function computeFinalInterviewApplicationStatus(float $score): int
+{
+    $rules = config('constants.application_score_rules.initial_interview');
+
+    $passedMax = (float) ($rules['passed_min'] ?? 2.0);
+    $p2Max = (float) ($rules['p2_min'] ?? 2.5);
+    $failedMax = 5.0;
+
+    if ($score == 0.0) {
+        return 1; // Pending
+    }
+
+    if ($score > 0 && $score <= $passedMax) {
+        return 3; // Passed
+    }
+
+    if ($score > $passedMax && $score <= $p2Max) {
+        return 4; // P2
+    }
+
+    if ($score > $p2Max && $score <= $failedMax) {
+        return 5; // Failed
+    }
+
+    return 1; // Pending fallback
 }
 }

@@ -34,7 +34,7 @@ public function rules(): array
         'initial_interview_plan_date' => 'nullable|date|after:exam_plan_date',
         'initial_interview_actual_date' => 'nullable|date|after_or_equal:initial_interview_plan_date',
         'initial_interview_venue' => 'nullable|integer',
-        'initial_interview_final' => 'nullable|numeric|between:0,999.99',
+        'initial_interview_final' => 'nullable|numeric|between:0,5',
         'initial_interview_result' => 'nullable|integer',
         'initial_interview_application_status' => 'nullable|integer',
         'initial_interview_remarks' => ['nullable', 'string', new MaxLength(1024)],
@@ -42,7 +42,7 @@ public function rules(): array
         'final_interview_date' => 'nullable|date|after_or_equal:initial_interview_plan_date',
 
         // old parent-level final score fields can stay temporarily optional during transition
-        'final_interview_final' => 'nullable|numeric|between:0,999.99',
+        'final_interview_final' => 'nullable|numeric|between:0,5',
         'final_interview_result' => 'nullable|integer',
         'final_interview_application_status' => 'nullable|integer',
         'final_interview_remarks' => ['nullable', 'string', new MaxLength(1024)],
@@ -50,7 +50,7 @@ public function rules(): array
         // new dynamic per-interviewer final interview evaluation
         'final_interview_assignments' => 'nullable|array',
         'final_interview_assignments.*.id' => 'required|integer|exists:action_application_interviews,id',
-        'final_interview_assignments.*.score' => 'nullable|numeric|between:0,999.99',
+        'final_interview_assignments.*.score' => 'nullable|numeric|between:0,5',
         'final_interview_assignments.*.evaluation_result' => 'nullable|integer|in:1,2,3',
         'final_interview_assignments.*.evaluation_remarks' => ['nullable', 'string', new MaxLength(1024)],
 
@@ -71,7 +71,7 @@ public function messages(): array
     return [
         'final_interview_assignments.*.id.exists' => 'One of the final interview assignments is invalid.',
         'final_interview_assignments.*.score.numeric' => 'Final interviewer score must be a valid number.',
-        'final_interview_assignments.*.score.between' => 'Final interviewer score must be between 0 and 999.99.',
+        'final_interview_assignments.*.score.between' => 'Final interviewer score must be between 0 and 5.',
         'final_interview_assignments.*.evaluation_result.in' => 'Final interviewer result must be Pending, Passed, or Failed.',
     ];
 }

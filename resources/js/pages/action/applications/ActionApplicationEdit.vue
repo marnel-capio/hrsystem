@@ -132,6 +132,19 @@ function parseScore(value: string | number | null | undefined): number {
     return Number.isNaN(num) ? 0 : num
 }
 
+function getInterviewerEvaluationResultFromScore(score: string | number | null | undefined): string {
+    if (score === '' || score === null || score === undefined) return ''
+
+    const num = Number(score)
+    if (Number.isNaN(num)) return ''
+
+    if (num === 0) return '1' // Pending
+    if (num > 0 && num <= 2.0) return '2' // Passed
+    if (num > 2.0 && num <= 5.0) return '3' // Failed
+
+    return ''
+}
+
 function handleFinalScoreManualInput() {
     finalScoreManuallyEdited.value = true
 }
@@ -443,12 +456,14 @@ function getInitialInterviewApplicationStatus(score: number): string {
 
     const passedMax = Number(rules?.passed_min ?? 2.0)
     const p2Max = Number(rules?.p2_min ?? 2.5)
-    const failedMax = Number(rules?.failed_min ?? 4.0)
+    const failedMax = 5.0
 
-    if (score <= passedMax) return '3' // Passed
-    if (score <= p2Max) return '4'     // P2
-    if (score <= failedMax) return '5' // Failed
-    return '2'                         // Done / fallback
+    if (score === 0) return '1'
+    if (score > 0 && score <= passedMax) return '3'
+    if (score > passedMax && score <= p2Max) return '4'
+    if (score > p2Max && score <= failedMax) return '5'
+
+    return '1'
 }
 
 function validateScoreField(field: string, label: string, value: string | number) {
@@ -765,6 +780,25 @@ watch(() => form.exam_atpp_part3_wrong, (value) => {
     validateScoreField('exam_atpp_part3_wrong', 'ATPP Part III Wrong', value)
 })
 
+watch(
+    () => form.final_interview_assignments,
+    (rows) => {
+        ;(rows || []).forEach((row: any) => {
+            if (row.score === '' || row.score === null || row.score === undefined) {
+                row.evaluation_result = ''
+                return
+            }
+
+            const computedResult = getInterviewerEvaluationResultFromScore(row.score)
+
+            if (!canEditFinalInterviewDecision.value || !row.evaluation_result) {
+                row.evaluation_result = computedResult
+            }
+        })
+    },
+    { deep: true }
+)
+
 
 const handleResumeUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
@@ -885,6 +919,63 @@ const normalizeDateTimeForSubmit = (value: unknown) => {
 
     return value
 }
+
+function clampScore(obj: any, field: string) {
+    let value = obj[field]
+
+    if (value === '' || value === null || value === undefined) return
+
+    let num = Number(value)
+
+    if (Number.isNaN(num)) {
+        obj[field] = ''
+        return
+    }
+
+    if (num < 0) num = 0
+    if (num > 5) num = 5
+
+    obj[field] = num
+}
+
+function getFinalInterviewApplicationStatus(score: number): string {
+    const rules = props.applicationScoreRules?.initial_interview
+
+    const passedMax = Number(rules?.passed_min ?? 2.0)
+    const p2Max = Number(rules?.p2_min ?? 2.5)
+    const failedMax = 5.0
+
+    if (score === 0) return '1'
+    if (score > 0 && score <= passedMax) return '3'
+    if (score > passedMax && score <= p2Max) return '4'
+    if (score > p2Max && score <= failedMax) return '5'
+
+    return '1'
+}
+
+watch(
+    [
+        () => form.final_interview_final,
+        () => form.final_interview_date,
+    ],
+    ([score, finalDate]) => {
+        if (!score) {
+            form.final_interview_application_status = finalDate ? '1' : ''
+            form.final_interview_result = finalDate ? '1' : ''
+            return
+        }
+
+        const numericScore = Number(score)
+
+        if (Number.isNaN(numericScore)) {
+            form.final_interview_application_status = finalDate ? '1' : ''
+            form.final_interview_result = finalDate ? '1' : ''
+            return
+        }
+
+        form.final_interview_application_status = getFinalInterviewApplicationStatus(numericScore)
+    }
+)
 
 function submit() {
     form.clearErrors()
@@ -1509,8 +1600,11 @@ const examCriteriaDisplay = computed(() => {
                 <input
                     type="number"
                     step="0.01"
+                        min="0"
+    max="5"
                     v-model="form.initial_interview_final"
                     class="form-input"
+                    @input="clampScore(form, 'initial_interview_final')"
                     :disabled="!editableStages.initial_interview || isInitialBlocked"
                 />
                 <span v-if="form.errors.initial_interview_final" class="error-message">
@@ -1631,13 +1725,15 @@ const examCriteriaDisplay = computed(() => {
                     <div class="form-grid grid-2">
                         <div class="form-field">
                             <label class="field-label">Score</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                v-model="assignment.score"
+<input
+    type="number"
+    v-model="assignment.score"
+    min="0"
+    max="5"
+    step="0.01"
                                 class="form-input"
-                                :disabled="!editableStages.final_interview"
-                            />
+                                    @input="clampScore(assignment, 'score')"
+/>
                         </div>
 
                         <div class="form-field">
@@ -1701,8 +1797,10 @@ const examCriteriaDisplay = computed(() => {
             <input
                 type="number"
                 step="0.01"
+                    min="0"
+    max="5"
                 v-model="form.final_interview_final"
-                @input="handleFinalScoreManualInput"
+                @input="handleFinalScoreManualInput(); clampScore(form, 'final_interview_final')"
                 class="form-input"
                 :disabled="!editableStages.final_interview"
             />

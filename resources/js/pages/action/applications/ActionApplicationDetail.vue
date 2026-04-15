@@ -372,6 +372,31 @@ const getStatusBadgeColor = (status: string | null) => {
     return 'bg-gray-200 text-gray-700'
 }
 
+function getExamStatusBadgeClass(status: number | null | undefined) {
+    switch (Number(status)) {
+        case 1:
+            return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' // Pending
+
+        case 2:
+            return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' // Done
+
+                case 3:
+            return 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' // 2nd priority
+
+
+        case 5:
+            return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' //  PASSED (for exam only)
+
+
+        case 6:
+            return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' // failed
+
+
+        default:
+            return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
+    }
+}
+
 const getOverallStatus = () => {
     const jobStatus = Number(application.value.job_offer_status)
 
@@ -762,6 +787,28 @@ const toastMessage = ref<string | null>(null)
 const toastType = ref<'success' | 'error'>('success')
 const showToastMessage = ref(false)
 
+function getApplicationStatusBadgeClass(status: number | null | undefined) {
+    switch (Number(status)) {
+        case 1: // Pending
+            return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+
+        case 2: // For deliberation / done
+            return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+
+        case 3: // Passed
+            return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+
+        case 4: // P2 (if used)
+            return 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+
+        case 5: // Failed
+            return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+
+        default:
+            return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
+    }
+}
+
 const showToast = (message: string, type: 'success' | 'error') => {
     toastMessage.value = message
     toastType.value = type
@@ -835,10 +882,6 @@ watch(errorMessage, (newVal) => {
                             Edit Application
                         </Link>
                     </div>
-                    <!-- DRAFT FOR MIXED RESULTS DI KO ALAM SAN ILALAGAY -->
-                    <p v-if="page.props.hasMixedFinalInterviewResults" class="text-xs text-amber-600 mt-2">
-    Mixed interviewer results. Final decision is subject to HR deliberation.
-</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -932,14 +975,14 @@ watch(errorMessage, (newVal) => {
             <h2 class="text-lg font-bold flex items-center gap-2">
                 <Award class="w-5 h-5 text-blue-600" /> EXAM DETAILS
             </h2>
-            <span
+            <!-- <span
                 :class="[
                     'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
                     getStatusBadgeColor(getExamResultLabel(application.exam_result))
                 ]"
             >
                 {{ getExamResultLabel(application.exam_result) || 'Pending' }}
-            </span>
+            </span> -->
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
@@ -957,9 +1000,13 @@ watch(errorMessage, (newVal) => {
             </div>
             <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
                 <div class="text-xs text-zinc-500 mb-1">Application Status</div>
-                <div class="text-sm font-medium">
-                    {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
-                </div>
+<div>
+    <span
+        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+:class="getExamStatusBadgeClass(application.exam_application_status)"    >
+        {{ getExamApplicationStatusLabel(application.exam_application_status) || '-' }}
+    </span>
+</div>
             </div>
         </div>
 
@@ -1038,14 +1085,14 @@ watch(errorMessage, (newVal) => {
             <h2 class="text-lg font-bold flex items-center gap-2">
                 <Calendar class="w-5 h-5 text-blue-600" /> INITIAL INTERVIEW DETAILS
             </h2>
-            <span
+            <!-- <span
                 :class="[
                     'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
                     getStatusBadgeColor(getInterviewResultLabel(application.initial_interview_result))
                 ]"
             >
                 {{ getInterviewResultLabel(application.initial_interview_result) || 'Pending' }}
-            </span>
+            </span> -->
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -1067,9 +1114,14 @@ watch(errorMessage, (newVal) => {
             </div>
             <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
                 <div class="text-xs text-zinc-500 mb-1">Application Status</div>
-                <div class="text-sm font-medium">
-                    {{ getInterviewApplicationStatusLabel(application.initial_interview_application_status) || '-' }}
-                </div>
+<div>
+    <span
+        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+        :class="getApplicationStatusBadgeClass(application.initial_interview_application_status)"
+    >
+        {{ getInterviewApplicationStatusLabel(application.initial_interview_application_status) || '-' }}
+    </span>
+</div>
             </div>
         </div>
 
@@ -1087,18 +1139,18 @@ watch(errorMessage, (newVal) => {
             <h2 class="text-lg font-bold flex items-center gap-2">
                 <Star class="w-5 h-5 text-blue-600" /> FINAL INTERVIEW DETAILS
             </h2>
-            <span
+            <!-- <span
                 :class="[
                     'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
                     getStatusBadgeColor(getInterviewResultLabel(application.final_interview_result))
                 ]"
             >
                 {{ getInterviewResultLabel(application.final_interview_result) || 'Pending' }}
-            </span>
+            </span> -->
         </div>
 
         <div v-if="page.props.hasMixedFinalInterviewResults" class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Mixed interviewer results. Final decision is subject to HR deliberation.
+            Mixed interviewer results. Final score is up to HR deliberation.
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
@@ -1112,9 +1164,14 @@ watch(errorMessage, (newVal) => {
             </div>
             <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
                 <div class="text-xs text-zinc-500 mb-1">Application Status</div>
-                <div class="text-sm font-medium">
-                    {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
-                </div>
+<div>
+    <span
+        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+        :class="getApplicationStatusBadgeClass(application.final_interview_application_status)"
+    >
+        {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
+    </span>
+</div>
             </div>
         </div>
 
@@ -1178,14 +1235,14 @@ watch(errorMessage, (newVal) => {
             <h2 class="text-lg font-bold flex items-center gap-2">
                 <CheckCircle class="w-5 h-5 text-blue-600" /> JOB OFFER DETAILS
             </h2>
-            <span
+            <!-- <span
                 :class="[
                     'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
                     getJobOfferStatusBadgeClass(application.job_offer_status)
                 ]"
             >
                 {{ getJobOfferStatusLabel(application.job_offer_status) || 'Pending' }}
-            </span>
+            </span> -->
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1195,8 +1252,14 @@ watch(errorMessage, (newVal) => {
             </div>
             <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4">
                 <div class="text-xs text-zinc-500 mb-1">Status</div>
-                <div class="text-sm font-medium">{{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}</div>
-            </div>
+<div>
+    <span
+    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+    :class="getApplicationStatusBadgeClass(application.job_offer_status)"
+>
+    {{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}
+</span>
+</div>            </div>
         </div>
 
         <div class="mt-5">
@@ -1326,7 +1389,7 @@ watch(errorMessage, (newVal) => {
         <div>
             <div class="text-sm font-semibold mb-2">General Remarks</div>
             <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 text-sm">
-                {{ application.remarks || 'No remarks' }}
+                {{ application.remarks }}
             </div>
         </div>
     </div>
