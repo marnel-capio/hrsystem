@@ -541,7 +541,8 @@ return [
         'type1' => ['Foundit', 'LinkedIn', 'Facebook', 'Mynimo', 'Kalibrr'],
         'type2' => ['Referral', 'Recruitment Network', 'Job Fairs', 'Website', 'Rehire'],
         'type3' => ['AAISI', 'Primover', 'Tech Tierra', 'Spring Valley', 'YENS'],
-
+    ],
+    
     'japanese_backgrounds' => [
         1 => 'None',
         2 => 'Self Study / University Level',
@@ -556,4 +557,5 @@ return [
         1 => 'N1',
     ],
 
+    
 ];
