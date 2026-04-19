@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\ActionApplicantProgrammingLanguage;
 
 class ActionApplicant extends Model
 {
@@ -117,15 +118,7 @@ class ActionApplicant extends Model
 
         $applicant = self::where('email_address', $email)->first();
 
-        // default import assumption: no Japanese background unless your file provides it
-        $japaneseBackground = 1;
-        $japaneseLevel = null;
-        $backgroundRemarks = null;
-
         $payload = [
-            'source_type' => $source_type,
-            'source' => $source,
-            'other_source' => mb_substr(self::cleanUtf8($other_source), 0, 80),
             'last_name' => mb_substr($last, 0, 80),
             'first_name' => mb_substr($first, 0, 80),
             'middle_name' => mb_substr($middle, 0, 80),
@@ -137,9 +130,6 @@ class ActionApplicant extends Model
             'others_degree' => mb_substr($othersDegree, 0, 80),
             'expected_graduation' => mb_substr($expectedGraduation, 0, 20),
             'awards_recognition' => mb_substr($awardsRecognition, 0, 1024),
-            'japanese_background' => $japaneseBackground,
-            'japanese_level' => $japaneseLevel,
-            'background_remarks' => $backgroundRemarks,
             'other_examination_certificate' => mb_substr($otherExaminationCertificate, 0, 1024),
             'thesis_project' => mb_substr($thesisProject, 0, 1024),
             'extra_curricular' => mb_substr($extraCurricular, 0, 1024),
@@ -148,6 +138,14 @@ class ActionApplicant extends Model
         ];
 
         if (! $applicant) {
+            $payload['source_type'] = $source_type;
+            $payload['source'] = $source;
+            $payload['other_source'] = mb_substr(self::cleanUtf8($other_source), 0, 80);
+
+            $payload['japanese_background'] = 1; // or your mapped value
+            $payload['japanese_level'] = null;
+            $payload['background_remarks'] = null;
+
             $payload['created_by'] = Auth::id();
             $payload['created_time'] = $createdTime;
 
@@ -158,7 +156,6 @@ class ActionApplicant extends Model
 
         return $applicant;
     }
-
     public static function getAllActionApplicants()
     {
         $sourceTypes = config('constants.sourceTypes');
@@ -426,4 +423,38 @@ class ActionApplicant extends Model
 
         return self::createApplicant($data);
     }
+
+public static function syncProgrammingLanguagesFromRow(int $applicantId, array $row): void
+{
+    $raw = '';
+
+    foreach ($row as $key => $value) {
+        $normalizedKey = preg_replace('/\s+/', ' ', trim((string) $key));
+
+        if (strcasecmp($normalizedKey, 'Programming Languages learned') === 0) {
+            $raw = is_string($value) ? self::cleanUtf8($value) : '';
+            break;
+        }
+    }
+
+    $languages = collect(explode(',', $raw))
+        ->map(fn ($lang) => self::cleanUtf8($lang))
+        ->filter(fn ($lang) => $lang !== '')
+        ->unique(fn ($lang) => mb_strtolower($lang))
+        ->values();
+
+    ActionApplicantProgrammingLanguage::where('action_applicant_id', $applicantId)->delete();
+
+    foreach ($languages as $language) {
+        ActionApplicantProgrammingLanguage::create([
+            'action_applicant_id' => $applicantId,
+            'program_language' => $language,
+            'remarks' => null,
+            'created_by' => auth()->id() ?? 1,
+            'created_time' => now(),
+            'updated_by' => auth()->id() ?? 1,
+            'updated_time' => now(),
+        ]);
+    }
+}
 }
