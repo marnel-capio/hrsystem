@@ -117,6 +117,11 @@ class ActionApplicant extends Model
 
         $applicant = self::where('email_address', $email)->first();
 
+        // default import assumption: no Japanese background unless your file provides it
+        $japaneseBackground = 1;
+        $japaneseLevel = null;
+        $backgroundRemarks = null;
+
         $payload = [
             'source_type' => $source_type,
             'source' => $source,
@@ -132,6 +137,9 @@ class ActionApplicant extends Model
             'others_degree' => mb_substr($othersDegree, 0, 80),
             'expected_graduation' => mb_substr($expectedGraduation, 0, 20),
             'awards_recognition' => mb_substr($awardsRecognition, 0, 1024),
+            'japanese_background' => $japaneseBackground,
+            'japanese_level' => $japaneseLevel,
+            'background_remarks' => $backgroundRemarks,
             'other_examination_certificate' => mb_substr($otherExaminationCertificate, 0, 1024),
             'thesis_project' => mb_substr($thesisProject, 0, 1024),
             'extra_curricular' => mb_substr($extraCurricular, 0, 1024),
