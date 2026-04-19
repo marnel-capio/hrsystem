@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:43
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @route '/intermediate/resource-requisitions/register'
  */
 export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ register.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:43
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @route '/intermediate/resource-requisitions/register'
  */
 register.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ register.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:43
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @route '/intermediate/resource-requisitions/register'
  */
 register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:43
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @route '/intermediate/resource-requisitions/register'
  */
 register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:43
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @route '/intermediate/resource-requisitions/register'
  */
     const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:43
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @route '/intermediate/resource-requisitions/register'
  */
         registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:43
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @route '/intermediate/resource-requisitions/register'
  */
         registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -212,7 +212,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:48
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @route '/intermediate/resource-requisitions/{id}'
  */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -227,7 +227,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:48
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @route '/intermediate/resource-requisitions/{id}'
  */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -255,7 +255,7 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:48
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @route '/intermediate/resource-requisitions/{id}'
  */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -264,7 +264,7 @@ show.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:48
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @route '/intermediate/resource-requisitions/{id}'
  */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -274,7 +274,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:48
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @route '/intermediate/resource-requisitions/{id}'
  */
     const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -284,7 +284,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:48
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @route '/intermediate/resource-requisitions/{id}'
  */
         showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -293,7 +293,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:48
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @route '/intermediate/resource-requisitions/{id}'
  */
         showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
