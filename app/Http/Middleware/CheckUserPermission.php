@@ -429,15 +429,30 @@ if (in_array($routeName, [
         }
 
         // INTERMEDIATE APPLICANTS
-        if (in_array($routeName, [
-            'intermediate.applicants.index',
-        ])) {
+        if (in_array($routeName, ['intermediate.applicants.index', 'intermediate.applicants.show'])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
                 config('constants.HR_MANAGER_PERMISSION.value'),
                 config('constants.HR_RECRUITER_PERMISSION.value'),
                 config('constants.BU_MANAGER_PERMISSION.value'),
                 config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        if (in_array($routeName, [
+            'intermediate.applicants.register',
+            'intermediate.applicants.store',
+            'intermediate.applicants.check-email',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
             ])) {
                 return $next($request);
             }

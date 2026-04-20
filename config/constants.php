@@ -419,55 +419,8 @@ return [
         3 => 'Final Interview',
     ],
 
-    'application_result_map' => [
-        'exam' => [
-            1 => 1, // Pending  -> Pending
-            2 => 2, // 1st Priority (Passed) -> Passed
-            3 => 2, // 2nd Priority (P2) -> Passed
-            4 => 1, // Done -> Pending
-            5 => 2, // Passed -> Passed
-            6 => 3, // Failed -> Failed
-        ],
 
-        'initial_interview' => [
-            1 => 1, // Pending -> Pending
-            2 => 1, // Done -> Pending
-            3 => 2, // Passed -> Passed
-            4 => 2, // P2 -> Passed
-            5 => 3, // Failed -> Failed
-        ],
 
-        'final_interview' => [
-            1 => 1, // Pending -> Pending
-            2 => 1, // Done -> Pending
-            3 => 2, // Passed -> Passed
-            4 => 2, // P2 -> Passed
-            5 => 3, // Failed -> Failed
-        ],
-    ],
-
-    'application_score_rules' => [
-        'exam' => [
-            'young_it' => [
-                'passed' => ['attp' => 60, 'git' => 6, 'prg' => 30],
-                'p2' => ['attp' => 55, 'git' => 5, 'prg' => 20],
-            ],
-            'young_other' => [
-                'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
-                'p2' => ['attp' => 55, 'git' => 5, 'prg' => 20],
-            ],
-            'adult' => [
-                'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
-            ],
-        ],
-
-        'initial_interview' => [
-            'passed_min' => 2.0,
-            'p2_min' => 2.5,
-            'failed_min' => 4.0,
-        ],
-
-    ],
 
     'application_result_map' => [
 
@@ -526,6 +479,7 @@ return [
         3 => 'JLPT Certification',
     ],
 
+
     'japanese_levels' => [
         5 => 'N5',
         4 => 'N4',
@@ -533,5 +487,27 @@ return [
         2 => 'N2',
         1 => 'N1',
     ],
+
+    'intermediateSourceTypes' => [
+    1 => 'SP (Service Provider)',
+    2 => 'Recruitment Portals',
+    3 => 'Employee Referral',
+    4 => 'Walk-in',
+],
+
+'intermediateSources' => [
+    1 => 'Mynimo',
+    2 => 'Indeed',
+    3 => 'Kalibrr',
+    4 => 'FoundIt',
+    5 => 'LinkedIn',
+    6 => 'Facebook',
+    7 => 'Jobstreet',
+    8 => 'AAISI',
+    9 => 'Primover',
+    10 => 'Pan Asia',
+    11 => 'Nityo',
+    12 => 'CPS',
+],
 
 ];

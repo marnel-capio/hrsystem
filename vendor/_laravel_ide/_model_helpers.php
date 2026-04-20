@@ -13,6 +13,9 @@ namespace App\Models {
      * @property string|null $extra_curricular
      * @property string|null $thesis_project
      * @property string|null $other_examination_certificate
+     * @property string|null $background_remarks
+     * @property integer|null $japanese_level
+     * @property integer $japanese_background
      * @property string|null $awards_recognition
      * @property string $expected_graduation
      * @property string|null $others_degree
@@ -51,6 +54,9 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereOthersDegree($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereExpectedGraduation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereAwardsRecognition($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereJapaneseBackground($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereJapaneseLevel($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereBackgroundRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereOtherExaminationCertificate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereThesisProject($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereExtraCurricular($value)
@@ -712,7 +718,23 @@ namespace App\Models {
     /**
      * App\Models\ActionApplicantSkill
      *
+     * @property string $updated_time
+     * @property mixed $updated_by
+     * @property string $created_time
+     * @property mixed $created_by
+     * @property string|null $remarks
+     * @property string $skill
+     * @property mixed $action_applicant_id
+     * @property int $id
      * @property-read \App\Models\ActionApplicant $applicant
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereActionApplicantId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereSkill($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereRemarks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereCreatedBy($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereCreatedTime($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereUpdatedBy($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill whereUpdatedTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicantSkill>|ActionApplicantSkill query()
@@ -2526,6 +2548,7 @@ namespace App\Models {
      * @property string $email_address
      * @property string|null $address
      * @property integer $age
+     * @property string $birthdate
      * @property bool $gender
      * @property string|null $middle_name
      * @property string $first_name
@@ -2548,6 +2571,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereFirstName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereMiddleName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereGender($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereBirthdate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereAge($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereEmailAddress($value)
@@ -3885,7 +3909,7 @@ namespace App\Models {
      * @property string|null $custom_location
      * @property string|null $expected_salary_range
      * @property string|null $role
-     * @property string|null $preferred_skilss
+     * @property string|null $preferred_skills
      * @property string|null $required_skills
      * @property string|null $duration_project_engagement
      * @property string|null $start_date
@@ -3920,7 +3944,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereStartDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereDurationProjectEngagement($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRequiredSkills($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkilss($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRole($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereExpectedSalaryRange($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCustomLocation($value)
@@ -4589,7 +4613,6 @@ namespace App\Models {
      * @property string $created_time
      * @property mixed $created_by
      * @property string|null $remarks
-     * @property string $training_enddate
      * @property string $training_startdate
      * @property string $requirements_enddate
      * @property string $requirements_startdate
@@ -4630,7 +4653,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereRequirementsStartdate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereRequirementsEnddate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereTrainingStartdate($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereTrainingEnddate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereCreatedTime($value)

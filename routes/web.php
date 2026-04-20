@@ -17,6 +17,7 @@ use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
 use App\Http\Controllers\IntermediateApplicantController;
 use App\Http\Controllers\ActionApplicantSkillController;
 
+
 /**
  * Web Routes
  */
@@ -251,6 +252,17 @@ Route::middleware(['auth', 'check.permission'])->group(function () {
     Route::get('/intermediate/applicants', [IntermediateApplicantController::class, 'index'])
         ->name('intermediate.applicants.index');
 
+    Route::get('/intermediate/applicants/register', [IntermediateApplicantController::class, 'create'])
+        ->name('intermediate.applicants.register');
+
+    Route::post('/intermediate/applicants', [IntermediateApplicantController::class, 'store'])
+        ->name('intermediate.applicants.store');
+
+    Route::post('/intermediate/applicants/check-email', [IntermediateApplicantController::class, 'checkEmail'])
+        ->name('intermediate.applicants.check-email');
+
+    Route::get('/intermediate/applicants/{id}', [IntermediateApplicantController::class, 'show'])
+        ->name('intermediate.applicants.show');
 });
 
 // ------------------------
