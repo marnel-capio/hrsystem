@@ -5089,6 +5089,7 @@ namespace App\Models {
      * @property string $created_time
      * @property mixed $created_by
      * @property string|null $remarks
+     * @property string $training_enddate
      * @property string $training_startdate
      * @property string $requirements_enddate
      * @property string $requirements_startdate
@@ -5129,6 +5130,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereRequirementsStartdate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereRequirementsEnddate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereTrainingStartdate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereTrainingEnddate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ResourceSchedule>|ResourceSchedule whereCreatedTime($value)
