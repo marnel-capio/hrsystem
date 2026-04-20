@@ -122,26 +122,39 @@ class ActionApplication extends Model
         return $this->hasMany(ActionApplicationInterview::class, 'action_application_id', 'id');
     }
 
-    public static function updateOrCreateFromRow($applicantId, $batchId, array $row, $exam_application_status, $exam_plan_date, $updatedTime, $targetLocation = null, $createdTime = null)
-    {
+    public static function updateOrCreateFromRow(
+        $applicantId,
+        $batchId,
+        array $row,
+        $exam_application_status,
+        $exam_plan_date,
+        $updatedTime,
+        $targetLocation = null,
+        $createdTime = null,
+        array $overrides = []
+    ) {
         $createdTime = $createdTime ?? $updatedTime;
+
+        $payload = [
+            'upload_resume' => trim($row['Upload your updated resume'] ?? ''),
+            'exam_application_status' => $exam_application_status,
+            'exam_plan_date' => $exam_plan_date,
+            'created_by' => Auth::id(),
+            'created_time' => now(),
+            'source_date' => $createdTime,
+            'updated_by' => Auth::id(),
+            'updated_time' => now(),
+            'trainees_from' => $targetLocation,
+        ];
+
+        $payload = array_merge($payload, $overrides);
 
         return self::updateOrCreate(
             [
                 'action_applicant_id' => $applicantId,
                 'action_batch_id' => $batchId,
             ],
-            [
-                'upload_resume' => trim($row['Upload your updated resume'] ?? ''),
-                'exam_application_status' => $exam_application_status,
-                'exam_plan_date' => $exam_plan_date,
-                'created_by' => Auth::id(),
-                'created_time' => now(),
-                'source_date' => $createdTime,
-                'updated_by' => Auth::id(),
-                'updated_time' => now(),
-                'trainees_from' => $targetLocation,
-            ]
+            $payload
         );
     }
 

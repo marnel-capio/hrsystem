@@ -452,33 +452,56 @@ function getExamStatusBadgeClass(status: number | null | undefined) {
 }
 
 const getOverallStatus = () => {
+    const examResult = Number(application.value.exam_result);
+    const initialResult = Number(application.value.initial_interview_result);
+    const finalResult = Number(application.value.final_interview_result);
     const jobStatus = Number(application.value.job_offer_status);
 
+    // Terminal job offer outcomes
     if (jobStatus === 3) return 'Offer Accepted';
     if (jobStatus === 4) return 'Offer Declined';
     if (jobStatus === 5) return 'Offer Withdrawn';
     if (jobStatus === 6) return 'Offer Retracted';
 
-    if (application.value.final_interview_result === 2)
-        return 'Passed Final Interview';
-    if (application.value.final_interview_result === 3)
-        return 'Failed Final Interview';
-    if (application.value.initial_interview_result === 2)
-        return 'Passed Initial Interview';
-    if (application.value.initial_interview_result === 3)
-        return 'Failed Initial Interview';
-    if (application.value.exam_result === 2) return 'Passed Exam';
-    if (application.value.exam_result === 3) return 'Failed Exam';
+    // Failures
+    if (finalResult === 3) return 'Failed Final Interview';
+    if (initialResult === 3) return 'Failed Initial Interview';
+    if (examResult === 3) return 'Failed Exam';
 
-    return 'In Progress';
+    // Next stage labels
+    if (finalResult === 2) return 'For Job Offer';
+    if (initialResult === 2) return 'For Final Interview';
+    if (examResult === 2) return 'For Initial Interview';
+
+    // If job offer is already scheduled/done but not final outcome yet
+    if (jobStatus === 1 || jobStatus === 2) return 'For Job Offer';
+
+    // If exam not yet done
+    if (!examResult || examResult === 1) {
+        return 'New';
+    }
+
+    // Fallback (just in case)
+    return 'New';
 };
 
 const getOverallStatusColor = () => {
     const status = getOverallStatus();
+
     if (status === 'Offer Accepted') return 'bg-green-100 text-green-800';
-    if (status.includes('Failed') || status.includes('Declined'))
+    if (
+        status === 'Offer Declined' ||
+        status === 'Offer Withdrawn' ||
+        status === 'Offer Retracted' ||
+        status.includes('Failed')
+    ) {
         return 'bg-red-100 text-red-800';
-    if (status.includes('Passed')) return 'bg-blue-100 text-blue-800';
+    }
+
+    if (status.startsWith('For ')) {
+        return 'bg-blue-100 text-blue-800';
+    }
+
     return 'bg-yellow-100 text-yellow-800';
 };
 

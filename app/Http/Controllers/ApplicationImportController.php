@@ -189,75 +189,130 @@ class ApplicationImportController extends Controller
                     }
                 }
 
-                // -------------------------
-                // CHECK EXISTING APPLICANT / LAST APPLICATION
-                // -------------------------
-                $email = trim($row['Email Address'] ?? '');
-                $existingApplicant = ActionApplicant::where('email_address', $email)->first();
+            // -------------------------
+            // CHECK EXISTING APPLICANT / LAST APPLICATION
+            // -------------------------
+            $email = trim($row['Email Address'] ?? '');
+            $existingApplicant = ActionApplicant::where('email_address', $email)->first();
 
-                $lastApplication = $existingApplicant
-                    ? ActionApplication::where('action_applicant_id', $existingApplicant->id)
-                        ->orderBy('source_date', 'desc')
-                        ->first()
-                    : null;
+            $lastApplication = $existingApplicant
+                ? ActionApplication::where('action_applicant_id', $existingApplicant->id)
+                    ->orderBy('source_date', 'desc')
+                    ->first()
+                : null;
 
-                $failedExamStatuses = [6, 7];
-                $failedInitialStatuses = [5];
-                $currentRowTime = Carbon::parse($createdTime);
-                $sixMonthsAgo = $currentRowTime->copy()->subMonths(6);
+            $failedExamStatuses = [6, 7];
+            $failedInitialStatuses = [5];
+            $failedFinalStatuses = [5];
+            $failedJobOfferStatuses = [4, 5, 6];
 
-                // -------------------------
-                // REAPPLICATION RULES
-                // -------------------------
-                if ($existingApplicant && $lastApplication) {
-                    $lastAppTime = Carbon::parse($lastApplication->source_date);
+            $currentRowTime = Carbon::parse($createdTime);
+            $sixMonthsAgo = $currentRowTime->copy()->subMonths(6);
 
-                    $isFailed = in_array($lastApplication->exam_application_status, $failedExamStatuses) ||
-                        in_array($lastApplication->initial_interview_application_status, $failedInitialStatuses);
+            // -------------------------
+            // DECIDE IMPORT BRANCH
+            // -------------------------
+            $applicationBranch = 'new';
+            $applicationOverrides = [
+                'remarks' => 'New',
+                'exam_application_status' => null,
+                'initial_interview_application_status' => null,
+                'final_interview_application_status' => null,
+                'job_offer_status' => null,
+                'exam_plan_date' => null,
+            ];
 
-                    if ($isFailed && $lastAppTime > $sixMonthsAgo) {
-                        $skippedApplicants[] = "{$name} - Failed within last 6 months, cannot reapply yet.";
-                        DB::rollBack();
-                        continue;
-                    }
+            if ($existingApplicant && $lastApplication) {
+                $lastAppTime = Carbon::parse($lastApplication->source_date);
+
+                $isFailed = in_array($lastApplication->exam_application_status, $failedExamStatuses) ||
+                            in_array($lastApplication->initial_interview_application_status, $failedInitialStatuses) ||
+                            in_array($lastApplication->final_interview_application_status, $failedFinalStatuses) ||
+                            in_array($lastApplication->job_offer_status, $failedJobOfferStatuses);
+
+                $withinSixMonths = $lastAppTime > $sixMonthsAgo;
+
+                if ($isFailed && $withinSixMonths) {
+                    $skippedApplicants[] = "{$name} - Failed within last 6 months, cannot reapply yet.";
+                    DB::rollBack();
+                    continue;
                 }
 
-                // -------------------------
-                // ALWAYS UPSERT APPLICANT DATA
-                // -------------------------
-                $applicant = ActionApplicant::updateOrCreateFromRow(
-                    $row,
-                    $gender,
-                    $source_type,
-                    $source,
-                    $other_source,
-                    $existingApplicant?->created_time ?? $createdTime,
-                    now()->format('Y-m-d H:i:s')
-                );
+                if ($isFailed && !$withinSixMonths) {
+                    // duplicate + failed before + old enough => NEW
+                    $applicationBranch = 'new';
+                    $applicationOverrides = [
+                        'remarks' => 'New',
+                        'exam_application_status' => null,
+                        'initial_interview_application_status' => null,
+                        'final_interview_application_status' => null,
+                        'job_offer_status' => null,
+                        'exam_plan_date' => null,
+                    ];
+                } elseif (!$isFailed && $withinSixMonths) {
+                    // duplicate + not failed + recent => FOR INITIAL INTERVIEW
+                    $applicationBranch = 'for_initial_interview';
+                    $applicationOverrides = [
+                        'remarks' => 'For Initial Interview',
+                        'exam_application_status' => $lastApplication->exam_application_status ?: 5,
+                        'exam_plan_date' => $lastApplication->exam_plan_date,
+                        'initial_interview_application_status' => 1,
+                        'final_interview_application_status' => null,
+                        'job_offer_status' => null,
+                    ];
+                } else {
+                    // duplicate + not failed + older than 6 months => FOR EXAM
+                    $applicationBranch = 'for_exam';
+                    $applicationOverrides = [
+                        'remarks' => 'Re-applied from previous ACTION batch.',
+                        'exam_application_status' => null,
+                        'exam_plan_date' => null,
+                        'initial_interview_application_status' => null,
+                        'final_interview_application_status' => null,
+                        'job_offer_status' => null,
+                    ];
+                }
+            }
 
-                ActionApplicant::syncProgrammingLanguagesFromRow($applicant->id, $row);
+            // -------------------------
+            // ALWAYS UPSERT APPLICANT DATA
+            // -------------------------
+            $applicant = ActionApplicant::updateOrCreateFromRow(
+                $row,
+                $gender,
+                $source_type,
+                $source,
+                $other_source,
+                $existingApplicant?->created_time ?? $createdTime,
+                now()->format('Y-m-d H:i:s')
+            );
 
-                // -------------------------
-                // CREATE / UPDATE APPLICATION
-                // -------------------------
-                ActionApplication::updateOrCreateFromRow(
-                    $applicant->id,
-                    $request->batch_id,
-                    $row,
-                    $exam_application_status,
-                    $exam_plan_date,
-                    now()->format('Y-m-d H:i:s'),
-                    $batchTargetLocation,
-                    $createdTime
-                );
+            ActionApplicant::syncProgrammingLanguagesFromRow($applicant->id, $row);
 
-                DB::commit();
-                $importedApplicants[] = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
+            // -------------------------
+            // CREATE / UPDATE APPLICATION
+            // -------------------------
+            ActionApplication::updateOrCreateFromRow(
+                $applicant->id,
+                $request->batch_id,
+                $row,
+                $exam_application_status,
+                $exam_plan_date,
+                now()->format('Y-m-d H:i:s'),
+                $batchTargetLocation,
+                $createdTime,
+                $applicationOverrides
+            );
 
-                \Log::info('Saving application', [
-                    'name' => $name,
-                    'exam_application_status' => $exam_application_status,
-                ]);
+            DB::commit();
+            $importedApplicants[] = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
+
+            \Log::info('Saving application', [
+                'name' => $name,
+                'branch' => $applicationBranch,
+                'exam_application_status' => $applicationOverrides['exam_application_status'] ?? $exam_application_status,
+                'initial_interview_application_status' => $applicationOverrides['initial_interview_application_status'] ?? null,
+            ]);
             } catch (\Throwable $e) {
                 DB::rollBack();
 
