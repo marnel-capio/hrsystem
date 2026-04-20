@@ -1098,6 +1098,12 @@ namespace App\Models {
      * @property-read \App\Models\ActionBatchModel $batch
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplicationInterview> $interviews
      * @property-read int|null $interviews_count
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplicationInterview> $finalInterviewAssignments
+     * @property-read int|null $final_interview_assignments_count
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplicationInterview> $initialInterviewAssignments
+     * @property-read int|null $initial_interview_assignments_count
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionApplicationInterview> $examAssignments
+     * @property-read int|null $exam_assignments_count
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereActionApplicantId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereActionBatchId($value)
@@ -1473,7 +1479,7 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $pending_approval_notified_at
      * @property string|null $decline_reason
      * @property bool $status
-     * @property string|null $actual_date
+     * @property \Illuminate\Support\Carbon|null $actual_date
      * @property \Illuminate\Support\Carbon|null $scheduled_date
      * @property bool|null $interview_type
      * @property mixed $action_application_id

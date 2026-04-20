@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import debounce from 'lodash/debounce'
@@ -80,10 +80,47 @@ const canCreateRR = computed(() => {
   return [1, 5].includes(userPermissions.value);
 })
 
+const successMessage = computed(() => (page.props.flash as any)?.success || '');
+const errorMessage = computed(() => (page.props.flash as any)?.error || '');
+
+const showSuccess = ref(successMessage.value);
+const showError = ref(false);
+
+onMounted(() => {
+  if (successMessage.value) {
+    showSuccess.value = true;
+
+    setTimeout(() => {
+      showSuccess.value = false;
+    }, 3000); 
+  }
+
+  if (errorMessage.value) {
+    showError.value = true;
+  }
+});
+
 </script>
 
 <template>
   <AppLayout>
+    <!-- Success Notification -->
+<div 
+  v-if="showSuccess"
+  class="full-width-alert"
+>
+  <div 
+    class="alert-banner alert-success-banner"
+  >
+      <p class="text-white text-m font-medium text-left">{{ successMessage }}</p>
+    <button 
+      @click="showSuccess = false"
+      style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0,0,0,0.3); color:white; font-weight:bold; font-size:1rem;"
+    >
+      X
+    </button>
+  </div>
+</div>
     <div class="page-content">
 
       <!-- PAGE HEADER -->

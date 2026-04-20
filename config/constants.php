@@ -90,7 +90,7 @@ return [
         'LOCATION_2_NAME' => 'Cebu',
     ],
 
-    'full_edit_permissions' => [1, 2],
+    'full_edit_permissions' => [1, 2, 3],
     'limited_edit_permissions' => [3, 4, 5, 6],
 
     'sourceTypes' => [
