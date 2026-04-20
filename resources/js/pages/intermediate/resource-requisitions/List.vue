@@ -100,6 +100,10 @@ onMounted(() => {
   }
 });
 
+onMounted(() => {
+  console.log('Requisition data:', requisitions.value); // Check the raw data
+});
+
 </script>
 
 <template>
@@ -194,7 +198,11 @@ onMounted(() => {
                     </span>
                   </div>
                 </td>
-                <td class="border px-3 py-2">{{ locationMap[requisition.location_assignment] }}</td>
+                <td class="border px-3 py-2">
+                  {{ (requisition.location_assignment === '6' || requisition.location_assignment === 6) && requisition.custom_location
+                    ? requisition.custom_location 
+                    : locationMap[Number(requisition.location_assignment)] || 'No location specified' }}
+                </td>
                 <td class="border px-3 py-2">{{ formatDate(requisition.start_date) }}</td>
                 <td class="border px-3 py-2">{{ formatDate(requisition.created_time) }}</td>
                 <td class="border px-3 py-2">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 
@@ -15,6 +15,10 @@ const props = defineProps<{
 }>();
 const today = new Date().toISOString().slice(0, 10)  
 
+const projectName = computed(() => {
+  const project = props.newProjects.find(p => p.id === form.value.project_id);
+  return project ? project.project_name : '';
+});
 
 const form = ref({
   id: props.requisition?.id || null,
@@ -82,7 +86,10 @@ const maxexpected_salary_range = 80
 const maxremarks = 1024  
 const maxcustom_location = 1024  
 
-
+console.log({
+  project_id: form.value.project_id,
+  projects: props.newProjects
+})
 const validateperson_to_replace = () => {
   person_to_replaceError.value = form.value.person_to_replace.length > maxperson_to_replace
     ? `This field exceeds the maximum allowed length.`
@@ -167,16 +174,6 @@ const validateStartDate = () => {
 }
 
 
-
-const updateProjectDescription = (projectId: string) => {
-  const project = props.newProjects.find((p: any) => p.id === Number(projectId)); 
-  if (project) {
-    form.value.project_description = project.project_description;
-  } else {
-    form.value.project_description = '';
-  }
-};
-
 watch(() => form.value.project_id, (newId) => {
   const project = props.newProjects.find(p => p.id === Number(newId));
 
@@ -251,6 +248,20 @@ watch(
   }
 )
 
+onMounted(() => {
+  if (form.value.project_id) {
+    const project = props.newProjects.find(
+      p => p.id === Number(form.value.project_id)
+    )
+
+    if (project) {
+      form.value.project_description = project.project_description
+    }
+  }
+})
+
+
+
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1); 
 const tomorrowISOString = tomorrow.toISOString().slice(0, 10); 
@@ -269,13 +280,13 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
     <!-- Form container -->
     <div class="text-xs overflow-x-auto mt-6 p-6 bg-white shadow-lg rounded-lg border">
-      <!-- <p class="text-red-500 mb-10 mt-4"><b>Note:</b> Resource Requisition must already be approved by SR Manager.</p> -->
+      <p class="text-red-500 mb-10 mt-4"><b>Note:</b> This Resource Requisition is already approved by SR Manager.</p>
       <!-- Engagement Type, Sourcing Type, Request Type -->
       <div class="grid grid-cols-3 gap-5">
         <!-- Engagement Type -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Engagement Type <label class="text-red-500">*</label></label>
-          <select v-model="form.engagement_type" class="border p-2 rounded w-full">
+          <select v-model="form.engagement_type" class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
             <option disabled value="">Select Engagement Type</option>
             <option value="1">Permanent</option>
             <option value="2">Temporary (Consultant)</option>
@@ -289,7 +300,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         <!-- Sourcing Type -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Sourcing Type <label class="text-red-500">*</label></label>
-          <select v-model="form.sourcing_type" class="border p-2 rounded w-full">
+          <select v-model="form.sourcing_type" class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
             <option disabled value="">Select Sourcing Type</option>
             <option value="1">Internal</option>
             <option value="2">External</option>
@@ -303,7 +314,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         <!-- Request Type -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Request Type <label class="text-red-500">*</label></label>
-          <select v-model="form.request_type" class="border p-2 rounded w-full">
+          <select v-model="form.request_type" class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
             <option disabled value="">Select Request Type</option>
             <option value="1">New Requirement</option>
             <option value="2">Replacement</option>
@@ -318,7 +329,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-4 gap-5 mt-5 w-full">
         <!-- If Replacement, Due To -->
         <div class="flex flex-col w-full">
-          <label class="text-sm mb-1">If Replacement, Due To</label>
+          <label class="text-sm mb-1 text-gray-500">If Replacement, Due To</label>
           <select v-model="form.replacement_due_to" class="border p-2 rounded w-full" :disabled="form.request_type !== '2'" :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}">
             <option disabled value="">Select Reason</option>
             <option value="1">Promotion</option>
@@ -330,7 +341,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Person to Replace -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Person to Replace</label>
+          <label class="text-sm mb-1 text-gray-500">Person to Replace</label>
           <input
             v-model="form.person_to_replace"
             @input="validateperson_to_replace"
@@ -350,8 +361,8 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Location Assignment -->
         <div class="flex flex-col">
-          <label class="text-sm font-semibold mb-1 text-bold">Location Assignment <label class="text-red-500">*</label></label>
-          <select v-model="form.location_assignment" class="border p-2 rounded w-full">
+          <label class="text-sm font-semibold mb-1 font-bold">Location Assignment <label class="text-red-500">*</label></label>
+          <select v-model="form.location_assignment" class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
             <option disabled value="">Select Location</option>
             <option value="1">Alabang</option>
             <option value="2">Makati</option>
@@ -367,15 +378,14 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Custom Location Input -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Custom Location</label>
+          <label class="text-sm mb-1 font-bold">Custom Location <label class="text-red-500">*</label></label>
           <input
             v-model="form.custom_location"
             type="text"
             @input="validatecustom_location"
             :class="{'bg-gray-200 cursor-not-allowed': form.location_assignment !== '6'}"
-            class="border p-2 rounded w-full"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
             placeholder="Specify location"
-            :disabled="form.location_assignment !== '6'"
           />
           <span v-if="page.props.errors?.custom_location" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.custom_location }}
@@ -391,12 +401,12 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         <!-- Project Name (Dropdown) -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Project <label class="text-red-500">*</label></label>
-          <select v-model="form.project_id" class="border p-2 rounded w-full" @change="updateProjectDescription(form.project_id)">
-            <option disabled value="">Select Project</option>
-            <option v-for="project in props.newProjects" :key="project.id" :value="project.id">
-              {{ project.project_name }}
-            </option>
-          </select>
+          <input
+            v-model="requisition.project_name"
+            type="text"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
+            placeholder="Enter Project Name"
+          />
           <span v-if="page.props.errors?.project_id" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.project_id }}
           </span>
@@ -410,7 +420,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             @input="validatebusiness_unit"
             type="text"
             placeholder="Business Unit"
-            class="border p-2 rounded w-full"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
           />
           <span v-if="page.props.errors?.business_unit" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.business_unit }}
@@ -424,7 +434,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="flex flex-col mt-5">
         <label class="text-sm mb-1">Project Description</label>
         <textarea
-          v-model="form.project_description"
+          v-model="requisition.project_description"
           placeholder="Project description will auto-fill based on Project selection"
           class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed"
           readonly
@@ -435,13 +445,13 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-2 gap-5 mt-5">
         <!-- Resource -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Resource</label>
+          <label class="text-sm mb-1 text-gray-500">Resource</label>
           <input
             v-model="form.resource"
             @input="validateresource"
             type="text"
             placeholder="Indicate position title or service required."
-            class="border p-2 rounded w-full"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
           />
           <span v-if="resourceError" class="text-red-600 text-xs mt-1">
             {{ resourceError }}
@@ -453,13 +463,13 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         
         <!-- Practice -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Practice</label>
+          <label class="text-sm mb-1 text-gray-500">Practice</label>
           <input
             v-model="form.practice"
             @input="validatepractice"
             type="text"
             placeholder="Indicate JAVA, C, C++, Mobile, etc."
-            class="border p-2 rounded w-full"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
           />
           <span v-if="practiceError" class="text-red-600 text-xs mt-1">
             {{ practiceError }}
@@ -474,13 +484,13 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-3 gap-5 mt-5">
         <!-- No. of Resources Needed -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">No. of Resources Needed</label>
+          <label class="text-sm mb-1 text-gray-500">No. of Resources Needed</label>
           <input
             v-model="form.no_resources_needed"
             @input="validateno_resources_needed"
             type="number"
             placeholder="No. of Resources Needed"
-            class="border p-2 rounded w-full"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
             
           />
           <span v-if="no_resources_neededError" class="text-red-600 text-xs mt-1">
@@ -499,7 +509,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             type="date"
             :min="tomorrowISOString"
             @input="validateStartDate"
-            class="border p-2 rounded w-full"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
           />
           <span v-if="page.props.errors?.start_date" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.start_date }}
@@ -511,13 +521,13 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Duration -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Duration of Project Engagement</label>
+          <label class="text-sm mb-1 text-gray-500">Duration of Project Engagement</label>
           <input
             v-model="form.duration_project_engagement"
             @input="validateduration_project_engagement"
             type="text"
             placeholder="Duration of Project Engagement"
-            class="border p-2 rounded w-full"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
           />
           <span v-if="duration_project_engagementError" class="text-red-600 text-xs mt-1">
             {{ duration_project_engagementError }}
@@ -531,7 +541,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Required Skills/Experience -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Required Skills/Experience</label>
+          <label class="text-sm mb-1 text-gray-500">Required Skills/Experience</label>
           <textarea v-model="form.required_skills" rows="6" @input="validaterequired_skills" class="border p-2 rounded w-full" placeholder="Required Skills/Experience"></textarea>
           <span v-if="required_skillsError" class="text-red-600 text-xs mt-1">
             {{ required_skillsError }}
@@ -545,7 +555,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Preferred Skills/Experience -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Preferred Skills/Experience</label>
+          <label class="text-sm mb-1 text-gray-500">Preferred Skills/Experience</label>
           <textarea v-model="form.preferred_skills" rows="6" @input="validatepreferred_skills" class="border p-2 rounded w-full" placeholder="Preferred Skills/Experience"></textarea>
           <span v-if="preferred_skillsError" class="text-red-600 text-xs mt-1">
             {{ preferred_skillsError }}
@@ -559,7 +569,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Role/Job Description -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Role/Job Description</label>
+          <label class="text-sm mb-1 text-gray-500">Role/Job Description</label>
           <textarea v-model="form.role" rows="6" @input="validaterole" class="border p-2 rounded w-full" placeholder="Role/Job Description"></textarea>
           <span v-if="roleError" class="text-red-600 text-xs mt-1">
             {{ roleError }}
@@ -573,7 +583,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Expected Salary/Billing Range-->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Expected Salary/Billing Range</label>
+          <label class="text-sm mb-1 text-gray-500">Expected Salary/Billing Range</label>
           <input
             v-model="form.expected_salary_range"
             @input="validateexpected_salary_range"
@@ -595,7 +605,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Remarks -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Remarks</label>
+          <label class="text-sm mb-1 text-gray-500">Remarks</label>
           <textarea
             v-model="form.remarks"
             @input="validateremarks"
@@ -616,7 +626,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="form-actions">
         <button
           class="btn btn-secondary cursor-pointer"
-          @click="$inertia.get('/intermediate/resource-requisitions/${form.value.id}')"
+          @click.prevent="router.get(`/intermediate/resource-requisitions/${form.id}`)"
         >Cancel</button>
 
         <button

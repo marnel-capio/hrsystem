@@ -82,6 +82,7 @@ class IntermediateRequisitionModel extends Model
                     $q3->where('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%");
                 });
+                $q->orWhere('custom_location', 'like', "%{$searchLower}%");
 
                 foreach ($locationMap as $key => $value) {
                     if (stripos($key, $searchLower) !== false) {
@@ -132,6 +133,7 @@ class IntermediateRequisitionModel extends Model
                 'project_id',
                 'resource',
                 'location_assignment',
+                'custom_location',
                 'start_date',
                 'created_by',
                 'created_time',
