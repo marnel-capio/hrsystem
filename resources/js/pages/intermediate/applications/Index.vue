@@ -5,7 +5,6 @@ import AppLayout from '@/layouts/AppLayout.vue'
 
 const page = usePage<any>()
 
-// ✅ FLASH MESSAGES
 const flashMessages = ref({
     success: '',
     error: '',
@@ -137,34 +136,39 @@ const submitImport = () => {
 
     processing.value = true;
 
+    // Show a processing message immediately after clicking the upload button
+    flashMessages.value.success = 'Uploading your file... Please wait.';
+    setTimeout(() => {
+        flashMessages.value.success = '';  // Clear the message after 5 seconds (or adjust time)
+    }, 5000);
+
     router.post('/applications/import', formData, {
         forceFormData: true,      // required for file uploads
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
-            closeImportModal();
-            router.reload({ only: ['applications'] }); // refresh table after import
+            closeImportModal();   // Close the import modal
+            flashMessages.value.success = 'File uploaded successfully!';  // Show success message
+            setTimeout(() => {
+                flashMessages.value.success = '';  // Clear success message after 5 seconds
+            }, 5000);
+            router.reload({ only: ['applications'] }); // Refresh table after import
         },
         onError: (errors) => {
-            // Map backend validation errors to form fields exactly like your other example
             console.log('Errors received:', errors); // Debug log
 
-            // Check if errors is an object with field-specific errors
+            // Handle backend validation errors
             if (errors && typeof errors === 'object') {
-                // Handle file validation errors
                 if (errors.file) {
-                    // If errors.file is an array, take the first element
                     const fileError = Array.isArray(errors.file) ? errors.file[0] : errors.file;
                     form.setError('file', fileError);
                 }
 
-                // Handle batch_id validation errors
                 if (errors.batch_id) {
                     const batchError = Array.isArray(errors.batch_id) ? errors.batch_id[0] : errors.batch_id;
                     form.setError('action_batch_id', batchError);
                 }
 
-                // Handle any other fields that might have errors
                 Object.keys(errors).forEach((key) => {
                     if (key !== 'file' && key !== 'batch_id' && key in form) {
                         const errorValue = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
@@ -172,10 +176,8 @@ const submitImport = () => {
                     }
                 });
             } else if (typeof errors === 'string') {
-                // If it's a string error, show it as a flash message
                 flashMessages.value.error = errors;
             } else {
-                // Fallback for any other error format
                 flashMessages.value.error = 'An error occurred during import. Please check the file format and try again.';
             }
 
@@ -368,7 +370,7 @@ console.log('Received batches:', props.actionBatches);
                     <button @click="closeImportModal" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
                         Cancel
                     </button>
-                    <button @click="submitImport" :disabled="processing"
+                    <button @click="submitImport" @click.prevent="sendNotification" :disabled="processing"
                         class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                         {{ processing ? 'Uploading...' : 'Upload' }}
                     </button>
