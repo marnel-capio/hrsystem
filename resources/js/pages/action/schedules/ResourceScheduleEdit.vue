@@ -84,6 +84,25 @@ function formatActivityName(key: string) {
   return names[key] || key;
 }
 
+function previousActivityEnd(activity: string) {
+  const index = ganttActivities.indexOf(activity);
+  if (index <= 0) return "";
+  const prev = ganttActivities[index - 1];
+  return ganttForm.value[prev].end || "";
+}
+
+function endMinWeek(activity: string) {
+  if (activity === 'training') return "";
+
+  const ownStart = ganttForm.value[activity].start || "";
+  const prevEnd = previousActivityEnd(activity);
+
+  if (ownStart && prevEnd) {
+    return ownStart > prevEnd ? ownStart : prevEnd;
+  }
+
+  return ownStart || prevEnd || deploymentMinWeek.value;
+}
 const selectedBatchName = computed(() => {
   return props.currentBatch?.action_batch || 'Batch';
 });
@@ -346,6 +365,27 @@ onMounted(() => {
   }
 });
 
+watch(
+  ganttForm,
+  (newVal) => {
+    ganttActivities.forEach((act) => {
+      if (act === 'training') return;
+
+      const row = newVal[act];
+
+      if (row.end && endMinWeek(act) && row.end < endMinWeek(act)) {
+        row.end = "";
+      }
+
+      if (row.start && startMinWeek(act) && row.start < startMinWeek(act)) {
+        row.start = "";
+        row.end = "";
+      }
+    });
+  },
+  { deep: true }
+);
+
 watch(successMessage, (newVal) => {
   if (newVal) {
     showSuccess.value = true;
@@ -485,7 +525,7 @@ watch(
             </div>
 
             <div>
-              <label class="text-sm font-semibold text-gray-500">Compare with Previous Batch</label>
+              <label class="text-sm text-gray-500">Compare with Previous Batch</label>
               <select v-model="form.prev_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5">
                 <option value="">Select</option>
                 <option v-for="batch in prevBatches" :key="batch.id" :value="batch.action_batch_id ?? batch.id">
@@ -523,7 +563,7 @@ watch(
                       v-model="ganttForm[act].end"
                       class="w-full bg-zinc-50 border rounded-lg p-2"
                       :disabled="!canEditEnd(act)"
-                      :min="ganttForm[act].start || deploymentMinWeek"
+                      :min="endMinWeek(act)"
                       :max="deploymentMaxWeek"
                     />
                   </div>
@@ -608,7 +648,7 @@ watch(
           </div>
 
           <div class="mt-10">
-            <label class="text-sm font-semibold text-gray-500">Remarks</label>
+            <label class="text-sm text-gray-500">Remarks</label>
             <textarea
               v-model="form.remarks"
               class="w-full bg-zinc-50 border rounded-lg p-2.5 mt-1"

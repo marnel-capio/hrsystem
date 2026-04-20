@@ -75,6 +75,12 @@ const messages = {
         errorMessage: 'An error occurred while deleting the record. Please try again.',
     },
 }
+const showToastMessage = (message: string, type: 'success' | 'error') => {
+    toastMessage.value = message
+    toastType.value = type
+    showToast.value = true
+    setTimeout(() => (showToast.value = false), 5000)
+}
 
 // Map gender
 const genderLabel = (gender: number) => gender === 1 ? 'Male' : 'Female'
@@ -161,8 +167,6 @@ const toggleAllLanguages = (e: Event) => {
     const target = e.target as HTMLInputElement
     selectedLanguages.value = target.checked ? languages.value.map(l => l.id) : []
 }
-
-onMounted(fetchLanguages)
 
 // Modal state
 const editModalVisible = ref(false)
@@ -481,6 +485,278 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
     return '-'
 }
 
+const japaneseBackgroundMap: Record<number, string> = {
+    1: 'None',
+    2: 'Self Study / University Level',
+    3: 'JLPT Certification',
+}
+
+const japaneseLevelMap: Record<number, string> = {
+    5: 'N5',
+    4: 'N4',
+    3: 'N3',
+    2: 'N2',
+    1: 'N1',
+}
+
+const getJapaneseBackgroundLabel = (id: number | null) => {
+    if (id == null) return 'N/A'
+    return japaneseBackgroundMap[id] ?? 'N/A'
+}
+
+const getJapaneseLevelLabel = (id: number | null) => {
+    if (id == null) return 'N/A'
+    return japaneseLevelMap[id] ?? 'N/A'
+}
+
+const skills = ref<any[]>([])
+const selectedSkills = ref<number[]>([])
+const newSkillName = ref('')
+const newSkillRemarks = ref('')
+
+const fetchSkills = async () => {
+    const res = await axios.get(`/action/applicants/${applicant.value.id}/skills`)
+    skills.value = res.data
+}
+
+onMounted(() => {
+    fetchLanguages()
+    fetchSkills()
+})
+
+
+const deleteSkill = async (id: number) => {
+    await axios.delete(`/action/applicants/${applicant.value.id}/skills/${id}`)
+    fetchSkills()
+}
+
+const bulkDeleteSkills = async () => {
+    await axios.post(`/action/applicants/${applicant.value.id}/skills/bulk-delete`, {
+        ids: selectedSkills.value
+    })
+
+    selectedSkills.value = []
+    fetchSkills()
+}
+
+// =======================
+// SKILLS MODAL STATE
+// =======================
+const addSkillModalVisible = ref(false)
+
+const editSkillModalVisible = ref(false)
+const skillBeingEdited = ref<{ id: number, skill_name: string, remarks: string | null } | null>(null)
+const editedSkillName = ref('')
+const editedSkillRemarks = ref('')
+
+const deleteSkillModalVisible = ref(false)
+const deleteSkillTargetId = ref<number | null>(null)
+const isBulkDeleteSkillsModal = ref(false)
+
+const addSkillNameError = ref<string | null>(null)
+const addSkillRemarksError = ref<string | null>(null)
+
+const editSkillNameError = ref<string | null>(null)
+const editSkillRemarksError = ref<string | null>(null)
+
+const openEditSkillModal = (skill: any) => {
+    skillBeingEdited.value = skill
+    editedSkillName.value = skill.skill
+    editedSkillRemarks.value = skill.remarks || ''
+    editSkillModalVisible.value = true
+}
+
+const closeEditSkillModal = () => {
+    editSkillModalVisible.value = false
+    skillBeingEdited.value = null
+    editedSkillName.value = ''
+    editedSkillRemarks.value = ''
+    editSkillNameError.value = null
+    editSkillRemarksError.value = null
+}
+
+const openAddSkillModal = () => {
+    newSkillName.value = ''
+    newSkillRemarks.value = ''
+    addSkillModalVisible.value = true
+}
+
+const closeAddSkillModal = () => {
+    addSkillModalVisible.value = false
+    newSkillName.value = ''
+    newSkillRemarks.value = ''
+    addSkillNameError.value = null
+    addSkillRemarksError.value = null
+}
+
+const saveSkillEdit = async () => {
+    if (!skillBeingEdited.value) return
+
+    editSkillNameError.value = null
+    editSkillRemarksError.value = null
+
+    if (!editedSkillName.value.trim()) {
+        editSkillNameError.value = "Skill name is required"
+        return
+    }
+
+    try {
+        await axios.put(`/action/applicants/${applicant.value.id}/skills/${skillBeingEdited.value.id}`, {
+            skill: editedSkillName.value.trim(),
+            remarks: editedSkillRemarks.value.trim() || null
+        })
+        fetchSkills()
+        closeEditSkillModal()
+
+        toastMessage.value = messages.record_updated_successfully.errorMessage
+        toastType.value = 'success'
+        showToast.value = true
+        setTimeout(() => (showToast.value = false), 5000)
+
+    } catch (error: any) {
+        if (error.response?.data?.errors) {
+            editSkillNameError.value = error.response.data.errors.skill?.[0] || null
+            editSkillRemarksError.value = error.response.data.errors.remarks?.[0] || null
+        } else {
+            toastMessage.value = messages.update_failed.errorMessage
+            toastType.value = 'error'
+            showToast.value = true
+            setTimeout(() => (showToast.value = false), 5000)
+        }
+    }
+}
+
+const confirmDeleteSkill = (id: number) => {
+    deleteSkillTargetId.value = id
+    isBulkDeleteSkillsModal.value = false
+    deleteSkillModalVisible.value = true
+}
+
+const confirmBulkDeleteSkills = () => {
+    if (!selectedSkills.value.length) return
+    isBulkDeleteSkillsModal.value = true
+    deleteSkillTargetId.value = null
+    deleteSkillModalVisible.value = true
+}
+
+const performSkillDelete = async () => {
+    try {
+        if (isBulkDeleteSkillsModal.value) {
+            await axios.post(`/action/applicants/${applicant.value.id}/skills/bulk-delete`, {
+                ids: selectedSkills.value
+            })
+            selectedSkills.value = []
+        } else if (deleteSkillTargetId.value !== null) {
+            await axios.delete(`/action/applicants/${applicant.value.id}/skills/${deleteSkillTargetId.value}`)
+        }
+
+        fetchSkills()
+
+        showToastMessage(
+            messages.record_deleted_successfully.errorMessage,
+            'success'
+        )
+
+    } catch (error) {
+        showToastMessage(
+            messages.record_deleted_failed.errorMessage,
+            'error'
+        )
+    } finally {
+        closeSkillDeleteModal()
+    }
+}
+
+const closeSkillDeleteModal = () => {
+    deleteSkillModalVisible.value = false
+    deleteSkillTargetId.value = null
+    isBulkDeleteSkillsModal.value = false
+}
+
+const saveNewSkill = async () => {
+    addSkillNameError.value = null
+    addSkillRemarksError.value = null
+
+    if (!newSkillName.value.trim()) {
+        addSkillNameError.value = "Skill name is required"
+        return
+    }
+
+    try {
+        await axios.post(`/action/applicants/${applicant.value.id}/skills`, {
+            skill: newSkillName.value.trim(),
+            remarks: newSkillRemarks.value.trim() || null
+        })
+
+        fetchSkills()
+        closeAddSkillModal()
+        // Show success toast
+        toastMessage.value = messages.record_created_successfully.errorMessage
+        toastType.value = 'success'
+        showToast.value = true
+        setTimeout(() => (showToast.value = false), 5000)
+
+    } catch (error: any) {
+        if (error.response?.data?.errors) {
+            addSkillNameError.value = error.response.data.errors.skill?.[0] || null
+            addSkillRemarksError.value = error.response.data.errors.remarks?.[0] || null
+        } else {
+            toastMessage.value = messages.transaction_failed.errorMessage
+            toastType.value = 'error'
+            showToast.value = true
+            setTimeout(() => (showToast.value = false), 5000)
+        }
+    }
+}
+
+const toggleAllSkills = (e: Event) => {
+    const target = e.target as HTMLInputElement
+    selectedSkills.value = target.checked
+        ? skills.value.map(s => s.id)
+        : []
+}
+
+const getResultBadgeClass = (value: number | null | undefined) => {
+    switch (value) {
+        case 2:
+            return 'bg-green-100 text-green-700 border-green-300'
+        case 3:
+            return 'bg-red-100 text-red-700 border-red-300'
+        default:
+            return 'bg-gray-100 text-gray-700 border-gray-300'
+    }
+}
+
+const getJobOfferStatusClass = (value: number | null | undefined) => {
+    switch (value) {
+        case 2: // Done
+            return 'bg-blue-100 text-blue-700 border-blue-300'
+        case 3: // Accept
+            return 'bg-green-100 text-green-700 border-green-300'
+        case 4: // Decline
+            return 'bg-red-100 text-red-700 border-red-300'
+        case 5: // Withdraw
+            return 'bg-yellow-100 text-yellow-700 border-yellow-300'
+        case 6: // Retracted
+            return 'bg-purple-100 text-purple-700 border-purple-300'
+        default: // Pending (1)
+            return 'bg-gray-100 text-gray-700 border-gray-300'
+    }
+}
+
+const jobOfferStatusMap: Record<number, string> = {
+    1: 'Pending',
+    2: 'Done',
+    3: 'Accepted',
+    4: 'Declined',
+    5: 'Withdrawn',
+    6: 'Retracted',
+}
+
+const getJobOfferStatusLabel = (value: number | null | undefined) => {
+    return jobOfferStatusMap[value ?? 1] ?? 'Pending'
+}
+
 </script>
 
 <template>
@@ -502,12 +778,14 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
 
                 <!-- Language Input -->
                 <div class="modal-field">
+                    <label style="font-weight: bold;">Programming Language Name *</label>
                     <input v-model="newLanguageName" class="modal-input" placeholder="Programming Language" />
                     <span v-if="addLanguageError" class="modal-error">{{ addLanguageError }}</span>
                 </div>
 
                 <!-- Remarks Textarea -->
                 <div class="modal-field">
+                    <label>Remarks</label>
                     <textarea v-model="newLanguageRemarks" class="modal-textarea"
                         placeholder="Remarks (optional)"></textarea>
                     <span v-if="addRemarksError" class="modal-error">{{ addRemarksError }}</span>
@@ -527,12 +805,14 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
 
                 <!-- Language Input -->
                 <div class="modal-field">
+                    <label style="font-weight: bold;">Programming Language Name *</label>
                     <input v-model="editedLanguage" class="modal-input" placeholder="Programming Language" />
                     <span v-if="editLanguageError" class="modal-error">{{ editLanguageError }}</span>
                 </div>
 
                 <!-- Remarks Textarea -->
                 <div class="modal-field">
+                    <label>Remarks</label>
                     <textarea v-model="editedRemarks" class="modal-textarea"
                         placeholder="Remarks (optional)"></textarea>
                     <span v-if="editRemarksError" class="modal-error">{{ editRemarksError }}</span>
@@ -632,13 +912,9 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
                             ? sourceLabel(applicant.source)
                             : applicant.other_source
                                 ? applicant.other_source
-                        : '-'
+                                : '-'
                         }}
                     </p>
-                </div>
-                <div v-if="applicant.remarks">
-                    <h4 class="text-xs font-bold mb-2 text-left">REMARKS</h4>
-                    <p class="text-xs break-words">{{ applicant.remarks }}</p>
                 </div>
                 <div v-if="applicant.awards_recognition">
                     <h4 class="text-xs font-bold mb-2 text-left">AWARDS / RECOGNITION</h4>
@@ -652,6 +928,41 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
                     <h4 class="text-xs font-bold mb-2 text-left">EXTRA CURRICULAR</h4>
                     <p class="text-xs break-words">{{ applicant.extra_curricular }}</p>
                 </div>
+                <div v-if="applicant.remarks">
+                    <h4 class="text-xs font-bold mb-2 text-left">REMARKS</h4>
+                    <p class="text-xs break-words">{{ applicant.remarks }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- JPLT Section -->
+        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6">
+            <h3 class="text-lg font-semibold mb-4">Japanese Language Background</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div>
+                    <p class="text-sm text-gray-500">Japanese Language Background</p>
+                    <p class="font-medium">
+                        {{ getJapaneseBackgroundLabel(applicant.japanese_background) }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-sm text-gray-500">Japanese Language Background Remarks</p>
+                    <p class="font-medium">
+                        {{ applicant.background_remarks ?? 'N/A' }}
+
+                    </p>
+                </div>
+
+                <div class="md:col-span-2">
+                    <p class="text-sm text-gray-500">JLPT Level</p>
+                    <p class="font-medium whitespace-pre-line">
+                        {{ getJapaneseLevelLabel(applicant.japanese_level) }}
+                    </p>
+                </div>
+
             </div>
         </div>
 
@@ -659,7 +970,7 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
         <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6">
             <h3 class="text-lg font-semibold mb-4">Application Details</h3>
 
-            <table class="min-w-full table-auto text-xs border-collapse">
+            <table class="w-full table-fixed border-collapse border text-sm">
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="px-2 py-2 font-semibold text-gray-600">No.</th>
@@ -680,28 +991,87 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
                 </thead>
                 <tbody>
                     <tr v-for="(app, index) in applications" :key="app.id">
-                        <td class="px-2 py-2 font-medium text-gray-700">{{ Number(index) + 1 }}</td>
-                        <td class="px-2 py-2">{{ examResultLabel(app.exam_result) }}</td>
-                        <td class="px-2 py-2">{{ examStatusLabel(app.exam_application_status) }}</td>
-                        <td v-if="canSeeRemarks">{{ app.exam_remarks || '-' }}</td>
-                        <td class="px-2 py-2">{{ initialInterviewResultLabel(app.initial_interview_result) }}</td>
-                        <td class="px-2 py-2">{{ initialInterviewStatusLabel(app.initial_interview_application_status)
-                            }}
+
+                        <td class="px-2 py-2 text-center font-medium text-gray-700">
+                            {{ Number(index) + 1 }}
                         </td>
-                        <td v-if="canSeeRemarks">{{ app.initial_interview_remarks || '-' }}</td>
-                        <td class="px-2 py-2">{{ finalInterviewResultLabel(app.final_interview_result) }}</td>
-                        <td class="px-2 py-2">{{ finalInterviewStatusLabel(app.final_interview_application_status) }}
+
+                        <td class="px-2 py-2 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs border"
+                                :class="getResultBadgeClass(app.exam_result)">
+                                {{ examResultLabel(app.exam_result) }}
+                            </span>
                         </td>
-                        <td v-if="canSeeRemarks">{{ app.final_interview_remarks || '-' }}</td>
-                        <td class="px-2 py-2">{{ jobOfferStatusLabel(app.job_offer_status) }}</td>
-                        <td v-if="canSeeRemarks">{{ app.job_offer_remarks || '-' }}</td>
-                        <td class="px-2 py-2 break-words">{{ app.remarks || '-' }}</td>
-                        <td class="flex justify-center px-2 py-2">
-                            <Link :href="`/action/applications/${app.id}`" class="cursor-pointer"
-                                title="View Application">
+
+                        <td class="px-2 py-2 text-center">
+                            {{ examStatusLabel(app.exam_application_status) }}
+                        </td>
+
+                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.exam_remarks || '-'">
+                                {{ app.exam_remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs border"
+                                :class="getResultBadgeClass(app.initial_interview_result)">
+                                {{ initialInterviewResultLabel(app.initial_interview_result) }}
+                            </span>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            {{ initialInterviewStatusLabel(app.initial_interview_application_status) }}
+                        </td>
+
+                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.initial_interview_remarks || '-'">
+                                {{ app.initial_interview_remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs border"
+                                :class="getResultBadgeClass(app.final_interview_result)">
+                                {{ finalInterviewResultLabel(app.final_interview_result) }}
+                            </span>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            {{ finalInterviewStatusLabel(app.final_interview_application_status) }}
+                        </td>
+
+                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.final_interview_remarks || '-'">
+                                {{ app.final_interview_remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs border"
+                                :class="getJobOfferStatusClass(app.job_offer_status)">
+                                {{ getJobOfferStatusLabel(app.job_offer_status) }}
+                            </span>
+                        </td>
+
+                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.job_offer_remarks || '-'">
+                                {{ app.job_offer_remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 max-w-[250px] text-center">
+                            <div class="truncate w-full mx-auto" :title="app.remarks || '-'">
+                                {{ app.remarks || '-' }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            <Link :href="`/action/applications/${app.id}`" class="inline-flex justify-center">
                                 <Eye class="w-5 h-5 text-green-500 hover:text-green-600" />
                             </Link>
                         </td>
+
                     </tr>
                 </tbody>
             </table>
@@ -720,41 +1090,268 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
             </div>
 
             <!-- Languages Table -->
-            <table class="min-w-full table-auto text-xs border-collapse">
-                <thead class="bg-gray-100">
+            <table class="unified-table table-fixed">
+                <thead>
                     <tr>
-                        <th class="w-10 text-left px-3 py-2 font-semibold text-gray-700 ">
+                        <th class="col-checkbox">
                             <input type="checkbox" @change="toggleAllLanguages($event)" />
                         </th>
-                        <th class="text-left px-3 py-2 font-semibold text-gray-700 ">Language</th>
-                        <th class="text-left px-3 py-2 font-semibold text-gray-700 ">Remarks</th>
-                        <th class="w-24 px-3 py-2 font-semibold text-gray-700 ">Actions</th>
+                        <th class="col-main">Language</th>
+                        <th class="col-remarks">Remarks</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    <tr v-for="lang in languages" :key="lang.id" class="hover:bg-gray-50">
-                        <td class="px-3 py-2"><input type="checkbox" :value="lang.id" v-model="selectedLanguages" />
+                    <tr v-for="lang in languages" :key="lang.id">
+                        <td class="col-checkbox">
+                            <input type="checkbox" :value="lang.id" v-model="selectedLanguages" />
                         </td>
-                        <td class="px-3 py-2">{{ lang.program_language }}</td>
-                        <td class="px-3 py-2">{{ lang.remarks || '-' }}</td>
-                        <td class="flex gap-2 justify-center px-3 py-2">
-                            <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditModal(lang)"
-                                title="Edit" />
-                            <Trash class="w-5 h-5 text-red-500 cursor-pointer" @click="confirmDeleteLanguage(lang.id)"
-                                title="Delete" />
+
+                        <td>{{ lang.program_language }}</td>
+                        <td>{{ lang.remarks || '-' }}</td>
+
+                        <td class="text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditModal(lang)" />
+                                <Trash class="w-5 h-5 text-red-500 cursor-pointer"
+                                    @click="confirmDeleteLanguage(lang.id)" />
+                            </div>
                         </td>
                     </tr>
+
                     <tr v-if="!languages.length">
-                        <td colspan="4" class="text-center text-gray-500 py-2 italic">No programming languages found.
+                        <td colspan="4" class="unified-empty">
+                            No programming languages found.
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <!-- Skills Section -->
+        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6" v-if="![5, 6].includes(userPermissions)">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Technical Skills</h3>
+
+                <div class="flex gap-2">
+                    <button @click="openAddSkillModal" class="btn-primary btn-small">
+                        Add
+                    </button>
+                    <button @click="confirmBulkDeleteSkills" class="btn-red btn-small"
+                        :disabled="!selectedSkills.length">
+                        Delete Selected
+                    </button>
+                </div>
+            </div>
+
+            <table class="unified-table table-fixed">
+                <thead>
+                    <tr>
+                        <th class="col-checkbox">
+                            <input type="checkbox" @change="toggleAllSkills" />
+                        </th>
+                        <th class="col-main">Skill</th>
+                        <th class="col-remarks">Remarks</th>
+                        <th class="col-actions">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="skill in skills" :key="skill.id">
+                        <td class="col-checkbox">
+                            <input type="checkbox" :value="skill.id" v-model="selectedSkills" />
+                        </td>
+
+                        <td>{{ skill.skill }}</td>
+                        <td>{{ skill.remarks || '-' }}</td>
+
+                        <td class="text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditSkillModal(skill)" />
+                                <Trash class="w-5 h-5 text-red-500 cursor-pointer"
+                                    @click="confirmDeleteSkill(skill.id)" />
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr v-if="!skills.length">
+                        <td colspan="4" class="unified-empty">
+                            No skills found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add Skill Modal -->
+        <div v-if="addSkillModalVisible" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="modal-title">Add Technical Skill</h3>
+
+                <!-- Skill Name -->
+                <div class="modal-field">
+                    <label style="font-weight: bold;">Skill Name *</label>
+                    <input v-model="newSkillName" class="modal-input" placeholder="Technical Skills or Other Skills" />
+                    <span v-if="addSkillNameError" class="modal-error">
+                        {{ addSkillNameError }}
+                    </span>
+                </div>
+
+                <!-- Remarks -->
+                <div class="modal-field">
+                    <label>Remarks</label>
+                    <textarea v-model="newSkillRemarks" class="modal-textarea" placeholder="Optional"></textarea>
+                    <span v-if="addSkillRemarksError" class="modal-error">
+                        {{ addSkillRemarksError }}
+                    </span>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-red" @click="closeAddSkillModal">
+                        Cancel
+                    </button>
+                    <button class="btn-primary" @click="saveNewSkill">
+                        Add
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="editSkillModalVisible" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="modal-title">Edit Skill</h3>
+
+                <div class="modal-field">
+                    <label>Skill Name *</label>
+                    <input v-model="editedSkillName" class="modal-input" />
+                    <span class="modal-error">{{ editSkillNameError }}</span>
+                </div>
+
+                <div class="modal-field">
+                    <label>Remarks</label>
+                    <textarea v-model="editedSkillRemarks" class="modal-textarea"></textarea>
+                    <span class="modal-error">{{ editSkillRemarksError }}</span>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-red" @click="closeEditSkillModal">Cancel</button>
+                    <button class="btn-primary" @click="saveSkillEdit">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="deleteSkillModalVisible" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="modal-title text-red-500">Confirm Delete</h3>
+
+                <p class="text-center mb-4">
+                    Are you sure you want to delete
+                    <strong>
+                        {{ isBulkDeleteSkillsModal
+                            ? selectedSkills.length + ' selected skill(s)'
+                            : 'this skill' }}
+                    </strong>?
+                </p>
+
+                <div class="modal-actions">
+                    <button class="btn-red" @click="closeSkillDeleteModal">Cancel</button>
+                    <button class="btn-primary" @click="performSkillDelete">Delete</button>
+                </div>
+            </div>
+        </div>
     </AppLayout>
 </template>
 
 <style scoped>
+/* =========================
+   UNIFIED TABLE STYLE
+   ========================= */
+.unified-table input[type="checkbox"] {
+    margin: 0;
+    vertical-align: middle;
+}
+
+.unified-table th.col-checkbox,
+.unified-table td.col-checkbox {
+    width: 40px;
+    text-align: center;
+    vertical-align: middle;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.unified-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    table-layout: fixed;
+}
+
+.unified-table td,
+.unified-table th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.col-checkbox {
+    width: 40px;
+}
+
+.col-main {
+    width: 40%;
+}
+
+.col-remarks {
+    width: 40%;
+}
+
+.col-actions {
+    width: 100px;
+}
+
+.unified-table thead {
+    background-color: #f3f4f6;
+}
+
+.unified-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.unified-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+}
+
+.unified-table tr:hover {
+    background-color: #f9fafb;
+}
+
+.unified-table .col-checkbox {
+    width: 40px;
+    text-align: center;
+}
+
+.unified-table .col-actions {
+    width: 100px;
+    text-align: center;
+}
+
+/* Empty Row Style */
+.unified-empty {
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+    padding: 1rem;
+    background-color: #fafafa;
+}
+
 /* Modal fields wrapper for consistent spacing */
 .modal-field {
     display: flex;

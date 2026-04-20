@@ -78,14 +78,12 @@ class ActionBatchService
         
         // Store old values for comparison
         $oldData = [
-            'action_batch' => $batch->action_batch,
             'target_trainees' => $batch->target_trainees,
             'target_date' => $batch->target_date,
             'remarks' => $batch->remarks,
         ];
 
         // Update fields
-        $batch->action_batch = strtoupper($data['action_batch']);
         $batch->target_trainees = $data['target_trainees'];
         $batch->target_date = $data['target_date'];
         $batch->remarks = $data['remarks'] ?? null;

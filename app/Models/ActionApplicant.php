@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ActionApplicant extends Model
 {
     use HasFactory;
 
     protected $table = 'action_applicants';
+
     protected $primaryKey = 'id';
+
     public $timestamps = false; // we use created_time / updated_time
 
     protected $fillable = [
@@ -35,6 +37,9 @@ class ActionApplicant extends Model
         'extra_curricular',
         'contact_number',
         'address',
+        'japanese_background',
+        'japanese_level',
+        'background_remarks',
         'created_by',
         'created_time',
         'updated_by',
@@ -47,6 +52,8 @@ class ActionApplicant extends Model
         'updated_time' => 'datetime',
         'expected_graduation' => 'string',
         'age' => 'integer',
+        'japanese_background' => 'integer',
+        'japanese_level' => 'integer',
     ];
 
     // Mutators to clean data
@@ -56,100 +63,101 @@ class ActionApplicant extends Model
     ];
 
     private static function cleanUtf8($value): string
-{
-    if ($value === null) {
-        return '';
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        $value = (string) $value;
+
+        // Convert likely legacy encodings into UTF-8
+        $value = mb_convert_encoding($value, 'UTF-8', 'UTF-8, ISO-8859-1, Windows-1252');
+
+        // Drop invalid byte sequences
+        $value = iconv('UTF-8', 'UTF-8//IGNORE', $value);
+
+        // Remove ASCII control chars except tab/newline/carriage return
+        $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $value);
+
+        // Remove Unicode private-use chars (common from pasted Office bullets/icons)
+        $value = preg_replace('/[\x{E000}-\x{F8FF}]/u', '', $value);
+
+        // Normalize non-breaking space
+        $value = str_replace("\xC2\xA0", ' ', $value);
+
+        return trim($value);
     }
 
-    $value = (string) $value;
+    public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source, $other_source, $createdTime, $updatedTime)
+    {
+        $row = array_map(function ($value) {
+            return is_string($value) ? self::cleanUtf8($value) : $value;
+        }, $row);
 
-    // Convert likely legacy encodings into UTF-8
-    $value = mb_convert_encoding($value, 'UTF-8', 'UTF-8, ISO-8859-1, Windows-1252');
+        $fullName = self::cleanUtf8($row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
+        $nameParts = explode(',', $fullName);
 
-    // Drop invalid byte sequences
-    $value = iconv('UTF-8', 'UTF-8//IGNORE', $value);
+        $last = self::cleanUtf8($nameParts[0] ?? '');
+        $firstPart = isset($nameParts[1]) ? self::cleanUtf8($nameParts[1]) : '';
+        $firstSplit = preg_split('/\s+/', $firstPart);
 
-    // Remove ASCII control chars except tab/newline/carriage return
-    $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $value);
+        $first = $firstSplit[0] ?? '';
+        $middle = $firstSplit[1] ?? '';
 
-    // Remove Unicode private-use chars (common from pasted Office bullets/icons)
-    $value = preg_replace('/[\x{E000}-\x{F8FF}]/u', '', $value);
+        $email = self::cleanUtf8($row['Email Address'] ?? '');
 
-    // Normalize non-breaking space
-    $value = str_replace("\xC2\xA0", ' ', $value);
+        $school = self::cleanUtf8($row['School '] ?? '');
+        $degree = self::cleanUtf8($row["Bachelor's Degree"] ?? '');
+        $othersDegree = self::cleanUtf8($row["If others, please indicate below.\nWrite NA if not applicable (if degree is among the choices from previous question)"] ?? '');
+        $expectedGraduation = self::cleanUtf8($row['Year of Expected Graduation'] ?? '');
+        $awardsRecognition = self::cleanUtf8($row['Awards/ Recognition '] ?? '');
+        $otherExaminationCertificate = self::cleanUtf8($row['Other Examinations/ Certifications taken'] ?? '');
+        $thesisProject = self::cleanUtf8($row['Thesis Project'] ?? '');
+        $extraCurricular = mb_substr(self::cleanUtf8($row['Extra-curricular Activities'] ?? ''), 0, 255);
 
-    return trim($value);
-}
+        $applicant = self::where('email_address', $email)->first();
 
-public static function updateOrCreateFromRow(array $row, $gender, $source_type, $source, $other_source, $createdTime, $updatedTime)
-{
-    $row = array_map(function ($value) {
-        return is_string($value) ? self::cleanUtf8($value) : $value;
-    }, $row);
+        $payload = [
+            'source_type' => $source_type,
+            'source' => $source,
+            'other_source' => mb_substr(self::cleanUtf8($other_source), 0, 80),
+            'last_name' => mb_substr($last, 0, 80),
+            'first_name' => mb_substr($first, 0, 80),
+            'middle_name' => mb_substr($middle, 0, 80),
+            'email_address' => mb_substr($email, 0, 80),
+            'gender' => $gender,
+            'age' => (int) ($row['Age'] ?? 0),
+            'school' => mb_substr($school, 0, 80),
+            'degree' => mb_substr($degree, 0, 80),
+            'others_degree' => mb_substr($othersDegree, 0, 80),
+            'expected_graduation' => mb_substr($expectedGraduation, 0, 20),
+            'awards_recognition' => mb_substr($awardsRecognition, 0, 1024),
+            'other_examination_certificate' => mb_substr($otherExaminationCertificate, 0, 1024),
+            'thesis_project' => mb_substr($thesisProject, 0, 1024),
+            'extra_curricular' => mb_substr($extraCurricular, 0, 1024),
+            'updated_by' => Auth::id(),
+            'updated_time' => $updatedTime,
+        ];
 
-    $fullName = self::cleanUtf8($row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
-    $nameParts = explode(',', $fullName);
+        if (! $applicant) {
+            $payload['created_by'] = Auth::id();
+            $payload['created_time'] = $createdTime;
 
-    $last = self::cleanUtf8($nameParts[0] ?? '');
-    $firstPart = isset($nameParts[1]) ? self::cleanUtf8($nameParts[1]) : '';
-    $firstSplit = preg_split('/\s+/', $firstPart);
+            return self::create($payload);
+        }
 
-    $first = $firstSplit[0] ?? '';
-    $middle = $firstSplit[1] ?? '';
+        $applicant->update($payload);
 
-    $email = self::cleanUtf8($row['Email Address'] ?? '');
-
-    $school = self::cleanUtf8($row['School '] ?? '');
-    $degree = self::cleanUtf8($row["Bachelor's Degree"] ?? '');
-    $othersDegree = self::cleanUtf8($row["If others, please indicate below.\nWrite NA if not applicable (if degree is among the choices from previous question)"] ?? '');
-    $expectedGraduation = self::cleanUtf8($row['Year of Expected Graduation'] ?? '');
-    $awardsRecognition = self::cleanUtf8($row['Awards/ Recognition '] ?? '');
-    $otherExaminationCertificate = self::cleanUtf8($row['Other Examinations/ Certifications taken'] ?? '');
-    $thesisProject = self::cleanUtf8($row['Thesis Project'] ?? '');
-    $extraCurricular = mb_substr(self::cleanUtf8($row['Extra-curricular Activities'] ?? ''), 0, 255);
-
-    $applicant = self::where('email_address', $email)->first();
-
-$payload = [
-    'source_type' => $source_type,
-    'source' => $source,
-    'other_source' => mb_substr(self::cleanUtf8($other_source), 0, 80),
-    'last_name' => mb_substr($last, 0, 80),
-    'first_name' => mb_substr($first, 0, 80),
-    'middle_name' => mb_substr($middle, 0, 80),
-    'email_address' => mb_substr($email, 0, 80),
-    'gender' => $gender,
-    'age' => (int) ($row['Age'] ?? 0),
-    'school' => mb_substr($school, 0, 80),
-    'degree' => mb_substr($degree, 0, 80),
-    'others_degree' => mb_substr($othersDegree, 0, 80),
-    'expected_graduation' => mb_substr($expectedGraduation, 0, 20),
-    'awards_recognition' => mb_substr($awardsRecognition, 0, 1024),
-    'other_examination_certificate' => mb_substr($otherExaminationCertificate, 0, 1024),
-    'thesis_project' => mb_substr($thesisProject, 0, 1024),
-    'extra_curricular' => mb_substr($extraCurricular, 0, 1024),
-    'updated_by' => Auth::id(),
-    'updated_time' => $updatedTime,
-];
-
-    if (!$applicant) {
-        $payload['created_by'] = Auth::id();
-        $payload['created_time'] = $createdTime;
-
-        return self::create($payload);
+        return $applicant;
     }
-
-    $applicant->update($payload);
-
-    return $applicant;
-}
-
 
     public static function getAllActionApplicants()
     {
         $sourceTypes = config('constants.sourceTypes');
         $sources = config('constants.sources');
         $genders = config('constants.genders');
+        $japaneseBackgrounds = config('constants.japanese_backgrounds');
+        $japaneseLevels = config('constants.japanese_levels');
 
         return self::orderBy('created_time', 'desc')
             ->get()
@@ -170,6 +178,9 @@ $payload = [
                     'others_degree' => $a->others_degree,
                     'expected_graduation' => $a->expected_graduation,
                     'awards_recognition' => $a->awards_recognition,
+                    'japanese_background' => $japaneseBackgrounds[$a->japanese_background] ?? '',
+                    'japanese_level' => $japaneseLevels[$a->japanese_level] ?? '',
+                    'background_remarks' => $a->background_remarks,
                     'other_examination_certificate' => $a->other_examination_certificate,
                     'thesis_project' => $a->thesis_project,
                     'extra_curricular' => $a->extra_curricular,
@@ -186,6 +197,11 @@ $payload = [
     public function programmingLanguages()
     {
         return $this->hasMany(ActionApplicantProgrammingLanguage::class, 'action_applicant_id', 'id');
+    }
+
+    public function skills()
+    {
+        return $this->hasMany(ActionApplicantSkill::class, 'action_applicant_id', 'id');
     }
 
     public function updateWithRequest(array $data, ?int $userId = null)
@@ -224,10 +240,13 @@ $payload = [
             'thesis_project',
             'extra_curricular',
             'remarks',
+            'japanese_background',
+            'japanese_level',
+            'background_remarks',
         ];
 
         foreach ($fieldsToUpdate as $field) {
-            if (isset($data[$field])) {
+            if (array_key_exists($field, $data)) {
                 $this->$field = $data[$field];
             }
         }
@@ -236,6 +255,7 @@ $payload = [
         $this->updated_by = $userId;
         $this->updated_time = now();
 
+
         return $this->save();
 
     }
@@ -243,36 +263,36 @@ $payload = [
     /**
      * Get eligible applicants for a specific batch
      */
-public static function getEligibleApplicantsForBatch($batchId)
-{
-    return self::select(
+    public static function getEligibleApplicantsForBatch($batchId)
+    {
+        return self::select(
             'action_applicants.id as value',
             'action_applicants.age',
             'action_applicants.degree',
             DB::raw("CONCAT(action_applicants.first_name, ' ', action_applicants.last_name, ' (', action_applicants.email_address, ')') as label")
         )
-        ->whereNotExists(function ($query) use ($batchId) {
-            $query->select(DB::raw(1))
-                ->from('action_applicant_applications')
-                ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
-                ->where('action_applicant_applications.action_batch_id', $batchId);
-        })
-        ->whereNotExists(function ($query) {
-            $query->select(DB::raw(1))
-                ->from('action_applicant_applications')
-                ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
-                ->where('action_applicant_applications.created_time', '>=', now()->subDays(180))
-                ->where(function ($q) {
-                    $q->whereIn('action_applicant_applications.exam_application_status', [6, 7])
-                        ->orWhere('action_applicant_applications.initial_interview_result', 3)
-                        ->orWhere('action_applicant_applications.final_interview_result', 3)
-                        ->orWhereIn('action_applicant_applications.job_offer_status', [4, 5, 6]);
-                });
-        })
-        ->orderBy('action_applicants.last_name')
-        ->orderBy('action_applicants.first_name')
-        ->get();
-}
+            ->whereNotExists(function ($query) use ($batchId) {
+                $query->select(DB::raw(1))
+                    ->from('action_applicant_applications')
+                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                    ->where('action_applicant_applications.action_batch_id', $batchId);
+            })
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('action_applicant_applications')
+                    ->whereColumn('action_applicant_applications.action_applicant_id', 'action_applicants.id')
+                    ->where('action_applicant_applications.created_time', '>=', now()->subDays(180))
+                    ->where(function ($q) {
+                        $q->whereIn('action_applicant_applications.exam_application_status', [6, 7])
+                            ->orWhere('action_applicant_applications.initial_interview_result', 3)
+                            ->orWhere('action_applicant_applications.final_interview_result', 3)
+                            ->orWhereIn('action_applicant_applications.job_offer_status', [4, 5, 6]);
+                    });
+            })
+            ->orderBy('action_applicants.last_name')
+            ->orderBy('action_applicants.first_name')
+            ->get();
+    }
 
     /**
      * Relationships
@@ -290,62 +310,67 @@ public static function getEligibleApplicantsForBatch($batchId)
 
     // functions used for applications
     public function resolveExamCategory(): string
-{
-    $age = (int) $this->age;
+    {
+        $age = (int) $this->age;
 
-    if ($age >= 25) {
-        return 'adult';
-    }
-
-    $rawDegree = !empty($this->others_degree)
-        ? $this->others_degree
-        : $this->degree;
-
-    $normalizedDegree = static::normalizeDegree((string) $rawDegree);
-
-    return static::isTechDegree($normalizedDegree) ? 'young_it' : 'young_other';
-}
-
-public static function normalizeDegree(string $degree): string
-{
-    $degree = strtolower(trim($degree));
-    $degree = preg_replace('/[^a-z0-9\s]/', ' ', $degree);
-    $degree = preg_replace('/\s+/', ' ', $degree);
-
-    return $degree;
-}
-
-public static function isTechDegree(string $degree): bool
-{
-    $patterns = config('constants.tech_degree_patterns', []);
-
-    foreach ($patterns as $pattern) {
-        $normalizedPattern = static::normalizeDegree((string) $pattern);
-
-        if ($normalizedPattern === '') {
-            continue;
+        if ($age >= 25) {
+            return 'adult';
         }
 
-        if (in_array($normalizedPattern, ['it', 'cs', 'cpe', 'bsit', 'bscs', 'bsce'], true)) {
-            if (preg_match('/\b' . preg_quote($normalizedPattern, '/') . '\b/', $degree)) {
+        $rawDegree = ! empty($this->others_degree)
+            ? $this->others_degree
+            : $this->degree;
+
+        $normalizedDegree = static::normalizeDegree((string) $rawDegree);
+
+        return static::isTechDegree($normalizedDegree) ? 'young_it' : 'young_other';
+    }
+
+    public static function normalizeDegree(string $degree): string
+    {
+        $degree = strtolower(trim($degree));
+        $degree = preg_replace('/[^a-z0-9\s]/', ' ', $degree);
+        $degree = preg_replace('/\s+/', ' ', $degree);
+
+        return $degree;
+    }
+
+    public static function isTechDegree(string $degree): bool
+    {
+        $patterns = config('constants.tech_degree_patterns', []);
+
+        foreach ($patterns as $pattern) {
+            $normalizedPattern = static::normalizeDegree((string) $pattern);
+
+            if ($normalizedPattern === '') {
+                continue;
+            }
+
+            if (in_array($normalizedPattern, ['it', 'cs', 'cpe', 'bsit', 'bscs', 'bsce'], true)) {
+                if (preg_match('/\b'.preg_quote($normalizedPattern, '/').'\b/', $degree)) {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (str_contains($degree, $normalizedPattern)) {
                 return true;
             }
-            continue;
         }
 
-        if (str_contains($degree, $normalizedPattern)) {
-            return true;
-        }
+        return false;
     }
-
-    return false;
-}
 
     /**
      * Create a new applicant
      */
     public static function createApplicant(array $data)
     {
+        if (($data['japanese_background'] ?? null) != 3) {
+            $data['japanese_level'] = null;
+        }
+
         $data['created_time'] = now();
         $data['updated_time'] = now();
         $data['created_by'] = Auth::id();
@@ -362,6 +387,7 @@ public static function isTechDegree(string $degree): bool
         $data['updated_time'] = now();
         $data['updated_by'] = Auth::id();
         $this->update($data);
+
         return $this;
     }
 
@@ -373,7 +399,7 @@ public static function isTechDegree(string $degree): bool
     public static function upsertByEmail(array $data)
     {
         $email = $data['email_address'] ?? null;
-        if (!$email) {
+        if (! $email) {
             throw new \Exception('Email address is required for upsert.');
         }
 
@@ -384,7 +410,7 @@ public static function isTechDegree(string $degree): bool
             $updateData = array_diff_key($data, array_flip([
                 'source_type',
                 'source',
-                'other_source'
+                'other_source',
             ]));
 
             return $applicant->updateApplicant($updateData);
