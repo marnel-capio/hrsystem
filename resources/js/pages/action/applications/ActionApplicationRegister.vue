@@ -7,223 +7,80 @@ import axios from 'axios'
 const page = usePage()
 
 const props = defineProps<{
-  actionBatches?: Record<number, string>
-  examVenues?: Record<number, string>
-  examResults?: Record<number, string>
-  examStatuses?: Record<number, string>
-  interviewResults?: Record<number, string>
-  interviewAppStatuses?: Record<number, string>
-  jobOfferStatuses?: Record<number, string>
+    actionBatches?: Record<number, string>
+    examVenues?: Record<number, string>
+    examResults?: Record<number, string>
+    examStatuses?: Record<number, string>
+    interviewResults?: Record<number, string>
+    interviewAppStatuses?: Record<number, string>
+    jobOfferStatuses?: Record<number, string>
 
-  application?: {
-    exam_result?: number | string
-    initial_interview_result?: number | string
-    final_interview_result?: number | string
-  }
+    application?: {
+        exam_result?: number | string
+        initial_interview_result?: number | string
+        final_interview_result?: number | string
+    }
 
-  initialInterviewAssignments?: Array<{
-    id: number
-    interviewer_id: number
-    name: string
-    role_label: string
-    score?: number | null
-    evaluation_result?: number | null
-    evaluation_remarks?: string | null
-    schedule_approved?: number | null
-  }>
+    initialInterviewAssignments?: Array<{
+        id: number
+        interviewer_id: number
+        name: string
+        role_label: string
+        score?: number | null
+        evaluation_result?: number | null
+        evaluation_remarks?: string | null
+        schedule_approved?: number | null
+    }>
 
-  finalInterviewAssignments?: Array<{
-    id: number
-    interviewer_id: number
-    name: string
-    role_label: string
-    score?: number | null
-    evaluation_result?: number | null
-    evaluation_remarks?: string | null
-    schedule_approved?: number | null
-  }>
+    finalInterviewAssignments?: Array<{
+        id: number
+        interviewer_id: number
+        name: string
+        role_label: string
+        score?: number | null
+        evaluation_result?: number | null
+        evaluation_remarks?: string | null
+        schedule_approved?: number | null
+    }>
 
-  canEditFinalInterviewDecision?: boolean
-  user_permissions?: number
-  user_id?: number
-  flash?: {
-    error?: string
-    success?: string
-  }
+    canEditFinalInterviewDecision?: boolean
+    user_permissions?: number
+    user_id?: number
+    flash?: {
+        error?: string
+        success?: string
+    }
 
-  applicationResultMap?: {
-    exam?: Record<number, number>
-    initial_interview?: Record<number, number>
-    final_interview?: Record<number, number>
-  }
+    applicationResultMap?: {
+        exam?: Record<number, number>
+        initial_interview?: Record<number, number>
+        final_interview?: Record<number, number>
+    }
 
-  applicationScoreRules?: {
-    exam?: Record<string, any>
-    initial_interview?: Record<string, number>
-  }
+    applicationScoreRules?: {
+        exam?: Record<string, any>
+        initial_interview?: Record<string, number>
+    }
 }>()
 
-const visibleInitialInterviewAssignments = computed(() => {
-  const rows = form.initial_interview_assignments || []
+const actionBatches = ref<Array<{ value: number; label: string }>>([])
+const examVenues = ref<Array<{ value: number; label: string }>>([])
+const examResults = ref<Array<{ value: number; label: string }>>([])
+const examStatuses = ref<Array<{ value: number; label: string }>>([])
+const interviewResults = ref<Array<{ value: number; label: string }>>([])
+const interviewAppStatuses = ref<Array<{ value: number; label: string }>>([])
+const jobOfferStatuses = ref<Array<{ value: number; label: string }>>([])
 
-  return rows.filter((row: any) => {
-    const isApproved = Number(row.schedule_approved) === 1
-
-    if (!isApproved) return false
-
-    if (isHrDecisionEditor.value) {
-      return true
-    }
-
-    return Number(row.interviewer_id) === Number(props.user_id || 0)
-  })
-})
-
-
-const initialScoreManuallyEdited = ref(false)
-
-function handleInitialScoreManualInput() {
-  initialScoreManuallyEdited.value = true
-}
-
-
-const initialInterviewEvaluatedRows = computed(() => {
-  return (form.initial_interview_assignments || []).filter((row: any) =>
-    [2, 3].includes(Number(row.evaluation_result))
-  )
-})
-
-watch(
-  () => form.initial_interview_assignments,
-  (rows) => {
-    const list = rows || []
-
-    const numericScores = list
-      .map((row: any) => Number(row.score))
-      .filter((value: number) => !Number.isNaN(value))
-
-    if (numericScores.length === 0) {
-      if (!initialScoreManuallyEdited.value) {
-        form.initial_interview_final = ''
-      }
-      return
-    }
-
-    if (!initialScoreManuallyEdited.value) {
-      const average =
-        numericScores.reduce((sum: number, value: number) => sum + value, 0) / numericScores.length
-
-      form.initial_interview_final = average.toFixed(2)
-    }
-  },
-  { deep: true }
-)
-
-function clampScore(obj: any, field: string, max: number) {
-  let value = Number(obj[field] || 0)
-
-  if (Number.isNaN(value)) value = 0
-  if (value < 0) value = 0
-  if (value > max) value = max
-
-  obj[field] = value
-}
-
-const actionBatches = ref<Array<{ value: number, label: string }>>([])
-const examVenues = ref<Array<{ value: number, label: string }>>([])
-const examResults = ref<Array<{ value: number, label: string }>>([])
-const examStatuses = ref<Array<{ value: number, label: string }>>([])
-const interviewResults = ref<Array<{ value: number, label: string }>>([])
-const interviewAppStatuses = ref<Array<{ value: number, label: string }>>([])
-const jobOfferStatuses = ref<Array<{ value: number, label: string }>>([])
-
-const actionApplicants = ref<Array<{
-    value: number
-    label: string
-    age: number | null
-    degree: string
-}>>([])
-
-const sortedActionBatches = computed(() => {
-    return [...actionBatches.value].sort((a, b) => {
-        return b.label.localeCompare(a.label) // DESC
-    })
-})
+const actionApplicants = ref<
+    Array<{
+        value: number
+        label: string
+        age: number | null
+        degree: string
+    }>
+>([])
 
 const noApplicantsError = ref<string>('')
-
-const examResultLabel = computed(() => {
-    const selected = examResults.value.find(result => result.value === Number(form.exam_result))
-    return selected ? selected.label : ''
-})
-
-const initialInterviewResultLabel = computed(() => {
-    const selected = interviewResults.value.find(result => result.value === Number(form.initial_interview_result))
-    return selected ? selected.label : ''
-})
-
-const finalInterviewResultLabel = computed(() => {
-    const selected = interviewResults.value.find(result => result.value === Number(form.final_interview_result))
-    return selected ? selected.label : ''
-})
-
-const form = useForm({
-    action_applicant_id: '',
-    action_batch_id: '',
-    upload_resume: '',
-    upload_tor: '',
-    upload_pic: '',
-    exam_plan_date: '',
-    exam_actual_date: '',
-    exam_venue: '',
-exam_atpp_part1_correct: '',
-exam_atpp_part1_wrong: '',
-exam_atpp_part2_correct: '',
-exam_atpp_part2_wrong: '',
-exam_atpp_part3_correct: '',
-exam_atpp_part3_wrong: '',
-exam_atpp_result: '',    exam_git_result: '',
-    exam_prg_result: '',
-    exam_result: '',
-    exam_application_status: '',
-    exam_remarks: '',
-    initial_interview_plan_date: '',
-    initial_interview_actual_date: '',
-    initial_interview_venue: '',
-    initial_interview_final: '',
-    initial_interview_result: '',
-    initial_interview_application_status: '',
-    initial_interview_remarks: '',
-    final_interview_date: '',
-    initial_interview_assignments: (props.initialInterviewAssignments || []).map(
-  (row) => ({
-    id: row.id,
-    interviewer_id: row.interviewer_id,
-    name: row.name,
-    role_label: row.role_label,
-    score: row.score ?? '',
-    evaluation_result: row.evaluation_result ?? '',
-    evaluation_remarks: row.evaluation_remarks ?? '',
-  }),
-),
-    final_interview_assignments: (props.finalInterviewAssignments || []).map((row) => ({
-    id: row.id,
-    interviewer_id: row.interviewer_id,
-    name: row.name,
-    role_label: row.role_label,
-    score: row.score ?? '',
-    evaluation_result: row.evaluation_result ?? '',
-    evaluation_remarks: row.evaluation_remarks ?? '',
-})),
-    final_interview_final: '',
-    final_interview_result: '',
-    final_interview_application_status: '',
-    final_interview_remarks: '',
-    job_offer_schedule: '',
-    job_offer_status: '',
-    job_offer_remarks: '',
-    remarks: '',
-})
 
 const resumeFile = ref<File | null>(null)
 const torFile = ref<File | null>(null)
@@ -233,40 +90,129 @@ const resumePreview = ref<string | null>(null)
 const torPreview = ref<string | null>(null)
 const picturePreview = ref<string | null>(null)
 
-const errorMessage = computed(() => (page.props.flash as any)?.error || '')
 const showError = ref(false)
-const successMessage = computed(() => (page.props.flash as any)?.success || '')
 const showSuccess = ref(false)
 
 const isDropdownOpen = ref(false)
 const searchQuery = ref('')
 
+const liveErrors = ref<Record<string, string>>({})
+const scheduleValidationErrors = ref<Record<string, string>>({})
+const selectedBatchWbs = ref<Record<string, { start: string; end: string }> | null>(null)
+
+const finalScoreManuallyEdited = ref(false)
+const initialScoreManuallyEdited = ref(false)
+
+const form = useForm({
+    action_applicant_id: '',
+    action_batch_id: '',
+    upload_resume: '',
+    upload_tor: '',
+    upload_pic: '',
+
+    exam_plan_date: '',
+    exam_actual_date: '',
+    exam_venue: '',
+    exam_atpp_part1_correct: '',
+    exam_atpp_part1_wrong: '',
+    exam_atpp_part2_correct: '',
+    exam_atpp_part2_wrong: '',
+    exam_atpp_part3_correct: '',
+    exam_atpp_part3_wrong: '',
+    exam_atpp_result: '',
+    exam_git_result: '',
+    exam_prg_result: '',
+    exam_result: '',
+    exam_application_status: '',
+    exam_remarks: '',
+
+    initial_interview_plan_date: '',
+    initial_interview_actual_date: '',
+    initial_interview_venue: '',
+    initial_interview_final: '',
+    initial_interview_result: '',
+    initial_interview_application_status: '',
+    initial_interview_remarks: '',
+
+    final_interview_date: '',
+    final_interview_final: '',
+    final_interview_result: '',
+    final_interview_application_status: '',
+    final_interview_remarks: '',
+
+    initial_interview_assignments: (props.initialInterviewAssignments || []).map((row) => ({
+        id: row.id,
+        interviewer_id: row.interviewer_id,
+        name: row.name,
+        role_label: row.role_label,
+        schedule_approved: row.schedule_approved ?? 0,
+        score: row.score ?? '',
+        evaluation_result: row.evaluation_result ?? '',
+        evaluation_remarks: row.evaluation_remarks ?? '',
+    })),
+
+    final_interview_assignments: (props.finalInterviewAssignments || []).map((row) => ({
+        id: row.id,
+        interviewer_id: row.interviewer_id,
+        name: row.name,
+        role_label: row.role_label,
+        schedule_approved: row.schedule_approved ?? 0,
+        score: row.score ?? '',
+        evaluation_result: row.evaluation_result ?? '',
+        evaluation_remarks: row.evaluation_remarks ?? '',
+    })),
+
+    job_offer_schedule: '',
+    job_offer_status: '',
+    job_offer_remarks: '',
+    remarks: '',
+})
+
+const sortedActionBatches = computed(() => {
+    return [...actionBatches.value].sort((a, b) => b.label.localeCompare(a.label))
+})
+
+const errorMessage = computed(() => (page.props.flash as any)?.error || '')
+const successMessage = computed(() => (page.props.flash as any)?.success || '')
+
+const examResultLabel = computed(() => {
+    const selected = examResults.value.find((result) => result.value === Number(form.exam_result))
+    return selected ? selected.label : ''
+})
+
+const initialInterviewResultLabel = computed(() => {
+    const selected = interviewResults.value.find(
+        (result) => result.value === Number(form.initial_interview_result)
+    )
+    return selected ? selected.label : ''
+})
+
+const finalInterviewResultLabel = computed(() => {
+    const selected = interviewResults.value.find(
+        (result) => result.value === Number(form.final_interview_result)
+    )
+    return selected ? selected.label : ''
+})
+
 const isApplicantSelected = computed(() => !!form.action_applicant_id)
 
 const selectedApplicant = computed(() => {
-    return actionApplicants.value.find(a => a.value === Number(form.action_applicant_id)) || null
+    return actionApplicants.value.find((a) => a.value === Number(form.action_applicant_id)) || null
 })
 
 const selectedApplicantLabel = computed(() => {
-    const selected = actionApplicants.value.find(a => a.value === Number(form.action_applicant_id))
+    const selected = actionApplicants.value.find((a) => a.value === Number(form.action_applicant_id))
     return selected ? selected.label : ''
 })
 
 const filteredApplicants = computed(() => {
-    if (!searchQuery.value.trim()) {
-        return actionApplicants.value
-    }
+    if (!searchQuery.value.trim()) return actionApplicants.value
 
     const query = searchQuery.value.toLowerCase()
-    return actionApplicants.value.filter(applicant =>
+    return actionApplicants.value.filter((applicant) =>
         applicant.label.toLowerCase().includes(query)
     )
 })
-
-const liveErrors = ref<Record<string, string>>({})
-
-const scheduleValidationErrors = ref<Record<string, string>>({})
-const selectedBatchWbs = ref<Record<string, { start: string; end: string }> | null>(null)
 
 const scheduleFieldMap: Record<string, { activity: string; label: string; fieldLabel: string }> = {
     exam_plan_date: {
@@ -289,6 +235,157 @@ const scheduleFieldMap: Record<string, { activity: string; label: string; fieldL
         label: 'Job Offers',
         fieldLabel: 'Job offer date',
     },
+}
+
+const canEditFinalInterviewDecision = computed(() => !!props.canEditFinalInterviewDecision)
+const isHrDecisionEditor = computed(() => !!props.canEditFinalInterviewDecision)
+
+const visibleInitialInterviewAssignments = computed(() => {
+    const rows = form.initial_interview_assignments || []
+
+    return rows.filter((row: any) => {
+        const isApproved = Number(row.schedule_approved) === 1
+        if (!isApproved) return false
+
+        if (isHrDecisionEditor.value) return true
+
+        return Number(row.interviewer_id) === Number(props.user_id || 0)
+    })
+})
+
+const visibleFinalInterviewAssignments = computed(() => {
+    const rows = form.final_interview_assignments || []
+
+    return rows.filter((row: any) => {
+        const isApproved = Number(row.schedule_approved) === 1
+        if (!isApproved) return false
+
+        if (isHrDecisionEditor.value) return true
+
+        return Number(row.interviewer_id) === Number(props.user_id || 0)
+    })
+})
+
+const initialInterviewEvaluatedRows = computed(() => {
+    return (form.initial_interview_assignments || []).filter((row: any) =>
+        [2, 3].includes(Number(row.evaluation_result))
+    )
+})
+
+const finalInterviewEvaluatedRows = computed(() => {
+    return (form.final_interview_assignments || []).filter((row: any) =>
+        [2, 3].includes(Number(row.evaluation_result))
+    )
+})
+
+const allFinalInterviewersPassed = computed(() => {
+    const rows = finalInterviewEvaluatedRows.value
+    return rows.length > 0 && rows.every((row: any) => Number(row.evaluation_result) === 2)
+})
+
+const allFinalInterviewersFailed = computed(() => {
+    const rows = finalInterviewEvaluatedRows.value
+    return rows.length > 0 && rows.every((row: any) => Number(row.evaluation_result) === 3)
+})
+
+const hasMixedFinalInterviewResults = computed(() => {
+    const rows = finalInterviewEvaluatedRows.value
+    const hasPassed = rows.some((row: any) => Number(row.evaluation_result) === 2)
+    const hasFailed = rows.some((row: any) => Number(row.evaluation_result) === 3)
+    return hasPassed && hasFailed
+})
+
+const isInitialBlocked = computed(() => Number(props.application?.exam_result) === 3)
+
+const isFinalBlocked = computed(
+    () =>
+        Number(props.application?.exam_result) === 3 ||
+        Number(props.application?.initial_interview_result) === 3
+)
+
+const isJobOfferBlocked = computed(
+    () =>
+        Number(props.application?.exam_result) === 3 ||
+        Number(props.application?.initial_interview_result) === 3 ||
+        Number(props.application?.final_interview_result) === 3
+)
+
+function parseScore(value: string | number | null | undefined): number {
+    if (value === '' || value === null || value === undefined) return 0
+    const num = Number(value)
+    return Number.isNaN(num) ? 0 : num
+}
+
+const computedAtppResult = computed(() => {
+    const p1c = parseScore(form.exam_atpp_part1_correct)
+    const p1w = parseScore(form.exam_atpp_part1_wrong)
+    const p2c = parseScore(form.exam_atpp_part2_correct)
+    const p2w = parseScore(form.exam_atpp_part2_wrong)
+    const p3c = parseScore(form.exam_atpp_part3_correct)
+    const p3w = parseScore(form.exam_atpp_part3_wrong)
+
+    const hasAny =
+        form.exam_atpp_part1_correct !== '' ||
+        form.exam_atpp_part1_wrong !== '' ||
+        form.exam_atpp_part2_correct !== '' ||
+        form.exam_atpp_part2_wrong !== '' ||
+        form.exam_atpp_part3_correct !== '' ||
+        form.exam_atpp_part3_wrong !== ''
+
+    if (!hasAny) return ''
+
+    const totalCorrect = p1c + p2c + p3c
+    const totalWrong = (p1w + p2w + p3w) / 4
+    const finalScore = totalCorrect - totalWrong
+
+    return finalScore.toFixed(2)
+})
+
+function setLiveError(field: string, message: string) {
+    liveErrors.value[field] = message
+}
+
+function clearLiveError(field: string) {
+    delete liveErrors.value[field]
+}
+
+function validateScoreField(field: string, label: string, value: string | number) {
+    if (value === '' || value === null || value === undefined) {
+        clearLiveError(field)
+        return
+    }
+
+    const num = Number(value)
+
+    if (Number.isNaN(num)) {
+        setLiveError(field, `${label} must be a valid number.`)
+        return
+    }
+
+    if (num < 0 || num > 999.99) {
+        setLiveError(field, `${label} must be between 0 and 999.99.`)
+        return
+    }
+
+    clearLiveError(field)
+}
+
+function handleInitialScoreManualInput() {
+    initialScoreManuallyEdited.value = true
+}
+
+function handleFinalScoreManualInput() {
+    finalScoreManuallyEdited.value = true
+}
+
+function clampScore(obj: any, field: string, max: number) {
+    let value = Number(obj[field] || 0)
+
+    if (Number.isNaN(value)) value = 0
+    if (value < 0) value = 0
+    if (value > max) value = max
+
+    obj[field] = value
 }
 
 function clearScheduleValidationError(field: string) {
@@ -360,244 +457,6 @@ function validateAllScheduleFields() {
     validateScheduleField('job_offer_schedule')
 }
 
-const finalScoreManuallyEdited = ref(false)
-
-function parseScore(value: string | number | null | undefined): number {
-    if (value === '' || value === null || value === undefined) return 0
-    const num = Number(value)
-    return Number.isNaN(num) ? 0 : num
-}
-
-const computedAtppResult = computed(() => {
-    const p1c = parseScore(form.exam_atpp_part1_correct)
-    const p1w = parseScore(form.exam_atpp_part1_wrong)
-    const p2c = parseScore(form.exam_atpp_part2_correct)
-    const p2w = parseScore(form.exam_atpp_part2_wrong)
-    const p3c = parseScore(form.exam_atpp_part3_correct)
-    const p3w = parseScore(form.exam_atpp_part3_wrong)
-
-    const hasAny =
-        form.exam_atpp_part1_correct !== '' ||
-        form.exam_atpp_part1_wrong !== '' ||
-        form.exam_atpp_part2_correct !== '' ||
-        form.exam_atpp_part2_wrong !== '' ||
-        form.exam_atpp_part3_correct !== '' ||
-        form.exam_atpp_part3_wrong !== ''
-
-    if (!hasAny) return ''
-
-    const totalCorrect = p1c + p2c + p3c
-    const totalWrong = (p1w + p2w + p3w) / 4
-    const finalScore = totalCorrect - totalWrong
-
-    return finalScore.toFixed(2)
-})
-
-const isInitialBlocked = computed(() =>
-    Number(props.application.exam_result) === 3
-)
-
-const isFinalBlocked = computed(() =>
-    Number(props.application.exam_result) === 3 ||
-    Number(props.application.initial_interview_result) === 3
-)
-
-const isJobOfferBlocked = computed(() =>
-    Number(props.application.exam_result) === 3 ||
-    Number(props.application.initial_interview_result) === 3 ||
-    Number(props.application.final_interview_result) === 3
-)
-
-const canEditFinalInterviewDecision = computed(() => !!props.canEditFinalInterviewDecision)
-
-const isHrDecisionEditor = computed(() => !!props.canEditFinalInterviewDecision)
-
-const visibleFinalInterviewAssignments = computed(() => {
-    const rows = form.final_interview_assignments || []
-
-    return rows.filter((row: any) => {
-        const isApproved = Number(row.schedule_approved) === 1
-
-        if (!isApproved) return false
-
-        if (isHrDecisionEditor.value) {
-            return true
-        }
-
-        return Number(row.interviewer_id) === Number(props.user_id || 0)
-    })
-})
-const finalInterviewEvaluatedRows = computed(() => {
-    return (form.final_interview_assignments || []).filter((row: any) =>
-        [2, 3].includes(Number(row.evaluation_result))
-    )
-})
-
-const allFinalInterviewersPassed = computed(() => {
-    const rows = finalInterviewEvaluatedRows.value
-    return rows.length > 0 && rows.every((row: any) => Number(row.evaluation_result) === 2)
-})
-
-const allFinalInterviewersFailed = computed(() => {
-    const rows = finalInterviewEvaluatedRows.value
-    return rows.length > 0 && rows.every((row: any) => Number(row.evaluation_result) === 3)
-})
-
-const hasMixedFinalInterviewResults = computed(() => {
-    const rows = finalInterviewEvaluatedRows.value
-    const hasPassed = rows.some((row: any) => Number(row.evaluation_result) === 2)
-    const hasFailed = rows.some((row: any) => Number(row.evaluation_result) === 3)
-    return hasPassed && hasFailed
-})
-
-watch(computedAtppResult, (value) => {
-    form.exam_atpp_result = value
-})
-
-watch(
-    () => form.final_interview_assignments,
-    (rows) => {
-        const list = rows || []
-
-        const numericScores = list
-            .map((row: any) => Number(row.score))
-            .filter((value: number) => !Number.isNaN(value))
-
-        if (numericScores.length === 0) {
-            if (!finalScoreManuallyEdited.value) {
-                form.final_interview_final = ''
-            }
-            return
-        }
-
-        if (!finalScoreManuallyEdited.value) {
-            const average =
-                numericScores.reduce((sum: number, value: number) => sum + value, 0) / numericScores.length
-
-            form.final_interview_final = average.toFixed(2)
-        }
-
-        if (allFinalInterviewersPassed.value) {
-            form.final_interview_result = '2'
-            form.final_interview_application_status = '3'
-            return
-        }
-
-        if (allFinalInterviewersFailed.value) {
-            form.final_interview_result = '3'
-            form.final_interview_application_status = '5'
-            return
-        }
-
-        if (hasMixedFinalInterviewResults.value) {
-            form.final_interview_application_status = '2'
-            if (!isHrDecisionEditor.value) {
-                form.final_interview_result = ''
-            }
-            return
-        }
-
-        if (form.final_interview_date) {
-            form.final_interview_application_status = '1'
-        } else {
-            form.final_interview_application_status = ''
-            form.final_interview_result = ''
-        }
-    },
-    { deep: true }
-)
-
-watch(() => form.exam_atpp_part1_correct, (value) => {
-    validateScoreField('exam_atpp_part1_correct', 'ATPP Part I Correct', value)
-})
-
-watch(() => form.exam_atpp_part1_wrong, (value) => {
-    validateScoreField('exam_atpp_part1_wrong', 'ATPP Part I Wrong', value)
-})
-
-watch(() => form.exam_atpp_part2_correct, (value) => {
-    validateScoreField('exam_atpp_part2_correct', 'ATPP Part II Correct', value)
-})
-
-watch(() => form.exam_atpp_part2_wrong, (value) => {
-    validateScoreField('exam_atpp_part2_wrong', 'ATPP Part II Wrong', value)
-})
-
-watch(() => form.exam_atpp_part3_correct, (value) => {
-    validateScoreField('exam_atpp_part3_correct', 'ATPP Part III Correct', value)
-})
-
-watch(() => form.exam_atpp_part3_wrong, (value) => {
-    validateScoreField('exam_atpp_part3_wrong', 'ATPP Part III Wrong', value)
-})
-
-function handleFinalScoreManualInput() {
-    finalScoreManuallyEdited.value = true
-}
-
-function setLiveError(field: string, message: string) {
-    liveErrors.value[field] = message
-}
-
-function clearLiveError(field: string) {
-    delete liveErrors.value[field]
-}
-
-function validateScoreField(field: string, label: string, value: string | number) {
-    if (value === '' || value === null || value === undefined) {
-        clearLiveError(field)
-        return
-    }
-
-    const num = Number(value)
-
-    if (Number.isNaN(num)) {
-        setLiveError(field, `${label} must be a valid number.`)
-        return
-    }
-
-    if (num < 0 || num > 999.99) {
-        setLiveError(field, `${label} must be between 0 and 999.99.`)
-        return
-    }
-
-    clearLiveError(field)
-}
-
-watch(() => form.exam_atpp_result, (value) => {
-    validateScoreField('exam_atpp_result', 'ATPP Result', value)
-})
-
-watch(() => form.exam_git_result, (value) => {
-    validateScoreField('exam_git_result', 'GIT Result', value)
-})
-
-watch(() => form.exam_prg_result, (value) => {
-    validateScoreField('exam_prg_result', 'PRG Result', value)
-})
-
-watch(() => form.initial_interview_final, (value) => {
-    validateScoreField('initial_interview_final', 'Initial Interview Final Score', value)
-})
-
-watch(
-    () => form.final_interview_assignments,
-    (rows) => {
-        ;(rows || []).forEach((row: any, index: number) => {
-            validateScoreField(
-                `final_interview_assignments.${index}.score`,
-                `${row.name || 'Interviewer'} Score`,
-                row.score
-            )
-        })
-    },
-    { deep: true }
-)
-
-watch(() => form.final_interview_final, (value) => {
-    validateScoreField('final_interview_final', 'Final Score', value)
-})
-
 function formatDateTimeLocal(value: Date) {
     const year = value.getFullYear()
     const month = String(value.getMonth() + 1).padStart(2, '0')
@@ -616,9 +475,6 @@ function addOneMinute(value: string) {
     return formatDateTimeLocal(date)
 }
 
-const initialInterviewPlanMin = computed(() => {
-    return form.exam_plan_date ? addOneMinute(form.exam_plan_date) : ''
-})
 function parseDateTimeLocal(value: string): Date | null {
     return value ? new Date(value) : null
 }
@@ -632,267 +488,12 @@ function tomorrowStart(): string {
 
 const examPlanMin = computed(() => tomorrowStart())
 const examActualMin = computed(() => form.exam_plan_date || undefined)
+const initialInterviewPlanMin = computed(() =>
+    form.exam_plan_date ? addOneMinute(form.exam_plan_date) : ''
+)
 const initialInterviewActualMin = computed(() => form.initial_interview_plan_date || undefined)
 const finalInterviewMin = computed(() => form.initial_interview_plan_date || undefined)
 const jobOfferMin = computed(() => form.final_interview_date || undefined)
-
-const examCriteriaDisplay = computed(() => {
-    if (!selectedApplicant.value) return null
-
-    const category = getExamCategory(selectedApplicant.value)
-    const rules = props.applicationScoreRules?.exam?.[category]
-
-    if (!rules) return null
-
-    return {
-        category,
-        passed: rules.passed,
-        p2: rules.p2,
-    }
-})
-
-watch(() => form.exam_plan_date, (planDate) => {
-    if (!planDate) return
-
-    if (form.exam_actual_date) {
-        const actual = parseDateTimeLocal(form.exam_actual_date)
-        const plan = parseDateTimeLocal(planDate)
-        if (actual && plan && actual < plan) {
-            form.exam_actual_date = ''
-        }
-    }
-})
-
-watch(() => form.initial_interview_plan_date, (planDate) => {
-    if (!planDate) return
-
-    if (form.initial_interview_actual_date) {
-        const actual = parseDateTimeLocal(form.initial_interview_actual_date)
-        const plan = parseDateTimeLocal(planDate)
-        if (actual && plan && actual < plan) {
-            form.initial_interview_actual_date = ''
-        }
-    }
-
-    if (form.final_interview_date) {
-        const finalDate = parseDateTimeLocal(form.final_interview_date)
-        const plan = parseDateTimeLocal(planDate)
-        if (finalDate && plan && finalDate < plan) {
-            form.final_interview_date = ''
-        }
-    }
-})
-
-watch(() => form.final_interview_date, (finalDate) => {
-    if (!finalDate) return
-
-    if (form.job_offer_schedule) {
-        const schedule = parseDateTimeLocal(form.job_offer_schedule)
-        const final = parseDateTimeLocal(finalDate)
-        if (schedule && final && schedule < final) {
-            form.job_offer_schedule = ''
-        }
-    }
-})
-
-onMounted(() => {
-    if (props.actionBatches) {
-        actionBatches.value = Object.entries(props.actionBatches).map(([value, label]) => ({
-            value: Number(value),
-            label: String(label),
-        }))
-    }
-
-    if (props.examVenues) {
-        examVenues.value = Object.entries(props.examVenues).map(([value, label]) => ({
-            value: Number(value),
-            label: String(label),
-        }))
-    }
-
-    if (props.examResults) {
-        examResults.value = Object.entries(props.examResults).map(([value, label]) => ({
-            value: Number(value),
-            label: String(label),
-        }))
-    }
-
-    if (props.examStatuses) {
-        examStatuses.value = Object.entries(props.examStatuses).map(([value, label]) => ({
-            value: Number(value),
-            label: String(label),
-        }))
-    }
-
-    if (props.interviewResults) {
-        interviewResults.value = Object.entries(props.interviewResults).map(([value, label]) => ({
-            value: Number(value),
-            label: String(label),
-        }))
-    }
-
-    if (props.interviewAppStatuses) {
-        interviewAppStatuses.value = Object.entries(props.interviewAppStatuses).map(([value, label]) => ({
-            value: Number(value),
-            label: String(label),
-        }))
-    }
-
-    if (props.jobOfferStatuses) {
-        jobOfferStatuses.value = Object.entries(props.jobOfferStatuses).map(([value, label]) => ({
-            value: Number(value),
-            label: String(label),
-        }))
-    }
-
-    document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside)
-})
-
-watch(errorMessage, (val) => {
-    if (val) {
-        showError.value = true
-        setTimeout(() => showError.value = false, 5000)
-    }
-})
-
-watch(successMessage, (val) => {
-    if (val) {
-        showSuccess.value = true
-        setTimeout(() => showSuccess.value = false, 5000)
-    }
-})
-
-watch(
-    () => form.action_batch_id,
-    async (newBatchId) => {
-        if (!newBatchId) {
-            selectedBatchWbs.value = null
-            scheduleValidationErrors.value = {}
-            return
-        }
-
-        try {
-            const response = await axios.get(`/action/applications/batches/${newBatchId}/resource-schedule`)
-            selectedBatchWbs.value = response.data?.wbs || null
-        } catch (error) {
-            console.error('Failed to load resource schedule:', error)
-            selectedBatchWbs.value = null
-        }
-
-        validateAllScheduleFields()
-    }
-)
-
-watch(() => form.exam_plan_date, () => validateScheduleField('exam_plan_date'))
-watch(() => form.initial_interview_plan_date, () => validateScheduleField('initial_interview_plan_date'))
-watch(() => form.final_interview_date, () => validateScheduleField('final_interview_date'))
-watch(() => form.job_offer_schedule, () => validateScheduleField('job_offer_schedule'))
-
-watch(() => form.action_batch_id, async (newBatchId) => {
-    if (!newBatchId) {
-        noApplicantsError.value = ''
-        actionApplicants.value = []
-        form.action_applicant_id = ''
-        return
-    }
-
-    noApplicantsError.value = ''
-    form.action_applicant_id = ''
-
-    try {
-        const response = await axios.get(`/action/applications/eligible-applicants/${newBatchId}`)
-
-        if (!response.data || response.data.length === 0) {
-            noApplicantsError.value = 'No eligible applicants found for this batch.'
-            actionApplicants.value = []
-            return
-        }
-
-        actionApplicants.value = response.data.map((applicant: any) => ({
-            value: Number(applicant.value),
-            label: String(applicant.label),
-            age: applicant.age !== null && applicant.age !== undefined ? Number(applicant.age) : null,
-            degree: String(applicant.degree || ''),
-        }))
-
-        noApplicantsError.value = ''
-    } catch (error: any) {
-        console.error('Failed to load eligible applicants:', error)
-        noApplicantsError.value = error.response?.data?.error || 'Failed to load eligible applicants. Please try again.'
-        actionApplicants.value = []
-    }
-})
-
-watch(() => form.action_applicant_id, async (newApplicantId, oldApplicantId) => {
-    if (newApplicantId && form.action_batch_id) {
-        try {
-            const response = await axios.post('/action/applications/check-eligibility', {
-                action_applicant_id: newApplicantId,
-                action_batch_id: form.action_batch_id,
-            })
-
-            if (!response.data.eligible) {
-                form.setError('action_applicant_id', 'This applicant cannot apply at this time. A previous application from the last 6 months shows a failed status.')
-                form.action_applicant_id = ''
-                return
-            } else {
-                form.clearErrors('action_applicant_id')
-            }
-        } catch (error) {
-            console.error('Failed to check eligibility:', error)
-        }
-    }
-
-    if (oldApplicantId && newApplicantId !== oldApplicantId) {
-        form.exam_plan_date = ''
-        form.exam_actual_date = ''
-        form.exam_venue = ''
-form.exam_atpp_part1_correct = ''
-form.exam_atpp_part1_wrong = ''
-form.exam_atpp_part2_correct = ''
-form.exam_atpp_part2_wrong = ''
-form.exam_atpp_part3_correct = ''
-form.exam_atpp_part3_wrong = ''
-form.exam_atpp_result = ''
-        form.exam_git_result = ''
-        form.exam_prg_result = ''
-        form.exam_application_status = ''
-        form.exam_result = ''
-        form.exam_remarks = ''
-
-        form.initial_interview_plan_date = ''
-        form.initial_interview_actual_date = ''
-        form.initial_interview_venue = ''
-        form.initial_interview_final = ''
-        form.initial_interview_application_status = ''
-        form.initial_interview_result = ''
-        form.initial_interview_remarks = ''
-
-        form.final_interview_date = ''
-        form.final_interview_final = ''
-        form.final_interview_application_status = ''
-        form.final_interview_result = ''
-        form.final_interview_remarks = ''
-
-        form.job_offer_schedule = ''
-        form.job_offer_status = ''
-        form.job_offer_remarks = ''
-        form.remarks = ''
-
-        removeFile('resume')
-        removeFile('tor')
-        removeFile('picture')
-
-        const fileInputs = document.querySelectorAll('input[type="file"]')
-        fileInputs.forEach((input: any) => {
-            if (input) input.value = ''
-        })
-    }
-})
 
 function normalizeDegree(degree: string): string {
     return String(degree || '')
@@ -937,16 +538,14 @@ function isTechDegree(degree: string): boolean {
         if (!normalizedPattern) continue
 
         if (['it', 'cs', 'cpe', 'bsit', 'bscs', 'bscpe'].includes(normalizedPattern)) {
-            const regex = new RegExp(`\\b${normalizedPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
-            if (regex.test(normalizedDegree)) {
-                return true
-            }
+            const regex = new RegExp(
+                `\\b${normalizedPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`
+            )
+            if (regex.test(normalizedDegree)) return true
             continue
         }
 
-        if (normalizedDegree.includes(normalizedPattern)) {
-            return true
-        }
+        if (normalizedDegree.includes(normalizedPattern)) return true
     }
 
     return false
@@ -958,16 +557,32 @@ function getExamCategory(applicant: any): 'young_it' | 'young_other' | 'adult' {
     const age = Number(applicant.age || 0)
     const rawDegree = applicant.others_degree || applicant.degree || applicant.course || ''
 
-    if (age >= 25) {
-        return 'adult'
-    }
+    if (age >= 25) return 'adult'
 
     return isTechDegree(rawDegree) ? 'young_it' : 'young_other'
 }
 
+const examCriteriaDisplay = computed(() => {
+    if (!selectedApplicant.value) return null
 
+    const category = getExamCategory(selectedApplicant.value)
+    const rules = props.applicationScoreRules?.exam?.[category]
 
-function getExamApplicationStatus(attp: number, git: number, prg: number, category: 'young_it' | 'young_other' | 'adult'): string {
+    if (!rules) return null
+
+    return {
+        category,
+        passed: rules.passed,
+        p2: rules.p2,
+    }
+})
+
+function getExamApplicationStatus(
+    attp: number,
+    git: number,
+    prg: number,
+    category: 'young_it' | 'young_other' | 'adult'
+): string {
     const rules = props.applicationScoreRules?.exam?.[category]
 
     if (!rules) return ''
@@ -984,12 +599,7 @@ function getExamApplicationStatus(attp: number, git: number, prg: number, catego
         return '5'
     }
 
-    if (
-        p2 &&
-        attp >= Number(p2.attp) &&
-        git >= Number(p2.git) &&
-        prg >= Number(p2.prg)
-    ) {
+    if (p2 && attp >= Number(p2.attp) && git >= Number(p2.git) && prg >= Number(p2.prg)) {
         return '3'
     }
 
@@ -1011,132 +621,44 @@ function getInitialInterviewApplicationStatus(score: number): string {
     return '1'
 }
 
-watch(() => form.exam_plan_date, (newPlanDate) => {
-    if (newPlanDate && !form.exam_atpp_result && !form.exam_git_result && !form.exam_prg_result) {
-        form.exam_application_status = '1'
-    }
+function getFinalInterviewApplicationStatus(score: number): string {
+    const rules = props.applicationScoreRules?.initial_interview
 
-    if (!newPlanDate && !form.exam_atpp_result && !form.exam_git_result && !form.exam_prg_result) {
-        form.exam_application_status = ''
-    }
-})
+    const passedMax = Number(rules?.passed_min ?? 2.0)
+    const p2Max = Number(rules?.p2_min ?? 2.5)
+    const failedMax = 5.0
 
-watch(
-    [
-        () => form.exam_atpp_result,
-        () => form.exam_git_result,
-        () => form.exam_prg_result,
-        () => selectedApplicant.value,
-        () => form.exam_plan_date,
-    ],
-    ([attp, git, prg, applicant, planDate]) => {
-        const hasAllScores = !!attp && !!git && !!prg
+    if (score === 0) return '1'
+    if (score > 0 && score <= passedMax) return '3'
+    if (score > passedMax && score <= p2Max) return '4'
+    if (score > p2Max && score <= failedMax) return '5'
 
-        if (!hasAllScores) {
-            form.exam_application_status = planDate ? '1' : ''
-            return
+    return '1'
+}
+
+function clampAtppPair(obj: any, correctField: string, wrongField: string, max: number) {
+    let correct = Number(obj[correctField] || 0)
+    let wrong = Number(obj[wrongField] || 0)
+
+    if (Number.isNaN(correct)) correct = 0
+    if (Number.isNaN(wrong)) wrong = 0
+
+    if (correct < 0) correct = 0
+    if (wrong < 0) wrong = 0
+
+    if (correct + wrong > max) {
+        const excess = correct + wrong - max
+
+        if ((document.activeElement as HTMLInputElement | null)?.name === correctField) {
+            wrong = Math.max(0, wrong - excess)
+        } else {
+            correct = Math.max(0, correct - excess)
         }
-
-        if (!applicant) {
-            form.exam_application_status = planDate ? '1' : ''
-            return
-        }
-
-        const attpNum = Number(attp)
-        const gitNum = Number(git)
-        const prgNum = Number(prg)
-
-        if (Number.isNaN(attpNum) || Number.isNaN(gitNum) || Number.isNaN(prgNum)) {
-            form.exam_application_status = planDate ? '1' : ''
-            return
-        }
-
-        const category = getExamCategory(applicant)
-        form.exam_application_status = getExamApplicationStatus(attpNum, gitNum, prgNum, category)
-    }
-)
-
-watch(() => form.initial_interview_plan_date, (newPlanDate) => {
-    if (newPlanDate && !form.initial_interview_final) {
-        form.initial_interview_application_status = '1'
     }
 
-    if (!newPlanDate && !form.initial_interview_final) {
-        form.initial_interview_application_status = ''
-    }
-})
-
-watch(
-    [
-        () => form.initial_interview_final,
-        () => form.initial_interview_plan_date,
-    ],
-    ([score, planDate]) => {
-        if (!score) {
-            form.initial_interview_application_status = planDate ? '1' : ''
-            return
-        }
-
-        const numericScore = Number(score)
-
-        if (Number.isNaN(numericScore)) {
-            form.initial_interview_application_status = planDate ? '1' : ''
-            return
-        }
-
-        form.initial_interview_application_status = getInitialInterviewApplicationStatus(numericScore)
-    }
-)
-
-watch(() => form.final_interview_date, (newPlanDate) => {
-    if (newPlanDate && !form.final_interview_application_status) {
-        form.final_interview_application_status = '1'
-    }
-
-    if (!newPlanDate && form.final_interview_application_status === '1') {
-        form.final_interview_application_status = ''
-    }
-})
-
-watch(() => form.job_offer_schedule, (newSchedule) => {
-    if (newSchedule && !form.job_offer_status) {
-        form.job_offer_status = '1'
-    }
-
-    if (!newSchedule && form.job_offer_status === '1') {
-        form.job_offer_status = ''
-    }
-})
-
-watch(() => form.exam_application_status, (newStatus) => {
-    if (!newStatus) {
-        form.exam_result = ''
-        return
-    }
-
-    const mappedResult = props.applicationResultMap?.exam?.[Number(newStatus)]
-    form.exam_result = mappedResult ? String(mappedResult) : ''
-})
-
-watch(() => form.initial_interview_application_status, (newStatus) => {
-    if (!newStatus) {
-        form.initial_interview_result = ''
-        return
-    }
-
-    const mappedResult = props.applicationResultMap?.initial_interview?.[Number(newStatus)]
-    form.initial_interview_result = mappedResult ? String(mappedResult) : ''
-})
-
-watch(() => form.final_interview_application_status, (newStatus) => {
-    if (!newStatus) {
-        form.final_interview_result = ''
-        return
-    }
-
-    const mappedResult = props.applicationResultMap?.final_interview?.[Number(newStatus)]
-    form.final_interview_result = mappedResult ? String(mappedResult) : ''
-})
+    obj[correctField] = correct
+    obj[wrongField] = wrong
+}
 
 const handleResumeUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
@@ -1263,14 +785,30 @@ const removeFile = (type: 'resume' | 'tor' | 'picture') => {
     }
 }
 
+function toggleDropdown() {
+    if (!form.action_batch_id || actionApplicants.value.length === 0) return
+
+    isDropdownOpen.value = !isDropdownOpen.value
+
+    if (isDropdownOpen.value) searchQuery.value = ''
+}
+
+function selectApplicant(applicant: { value: number; label: string }) {
+    form.action_applicant_id = String(applicant.value)
+    isDropdownOpen.value = false
+    searchQuery.value = ''
+}
+
+function handleClickOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement
+    if (!target.closest('.custom-select-wrapper')) {
+        isDropdownOpen.value = false
+    }
+}
+
 function submit() {
     form.clearErrors()
 
-    validateAllScheduleFields()
-
-if (Object.keys(scheduleValidationErrors.value).length > 0) {
-    return
-}
     let hasError = false
 
     if (!form.action_applicant_id) {
@@ -1297,17 +835,9 @@ if (Object.keys(scheduleValidationErrors.value).length > 0) {
             }
         })
 
-        if (resumeFile.value) {
-            formData.append('upload_resume', resumeFile.value)
-        }
-
-        if (torFile.value) {
-            formData.append('upload_tor', torFile.value)
-        }
-
-        if (pictureFile.value) {
-            formData.append('upload_pic', pictureFile.value)
-        }
+        if (resumeFile.value) formData.append('upload_resume', resumeFile.value)
+        if (torFile.value) formData.append('upload_tor', torFile.value)
+        if (pictureFile.value) formData.append('upload_pic', pictureFile.value)
 
         return formData as any
     })
@@ -1323,6 +853,7 @@ if (Object.keys(scheduleValidationErrors.value).length > 0) {
             actionApplicants.value = []
             noApplicantsError.value = ''
             finalScoreManuallyEdited.value = false
+            initialScoreManuallyEdited.value = false
 
             removeFile('resume')
             removeFile('tor')
@@ -1336,76 +867,475 @@ if (Object.keys(scheduleValidationErrors.value).length > 0) {
     })
 }
 
-function toggleDropdown() {
-    if (!form.action_batch_id || actionApplicants.value.length === 0) return
+watch(computedAtppResult, (value) => {
+    form.exam_atpp_result = value
+})
 
-    isDropdownOpen.value = !isDropdownOpen.value
+watch(
+    () => form.initial_interview_assignments,
+    (rows) => {
+        const list = rows || []
 
-    if (isDropdownOpen.value) {
-        searchQuery.value = ''
-    }
-}
+        const numericScores = list
+            .map((row: any) => Number(row.score))
+            .filter((value: number) => !Number.isNaN(value))
 
-function selectApplicant(applicant: { value: number, label: string }) {
-    form.action_applicant_id = String(applicant.value)
-    isDropdownOpen.value = false
-    searchQuery.value = ''
-}
+        if (numericScores.length === 0) {
+            if (!initialScoreManuallyEdited.value) {
+                form.initial_interview_final = ''
+            }
+            return
+        }
 
-function handleClickOutside(event: MouseEvent) {
-    const target = event.target as HTMLElement
-    if (!target.closest('.custom-select-wrapper')) {
-        isDropdownOpen.value = false
-    }
-}
+        if (!initialScoreManuallyEdited.value) {
+            const average =
+                numericScores.reduce((sum: number, value: number) => sum + value, 0) /
+                numericScores.length
 
-function getFinalInterviewApplicationStatus(score: number): string {
-    const rules = props.applicationScoreRules?.initial_interview
+            form.initial_interview_final = average.toFixed(2)
+        }
+    },
+    { deep: true }
+)
 
-    const passedMax = Number(rules?.passed_min ?? 2.0)
-    const p2Max = Number(rules?.p2_min ?? 2.5)
-    const failedMax = 5.0
+watch(
+    () => form.final_interview_assignments,
+    (rows) => {
+        const list = rows || []
 
-    if (score === 0) return '1'
-    if (score > 0 && score <= passedMax) return '3'
-    if (score > passedMax && score <= p2Max) return '4'
-    if (score > p2Max && score <= failedMax) return '5'
+        const numericScores = list
+            .map((row: any) => Number(row.score))
+            .filter((value: number) => !Number.isNaN(value))
 
-    return '1'
-}
+        if (numericScores.length === 0) {
+            if (!finalScoreManuallyEdited.value) {
+                form.final_interview_final = ''
+            }
+            return
+        }
 
-function clampAtppPair(obj: any, correctField: string, wrongField: string, max: number) {
-    let correct = Number(obj[correctField] || 0)
-    let wrong = Number(obj[wrongField] || 0)
+        if (!finalScoreManuallyEdited.value) {
+            const average =
+                numericScores.reduce((sum: number, value: number) => sum + value, 0) /
+                numericScores.length
 
-    if (Number.isNaN(correct)) correct = 0
-    if (Number.isNaN(wrong)) wrong = 0
+            form.final_interview_final = average.toFixed(2)
+        }
 
-    // Prevent negatives
-    if (correct < 0) correct = 0
-    if (wrong < 0) wrong = 0
+        if (allFinalInterviewersPassed.value) {
+            form.final_interview_result = '2'
+            form.final_interview_application_status = '3'
+            return
+        }
 
-    // Enforce total cap
-    if (correct + wrong > max) {
-        // prioritize the field being edited by reducing the other
-        const excess = correct + wrong - max
+        if (allFinalInterviewersFailed.value) {
+            form.final_interview_result = '3'
+            form.final_interview_application_status = '5'
+            return
+        }
 
-        if (document.activeElement?.name === correctField) {
-            wrong = Math.max(0, wrong - excess)
+        if (hasMixedFinalInterviewResults.value) {
+            form.final_interview_application_status = '2'
+            if (!isHrDecisionEditor.value) {
+                form.final_interview_result = ''
+            }
+            return
+        }
+
+        if (form.final_interview_date) {
+            form.final_interview_application_status = '1'
         } else {
-            correct = Math.max(0, correct - excess)
+            form.final_interview_application_status = ''
+            form.final_interview_result = ''
+        }
+    },
+    { deep: true }
+)
+
+watch(() => form.exam_atpp_part1_correct, (value) => {
+    validateScoreField('exam_atpp_part1_correct', 'ATPP Part I Correct', value)
+})
+watch(() => form.exam_atpp_part1_wrong, (value) => {
+    validateScoreField('exam_atpp_part1_wrong', 'ATPP Part I Wrong', value)
+})
+watch(() => form.exam_atpp_part2_correct, (value) => {
+    validateScoreField('exam_atpp_part2_correct', 'ATPP Part II Correct', value)
+})
+watch(() => form.exam_atpp_part2_wrong, (value) => {
+    validateScoreField('exam_atpp_part2_wrong', 'ATPP Part II Wrong', value)
+})
+watch(() => form.exam_atpp_part3_correct, (value) => {
+    validateScoreField('exam_atpp_part3_correct', 'ATPP Part III Correct', value)
+})
+watch(() => form.exam_atpp_part3_wrong, (value) => {
+    validateScoreField('exam_atpp_part3_wrong', 'ATPP Part III Wrong', value)
+})
+watch(() => form.exam_atpp_result, (value) => {
+    validateScoreField('exam_atpp_result', 'ATPP Result', value)
+})
+watch(() => form.exam_git_result, (value) => {
+    validateScoreField('exam_git_result', 'GIT Result', value)
+})
+watch(() => form.exam_prg_result, (value) => {
+    validateScoreField('exam_prg_result', 'PRG Result', value)
+})
+watch(() => form.initial_interview_final, (value) => {
+    validateScoreField('initial_interview_final', 'Initial Interview Final Score', value)
+})
+watch(() => form.final_interview_final, (value) => {
+    validateScoreField('final_interview_final', 'Final Score', value)
+})
+
+watch(
+    () => form.initial_interview_assignments,
+    (rows) => {
+        ;(rows || []).forEach((row: any, index: number) => {
+            validateScoreField(
+                `initial_interview_assignments.${index}.score`,
+                `${row.name || 'Interviewer'} Score`,
+                row.score
+            )
+        })
+    },
+    { deep: true }
+)
+
+watch(
+    () => form.final_interview_assignments,
+    (rows) => {
+        ;(rows || []).forEach((row: any, index: number) => {
+            validateScoreField(
+                `final_interview_assignments.${index}.score`,
+                `${row.name || 'Interviewer'} Score`,
+                row.score
+            )
+        })
+    },
+    { deep: true }
+)
+
+watch(() => form.exam_plan_date, (planDate) => {
+    if (!planDate) return
+
+    if (form.exam_actual_date) {
+        const actual = parseDateTimeLocal(form.exam_actual_date)
+        const plan = parseDateTimeLocal(planDate)
+        if (actual && plan && actual < plan) {
+            form.exam_actual_date = ''
+        }
+    }
+})
+
+watch(() => form.initial_interview_plan_date, (planDate) => {
+    if (!planDate) return
+
+    if (form.initial_interview_actual_date) {
+        const actual = parseDateTimeLocal(form.initial_interview_actual_date)
+        const plan = parseDateTimeLocal(planDate)
+        if (actual && plan && actual < plan) {
+            form.initial_interview_actual_date = ''
         }
     }
 
-    obj[correctField] = correct
-    obj[wrongField] = wrong
-}
+    if (form.final_interview_date) {
+        const finalDate = parseDateTimeLocal(form.final_interview_date)
+        const plan = parseDateTimeLocal(planDate)
+        if (finalDate && plan && finalDate < plan) {
+            form.final_interview_date = ''
+        }
+    }
+})
+
+watch(() => form.final_interview_date, (finalDate) => {
+    if (!finalDate) return
+
+    if (form.job_offer_schedule) {
+        const schedule = parseDateTimeLocal(form.job_offer_schedule)
+        const final = parseDateTimeLocal(finalDate)
+        if (schedule && final && schedule < final) {
+            form.job_offer_schedule = ''
+        }
+    }
+})
+
+watch(errorMessage, (val) => {
+    if (val) {
+        showError.value = true
+        setTimeout(() => (showError.value = false), 5000)
+    }
+})
+
+watch(successMessage, (val) => {
+    if (val) {
+        showSuccess.value = true
+        setTimeout(() => (showSuccess.value = false), 5000)
+    }
+})
+
+watch(
+    () => form.action_batch_id,
+    async (newBatchId) => {
+        if (!newBatchId) {
+            selectedBatchWbs.value = null
+            scheduleValidationErrors.value = {}
+            return
+        }
+
+        try {
+            const response = await axios.get(
+                `/action/applications/batches/${newBatchId}/resource-schedule`
+            )
+            selectedBatchWbs.value = response.data?.wbs || null
+        } catch (error) {
+            console.error('Failed to load resource schedule:', error)
+            selectedBatchWbs.value = null
+        }
+
+        validateAllScheduleFields()
+    }
+)
+
+watch(() => form.exam_plan_date, () => validateScheduleField('exam_plan_date'))
+watch(() => form.initial_interview_plan_date, () => validateScheduleField('initial_interview_plan_date'))
+watch(() => form.final_interview_date, () => validateScheduleField('final_interview_date'))
+watch(() => form.job_offer_schedule, () => validateScheduleField('job_offer_schedule'))
+
+watch(() => form.action_batch_id, async (newBatchId) => {
+    if (!newBatchId) {
+        noApplicantsError.value = ''
+        actionApplicants.value = []
+        form.action_applicant_id = ''
+        return
+    }
+
+    noApplicantsError.value = ''
+    form.action_applicant_id = ''
+
+    try {
+        const response = await axios.get(`/action/applications/eligible-applicants/${newBatchId}`)
+
+        if (!response.data || response.data.length === 0) {
+            noApplicantsError.value = 'No eligible applicants found for this batch.'
+            actionApplicants.value = []
+            return
+        }
+
+        actionApplicants.value = response.data.map((applicant: any) => ({
+            value: Number(applicant.value),
+            label: String(applicant.label),
+            age:
+                applicant.age !== null && applicant.age !== undefined
+                    ? Number(applicant.age)
+                    : null,
+            degree: String(applicant.degree || ''),
+        }))
+
+        noApplicantsError.value = ''
+    } catch (error: any) {
+        console.error('Failed to load eligible applicants:', error)
+        noApplicantsError.value =
+            error.response?.data?.error || 'Failed to load eligible applicants. Please try again.'
+        actionApplicants.value = []
+    }
+})
+
+watch(() => form.action_applicant_id, async (newApplicantId, oldApplicantId) => {
+    if (newApplicantId && form.action_batch_id) {
+        try {
+            const response = await axios.post('/action/applications/check-eligibility', {
+                action_applicant_id: newApplicantId,
+                action_batch_id: form.action_batch_id,
+            })
+
+            if (!response.data.eligible) {
+                form.setError(
+                    'action_applicant_id',
+                    'This applicant cannot apply at this time. A previous application from the last 6 months shows a failed status.'
+                )
+                form.action_applicant_id = ''
+                return
+            } else {
+                form.clearErrors('action_applicant_id')
+            }
+        } catch (error) {
+            console.error('Failed to check eligibility:', error)
+        }
+    }
+
+    if (oldApplicantId && newApplicantId !== oldApplicantId) {
+        form.exam_plan_date = ''
+        form.exam_actual_date = ''
+        form.exam_venue = ''
+        form.exam_atpp_part1_correct = ''
+        form.exam_atpp_part1_wrong = ''
+        form.exam_atpp_part2_correct = ''
+        form.exam_atpp_part2_wrong = ''
+        form.exam_atpp_part3_correct = ''
+        form.exam_atpp_part3_wrong = ''
+        form.exam_atpp_result = ''
+        form.exam_git_result = ''
+        form.exam_prg_result = ''
+        form.exam_application_status = ''
+        form.exam_result = ''
+        form.exam_remarks = ''
+
+        form.initial_interview_plan_date = ''
+        form.initial_interview_actual_date = ''
+        form.initial_interview_venue = ''
+        form.initial_interview_final = ''
+        form.initial_interview_application_status = ''
+        form.initial_interview_result = ''
+        form.initial_interview_remarks = ''
+
+        form.final_interview_date = ''
+        form.final_interview_final = ''
+        form.final_interview_application_status = ''
+        form.final_interview_result = ''
+        form.final_interview_remarks = ''
+
+        form.job_offer_schedule = ''
+        form.job_offer_status = ''
+        form.job_offer_remarks = ''
+        form.remarks = ''
+
+        removeFile('resume')
+        removeFile('tor')
+        removeFile('picture')
+
+        const fileInputs = document.querySelectorAll('input[type="file"]')
+        fileInputs.forEach((input: any) => {
+            if (input) input.value = ''
+        })
+    }
+})
+
+watch(() => form.exam_plan_date, (newPlanDate) => {
+    if (newPlanDate && !form.exam_atpp_result && !form.exam_git_result && !form.exam_prg_result) {
+        form.exam_application_status = '1'
+    }
+
+    if (!newPlanDate && !form.exam_atpp_result && !form.exam_git_result && !form.exam_prg_result) {
+        form.exam_application_status = ''
+    }
+})
 
 watch(
     [
-        () => form.final_interview_final,
-        () => form.final_interview_date,
+        () => form.exam_atpp_result,
+        () => form.exam_git_result,
+        () => form.exam_prg_result,
+        () => selectedApplicant.value,
+        () => form.exam_plan_date,
     ],
+    ([attp, git, prg, applicant, planDate]) => {
+        const hasAllScores = !!attp && !!git && !!prg
+
+        if (!hasAllScores) {
+            form.exam_application_status = planDate ? '1' : ''
+            return
+        }
+
+        if (!applicant) {
+            form.exam_application_status = planDate ? '1' : ''
+            return
+        }
+
+        const attpNum = Number(attp)
+        const gitNum = Number(git)
+        const prgNum = Number(prg)
+
+        if (Number.isNaN(attpNum) || Number.isNaN(gitNum) || Number.isNaN(prgNum)) {
+            form.exam_application_status = planDate ? '1' : ''
+            return
+        }
+
+        const category = getExamCategory(applicant)
+        form.exam_application_status = getExamApplicationStatus(attpNum, gitNum, prgNum, category)
+    }
+)
+
+watch(() => form.initial_interview_plan_date, (newPlanDate) => {
+    if (newPlanDate && !form.initial_interview_final) {
+        form.initial_interview_application_status = '1'
+    }
+
+    if (!newPlanDate && !form.initial_interview_final) {
+        form.initial_interview_application_status = ''
+    }
+})
+
+watch(
+    [() => form.initial_interview_final, () => form.initial_interview_plan_date],
+    ([score, planDate]) => {
+        if (!score) {
+            form.initial_interview_application_status = planDate ? '1' : ''
+            return
+        }
+
+        const numericScore = Number(score)
+
+        if (Number.isNaN(numericScore)) {
+            form.initial_interview_application_status = planDate ? '1' : ''
+            return
+        }
+
+        form.initial_interview_application_status =
+            getInitialInterviewApplicationStatus(numericScore)
+    }
+)
+
+watch(() => form.final_interview_date, (newPlanDate) => {
+    if (newPlanDate && !form.final_interview_application_status) {
+        form.final_interview_application_status = '1'
+    }
+
+    if (!newPlanDate && form.final_interview_application_status === '1') {
+        form.final_interview_application_status = ''
+    }
+})
+
+watch(() => form.job_offer_schedule, (newSchedule) => {
+    if (newSchedule && !form.job_offer_status) {
+        form.job_offer_status = '1'
+    }
+
+    if (!newSchedule && form.job_offer_status === '1') {
+        form.job_offer_status = ''
+    }
+})
+
+watch(() => form.exam_application_status, (newStatus) => {
+    if (!newStatus) {
+        form.exam_result = ''
+        return
+    }
+
+    const mappedResult = props.applicationResultMap?.exam?.[Number(newStatus)]
+    form.exam_result = mappedResult ? String(mappedResult) : ''
+})
+
+watch(() => form.initial_interview_application_status, (newStatus) => {
+    if (!newStatus) {
+        form.initial_interview_result = ''
+        return
+    }
+
+    const mappedResult = props.applicationResultMap?.initial_interview?.[Number(newStatus)]
+    form.initial_interview_result = mappedResult ? String(mappedResult) : ''
+})
+
+watch(() => form.final_interview_application_status, (newStatus) => {
+    if (!newStatus) {
+        form.final_interview_result = ''
+        return
+    }
+
+    const mappedResult = props.applicationResultMap?.final_interview?.[Number(newStatus)]
+    form.final_interview_result = mappedResult ? String(mappedResult) : ''
+})
+
+watch(
+    [() => form.final_interview_final, () => form.final_interview_date],
     ([score, finalDate]) => {
         if (!score) {
             form.final_interview_application_status = finalDate ? '1' : ''
@@ -1424,6 +1354,65 @@ watch(
         form.final_interview_application_status = getFinalInterviewApplicationStatus(numericScore)
     }
 )
+
+onMounted(() => {
+    if (props.actionBatches) {
+        actionBatches.value = Object.entries(props.actionBatches).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label),
+        }))
+    }
+
+    if (props.examVenues) {
+        examVenues.value = Object.entries(props.examVenues).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label),
+        }))
+    }
+
+    if (props.examResults) {
+        examResults.value = Object.entries(props.examResults).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label),
+        }))
+    }
+
+    if (props.examStatuses) {
+        examStatuses.value = Object.entries(props.examStatuses).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label),
+        }))
+    }
+
+    if (props.interviewResults) {
+        interviewResults.value = Object.entries(props.interviewResults).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label),
+        }))
+    }
+
+    if (props.interviewAppStatuses) {
+        interviewAppStatuses.value = Object.entries(props.interviewAppStatuses).map(
+            ([value, label]) => ({
+                value: Number(value),
+                label: String(label),
+            })
+        )
+    }
+
+    if (props.jobOfferStatuses) {
+        jobOfferStatuses.value = Object.entries(props.jobOfferStatuses).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label),
+        }))
+    }
+
+    document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>

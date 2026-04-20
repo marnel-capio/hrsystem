@@ -4,8 +4,6 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MaxLength;
-use App\Models\ActionBatchModel;
-use Carbon\Carbon;
 
 class RegisterActionApplicationRequest extends FormRequest
 {
@@ -74,111 +72,26 @@ class RegisterActionApplicationRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator)
-    {
-        $validator->after(function ($validator) {
-            $data = $this->all();
+public function withValidator($validator)
+{
+    $validator->after(function ($validator) {
+        $data = $this->all();
 
-            if (($data['exam_atpp_part1_correct'] ?? 0) + ($data['exam_atpp_part1_wrong'] ?? 0) > 40) {
-                $validator->errors()->add('exam_atpp_part1_correct', 'Part 1 total cannot exceed 40.');
-            }
-
-            if (($data['exam_atpp_part2_correct'] ?? 0) + ($data['exam_atpp_part2_wrong'] ?? 0) > 30) {
-                $validator->errors()->add('exam_atpp_part2_correct', 'Part 2 total cannot exceed 30.');
-            }
-
-            if (($data['exam_atpp_part3_correct'] ?? 0) + ($data['exam_atpp_part3_wrong'] ?? 0) > 25) {
-                $validator->errors()->add('exam_atpp_part3_correct', 'Part 3 total cannot exceed 25.');
-            }
-
-            $this->validateWbsWindow(
-                $validator,
-                (int) ($data['action_batch_id'] ?? 0),
-                'exam_plan_date',
-                'sourcing_testing',
-                'Sourcing & Testing',
-                'Exam date'
-            );
-
-            $this->validateWbsWindow(
-                $validator,
-                (int) ($data['action_batch_id'] ?? 0),
-                'initial_interview_plan_date',
-                'initial_interviews',
-                'Initial Interviews',
-                'Initial interview date'
-            );
-
-            $this->validateWbsWindow(
-                $validator,
-                (int) ($data['action_batch_id'] ?? 0),
-                'final_interview_date',
-                'final_interviews',
-                'Final Interviews',
-                'Final interview date'
-            );
-
-            $this->validateWbsWindow(
-                $validator,
-                (int) ($data['action_batch_id'] ?? 0),
-                'job_offer_schedule',
-                'contract_offers',
-                'Job Offers',
-                'Job offer date'
-            );
-        });
-    }
-
-    protected function validateWbsWindow($validator, int $batchId, string $field, string $activityKey, string $activityLabel, string $fieldLabel): void
-    {
-        $value = $this->input($field);
-
-        if (!$batchId || !$value) {
-            return;
+        if (($data['exam_atpp_part1_correct'] ?? 0) + ($data['exam_atpp_part1_wrong'] ?? 0) > 40) {
+            $validator->errors()->add('exam_atpp_part1_correct', 'Part 1 total cannot exceed 40.');
         }
 
-        $batch = ActionBatchModel::with('resourceSchedule')->find($batchId);
-
-        if (!$batch || !$batch->resourceSchedule) {
-            return;
+        if (($data['exam_atpp_part2_correct'] ?? 0) + ($data['exam_atpp_part2_wrong'] ?? 0) > 30) {
+            $validator->errors()->add('exam_atpp_part2_correct', 'Part 2 total cannot exceed 30.');
         }
 
-        $wbs = $batch->resourceSchedule->formatWBS();
-        $window = $wbs[$activityKey] ?? null;
-
-        if (!$window || empty($window['start']) || empty($window['end'])) {
-            return;
+        if (($data['exam_atpp_part3_correct'] ?? 0) + ($data['exam_atpp_part3_wrong'] ?? 0) > 25) {
+            $validator->errors()->add('exam_atpp_part3_correct', 'Part 3 total cannot exceed 25.');
         }
+    });
+}
 
-        $start = $this->isoWeekStart($window['start']);
-        $end = $this->isoWeekEnd($window['end']);
-        $date = Carbon::parse($value);
 
-        if ($date->lt($start) || $date->gt($end)) {
-            $validator->errors()->add(
-                $field,
-                "{$fieldLabel} must fall within {$activityLabel} schedule ({$window['start']} to {$window['end']})."
-            );
-        }
-    }
-
-    protected function isoWeekStart(string $week): Carbon
-    {
-        [$year, $weekNo] = explode('-W', $week);
-
-        return Carbon::now()
-            ->setISODate((int) $year, (int) $weekNo, 1)
-            ->startOfDay();
-    }
-
-    protected function isoWeekEnd(string $week): Carbon
-    {
-        [$year, $weekNo] = explode('-W', $week);
-
-        return Carbon::now()
-            ->setISODate((int) $year, (int) $weekNo, 7)
-            ->endOfDay();
-    }
 
     public function messages(): array
     {

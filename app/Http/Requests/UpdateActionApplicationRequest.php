@@ -4,8 +4,6 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MaxLength;
-use App\Models\ActionApplication;
-use Carbon\Carbon;
 
 class UpdateActionApplicationRequest extends FormRequest
 {
@@ -88,95 +86,10 @@ class UpdateActionApplicationRequest extends FormRequest
                 $validator->errors()->add('exam_atpp_part3_correct', 'Part 3 total cannot exceed 25.');
             }
 
-            $application = ActionApplication::with('batch.resourceSchedule')->find($this->route('id'));
 
-            if (!$application || !$application->batch || !$application->batch->resourceSchedule) {
-                return;
-            }
-
-            $wbs = $application->batch->resourceSchedule->formatWBS();
-
-            $this->validateWbsWindow(
-                $validator,
-                $wbs,
-                'exam_plan_date',
-                'sourcing_testing',
-                'Sourcing & Testing',
-                'Exam date'
-            );
-
-            $this->validateWbsWindow(
-                $validator,
-                $wbs,
-                'initial_interview_plan_date',
-                'initial_interviews',
-                'Initial Interviews',
-                'Initial interview date'
-            );
-
-            $this->validateWbsWindow(
-                $validator,
-                $wbs,
-                'final_interview_date',
-                'final_interviews',
-                'Final Interviews',
-                'Final interview date'
-            );
-
-            $this->validateWbsWindow(
-                $validator,
-                $wbs,
-                'job_offer_schedule',
-                'contract_offers',
-                'Job Offers',
-                'Job offer date'
-            );
         });
     }
 
-    protected function validateWbsWindow($validator, array $wbs, string $field, string $activityKey, string $activityLabel, string $fieldLabel): void
-    {
-        $value = $this->input($field);
-
-        if (!$value) {
-            return;
-        }
-
-        $window = $wbs[$activityKey] ?? null;
-
-        if (!$window || empty($window['start']) || empty($window['end'])) {
-            return;
-        }
-
-        $start = $this->isoWeekStart($window['start']);
-        $end = $this->isoWeekEnd($window['end']);
-        $date = Carbon::parse($value);
-
-        if ($date->lt($start) || $date->gt($end)) {
-            $validator->errors()->add(
-                $field,
-                "{$fieldLabel} must fall within {$activityLabel} schedule ({$window['start']} to {$window['end']})."
-            );
-        }
-    }
-
-    protected function isoWeekStart(string $week): Carbon
-    {
-        [$year, $weekNo] = explode('-W', $week);
-
-        return Carbon::now()
-            ->setISODate((int) $year, (int) $weekNo, 1)
-            ->startOfDay();
-    }
-
-    protected function isoWeekEnd(string $week): Carbon
-    {
-        [$year, $weekNo] = explode('-W', $week);
-
-        return Carbon::now()
-            ->setISODate((int) $year, (int) $weekNo, 7)
-            ->endOfDay();
-    }
 
     public function messages(): array
     {

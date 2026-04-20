@@ -151,7 +151,7 @@ function validateScheduleField(field: keyof typeof scheduleFieldMap) {
     if (entered < start || entered > end) {
         setScheduleValidationError(
             field,
-            `${config.fieldLabel} must fall within ${config.label} schedule (${activityWindow.start} to ${activityWindow.end}).`
+            `${config.fieldLabel} does not fall within WBS ${config.label} schedule (${activityWindow.start} to ${activityWindow.end}), but you may still choose this date.`
         )
     }
 }
@@ -1477,12 +1477,6 @@ watch(() => props.currentBatchWbs, () => validateAllScheduleFields(), { immediat
 
 function submit() {
     form.clearErrors();
-
-    validateAllScheduleFields()
-
-if (Object.keys(scheduleValidationErrors.value).length > 0) {
-    return
-}
 
     form.transform((data) => {
         console.log('transform data before FormData', data);
