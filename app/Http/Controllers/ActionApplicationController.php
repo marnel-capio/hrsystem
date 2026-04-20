@@ -22,14 +22,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
-use App\Mail\ApplicationUploadNotificationMail;
-
 
 class ActionApplicationController extends Controller
 {
     public function index()
     {
         $search = request('search', '');
+        $user = Auth::user();
 
         $applications = ActionApplication::listPageData($search);
         $actionBatches = ActionBatchModel::getWithTargetLocationAndApplications();
@@ -38,7 +37,7 @@ class ActionApplicationController extends Controller
             'applications'    => $applications,
             'actionBatches'   => $actionBatches,
             'filters'         => ['search' => $search],
-            'userPermissions' => auth()->user()->permissions,
+            'user_permissions' => $user->permissions,
         ]);
     }
 
@@ -1099,37 +1098,4 @@ private function visibleFinalInterviewAssignments(ActionApplication $application
 
         return $file->storeAs("uploads/{$directory}", $filename, 'public');
     }
-
-
-
-
-    public function sendResourceScheduleNotification($id)
-    {
-        $application = ActionApplication::findOrFail($id);
-
-        $batchName = optional($application->actionBatch)->action_batch ?? 'Unknown';
-
-        $hrRecruiters = User::hrRecruiters();
-
-        $emails = $hrRecruiters->pluck('email_address')->toArray();
-
-        //if no hr recruiters found
-        if (empty($emails)) {
-            return back()->with('error', config('errors.email_sent_failed.errorMessage'));
-        }
-
-        $link = url("/action/appliations/{$application->id}");
-
-        try {
-            Mail::to($emails)->send(new ApplicationUploadNotificationMail(
-                $batchName,
-                $link
-            ));
-
-            return back()->with('success', config('errors.email_sent_success.errorMessage'));
-        } catch (\Exception $e) {
-            return back()->with('error', config('errors.email_sent_failed.errorMessage'));
-        }
-    }
-
 }

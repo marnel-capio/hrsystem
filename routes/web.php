@@ -165,6 +165,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{id}/print', [ActionApplicationController::class, 'print'])
                 ->name('print');
 
+
 });
 });
 
