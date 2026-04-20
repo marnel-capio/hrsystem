@@ -3269,22 +3269,22 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $aws_start_date
      * @property string|null $job_offer_remarks
      * @property integer|null $job_offer_status
-     * @property string|null $job_offer_schedule
+     * @property \Illuminate\Support\Carbon|null $job_offer_schedule
      * @property string|null $final_interview_remarks
-     * @property bool|null $final_interview_application_status
-     * @property bool|null $final_interview_result
+     * @property integer|null $final_interview_application_status
+     * @property integer|null $final_interview_result
      * @property float|null $final_interview_final
-     * @property string|null $final_interview_date
+     * @property \Illuminate\Support\Carbon|null $final_interview_date
      * @property string|null $initial_interview_remarks
-     * @property bool|null $initial_interview_application_status
-     * @property bool|null $initial_interview_result
+     * @property integer|null $initial_interview_application_status
+     * @property integer|null $initial_interview_result
      * @property float|null $initial_interview_final
      * @property bool|null $initial_interview_venue
-     * @property string|null $initial_interview_actual_date
-     * @property string|null $initial_interview_plan_date
+     * @property \Illuminate\Support\Carbon|null $initial_interview_actual_date
+     * @property \Illuminate\Support\Carbon|null $initial_interview_plan_date
      * @property string|null $exam_remarks
-     * @property bool|null $exam_application_status
-     * @property bool|null $exam_result
+     * @property integer|null $exam_application_status
+     * @property integer|null $exam_result
      * @property float|null $exam_tech_result
      * @property float|null $exam_atpp_result
      * @property mixed $exam_atpp_part3_wrong
@@ -3294,8 +3294,8 @@ namespace App\Models {
      * @property mixed $exam_atpp_part1_wrong
      * @property mixed $exam_atpp_part1_correct
      * @property bool|null $exam_venue
-     * @property string|null $exam_actual_date
-     * @property string|null $exam_plan_date
+     * @property \Illuminate\Support\Carbon|null $exam_actual_date
+     * @property \Illuminate\Support\Carbon|null $exam_plan_date
      * @property integer $paper_screening_status
      * @property string|null $site_assignment
      * @property string|null $asking_rate
@@ -3315,10 +3315,10 @@ namespace App\Models {
      * @property string|null $work_preference
      * @property string|null $desired_salary_range
      * @property string|null $availability_date
-     * @property integer|null $answer_q4
-     * @property integer|null $answer_q3
-     * @property integer|null $answer_q2
-     * @property integer|null $answer_q1
+     * @property boolean|null $answer_q4
+     * @property boolean|null $answer_q3
+     * @property boolean|null $answer_q2
+     * @property boolean|null $answer_q1
      * @property string|null $upload_pic
      * @property string|null $upload_resume
      * @property mixed $source_project_id
@@ -3328,10 +3328,9 @@ namespace App\Models {
      * @property mixed $intermediate_applicant_id
      * @property integer $application_stage
      * @property int $id
-     * @property-read mixed $stage_label
-     * @property-read mixed $status_labels
      * @property-read mixed $full_applicant_name
      * @property-read mixed $project_name
+     * @property-read mixed $stage_label
      * @property-read \App\Models\IntermediateApplicant $intermediateApplicant
      * @property-read \App\Models\IntermediateProjectModel $project
      * @property-read \App\Models\User $contactedBy
