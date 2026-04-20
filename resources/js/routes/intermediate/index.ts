@@ -1,10 +1,10 @@
 import projects from './projects'
 import requisitions from './requisitions'
-import applicants from './applicants'
+import applications from './applications'
 const intermediate = {
     projects: Object.assign(projects, projects),
 requisitions: Object.assign(requisitions, requisitions),
-applicants: Object.assign(applicants, applicants),
+applications: Object.assign(applications, applications),
 }
 
 export default intermediate
