@@ -473,6 +473,29 @@ return [
 
     ],
 
+    'source_maps' => [
+        'type1' => [
+            'Foundit' => 1,
+            'LinkedIn' => 2,
+            'Facebook' => 3,
+            'Mynimo' => 4,
+            'Kalibrr' => 5,
+        ],
+        'type3' => [
+            'AAISI' => 1,
+            'Primover' => 2,
+            'Tech Tierra' => 3,
+            'Spring Valley' => 4,
+            'YENS' => 5,
+        ],
+    ],
+
+    'source_type_groups' => [
+        'type1' => ['Foundit', 'LinkedIn', 'Facebook', 'Mynimo', 'Kalibrr'],
+        'type2' => ['Referral', 'Recruitment Network', 'Job Fairs', 'Website', 'Rehire'],
+        'type3' => ['AAISI', 'Primover', 'Tech Tierra', 'Spring Valley', 'YENS'],
+    ],
+
     'japanese_backgrounds' => [
         1 => 'None',
         2 => 'Self Study / University Level',

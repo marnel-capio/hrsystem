@@ -11,6 +11,7 @@ use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActionApplicationController;
 use App\Http\Controllers\ApplicationImportController;
+use App\Http\Controllers\IntermediateApplicationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
@@ -50,6 +51,7 @@ Route::middleware(['auth'])->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
+
 
     //action-applicants proglang list
         Route::get('/action/applicants/{applicantId}/languages', [ActionApplicantProgrammingLanguageController::class, 'index']);
@@ -244,6 +246,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/intermediate/resource-requisitions/{id}/update', [IntermediateRequisitionController::class, 'update'])->name('intermediate.requisitions.update');
     });
 
+    Route::middleware(['check.permission'])->group(function () {
+        Route::get('/intermediate/applications', [IntermediateApplicationController::class, 'index'])
+            ->name('intermediate.applications.index');
 
     // ------------------------
 // Intermediate Applicants
@@ -264,6 +269,10 @@ Route::middleware(['auth', 'check.permission'])->group(function () {
     Route::get('/intermediate/applicants/{id}', [IntermediateApplicantController::class, 'show'])
         ->name('intermediate.applicants.show');
 });
+        // Import intermediate applicants (matches your Vue router.post)
+        Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
+            ->name('intermediate.applications.import');
+    });
 
 // ------------------------
 // Include additional routes

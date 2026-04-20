@@ -56,7 +56,6 @@ const form = useForm({
     remarks: ''
 })
 
-
 const isSourceDisabled = computed(() => ![1, 2].includes(Number(form.source_type)))
 const isOtherSourceDisabled = computed(() => Number(form.source_type) !== 3)
 
@@ -109,34 +108,38 @@ const showEmailExistsModal = ref(false)
 const pendingFormData = ref<Record<string, any> | null>(null)
 
 const rules = {
-    source_type: (val: string | number) => !!val || 'Source Type is required',
-    source: (val: string | number) => {
-        if ([1, 2].includes(Number(form.source_type)) && !val) return 'Source is required'
-        return true
-    },
-    other_source: (val: string) => {
-        if (Number(form.source_type) === 3 && !val?.trim()) return 'Other Source is required'
-        return true
-    },
-    last_name: (val: string) => !!val?.trim() || 'Last Name is required',
-    first_name: (val: string) => !!val?.trim() || 'First Name is required',
-    gender: (val: string | number) => !!val || 'Gender is required',
-    birthdate: (val: string) => !!val || 'Birthdate is required',
+    source_type: (_val: string | number) => true,
+
+    source: (_val: string | number) => true,
+
+    other_source: (_val: string) => true,
+
+    last_name: (_val: string) => true,
+
+    first_name: (_val: string) => true,
+
+    gender: (_val: string | number) => true,
+
+    birthdate: (_val: string) => true,
+
     age: (val: string | number) => {
-        if (val === '' || val === null || val === undefined) return 'Age is required'
+        if (val === '' || val === null || val === undefined) return true
         const age = Number(val)
         if (Number.isNaN(age)) return 'Age must be a valid number'
         if (age < 1) return 'The age field must be at least 1.'
         if (age > 99) return 'The age field must not be greater than 99.'
         return true
     },
+
     email_address: (val: string) => {
-        if (!val) return 'Email Address is required'
+        if (!val) return true
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(val)) return 'The email must be a valid email address'
         return true
     },
-    contact_no: (val: string) => !!val?.trim() || 'Contact Number is required',
+
+    contact_no: (_val: string) => true,
+
     emergency_contact_number: (_val: string) => true,
 }
 
@@ -147,59 +150,32 @@ function validateField(field: keyof typeof rules) {
     form.setError(field, result === true ? '' : result)
 }
 
-function validateAllRequiredFields() {
-    validateField('source_type')
-    validateField('source')
-    validateField('other_source')
-    validateField('last_name')
-    validateField('first_name')
-    validateField('gender')
-    validateField('birthdate')
+function validateFrontendFields() {
     validateField('age')
     validateField('email_address')
-    validateField('contact_no')
 }
 
-function hasBlockingErrors() {
-    const requiredFields: Array<keyof typeof rules> = [
-        'source_type',
-        'source',
-        'other_source',
-        'last_name',
-        'first_name',
-        'gender',
-        'birthdate',
+function hasBlockingFrontendErrors() {
+    const fields: Array<keyof typeof rules> = [
         'age',
         'email_address',
-        'contact_no',
     ]
 
-    return requiredFields.some(field => {
+    return fields.some(field => {
         const msg = (form.errors as any)[field]
         return !!msg
     })
 }
 
-watch(() => form.source_type, () => {
-    validateField('source_type')
-    validateField('source')
-    validateField('other_source')
-})
-
-watch(() => form.source, () => validateField('source'))
-watch(() => form.other_source, () => validateField('other_source'))
-watch(() => form.last_name, () => validateField('last_name'))
-watch(() => form.first_name, () => validateField('first_name'))
-watch(() => form.gender, () => validateField('gender'))
-watch(() => form.birthdate, () => validateField('birthdate'))
 watch(() => form.age, () => validateField('age'))
 watch(() => form.email_address, () => validateField('email_address'))
-watch(() => form.contact_no, () => validateField('contact_no'))
 
 async function submit() {
-    validateAllRequiredFields()
+    form.clearErrors()
 
-    if (hasBlockingErrors()) return
+    validateFrontendFields()
+
+    if (hasBlockingFrontendErrors()) return
 
     try {
         const { data } = await axios.post('/intermediate/applicants/check-email', {

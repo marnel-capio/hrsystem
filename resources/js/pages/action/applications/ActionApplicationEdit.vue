@@ -1877,13 +1877,15 @@ const examCriteriaDisplay = computed(() => {
         </span>
     </div>
 </div>
-<div class="form-section"
-     :class="{ 'opacity-50 pointer-events-none': isInitialBlocked }">
+<div
+    class="form-section"
+    :class="{ 'pointer-events-none opacity-50': isInitialBlocked }"
+>
     <div class="section-header">
         <h3>Initial Interview</h3>
-        <div v-if="isInitialBlocked" class="text-red-500 text-sm mb-2">
-    Initial Interview is disabled because applicant failed previous stage.
-</div>
+        <div v-if="isInitialBlocked" class="mb-2 text-sm text-red-500">
+            Initial Interview is disabled because applicant failed previous stage.
+        </div>
     </div>
 
     <div class="exam-section-layout">
@@ -1898,7 +1900,10 @@ const examCriteriaDisplay = computed(() => {
                         :min="initialInterviewPlanMin || undefined"
                         :disabled="!canEditInitialInterviewPlanDate"
                     />
-                    <span v-if="form.errors.initial_interview_plan_date" class="error-message">
+                    <span
+                        v-if="form.errors.initial_interview_plan_date"
+                        class="error-message"
+                    >
                         {{ form.errors.initial_interview_plan_date }}
                     </span>
                 </div>
@@ -1910,9 +1915,14 @@ const examCriteriaDisplay = computed(() => {
                         v-model="form.initial_interview_actual_date"
                         class="form-input"
                         :min="initialInterviewActualMin || undefined"
-                        :disabled="!editableStages.initial_interview || isInitialBlocked"
+                        :disabled="
+                            !editableStages.initial_interview || isInitialBlocked
+                        "
                     />
-                    <span v-if="form.errors.initial_interview_actual_date" class="error-message">
+                    <span
+                        v-if="form.errors.initial_interview_actual_date"
+                        class="error-message"
+                    >
                         {{ form.errors.initial_interview_actual_date }}
                     </span>
                 </div>
@@ -1923,360 +1933,161 @@ const examCriteriaDisplay = computed(() => {
                 <select
                     v-model="form.initial_interview_venue"
                     class="form-select"
-                    :disabled="!editableStages.initial_interview || isInitialBlocked"
+                    :disabled="
+                        !editableStages.initial_interview || isInitialBlocked
+                    "
                 >
                     <option value="">Select Venue</option>
-                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
+                    <option
+                        v-for="venue in examVenues"
+                        :key="venue.value"
+                        :value="venue.value"
+                    >
                         {{ venue.label }}
                     </option>
                 </select>
-                <span v-if="form.errors.initial_interview_venue" class="error-message">
+                <span
+                    v-if="form.errors.initial_interview_venue"
+                    class="error-message"
+                >
                     {{ form.errors.initial_interview_venue }}
                 </span>
             </div>
 
             <div class="form-field">
-                <label class="field-label !text-gray-500">Initial Interview Final Score</label>
+                <label class="field-label !text-gray-500">
+                    Initial Interview Final Score
+                </label>
                 <input
                     type="number"
                     step="0.01"
-                        min="0"
-    max="5"
+                    min="0"
+                    max="5"
                     v-model="form.initial_interview_final"
                     class="form-input"
-                    @input="clampScore(form, 'initial_interview_final')"
-                    :disabled="!editableStages.initial_interview || isInitialBlocked"
+                    @input="clampScore(form, 'initial_interview_final', 5)"
+                    :disabled="
+                        !editableStages.initial_interview || isInitialBlocked
+                    "
                 />
-                <span v-if="form.errors.initial_interview_final" class="error-message">
+                <span
+                    v-if="form.errors.initial_interview_final"
+                    class="error-message"
+                >
                     {{ form.errors.initial_interview_final }}
                 </span>
             </div>
+        </div>
 
-                                <div class="form-field">
-                                    <label class="field-label"
-                                        >Exam Application Status</label
-                                    >
-                                    <select
-                                        v-model="form.exam_application_status"
-                                        class="form-select"
-                                        :disabled="!editableStages.exam"
-                                    >
-                                        <option value="">Select Status</option>
-                                        <option
-                                            v-for="status in examStatuses"
-                                            :key="status.value"
-                                            :value="status.value"
-                                        >
-                                            {{ status.label }}
-                                        </option>
-                                    </select>
-                                    <span
-                                        v-if="
-                                            form.errors.exam_application_status
-                                        "
-                                        class="error-message"
-                                    >
-                                        {{
-                                            form.errors.exam_application_status
-                                        }}
-                                    </span>
-                                </div>
-                            </div>
+        <div class="exam-criteria-column">
+            <div class="criteria-panel compact">
+                <div class="criteria-panel-title">
+                    Initial Interview Criteria
+                </div>
 
-                            <div class="form-field">
-                                <label class="field-label">Exam Comments</label>
-                                <textarea
-                                    v-model="form.exam_remarks"
-                                    rows="3"
-                                    class="form-textarea"
-                                    :disabled="!editableStages.exam"
-                                ></textarea>
-                                <span
-                                    v-if="form.errors.exam_remarks"
-                                    class="error-message"
-                                >
-                                    {{ form.errors.exam_remarks }}
-                                </span>
-                            </div>
-                        </div>
-                        <div
-                            class="form-section"
-                            :class="{
-                                'pointer-events-none opacity-50':
-                                    isInitialBlocked,
-                            }"
-                        >
-                            <div class="section-header">
-                                <h3>Initial Interview</h3>
-                                <div
-                                    v-if="isInitialBlocked"
-                                    class="mb-2 text-sm text-red-500"
-                                >
-                                    Initial Interview is disabled because
-                                    applicant failed previous stage.
-                                </div>
-                            </div>
+                <div class="criteria-rule passed">
+                    <div class="criteria-rule-title">
+                        1 - Highly Recommended
+                    </div>
+                </div>
 
-                            <div class="exam-section-layout">
-                                <div class="exam-form-column">
-                                    <div class="form-grid grid-2">
-                                        <div class="form-field">
-                                            <label class="field-label"
-                                                >Plan Date</label
-                                            >
-                                            <input
-                                                type="datetime-local"
-                                                v-model="
-                                                    form.initial_interview_plan_date
-                                                "
-                                                class="form-input"
-                                                :min="
-                                                    initialInterviewPlanMin ||
-                                                    undefined
-                                                "
-                                                :disabled="
-                                                    !canEditInitialInterviewPlanDate
-                                                "
-                                            />
-                                            <span
-                                                v-if="
-                                                    form.errors
-                                                        .initial_interview_plan_date
-                                                "
-                                                class="error-message"
-                                            >
-                                                {{
-                                                    form.errors
-                                                        .initial_interview_plan_date
-                                                }}
-                                            </span>
-                                        </div>
+                <div class="criteria-rule passed">
+                    <div class="criteria-rule-title">
+                        2 - Recommended
+                    </div>
+                </div>
 
-                                        <div class="form-field">
-                                            <label class="field-label"
-                                                >Actual Date</label
-                                            >
-                                            <input
-                                                type="datetime-local"
-                                                v-model="
-                                                    form.initial_interview_actual_date
-                                                "
-                                                class="form-input"
-                                                :min="
-                                                    initialInterviewActualMin ||
-                                                    undefined
-                                                "
-                                                :disabled="
-                                                    !editableStages.initial_interview ||
-                                                    isInitialBlocked
-                                                "
-                                            />
-                                            <span
-                                                v-if="
-                                                    form.errors
-                                                        .initial_interview_actual_date
-                                                "
-                                                class="error-message"
-                                            >
-                                                {{
-                                                    form.errors
-                                                        .initial_interview_actual_date
-                                                }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-field">
-                                        <label class="field-label">Venue</label>
-                                        <select
-                                            v-model="
-                                                form.initial_interview_venue
-                                            "
-                                            class="form-select"
-                                            :disabled="
-                                                !editableStages.initial_interview ||
-                                                isInitialBlocked
-                                            "
-                                        >
-                                            <option value="">
-                                                Select Venue
-                                            </option>
-                                            <option
-                                                v-for="venue in examVenues"
-                                                :key="venue.value"
-                                                :value="venue.value"
-                                            >
-                                                {{ venue.label }}
-                                            </option>
-                                        </select>
-                                        <span
-                                            v-if="
-                                                form.errors
-                                                    .initial_interview_venue
-                                            "
-                                            class="error-message"
-                                        >
-                                            {{
-                                                form.errors
-                                                    .initial_interview_venue
-                                            }}
-                                        </span>
-                                    </div>
-
-                                    <div class="form-field">
-                                        <label class="field-label"
-                                            >Initial Interview Final
-                                            Score</label
-                                        >
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            max="5"
-                                            v-model="
-                                                form.initial_interview_final
-                                            "
-                                            class="form-input"
-                                            @input="
-                                                clampScore(
-                                                    form,
-                                                    'initial_interview_final',
-                                                    5
-                                                )
-                                            "
-                                            :disabled="
-                                                !editableStages.initial_interview ||
-                                                isInitialBlocked
-                                            "
-                                        />
-                                        <span
-                                            v-if="
-                                                form.errors
-                                                    .initial_interview_final
-                                            "
-                                            class="error-message"
-                                        >
-                                            {{
-                                                form.errors
-                                                    .initial_interview_final
-                                            }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="exam-criteria-column">
-                                    <div class="criteria-panel compact">
-                                        <div class="criteria-panel-title">
-                                            Initial Interview Criteria
-                                        </div>
-
-                                        <div class="criteria-rule passed">
-                                            <div class="criteria-rule-title">
-                                                1 - Highly Recommended
-                                            </div>
-                                        </div>
-
-                                        <div class="criteria-rule passed">
-                                            <div class="criteria-rule-title">
-                                                2 - Recommended
-                                            </div>
-                                        </div>
-
-                                        <div class="criteria-rule p2">
-                                            <div class="criteria-rule-title">
-                                                3 - Average
-                                            </div>
-                                        </div>
-
-                                        <div class="criteria-rule failed">
-                                            <div class="criteria-rule-title">
-                                                4 - Not Recommended
-                                            </div>
-                                        </div>
-
-                                        <div class="criteria-rule failed">
-                                            <div class="criteria-rule-title">
-                                                5 - Never Recommended
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-grid grid-2">
-                                <div class="form-field">
-                                    <label class="field-label">Result</label>
-                                    <input
-                                        type="text"
-                                        class="form-input"
-                                        :value="
-                                            initialInterviewResultLabel ||
-                                            (!form.initial_interview_application_status
-                                                ? 'Auto-filled from application status'
-                                                : '')
-                                        "
-                                        readonly
-                                        :disabled="
-                                            !editableStages.initial_interview ||
-                                            isInitialBlocked
-                                        "
-                                    />
-                                </div>
+                <div class="criteria-rule p2">
+                    <div class="criteria-rule-title">3 - Average</div>
+                </div>
 
                 <div class="criteria-rule failed">
-                    <div class="criteria-rule-title">5 - Never Recommended</div>
+                    <div class="criteria-rule-title">
+                        4 - Not Recommended
+                    </div>
+                </div>
+
+                <div class="criteria-rule failed">
+                    <div class="criteria-rule-title">
+                        5 - Never Recommended
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-                <div class="form-grid grid-2">
-                <div class="form-field">
-                    <label class="field-label !text-gray-500">Result</label>
-                    <input
-                        type="text"
-                        class="form-input"
-                        :value="initialInterviewResultLabel || (!form.initial_interview_application_status ? 'Auto-filled from application status' : '')"
-                        readonly
-                        :disabled="!editableStages.initial_interview || isInitialBlocked"
-                    />
-                </div>
+    <div class="form-grid grid-2">
+        <div class="form-field">
+            <label class="field-label !text-gray-500">Result</label>
+            <input
+                type="text"
+                class="form-input"
+                :value="
+                    initialInterviewResultLabel ||
+                    (!form.initial_interview_application_status
+                        ? 'Auto-filled from application status'
+                        : '')
+                "
+                readonly
+                :disabled="
+                    !editableStages.initial_interview || isInitialBlocked
+                "
+            />
+        </div>
 
-                <div class="form-field">
-                    <label class="field-label !text-gray-500">Application Status</label>
-                    <select
-                        v-model="form.initial_interview_application_status"
-                        class="form-select"
-                        :disabled="!editableStages.initial_interview || isInitialBlocked"
-                    >
-                        <option value="">Select Status</option>
-                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
-                            {{ status.label }}
-                        </option>
-                    </select>
-                </div>
-            </div>
+        <div class="form-field">
+            <label class="field-label !text-gray-500">
+                Application Status
+            </label>
+            <select
+                v-model="form.initial_interview_application_status"
+                class="form-select"
+                :disabled="
+                    !editableStages.initial_interview || isInitialBlocked
+                "
+            >
+                <option value="">Select Status</option>
+                <option
+                    v-for="status in interviewAppStatuses"
+                    :key="status.value"
+                    :value="status.value"
+                >
+                    {{ status.label }}
+                </option>
+            </select>
+        </div>
+    </div>
 
     <div class="form-field mt-3">
-        <label class="field-label !text-gray-500">Initial Interview Comments</label>
+        <label class="field-label !text-gray-500">
+            Initial Interview Comments
+        </label>
         <textarea
             v-model="form.initial_interview_remarks"
             rows="3"
             class="form-textarea"
-            :disabled="!editableStages.initial_interview || isInitialBlocked"
+            :disabled="
+                !editableStages.initial_interview || isInitialBlocked
+            "
         ></textarea>
-        <span v-if="form.errors.initial_interview_remarks" class="error-message">
+        <span
+            v-if="form.errors.initial_interview_remarks"
+            class="error-message"
+        >
             {{ form.errors.initial_interview_remarks }}
         </span>
     </div>
 </div>
-<div class="form-section"
-     :class="{ 'opacity-50 pointer-events-none': isFinalBlocked }">
+
+<div
+    class="form-section"
+    :class="{ 'pointer-events-none opacity-50': isFinalBlocked }"
+>
     <div class="section-header">
         <h3>Final Interview</h3>
-        <div v-if="isFinalBlocked" class="text-red-500 text-sm mb-2">
-    Final Interview is disabled because applicant failed previous stage.
-</div>
+        <div v-if="isFinalBlocked" class="mb-2 text-sm text-red-500">
+            Final Interview is disabled because applicant failed previous stage.
+        </div>
     </div>
 
     <div class="form-field">
@@ -2288,40 +2099,48 @@ const examCriteriaDisplay = computed(() => {
             :min="finalInterviewMin || undefined"
             :disabled="!editableStages.final_interview"
         />
-        <span v-if="form.errors.final_interview_date" class="error-message">
+        <span
+            v-if="form.errors.final_interview_date"
+            class="error-message"
+        >
             {{ form.errors.final_interview_date }}
         </span>
     </div>
 
     <div class="exam-section-layout">
         <div class="exam-form-column">
-            <div v-if="visibleFinalInterviewAssignments.length === 0" class="criteria-empty">
+            <div
+                v-if="visibleFinalInterviewAssignments.length === 0"
+                class="criteria-empty"
+            >
                 No final interviewers approved yet.
             </div>
 
             <div v-else class="atpp-stack">
                 <div
-                    v-for="(assignment, index) in visibleFinalInterviewAssignments"
+                    v-for="assignment in visibleFinalInterviewAssignments"
                     :key="assignment.id"
                     class="atpp-card"
                 >
                     <div class="atpp-card-title">
                         {{ assignment.name }}
-                        <span class="criteria-panel-subtitle">({{ assignment.role_label }})</span>
+                        <span class="criteria-panel-subtitle">
+                            ({{ assignment.role_label }})
+                        </span>
                     </div>
 
                     <div class="form-grid grid-2">
                         <div class="form-field">
                             <label class="field-label !text-gray-500">Score</label>
-<input
-    type="number"
-    v-model="assignment.score"
-    min="0"
-    max="5"
-    step="0.01"
+                            <input
+                                type="number"
+                                v-model="assignment.score"
+                                min="0"
+                                max="5"
+                                step="0.01"
                                 class="form-input"
-                                    @input="clampScore(assignment, 'score')"
-/>
+                                @input="clampScore(assignment, 'score', 5)"
+                            />
                         </div>
 
                         <div class="form-field">
@@ -2340,7 +2159,9 @@ const examCriteriaDisplay = computed(() => {
                     </div>
 
                     <div class="form-field">
-                        <label class="field-label !text-gray-500">Interviewer Remarks</label>
+                        <label class="field-label !text-gray-500">
+                            Interviewer Remarks
+                        </label>
                         <textarea
                             v-model="assignment.evaluation_remarks"
                             rows="2"
@@ -2352,129 +2173,38 @@ const examCriteriaDisplay = computed(() => {
             </div>
         </div>
 
-                                <div class="exam-criteria-column">
-                                    <div class="criteria-panel compact">
-                                        <div class="criteria-panel-title">
-                                            Final Interview Criteria
-                                        </div>
+        <div class="exam-criteria-column">
+            <div class="criteria-panel compact">
+                <div class="criteria-panel-title">
+                    Final Interview Criteria
+                </div>
 
-                                        <div class="criteria-rule passed">
-                                            <div class="criteria-rule-title">
-                                                1 - Highly Recommended
-                                            </div>
-                                        </div>
+                <div class="criteria-rule passed">
+                    <div class="criteria-rule-title">
+                        1 - Highly Recommended
+                    </div>
+                </div>
 
-                                        <div class="criteria-rule passed">
-                                            <div class="criteria-rule-title">
-                                                2 - Recommended
-                                            </div>
-                                        </div>
+                <div class="criteria-rule passed">
+                    <div class="criteria-rule-title">
+                        2 - Recommended
+                    </div>
+                </div>
 
-                                        <div class="criteria-rule p2">
-                                            <div class="criteria-rule-title">
-                                                3 - Average
-                                            </div>
-                                        </div>
-
-                                        <div class="criteria-rule failed">
-                                            <div class="criteria-rule-title">
-                                                4 - Not Recommended
-                                            </div>
-                                        </div>
-
-                                        <div class="criteria-rule failed">
-                                            <div class="criteria-rule-title">
-                                                5 - Never Recommended
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-grid grid-3 mt-3">
-                                <div class="form-field">
-                                    <label class="field-label"
-                                        >Final Score</label
-                                    >
-<input
-    type="number"
-    v-model="form.final_interview_final"
-    min="0"
-    max="5"
-    step="0.01"
-    class="form-input"
-    :readonly="!canEditFinalInterviewDecision"
-    :disabled="!editableStages.final_interview"
-    @input="
-        finalInterviewOverallManuallyEdited = true;
-        canEditFinalInterviewDecision && clampScore(form, 'final_interview_final', 5)
-    "
-/>
-
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Result</label>
-                                    <input
-                                        v-if="
-                                            allFinalInterviewersPassed ||
-                                            allFinalInterviewersFailed
-                                        "
-                                        type="text"
-                                        class="form-input"
-                                        :value="
-                                            finalInterviewResultLabel ||
-                                            (!form.final_interview_application_status
-                                                ? 'Auto-filled from application status'
-                                                : '')
-                                        "
-                                        readonly
-                                        :disabled="
-                                            !editableStages.final_interview
-                                        "
-                                    />
-                                        <p
-    v-if="!canEditFinalInterviewDecision"
-    class="mt-1 text-xs text-zinc-500"
->
-    Final result is editable by HR Admins or HR Managers.
-</p>
-                                    <select
-                                        v-else-if="
-                                            hasMixedFinalInterviewResults &&
-                                            canEditFinalInterviewDecision
-                                        "
-                                        v-model="form.final_interview_result"
-                                        @change="markFinalInterviewOverallManualEdit()"
-                                        class="form-select"
-                                        :disabled="
-                                            !editableStages.final_interview
-                                        "
-                                    >
-                                        <option value="">
-                                            Select Final Result
-                                        </option>
-                                        <option value="2">Passed</option>
-                                        <option value="3">Failed</option>
-                                    </select>
-
-                                    <input
-                                        v-else
-                                        type="text"
-                                        class="form-input"
-                                        :value="
-                                            finalInterviewResultLabel ||
-                                            'For HR deliberation'
-                                        "
-                                        readonly
-                                        :disabled="
-                                            !editableStages.final_interview
-                                        "
-                                    />
-                                </div>
+                <div class="criteria-rule p2">
+                    <div class="criteria-rule-title">3 - Average</div>
+                </div>
 
                 <div class="criteria-rule failed">
-                    <div class="criteria-rule-title">5 - Never Recommended</div>
+                    <div class="criteria-rule-title">
+                        4 - Not Recommended
+                    </div>
+                </div>
+
+                <div class="criteria-rule failed">
+                    <div class="criteria-rule-title">
+                        5 - Never Recommended
+                    </div>
                 </div>
             </div>
         </div>
@@ -2485,30 +2215,48 @@ const examCriteriaDisplay = computed(() => {
             <label class="field-label !text-gray-500">Final Score</label>
             <input
                 type="number"
-                step="0.01"
-                    min="0"
-    max="5"
                 v-model="form.final_interview_final"
-                @input="handleFinalScoreManualInput(); clampScore(form, 'final_interview_final')"
+                min="0"
+                max="5"
+                step="0.01"
                 class="form-input"
+                :readonly="!canEditFinalInterviewDecision"
                 :disabled="!editableStages.final_interview"
+                @input="
+                    finalInterviewOverallManuallyEdited = true;
+                    canEditFinalInterviewDecision &&
+                        clampScore(form, 'final_interview_final', 5)
+                "
             />
         </div>
 
         <div class="form-field">
             <label class="field-label !text-gray-500">Result</label>
+
             <input
-                v-if="allFinalInterviewersPassed || allFinalInterviewersFailed"
+                v-if="
+                    allFinalInterviewersPassed ||
+                    allFinalInterviewersFailed
+                "
                 type="text"
                 class="form-input"
-                :value="finalInterviewResultLabel || (!form.final_interview_application_status ? 'Auto-filled from application status' : '')"
+                :value="
+                    finalInterviewResultLabel ||
+                    (!form.final_interview_application_status
+                        ? 'Auto-filled from application status'
+                        : '')
+                "
                 readonly
                 :disabled="!editableStages.final_interview"
             />
 
             <select
-                v-else-if="hasMixedFinalInterviewResults && canEditFinalInterviewDecision"
+                v-else-if="
+                    hasMixedFinalInterviewResults &&
+                    canEditFinalInterviewDecision
+                "
                 v-model="form.final_interview_result"
+                @change="markFinalInterviewOverallManualEdit()"
                 class="form-select"
                 :disabled="!editableStages.final_interview"
             >
@@ -2525,36 +2273,56 @@ const examCriteriaDisplay = computed(() => {
                 readonly
                 :disabled="!editableStages.final_interview"
             />
+
+            <p
+                v-if="!canEditFinalInterviewDecision"
+                class="mt-1 text-xs text-zinc-500"
+            >
+                Final result is editable by HR Admins or HR Managers.
+            </p>
         </div>
 
         <div class="form-field">
-            <label class="field-label !text-gray-500">Application Status</label>
+            <label class="field-label !text-gray-500">
+                Application Status
+            </label>
             <input
                 type="text"
                 class="form-input"
-                :value="interviewAppStatuses.find((s) => String(s.value) === String(form.final_interview_application_status))?.label || ''"
+                :value="
+                    interviewAppStatuses.find(
+                        (s) =>
+                            String(s.value) ===
+                            String(form.final_interview_application_status),
+                    )?.label || ''
+                "
                 readonly
                 :disabled="!editableStages.final_interview"
             />
         </div>
     </div>
 
-    <div class="form-field mt-3">
-        <label class="field-label !text-gray-500">Final Interview Comments</label>
+        <div class="form-field mt-3">
+        <label class="field-label !text-gray-500">
+            Final Interview Comments
+        </label>
         <textarea
             v-model="form.final_interview_remarks"
             rows="3"
             class="form-textarea"
             :disabled="!editableStages.final_interview"
         ></textarea>
-        <span v-if="form.errors.final_interview_remarks" class="error-message">
+        <span
+            v-if="form.errors.final_interview_remarks"
+            class="error-message"
+        >
             {{ form.errors.final_interview_remarks }}
         </span>
     </div>
 </div>
 
-                        <div class="form-section"
-     :class="{ 'opacity-50 pointer-events-none': isJobOfferBlocked }">
+<div class="form-section"
+    :class="{ 'opacity-50 pointer-events-none': isJobOfferBlocked }">
                             <div class="section-header">
                                 <h3>Job Offer</h3>
                                 <div

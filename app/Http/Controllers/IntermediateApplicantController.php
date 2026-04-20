@@ -38,7 +38,7 @@ class IntermediateApplicantController extends Controller
             $applicant = IntermediateApplicant::upsertByEmail($request->validated());
 
             Log::createLog(
-                'INTERMEDIATE',
+                'Intermediate',
                 "Applicant with {$applicant->email_address} email address registered/updated successfully.",
                 $applicant->id
             );
