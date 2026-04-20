@@ -26,7 +26,9 @@ class IntermediateRequisitionController extends Controller
         $search = $request->input('search');
 
         $requisitions = IntermediateRequisitionModel::getPaginated($search, perPage: 20);
-        $requisitionsTotal = IntermediateRequisitionModel::search($search)->count();
+        $requisitionsTotal = IntermediateRequisitionModel::whereHas('project')
+        ->search($search)
+        ->count();
 
         return Inertia::render('intermediate/resource-requisitions/List', [
             'requisitions' => $requisitions,

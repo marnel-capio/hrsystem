@@ -24,7 +24,8 @@ class IntermediateProjectModel extends Model
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            $query->where('project_name', 'like', "%{$search}%");
+            $query->where('project_name', 'like', "%{$search}%")
+            ->orWhere('project_description', 'like', "%{$search}%");
         }
  
         return $query;

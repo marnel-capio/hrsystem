@@ -17,7 +17,7 @@ class ActionApplicantController extends Controller
 {
     public function index()
     {
-        $applicants = ActionApplicant::with('programmingLanguages')
+        $applicants = ActionApplicant::with('programmingLanguages', 'skills')
                 ->orderBy('created_time', 'desc')
                 ->get();
 
@@ -30,12 +30,14 @@ class ActionApplicantController extends Controller
     public function show($id)
     {
         // Fetch applicant with relations: updatedBy, application, programmingLanguages
-        $applicant = ActionApplicant::with(['updatedBy', 'applications', 'programmingLanguages'])
+        $applicant = ActionApplicant::with(['updatedBy', 'applications', 'programmingLanguages',  'skills'])
             ->findOrFail($id);
 
         // Fetch sources and source types from config/constants.php
         $sources = Config::get('constants.sources', []);
         $sourceTypes = Config::get('constants.source_types', []);
+        $japaneseBackgrounds = Config::get('constants.japanese_backgrounds', []);
+        $japaneseLevels = Config::get('constants.japanese_levels', []);
 
         // Add human-readable source labels
         $applicant->source_label = $sources[$applicant->source] ?? null;
@@ -49,6 +51,8 @@ class ActionApplicantController extends Controller
         return Inertia::render('action/applicants/Detail', [
             'applicant' => $applicant,
             'user_permissions' => auth()->user()?->permissions ?? 0,
+            'japaneseBackgrounds' => $japaneseBackgrounds,
+            'japaneseLevels' => $japaneseLevels,
         ]);
     }
 
@@ -60,12 +64,16 @@ class ActionApplicantController extends Controller
         $sourceTypes = config('constants.sourceTypes', []);
         $sources = config('constants.sources', []);
         $genders = config('constants.genders', []);
+        $japaneseBackgrounds = config('constants.japanese_backgrounds', []);
+        $japaneseLevels = config('constants.japanese_levels', []);
 
         return Inertia::render('action/applicants/Edit', [
             'applicant' => $applicant,
             'sourceTypes' => $sourceTypes,
             'sources' => $sources,
             'genders' => $genders,
+            'japaneseBackgrounds' => $japaneseBackgrounds,
+            'japaneseLevels' => $japaneseLevels,
         ]);
     }
 
@@ -80,7 +88,8 @@ class ActionApplicantController extends Controller
                 'source_type', 'source', 'other_source', 'last_name', 'first_name', 'middle_name',
                 'email_address', 'gender', 'age', 'school', 'degree', 'others_degree',
                 'expected_graduation', 'awards_recognition', 'other_examination_certificate',
-                'thesis_project', 'extra_curricular',
+                'thesis_project', 'extra_curricular','japanese_background','japanese_level',
+                'background_remarks',
             ]);
 
             // TEMPORARY: force an exception to test the catch block
@@ -110,6 +119,8 @@ class ActionApplicantController extends Controller
             'sourceTypes' => config('constants.sourceTypes'),
             'sources' => config('constants.sources'),
             'genders' => config('constants.genders'),
+            'japaneseBackgrounds' => config('constants.japanese_backgrounds'),
+            'japaneseLevels' => config('constants.japanese_levels'),
         ]);
     }
 
@@ -139,6 +150,8 @@ class ActionApplicantController extends Controller
                 'sourceTypes' => config('constants.sourceTypes'),
                 'sources' => config('constants.sources'),
                 'genders' => config('constants.genders'),
+                'japaneseBackgrounds' => config('constants.japanese_backgrounds'),
+                'japaneseLevels' => config('constants.japanese_levels'),
                 'flash' => [
                     'error' => config('errors.transaction_failed.errorMessage'),
                 ],

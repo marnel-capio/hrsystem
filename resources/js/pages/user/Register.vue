@@ -170,7 +170,7 @@ function submit() {
 
                     <!-- Name fields -->
                     <div class="form-group">
-                        <label>First Name</label>
+                        <label style="font-weight: bold;" class="text-black">First Name <span class="text-red-500">*</span></label>
                         <input v-model="form.first_name" type="text" placeholder="Enter first name" />
                         <span v-if="firstNameError || form.errors.first_name" class="error">
                             {{ firstNameError ?? form.errors.first_name }}
@@ -178,7 +178,7 @@ function submit() {
                     </div>
 
                     <div class="form-group">
-                        <label>Last Name</label>
+                        <label style="font-weight: bold;">Last Name <span class="text-red-500">*</span></label>
                         <input v-model="form.last_name" type="text" placeholder="Enter last name" />
                         <span v-if="lastNameError || form.errors.last_name" class="error">
                             {{ lastNameError ?? form.errors.last_name }}
@@ -186,7 +186,7 @@ function submit() {
                     </div>
 
                     <div class="form-group">
-                        <label>Middle Name</label>
+                        <label style="color: gray;">Middle Name</label>
                         <input v-model="form.middle_name" type="text" placeholder="Enter middle name (optional)" />
                         <span v-if="middleNameError || form.errors.middle_name" class="error">
                             {{ middleNameError ?? form.errors.middle_name }}
@@ -195,7 +195,7 @@ function submit() {
 
                     <!-- Contact -->
                     <div class="form-group">
-                        <label>Address</label>
+                        <label style="font-weight: bold;">Address <span class="text-red-500">*</span></label>
                         <input v-model="form.address" type="text" placeholder="Enter address" />
                         <span v-if="addressError || form.errors.address" class="error">
                             {{ addressError ?? form.errors.address }}
@@ -203,7 +203,7 @@ function submit() {
                     </div>
 
                     <div class="form-group">
-                        <label>Contact Number</label>
+                        <label style="font-weight: bold;">Contact Number <span class="text-red-500">*</span></label>
                         <input v-model="form.contact_no" type="text" placeholder="09XXXXXXXXX" />
                         <span v-if="contactError || form.errors.contact_no" class="error">
                             {{ contactError ?? form.errors.contact_no }}
@@ -212,7 +212,7 @@ function submit() {
 
                     <!-- Email & password -->
                     <div class="form-group">
-                        <label>Email Address</label>
+                        <label style="font-weight: bold;">Email Address <span class="text-red-500">*</span></label>
                         <input v-model="form.email_address" type="text" placeholder="Enter email address" />
                         <span v-if="emailError || form.errors.email_address" class="error">
                             {{ emailError ?? form.errors.email_address }}
@@ -220,7 +220,7 @@ function submit() {
                     </div>
 
                     <div class="form-group">
-                        <label>Password</label>
+                        <label style="font-weight: bold;">Password <span class="text-red-500">*</span></label>
 
                         <div class="password-wrapper">
                             <input v-model="form.password" :type="showPassword ? 'text' : 'password'"
@@ -238,7 +238,7 @@ function submit() {
                     </div>
 
                     <div class="form-group">
-                        <label>Confirm Password</label>
+                        <label style="font-weight: bold;">Confirm Password <span class="text-red-500">*</span></label>
 
                         <div class="password-wrapper">
                             <input v-model="form.password_confirmation"
@@ -253,7 +253,7 @@ function submit() {
 
                     <!-- Position -->
                     <div class="form-group">
-                        <label>Position</label>
+                        <label style="font-weight: bold;">Position <span class="text-red-500">*</span></label>
                         <select v-model="form.position">
                             <option disabled value="">Select Position</option>
                             <option v-for="pos in positionOptions" :key="pos.value" :value="pos.value">
@@ -267,7 +267,7 @@ function submit() {
 
                     <!-- Permissions -->
                     <div class="form-group">
-                        <label>Permissions</label>
+                        <label style="font-weight: bold;">Permissions <span class="text-red-500">*</span></label>
                         <select v-model="form.permissions">
                             <option disabled value="">Select Role</option>
                             <option v-for="perm in permissionLevels" :key="perm.value" :value="perm.value">
@@ -298,7 +298,6 @@ function submit() {
 
 
 <style scoped>
-/* Page header */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -310,6 +309,10 @@ function submit() {
 .page-title {
     font-size: 1.5rem;
     font-weight: 600;
+}
+
+.form-group label {
+    color: #000;
 }
 
 /* Center form card */
