@@ -45,6 +45,7 @@ class ActionApplicationController extends Controller
         return Inertia::render('action/applications/ActionApplicationRegister', array_merge(
             [
                 'actionBatches' => ActionBatchModel::pluck('action_batch', 'id')->toArray(),
+                'initialInterviewAssignments' => [],
                 'finalInterviewAssignments' => [],
                 'canEditFinalInterviewDecision' => in_array((int) auth()->user()->permissions, [1, 2, 3], true),
                 'user_permissions' => auth()->user()->permissions,
@@ -94,53 +95,59 @@ class ActionApplicationController extends Controller
         }
     }
 
-    public function show($id)
-    {
-        $application = ActionApplication::with([
-            'applicant',
-            'batch',
-            'interviews.interviewer',
-        ])->findOrFail($id);
+public function show($id)
+{
+    $application = ActionApplication::with([
+        'applicant',
+        'batch',
+        'interviews.interviewer',
+    ])->findOrFail($id);
 
-        $interviews = $application->interviews
-            ->map(fn ($interview) => $interview->toDisplayArray())
-            ->values();
+    $interviews = $application->interviews
+        ->map(fn ($interview) => $interview->toDisplayArray())
+        ->values();
 
-        $finalInterviewAssignments = $this->visibleFinalInterviewAssignments($application)
-            ->map(fn ($interview) => $interview->toDisplayArray())
-            ->values();
+    $initialInterviewAssignments = $this->visibleInitialInterviewAssignments($application)
+        ->map(fn ($interview) => $interview->toDisplayArray())
+        ->values();
 
-        $availableInterviewers = User::query()
-            ->select([
-                'id',
-                'first_name',
-                'last_name',
-                'middle_name',
-                'position',
-                'permissions',
-                'email_address',
-            ])
-            ->actionInterviewers()
-            ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->get()
-            ->map(fn ($user) => $user->toInterviewerOption())
-            ->values();
+    $finalInterviewAssignments = $this->visibleFinalInterviewAssignments($application)
+        ->map(fn ($interview) => $interview->toDisplayArray())
+        ->values();
 
-        return Inertia::render('action/applications/ActionApplicationDetail', array_merge(
-            [
-                'application' => $application,
-                'interviews' => $interviews,
-                'finalInterviewAssignments' => $finalInterviewAssignments,
-                'canEditFinalInterviewDecision' => $this->isHrFinalDecisionEditor(),
-                'availableInterviewers' => $availableInterviewers,
-                'hasMixedFinalInterviewResults' => $application->hasMixedFinalInterviewResults(),
-                'user_permissions' => auth()->user()->permissions,
-                'user_id' => auth()->id(),
-            ],
-            $this->applicationFormOptions()
-        ));
-    }
+    $availableInterviewers = User::query()
+        ->select([
+            'id',
+            'first_name',
+            'last_name',
+            'middle_name',
+            'position',
+            'permissions',
+            'email_address',
+        ])
+        ->actionInterviewers()
+        ->orderBy('last_name')
+        ->orderBy('first_name')
+        ->get()
+        ->map(fn ($user) => $user->toInterviewerOption())
+        ->values();
+
+    return Inertia::render('action/applications/ActionApplicationDetail', array_merge(
+        [
+            'application' => $application,
+            'interviews' => $interviews,
+            'initialInterviewAssignments' => $initialInterviewAssignments,
+            'finalInterviewAssignments' => $finalInterviewAssignments,
+            'canEditFinalInterviewDecision' => $this->isHrFinalDecisionEditor(),
+            'availableInterviewers' => $availableInterviewers,
+            'hasMixedInitialInterviewResults' => $application->hasMixedInitialInterviewEvaluations(),
+            'hasMixedFinalInterviewResults' => $application->hasMixedFinalInterviewResults(),
+            'user_permissions' => auth()->user()->permissions,
+            'user_id' => auth()->id(),
+        ],
+        $this->applicationFormOptions()
+    ));
+}
 
     public function edit($id)
     {
@@ -163,6 +170,9 @@ class ActionApplicationController extends Controller
                 'application' => $application,
                 'editableStages' => $editableStages,
                 'user_permissions' => $permission,
+                'initialInterviewAssignments' => $this->visibleInitialInterviewAssignments($application)
+    ->map(fn ($interview) => $interview->toDisplayArray())
+    ->values(),
                 'finalInterviewAssignments' => $this->visibleFinalInterviewAssignments($application)
                     ->map(fn ($interview) => $interview->toDisplayArray())
                     ->values(),
@@ -173,68 +183,73 @@ class ActionApplicationController extends Controller
         ));
     }
 
-    public function update(UpdateActionApplicationRequest $request, $id)
-    {
-        $application = ActionApplication::with(['interviews', 'applicant'])->findOrFail($id);
-        $originalData = $application->toArray();
+public function update(UpdateActionApplicationRequest $request, $id)
+{
+    $application = ActionApplication::with(['interviews', 'applicant'])->findOrFail($id);
+    $originalData = $application->toArray();
 
-        $validated = $request->validated();
-        $validated = $this->handleUploads($request, $validated, true);
+    $validated = $request->validated();
+    $validated = $this->handleUploads($request, $validated, true);
 
-        $permission = (int) auth()->user()->permissions;
-        $editableStages = $application->getEditableStagesFor(auth()->user());
+    $permission = (int) auth()->user()->permissions;
+    $editableStages = $application->getEditableStagesFor(auth()->user());
 
-        if (!in_array(true, $editableStages, true)) {
-            abort(403, 'You are not allowed to update this application.');
-        }
+    if (!in_array(true, $editableStages, true)) {
+        abort(403, 'You are not allowed to update this application.');
+    }
 
-        if (!in_array($permission, config('constants.full_edit_permissions', []), true)) {
-            $validated = $this->filterValidatedFieldsByEditableStages($validated, $editableStages);
-        }
+    if (!in_array($permission, config('constants.full_edit_permissions', []), true)) {
+        $validated = $this->filterValidatedFieldsByEditableStages($validated, $editableStages);
+    }
 
-        //  BLOCK STAGES IF PREVIOUS FAILED
-if ($application->isStageBlocked('initial')) {
-    unset(
-        $validated['initial_interview_plan_date'],
-        $validated['initial_interview_actual_date'],
-        $validated['initial_interview_final'],
-        $validated['initial_interview_result'],
-        $validated['initial_interview_application_status'],
-        $validated['initial_interview_remarks']
-    );
-}
+    // BLOCK STAGES IF PREVIOUS FAILED
+    if ($application->isStageBlocked('initial')) {
+        unset(
+            $validated['initial_interview_plan_date'],
+            $validated['initial_interview_actual_date'],
+            $validated['initial_interview_final'],
+            $validated['initial_interview_result'],
+            $validated['initial_interview_application_status'],
+            $validated['initial_interview_remarks'],
+            $validated['initial_interview_assignments']
+        );
+    }
 
-if ($application->isStageBlocked('final')) {
-    unset(
-        $validated['final_interview_date'],
-        $validated['final_interview_final'],
-        $validated['final_interview_result'],
-        $validated['final_interview_application_status'],
-        $validated['final_interview_remarks'],
-        $validated['final_interview_assignments']
-    );
-}
+    if ($application->isStageBlocked('final')) {
+        unset(
+            $validated['final_interview_date'],
+            $validated['final_interview_final'],
+            $validated['final_interview_result'],
+            $validated['final_interview_application_status'],
+            $validated['final_interview_remarks'],
+            $validated['final_interview_assignments']
+        );
+    }
 
-if ($application->isStageBlocked('job_offer')) {
-    unset(
-        $validated['job_offer_schedule'],
-        $validated['job_offer_status'],
-        $validated['job_offer_remarks']
-    );
-}
+    if ($application->isStageBlocked('job_offer')) {
+        unset(
+            $validated['job_offer_schedule'],
+            $validated['job_offer_status'],
+            $validated['job_offer_remarks']
+        );
+    }
 
-        DB::beginTransaction();
+    DB::beginTransaction();
 
-        try {
-$this->syncFinalInterviewEvaluationFromRequest($application, $validated);
+    try {
+        // Save per-interviewer evaluation rows first
+        $this->syncInitialInterviewEvaluationFromRequest($application, $validated);
+        $this->syncFinalInterviewEvaluationFromRequest($application, $validated);
 
-$application->refresh();
-$application->load('finalInterviewAssignments');
+        // Reload saved initial interview assignment rows into validated payload
+        $application->refresh();
+        $application->load('initialInterviewAssignments');
 
-$validated['final_interview_assignments'] = $application->finalInterviewAssignments
+$validated['initial_interview_assignments'] = $application->initialInterviewAssignments
     ->map(function ($row) {
         return [
             'id' => $row->id,
+            'status' => $row->status,
             'score' => $row->score,
             'evaluation_result' => $row->evaluation_result,
             'evaluation_remarks' => $row->evaluation_remarks,
@@ -242,46 +257,67 @@ $validated['final_interview_assignments'] = $application->finalInterviewAssignme
     })
     ->toArray();
 
-$validated = ActionApplication::normalizeComputedFields(
-    array_merge($application->toArray(), $validated)
-);
+        // Reload saved final interview assignment rows into validated payload
+        $application->refresh();
+        $application->load('finalInterviewAssignments');
 
-            $application->updateApplication($validated);
-            $application->refresh();
+$validated['final_interview_assignments'] = $application->finalInterviewAssignments
+    ->map(function ($row) {
+        return [
+            'id' => $row->id,
+            'status' => $row->status,
+            'score' => $row->score,
+            'evaluation_result' => $row->evaluation_result,
+            'evaluation_remarks' => $row->evaluation_remarks,
+        ];
+    })
+    ->toArray();
 
-            $application->clearBlockedStages();
-$application->refresh();
+        // Recompute parent-level fields from latest assignment data
+        $validated = ActionApplication::normalizeComputedFields(
+            array_merge($application->toArray(), $validated)
+        );
 
-            $this->syncFinalInterviewOutcomeOnApplication($application, $validated);
-            $application->refresh();
+        $application->updateApplication($validated);
+        $application->refresh();
 
-            $application->syncInterviewStatusesFromStageResults();
+        $application->clearBlockedStages();
+        $application->refresh();
 
-            $application->refresh();
-            $application->load('applicant');
+        // Sync derived application outcomes from assignment rows
+        $this->syncInitialInterviewOutcomeOnApplication($application, $validated);
+        $application->refresh();
 
-            $detailLines = $this->buildApplicationUpdateDetailLines($originalData, $application);
+        $this->syncFinalInterviewOutcomeOnApplication($application, $validated);
+        $application->refresh();
 
-            Log::createLog(
-                'ACTION',
-                'Updated ACTION Application: ' .
-                ($application->applicant->first_name ?? '') . ' ' .
-                ($application->applicant->last_name ?? '') . ".\n" .
-                "Details:\n" .
-                implode("\n", $detailLines),
-                auth()->id()
-            );
+        $application->syncInterviewStatusesFromStageResults();
 
-            DB::commit();
+        $application->refresh();
+        $application->load('applicant');
 
-            return redirect()
-                ->route('action.applications.show', $application->id)
-                ->with('success', config('errors.record_updated_successfully.errorMessage'));
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        $detailLines = $this->buildApplicationUpdateDetailLines($originalData, $application);
+
+        Log::createLog(
+            'ACTION',
+            'Updated ACTION Application: ' .
+            ($application->applicant->first_name ?? '') . ' ' .
+            ($application->applicant->last_name ?? '') . ".\n" .
+            "Details:\n" .
+            implode("\n", $detailLines),
+            auth()->id()
+        );
+
+        DB::commit();
+
+        return redirect()
+            ->route('action.applications.show', $application->id)
+            ->with('success', config('errors.record_updated_successfully.errorMessage'));
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        throw $e;
     }
+}
 
     public function print($id)
     {
@@ -295,6 +331,10 @@ $application->refresh();
             ->map(fn ($interview) => $interview->toDisplayArray())
             ->values();
 
+            $initialInterviewAssignments = $this->visibleInitialInterviewAssignments($application)
+    ->map(fn ($interview) => $interview->toDisplayArray())
+    ->values();
+
         $finalInterviewAssignments = $this->visibleFinalInterviewAssignments($application)
             ->map(fn ($interview) => $interview->toDisplayArray())
             ->values();
@@ -302,6 +342,7 @@ $application->refresh();
         return view('action.applications.print', [
             'application' => $application,
             'interviews' => $interviews,
+            'initialInterviewAssignments' => $initialInterviewAssignments,
             'finalInterviewAssignments' => $finalInterviewAssignments,
             'examVenues' => config('constants.examVenues'),
         ]);
@@ -1097,4 +1138,54 @@ private function visibleFinalInterviewAssignments(ActionApplication $application
 
         return $file->storeAs("uploads/{$directory}", $filename, 'public');
     }
+
+private function visibleInitialInterviewAssignments(ActionApplication $application)
+{
+    return $application->initialInterviewAssignments()
+        ->with('interviewer')
+        ->whereIn('status', [
+            config('constants.interview_assignment_status.approved'),
+            config('constants.interview_assignment_status.completed'),
+        ])
+        ->orderBy('id')
+        ->get();
+}
+
+private function syncInitialInterviewEvaluationFromRequest(ActionApplication $application, array $validated): void
+{
+    $rows = $validated['initial_interview_assignments'] ?? null;
+
+    if (!is_array($rows)) {
+        return;
+    }
+
+    foreach ($rows as $row) {
+        if (empty($row['id'])) {
+            continue;
+        }
+
+        ActionApplicationInterview::query()
+            ->where('id', $row['id'])
+            ->where('action_application_id', $application->id)
+            ->where('interview_type', config('constants.interview_types.initial'))
+            ->update([
+                'score' => $row['score'] !== '' ? ($row['score'] ?? null) : null,
+                'evaluation_result' => $row['evaluation_result'] !== '' ? ($row['evaluation_result'] ?? null) : null,
+                'evaluation_remarks' => $row['evaluation_remarks'] ?? null,
+                'updated_by' => auth()->id(),
+                'updated_time' => now(),
+            ]);
+    }
+}
+
+private function syncInitialInterviewOutcomeOnApplication(ActionApplication $application, array $validated): void
+{
+    if (!array_key_exists('initial_interview_assignments', $validated)) {
+        return;
+    }
+
+    $application->refresh();
+    $application->load('initialInterviewAssignments');
+    $application->syncInitialInterviewOutcomeFromAssignments(true);
+}
 }

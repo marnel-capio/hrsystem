@@ -35,6 +35,12 @@ public function rules(): array
         'exam_application_status' => 'nullable|integer',
         'exam_remarks' => ['nullable', 'string', new MaxLength(1024)],
 
+        'initial_interview_assignments' => 'nullable|array',
+'initial_interview_assignments.*.id' => 'required|integer|exists:action_application_interviews,id',
+'initial_interview_assignments.*.score' => 'nullable|numeric|between:0,5',
+'initial_interview_assignments.*.evaluation_result' => 'nullable|integer|in:1,2,3',
+'initial_interview_assignments.*.evaluation_remarks' => ['nullable', 'string', new MaxLength(1024)],
+
         'initial_interview_plan_date' => 'nullable|date|after:exam_plan_date',
         'initial_interview_actual_date' => 'nullable|date|after_or_equal:initial_interview_plan_date',
         'initial_interview_venue' => 'nullable|integer',
@@ -91,6 +97,12 @@ public function withValidator($validator)
         $errors = config('errors');
 
         return [
+
+        'initial_interview_assignments.*.id.exists' => 'One of the initial interview assignments is invalid.',
+'initial_interview_assignments.*.score.numeric' => 'Initial interviewer score must be a valid number.',
+'initial_interview_assignments.*.score.between' => 'Initial interviewer score must be between 0 and 5.',
+'initial_interview_assignments.*.evaluation_result.in' => 'Initial interviewer result must be Pending, Passed, or Failed.',
+
              'final_interview_assignments.*.id.exists' => 'One of the final interview assignments is invalid.',
         'final_interview_assignments.*.score.numeric' => 'Final interviewer score must be a valid number.',
         'final_interview_assignments.*.score.between' => 'Final interviewer score must be between 0 and 5.',

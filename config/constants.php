@@ -280,15 +280,16 @@ return [
             'exam_application_status',
             'exam_remarks',
         ],
-        'initial_interview' => [
-            'initial_interview_plan_date',
-            'initial_interview_actual_date',
-            'initial_interview_venue',
-            'initial_interview_final',
-            'initial_interview_result',
-            'initial_interview_application_status',
-            'initial_interview_remarks',
-        ],
+'initial_interview' => [
+    'initial_interview_plan_date',
+    'initial_interview_actual_date',
+    'initial_interview_venue',
+    'initial_interview_assignments',
+    'initial_interview_final',
+    'initial_interview_result',
+    'initial_interview_application_status',
+    'initial_interview_remarks',
+],
         'final_interview' => [
             'final_interview_date',
             'final_interview_score_1',
@@ -542,7 +543,7 @@ return [
         'type2' => ['Referral', 'Recruitment Network', 'Job Fairs', 'Website', 'Rehire'],
         'type3' => ['AAISI', 'Primover', 'Tech Tierra', 'Spring Valley', 'YENS'],
     ],
-    
+
     'japanese_backgrounds' => [
         1 => 'None',
         2 => 'Self Study / University Level',
@@ -557,5 +558,5 @@ return [
         1 => 'N1',
     ],
 
-    
+
 ];

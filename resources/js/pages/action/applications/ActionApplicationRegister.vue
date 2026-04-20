@@ -107,6 +107,17 @@ exam_atpp_result: '',    exam_git_result: '',
     initial_interview_application_status: '',
     initial_interview_remarks: '',
     final_interview_date: '',
+    initial_interview_assignments: (props.initialInterviewAssignments || []).map(
+  (row) => ({
+    id: row.id,
+    interviewer_id: row.interviewer_id,
+    name: row.name,
+    role_label: row.role_label,
+    score: row.score ?? '',
+    evaluation_result: row.evaluation_result ?? '',
+    evaluation_remarks: row.evaluation_remarks ?? '',
+  }),
+),
     final_interview_assignments: (props.finalInterviewAssignments || []).map((row) => ({
     id: row.id,
     interviewer_id: row.interviewer_id,
@@ -1733,112 +1744,248 @@ watch(
         <h3>Initial Interview</h3>
     </div>
 
+    <div class="form-grid grid-3">
+        <div class="form-field">
+            <label class="field-label">Plan Date</label>
+            <input
+                type="datetime-local"
+                v-model="form.initial_interview_plan_date"
+                class="form-input"
+                :disabled="!isApplicantSelected"
+                :min="initialInterviewPlanMin || undefined"
+            />
+            <span
+                v-if="form.errors.initial_interview_plan_date"
+                class="error-message"
+            >
+                {{ form.errors.initial_interview_plan_date }}
+            </span>
+        </div>
+
+        <div class="form-field">
+            <label class="field-label">Actual Date</label>
+            <input
+                type="datetime-local"
+                v-model="form.initial_interview_actual_date"
+                class="form-input"
+                :disabled="!isApplicantSelected"
+                :min="initialInterviewActualMin || undefined"
+            />
+            <span
+                v-if="form.errors.initial_interview_actual_date"
+                class="error-message"
+            >
+                {{ form.errors.initial_interview_actual_date }}
+            </span>
+        </div>
+
+        <div class="form-field">
+            <label class="field-label">Venue</label>
+            <select
+                v-model="form.initial_interview_venue"
+                class="form-select"
+                :disabled="!isApplicantSelected"
+            >
+                <option value="">Select Venue</option>
+                <option
+                    v-for="venue in examVenues"
+                    :key="venue.value"
+                    :value="venue.value"
+                >
+                    {{ venue.label }}
+                </option>
+            </select>
+            <span
+                v-if="form.errors.initial_interview_venue"
+                class="error-message"
+            >
+                {{ form.errors.initial_interview_venue }}
+            </span>
+        </div>
+    </div>
+
     <div class="exam-section-layout">
-        <!-- LEFT SIDE -->
         <div class="exam-form-column">
+            <div
+                v-if="visibleInitialInterviewAssignments.length === 0"
+                class="criteria-empty"
+            >
+                No initial interviewers assigned yet.
+            </div>
 
-            <!-- Dates -->
-            <div class="form-grid grid-2">
-                <div class="form-field">
-                    <label class="field-label">Plan Date</label>
-                    <input type="datetime-local" v-model="form.initial_interview_plan_date" class="form-input" :disabled="!isApplicantSelected" />
+            <div v-else class="atpp-stack">
+                <div
+                    v-for="(assignment, index) in visibleInitialInterviewAssignments"
+                    :key="assignment.id"
+                    class="atpp-card"
+                >
+                    <div class="atpp-card-title">
+                        {{ assignment.name }}
+                        <span class="criteria-panel-subtitle">
+                            ({{ assignment.role_label }})
+                        </span>
+                    </div>
+
+                    <div class="form-grid grid-2">
+                        <div class="form-field">
+                            <label class="field-label">Score</label>
+                            <input
+                                v-model="assignment.score"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="5"
+                                class="form-input"
+                                :disabled="!isApplicantSelected"
+                            />
+                            <span
+                                v-if="liveErrors[`initial_interview_assignments.${index}.score`]"
+                                class="error-message"
+                            >
+                                {{ liveErrors[`initial_interview_assignments.${index}.score`] }}
+                            </span>
+                            <span
+                                v-if="form.errors[`initial_interview_assignments.${index}.score`]"
+                                class="error-message"
+                            >
+                                {{ form.errors[`initial_interview_assignments.${index}.score`] }}
+                            </span>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="field-label">Evaluation Result</label>
+                            <select
+                                v-model="assignment.evaluation_result"
+                                class="form-select"
+                                :disabled="!isApplicantSelected"
+                            >
+                                <option value="">Select Result</option>
+                                <option value="1">Pending</option>
+                                <option value="2">Passed</option>
+                                <option value="3">Failed</option>
+                            </select>
+                            <span
+                                v-if="form.errors[`initial_interview_assignments.${index}.evaluation_result`]"
+                                class="error-message"
+                            >
+                                {{ form.errors[`initial_interview_assignments.${index}.evaluation_result`] }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-field mt-3">
+                        <label class="field-label">Interviewer Remarks</label>
+                        <textarea
+                            v-model="assignment.evaluation_remarks"
+                            rows="3"
+                            class="form-textarea"
+                            :disabled="!isApplicantSelected"
+                        ></textarea>
+                        <span
+                            v-if="form.errors[`initial_interview_assignments.${index}.evaluation_remarks`]"
+                            class="error-message"
+                        >
+                            {{ form.errors[`initial_interview_assignments.${index}.evaluation_remarks`] }}
+                        </span>
+                    </div>
                 </div>
-
-                <div class="form-field">
-                    <label class="field-label">Actual Date</label>
-                    <input type="datetime-local" v-model="form.initial_interview_actual_date" class="form-input" :disabled="!isApplicantSelected" />
-                </div>
             </div>
-
-            <!-- Venue -->
-            <div class="form-field">
-                <label class="field-label">Venue</label>
-                <select v-model="form.initial_interview_venue" class="form-select" :disabled="!isApplicantSelected">
-                    <option value="">Select Venue</option>
-                    <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
-                        {{ venue.label }}
-                    </option>
-                </select>
-            </div>
-
-            <!-- Final Score -->
-            <div class="form-field">
-                <label class="field-label">Initial Interview Final Score</label>
-                <input
-                    type="number"
-                    step="0.01"
-                        min="0"
-    max="5"
-                    v-model="form.initial_interview_final"
-                    placeholder="0.00"
-                    class="form-input"
-                    :disabled="!isApplicantSelected"
-                    @input="clampScore(form, 'initial_interview_final', 5)"
-                />
-            </div>
-
-            <!-- ✅ MOVE RESULT UP -->
-
-
         </div>
 
-        <!-- RIGHT SIDE -->
-        <div class="exam-criteria-column">
-            <div class="criteria-panel compact">
-                <div class="criteria-panel-title">Initial Interview Criteria</div>
+        <div class="criteria-panel">
+            <div class="criteria-panel-header">
+                <div class="criteria-panel-title">
+                    Initial Interview Criteria
+                </div>
+                <div class="criteria-panel-subtitle">
+                    1 is best, 5 is worst
+                </div>
+            </div>
 
-                    <div class="criteria-rule passed">
-        <div class="criteria-rule-title">1 - Highly Recommended</div>
-    </div>
-                        <div class="criteria-rule passed">
-        <div class="criteria-rule-title">2- Recommended</div>
-    </div>
-                        <div class="criteria-rule p2">
-        <div class="criteria-rule-title">3 - Average</div>
-    </div>
-                        <div class="criteria-rule failed">
-        <div class="criteria-rule-title">4 - Not Recommended</div>
-    </div>
-                            <div class="criteria-rule failed">
-        <div class="criteria-rule-title">5 - Never Recommended</div>
-    </div>
+            <div class="criteria-rule passed">
+                <div class="criteria-rule-title">1 - Highly Recommended</div>
+            </div>
+            <div class="criteria-rule passed">
+                <div class="criteria-rule-title">2 - Recommended</div>
+            </div>
+            <div class="criteria-rule p2">
+                <div class="criteria-rule-title">3 - Average</div>
+            </div>
+            <div class="criteria-rule failed">
+                <div class="criteria-rule-title">4 - Not Recommended</div>
+            </div>
+            <div class="criteria-rule failed">
+                <div class="criteria-rule-title">5 - Never Recommended</div>
             </div>
         </div>
     </div>
 
-    <!-- ✅ COMMENTS FULL WIDTH -->
-             <div class="form-grid grid-2">
-                <div class="form-field">
-                    <label class="field-label">Result</label>
-                    <input
-                        type="text"
-                        class="form-input"
-                        :disabled="!isApplicantSelected"
-                        :value="initialInterviewResultLabel || (!form.initial_interview_application_status ? 'Auto-filled' : '')"
-                        readonly
-                    />
-                </div>
+    <div class="form-grid grid-2">
+        <div class="form-field">
+            <label class="field-label">Average Score</label>
+            <input
+                type="number"
+                step="0.01"
+                v-model="form.initial_interview_final"
+                class="form-input"
+                :disabled="!isApplicantSelected"
+                @input="handleInitialScoreManualInput"
+            />
+            <span
+                v-if="liveErrors.initial_interview_final"
+                class="error-message"
+            >
+                {{ liveErrors.initial_interview_final }}
+            </span>
+            <span
+                v-if="form.errors.initial_interview_final"
+                class="error-message"
+            >
+                {{ form.errors.initial_interview_final }}
+            </span>
+        </div>
 
-                <div class="form-field">
-                    <label class="field-label">Application Status</label>
-                    <select v-model="form.initial_interview_application_status" class="form-select" :disabled="!isApplicantSelected">
-                        <option value="">Select Status</option>
-                        <option v-for="status in interviewAppStatuses" :key="status.value" :value="status.value">
-                            {{ status.label }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-    <div class="form-field mt-3">
+        <div class="form-field">
+            <label class="field-label">Result</label>
+            <input
+                type="text"
+                class="form-input"
+                :disabled="!isApplicantSelected"
+                :value="initialInterviewResultLabel || (!form.initial_interview_application_status ? 'Auto-filled' : '')"
+                readonly
+            />
+        </div>
+    </div>
 
-        <label class="field-label">Initial Interview Comments</label>
-        <textarea
-            v-model="form.initial_interview_remarks"
-            placeholder="Enter any remarks here..."
-            rows="3"
-            class="form-textarea"
-            :disabled="!isApplicantSelected"
-        ></textarea>
+    <div class="form-grid grid-2">
+        <div class="form-field">
+            <label class="field-label">Application Status</label>
+            <select
+                v-model="form.initial_interview_application_status"
+                class="form-select"
+                :disabled="!isApplicantSelected"
+            >
+                <option value="">Select Status</option>
+                <option
+                    v-for="status in interviewAppStatuses"
+                    :key="status.value"
+                    :value="status.value"
+                >
+                    {{ status.label }}
+                </option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label class="field-label">Overall Comments</label>
+            <textarea
+                v-model="form.initial_interview_remarks"
+                placeholder="Enter any remarks here."
+                rows="3"
+                class="form-textarea"
+                :disabled="!isApplicantSelected"
+            ></textarea>
+        </div>
     </div>
 </div>
 
