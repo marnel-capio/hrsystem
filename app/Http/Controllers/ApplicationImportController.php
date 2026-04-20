@@ -7,10 +7,17 @@ use App\Models\ActionApplicant;
 use App\Models\ActionApplication;
 use App\Models\ActionBatchModel;
 use App\Models\Log;
+use App\Services\IntermediateApplicantImportService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
+use App\Http\Requests\ImportIntermediateApplicationRequest;
+use Inertia\Inertia;
+use Inertia\Response;
+
 
 class ApplicationImportController extends Controller
 {
@@ -20,12 +27,12 @@ class ApplicationImportController extends Controller
 
         return inertia('action/applications/ActionApplicationList', [
             'errorsConfig' => [
-            'field_required' => config('errors.field_required')['errorMessage'],
-            'max_length_exceeded' => config('errors.max_length_exceeded')['errorMessage'],
-            'file_too_large' => config('errors.file_too_large')['errorMessage'],
-        ],
-            'applications' => $actionBatches->flatMap(function($batch) {
-                return $batch->applications->map(function($app) use ($batch) {
+                'field_required' => config('errors.field_required')['errorMessage'],
+                'max_length_exceeded' => config('errors.max_length_exceeded')['errorMessage'],
+                'file_too_large' => config('errors.file_too_large')['errorMessage'],
+            ],
+            'applications' => $actionBatches->flatMap(function ($batch) {
+                return $batch->applications->map(function ($app) use ($batch) {
                     return [
                         'id' => $app->id,
                         'action_applicant_id' => $app->action_applicant_id,
@@ -41,8 +48,7 @@ class ApplicationImportController extends Controller
             'filters' => ['search' => request('search', '')],
             'userPermissions' => auth()->user()->permissions ?? 0,
         ]);
-        }
-
+    }
 
     public function import(ImportApplicationsRequest $request)
     {
@@ -336,10 +342,10 @@ class ApplicationImportController extends Controller
         $totalRows = count($rows);
 
         $successMsg = '';
-        if (!empty($importedApplicants)) {
+        if (! empty($importedApplicants)) {
             $successList = [];
             foreach ($importedApplicants as $index => $name) {
-                $successList[] = ($index + 1) . '. ' . $name;
+                $successList[] = ($index + 1).'. '.$name;
             }
 
             $successMsg = "Count of Successful Uploads: " . count($importedApplicants) . "\n\n" .
@@ -349,10 +355,10 @@ class ApplicationImportController extends Controller
 
         $allFailed = array_merge($failedApplicants, $skippedApplicants);
         $errorMsg = '';
-        if (!empty($allFailed)) {
+        if (! empty($allFailed)) {
             $errorList = [];
             foreach ($allFailed as $index => $name) {
-                $errorList[] = ($index + 1) . '. ' . $name;
+                $errorList[] = ($index + 1).'. '.$name;
             }
 
             $errorMsg = "Count of Failed Uploads: " . count($allFailed) . "\n\n" .
@@ -371,7 +377,6 @@ class ApplicationImportController extends Controller
             'error' => $errorMsg ?: null,
         ]);
     }
-
 
     private function parseFile($file)
     {
@@ -401,10 +406,119 @@ class ApplicationImportController extends Controller
                     $rows[] = $row;
                 }
             }
+
             return $rows;
 
         } catch (\Exception $e) {
-            throw new \Exception('Parse error: ' . $e->getMessage());
+            throw new \Exception('Parse error: '.$e->getMessage());
         }
+    }
+
+    public function importIntermediateApplicants(ImportIntermediateApplicationRequest  $request)
+    {
+        $file = $request->file('file');
+        $importService = new IntermediateApplicantImportService;
+
+        $results = $importService->processFileImport($file);
+
+        $importedApplicants = $results['imported'];
+        $allFailed = $results['failed'];
+
+        $totalRows = count($importedApplicants) + count($allFailed);
+
+        // LOG AFTER ALL IMPORTS
+        $user = Auth::user();
+
+        $logMessage =
+            'Imported Intermediate Applications and Applicants. '.
+            "Total rows: {$totalRows}. ".
+            'Success: '.count($importedApplicants).', '.
+            'Failed: '.count($allFailed);
+
+        Log::createLog('Intermediate', $logMessage, $user->id);
+
+        return back()->with([
+            'success' => count($importedApplicants)
+                ? $this->formatSuccessMessage($importedApplicants)
+                : null,
+
+            'error' => count($allFailed)
+                ? $this->formatErrorMessage($allFailed)
+                : null,
+        ]);
+    }
+
+    private function formatSuccessMessage(array $items): string
+    {
+        $count = count($items);
+
+        $message = "Count of Successful Uploads: {$count}\n";
+        $message .= "The following applicants have been successfully uploaded:\n";
+
+        foreach ($items as $index => $item) {
+            // Extract just the name (before the first parenthesis)
+            $name = trim(explode('(', $item)[0]);
+
+            $message .= ($index + 1).". {$name}\n";
+        }
+
+        return $message;
+    }
+
+    private function formatErrorMessage(array $items): string
+    {
+        $messageList = [];
+
+        foreach ($items as $item) {
+            $label = $this->extractFailedLabel($item);
+
+            if ($label !== null) {
+                $messageList[] = $label;
+            }
+        }
+
+        $messageList = array_values(array_unique($messageList));
+        $count = count($messageList);
+
+        $message = "Count of Failed Uploads: {$count}\n";
+        $message .= "The following applicants failed to upload:\n";
+
+        foreach ($messageList as $index => $entry) {
+            $message .= ($index + 1).". {$entry} - Excel row contains invalid data.\n";
+        }
+
+        return $message;
+    }
+
+    private function extractFailedLabel(string $item): ?string
+    {
+        // 1. Try extract name inside parentheses
+        if (preg_match('/\((.*?)\)/', $item, $nameMatch)) {
+            $fullName = trim($nameMatch[1]);
+
+            return $this->formatName($fullName);
+        }
+
+        // 2. Try extract row number
+        if (preg_match('/Row\s+(\d+)/i', $item, $rowMatch)) {
+            return "Row {$rowMatch[1]}";
+        }
+
+        // 3. Ignore garbage entries like "FAILED"
+        return null;
+    }
+
+    private function formatName(string $fullName): string
+    {
+        $nameParts = preg_split('/\s+/', trim($fullName));
+
+        if (count($nameParts) < 2) {
+            return $fullName;
+        }
+
+        $firstName = $nameParts[0];
+        $lastName = $nameParts[count($nameParts) - 1];
+
+        return "{$lastName}, {$firstName}";
     }
 }
