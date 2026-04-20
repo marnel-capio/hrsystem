@@ -66,6 +66,25 @@ public function rules(): array
     ];
 }
 
+public function withValidator($validator)
+{
+    $validator->after(function ($validator) {
+        $data = $this->all();
+
+        if (($data['exam_atpp_part1_correct'] ?? 0) + ($data['exam_atpp_part1_wrong'] ?? 0) > 40) {
+            $validator->errors()->add('exam_atpp_part1_correct', 'Part 1 total cannot exceed 40.');
+        }
+
+        if (($data['exam_atpp_part2_correct'] ?? 0) + ($data['exam_atpp_part2_wrong'] ?? 0) > 30) {
+            $validator->errors()->add('exam_atpp_part2_correct', 'Part 2 total cannot exceed 30.');
+        }
+
+        if (($data['exam_atpp_part3_correct'] ?? 0) + ($data['exam_atpp_part3_wrong'] ?? 0) > 25) {
+            $validator->errors()->add('exam_atpp_part3_correct', 'Part 3 total cannot exceed 25.');
+        }
+    });
+}
+
 public function messages(): array
 {
     return [

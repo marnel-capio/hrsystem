@@ -1145,22 +1145,31 @@ const normalizeDateTimeForSubmit = (value: unknown) => {
     return value;
 };
 
-function clampScore(obj: any, field: string, max: number) {
-    let value = obj[field];
+function clampAtppPair(obj: any, correctField: string, wrongField: string, max: number) {
+    let correct = Number(obj[correctField] || 0)
+    let wrong = Number(obj[wrongField] || 0)
 
-    if (value === '' || value === null || value === undefined) return;
+    if (Number.isNaN(correct)) correct = 0
+    if (Number.isNaN(wrong)) wrong = 0
 
-    let num = Number(value);
+    // Prevent negatives
+    if (correct < 0) correct = 0
+    if (wrong < 0) wrong = 0
 
-    if (Number.isNaN(num)) {
-        obj[field] = '';
-        return;
+    // Enforce total cap
+    if (correct + wrong > max) {
+        // prioritize the field being edited by reducing the other
+        const excess = correct + wrong - max
+
+        if (document.activeElement?.name === correctField) {
+            wrong = Math.max(0, wrong - excess)
+        } else {
+            correct = Math.max(0, correct - excess)
+        }
     }
 
-    if (num < 0) num = 0;
-    if (num > max) num = max;
-
-    obj[field] = num;
+    obj[correctField] = correct
+    obj[wrongField] = wrong
 }
 
 function getFinalInterviewApplicationStatus(score: number): string {

@@ -22,12 +22,12 @@ public function rules(): array
         'exam_plan_date' => 'nullable|date|after:today',
         'exam_actual_date' => 'nullable|date|after_or_equal:exam_plan_date',
         'exam_venue' => 'nullable|integer',
-        'exam_atpp_part1_correct' => 'nullable|numeric|between:0,40',
-        'exam_atpp_part1_wrong' => 'nullable|numeric|between:0,40',
-        'exam_atpp_part2_correct' => 'nullable|numeric|between:0,30',
-        'exam_atpp_part2_wrong' => 'nullable|numeric|between:0,30',
-        'exam_atpp_part3_correct' => 'nullable|numeric|between:0,25',
-        'exam_atpp_part3_wrong' => 'nullable|numeric|between:0,25',
+        'exam_atpp_part1_correct' => 'nullable|numeric|min:0',
+        'exam_atpp_part1_wrong' => 'nullable|numeric',
+        'exam_atpp_part2_correct' => 'nullable|numeric|min:0',
+        'exam_atpp_part2_wrong' => 'nullable|numeric|min:0',
+        'exam_atpp_part3_correct' => 'nullable|numeric|min:0',
+        'exam_atpp_part3_wrong' => 'nullable|numeric|min:0',
         'exam_atpp_result' => 'nullable|numeric|between:0,95',
         'exam_git_result' => 'nullable|numeric|between:0,12',
         'exam_prg_result' => 'nullable|numeric|between:0,80',
@@ -65,6 +65,25 @@ public function rules(): array
         'upload_tor' => 'nullable',
         'upload_pic' => 'nullable',
     ];
+}
+
+public function withValidator($validator)
+{
+    $validator->after(function ($validator) {
+        $data = $this->all();
+
+        if (($data['exam_atpp_part1_correct'] ?? 0) + ($data['exam_atpp_part1_wrong'] ?? 0) > 40) {
+            $validator->errors()->add('exam_atpp_part1_correct', 'Part 1 total cannot exceed 40.');
+        }
+
+        if (($data['exam_atpp_part2_correct'] ?? 0) + ($data['exam_atpp_part2_wrong'] ?? 0) > 30) {
+            $validator->errors()->add('exam_atpp_part2_correct', 'Part 2 total cannot exceed 30.');
+        }
+
+        if (($data['exam_atpp_part3_correct'] ?? 0) + ($data['exam_atpp_part3_wrong'] ?? 0) > 25) {
+            $validator->errors()->add('exam_atpp_part3_correct', 'Part 3 total cannot exceed 25.');
+        }
+    });
 }
 
     public function messages(): array
