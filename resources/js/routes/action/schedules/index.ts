@@ -657,13 +657,4 @@ notify: Object.assign(notify, notify),
 destroy: Object.assign(destroy, destroy),
 }
 
-export default schedules.assign(register, register),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-notify: Object.assign(notify, notify),
-destroy: Object.assign(destroy, destroy),
-}
-
 export default schedules

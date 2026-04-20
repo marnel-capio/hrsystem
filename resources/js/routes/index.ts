@@ -287,11 +287,4 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    dashboard.form = dashboardForm              _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
     dashboard.form = dashboardForm
