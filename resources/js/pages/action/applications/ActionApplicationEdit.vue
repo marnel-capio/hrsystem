@@ -6,6 +6,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 const page = usePage();
 
 const props = defineProps<{
+    currentBatchWbs?: Record<string, { start: string; end: string }> | null;
     application: any;
     examVenues?: Record<number, string>;
     examResults?: Record<number, string>;
@@ -65,6 +66,102 @@ const editableStages = computed(
             documents: false,
         },
 );
+
+const scheduleValidationErrors = ref<Record<string, string>>({})
+
+const currentBatchWbs = computed(() => props.currentBatchWbs || null)
+
+const scheduleFieldMap: Record<string, { activity: string; label: string; fieldLabel: string }> = {
+    exam_plan_date: {
+        activity: 'sourcing_testing',
+        label: 'Sourcing & Testing',
+        fieldLabel: 'Exam date',
+    },
+    initial_interview_plan_date: {
+        activity: 'initial_interviews',
+        label: 'Initial Interviews',
+        fieldLabel: 'Initial interview date',
+    },
+    final_interview_date: {
+        activity: 'final_interviews',
+        label: 'Final Interviews',
+        fieldLabel: 'Final interview date',
+    },
+    job_offer_schedule: {
+        activity: 'contract_offers',
+        label: 'Job Offers',
+        fieldLabel: 'Job offer date',
+    },
+}
+
+function clearScheduleValidationError(field: string) {
+    delete scheduleValidationErrors.value[field]
+}
+
+function setScheduleValidationError(field: string, message: string) {
+    scheduleValidationErrors.value[field] = message
+}
+
+function getIsoWeekStart(weekStr: string): Date | null {
+    if (!weekStr) return null
+
+    const [yearStr, weekPart] = weekStr.split('-W')
+    const year = Number(yearStr)
+    const week = Number(weekPart)
+
+    if (!year || !week) return null
+
+    const jan4 = new Date(Date.UTC(year, 0, 4))
+    const jan4Day = jan4.getUTCDay() || 7
+    const monday = new Date(jan4)
+    monday.setUTCDate(jan4.getUTCDate() - jan4Day + 1 + (week - 1) * 7)
+    monday.setUTCHours(0, 0, 0, 0)
+
+    return monday
+}
+
+function getIsoWeekEnd(weekStr: string): Date | null {
+    const start = getIsoWeekStart(weekStr)
+    if (!start) return null
+
+    const end = new Date(start)
+    end.setUTCDate(end.getUTCDate() + 6)
+    end.setUTCHours(23, 59, 59, 999)
+
+    return end
+}
+
+function validateScheduleField(field: keyof typeof scheduleFieldMap) {
+    const value = form[field]
+    const config = scheduleFieldMap[field]
+
+    clearScheduleValidationError(field)
+
+    if (!value || !currentBatchWbs.value) return
+
+    const activityWindow = currentBatchWbs.value[config.activity]
+    if (!activityWindow?.start || !activityWindow?.end) return
+
+    const start = getIsoWeekStart(activityWindow.start)
+    const end = getIsoWeekEnd(activityWindow.end)
+    const entered = new Date(value)
+
+    if (!start || !end || Number.isNaN(entered.getTime())) return
+
+    if (entered < start || entered > end) {
+        setScheduleValidationError(
+            field,
+            `${config.fieldLabel} must fall within ${config.label} schedule (${activityWindow.start} to ${activityWindow.end}).`
+        )
+    }
+}
+
+function validateAllScheduleFields() {
+    validateScheduleField('exam_plan_date')
+    validateScheduleField('initial_interview_plan_date')
+    validateScheduleField('final_interview_date')
+    validateScheduleField('job_offer_schedule')
+}
 
 const canEditAnything = computed(() =>
     Object.values(editableStages.value).some(Boolean),
@@ -1372,10 +1469,20 @@ watch(
     },
 );
 
-function submit() {
-    console.log('submit() fired');
+watch(() => form.exam_plan_date, () => validateScheduleField('exam_plan_date'))
+watch(() => form.initial_interview_plan_date, () => validateScheduleField('initial_interview_plan_date'))
+watch(() => form.final_interview_date, () => validateScheduleField('final_interview_date'))
+watch(() => form.job_offer_schedule, () => validateScheduleField('job_offer_schedule'))
+watch(() => props.currentBatchWbs, () => validateAllScheduleFields(), { immediate: true })
 
+function submit() {
     form.clearErrors();
+
+    validateAllScheduleFields()
+
+if (Object.keys(scheduleValidationErrors.value).length > 0) {
+    return
+}
 
     form.transform((data) => {
         console.log('transform data before FormData', data);
@@ -1817,12 +1924,9 @@ const examCriteriaDisplay = computed(() => {
                                         :min="examPlanMin || undefined"
                                         :disabled="!canEditExamPlanDate"
                                     />
-                                    <span
-                                        v-if="form.errors.exam_plan_date"
-                                        class="error-message"
-                                    >
-                                        {{ form.errors.exam_plan_date }}
-                                    </span>
+<span v-if="scheduleValidationErrors.exam_plan_date" class="error-message">
+    {{ scheduleValidationErrors.exam_plan_date }}
+</span>
                                 </div>
 
                                 <div class="form-field">
@@ -2433,12 +2537,9 @@ const examCriteriaDisplay = computed(() => {
                 :min="initialInterviewPlanMin || undefined"
                 :disabled="!editableStages.initial_interview"
             />
-            <span
-                v-if="form.errors.initial_interview_plan_date"
-                class="error-message"
-            >
-                {{ form.errors.initial_interview_plan_date }}
-            </span>
+<span v-if="scheduleValidationErrors.initial_interview_plan_date" class="error-message">
+    {{ scheduleValidationErrors.initial_interview_plan_date }}
+</span>
         </div>
 
         <div class="form-field">
@@ -2702,12 +2803,9 @@ const examCriteriaDisplay = computed(() => {
                                     :min="finalInterviewMin || undefined"
                                     :disabled="!editableStages.final_interview"
                                 />
-                                <span
-                                    v-if="form.errors.final_interview_date"
-                                    class="error-message"
-                                >
-                                    {{ form.errors.final_interview_date }}
-                                </span>
+<span v-if="scheduleValidationErrors.final_interview_date" class="error-message">
+    {{ scheduleValidationErrors.final_interview_date }}
+</span>
                             </div>
 
                             <div class="exam-section-layout">
@@ -3002,12 +3100,9 @@ const examCriteriaDisplay = computed(() => {
                                         :min="jobOfferScheduleMin || undefined"
                                         :disabled="!editableStages.job_offer"
                                     />
-                                    <span
-                                        v-if="form.errors.job_offer_schedule"
-                                        class="error-message"
-                                        >{{
-                                            form.errors.job_offer_schedule
-                                        }}</span
+<span v-if="scheduleValidationErrors.job_offer_schedule" class="error-message">
+    {{ scheduleValidationErrors.job_offer_schedule }}
+</span>
                                     >
                                 </div>
                                 <div class="form-field">

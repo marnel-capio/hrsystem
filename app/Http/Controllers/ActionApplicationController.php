@@ -95,6 +95,15 @@ class ActionApplicationController extends Controller
         }
     }
 
+        public function getBatchResourceSchedule($batchId)
+    {
+        $batch = ActionBatchModel::with('resourceSchedule')->findOrFail($batchId);
+
+        return response()->json([
+            'wbs' => $batch->resourceSchedule?->formatWBS(),
+        ]);
+    }
+
 public function show($id)
 {
     $application = ActionApplication::with([
@@ -149,11 +158,11 @@ public function show($id)
     ));
 }
 
-    public function edit($id)
+ public function edit($id)
     {
         $application = ActionApplication::with([
             'applicant',
-            'batch',
+            'batch.resourceSchedule',
             'interviews',
         ])->findOrFail($id);
 
@@ -165,19 +174,25 @@ public function show($id)
             abort(403, 'You are not allowed to edit this application.');
         }
 
+        $currentBatchWbs = null;
+        if ($application->batch && $application->batch->resourceSchedule) {
+            $currentBatchWbs = $application->batch->resourceSchedule->formatWBS();
+        }
+
         return Inertia::render('action/applications/ActionApplicationEdit', array_merge(
             [
                 'application' => $application,
                 'editableStages' => $editableStages,
                 'user_permissions' => $permission,
                 'initialInterviewAssignments' => $this->visibleInitialInterviewAssignments($application)
-    ->map(fn ($interview) => $interview->toDisplayArray())
-    ->values(),
+                    ->map(fn ($interview) => $interview->toDisplayArray())
+                    ->values(),
                 'finalInterviewAssignments' => $this->visibleFinalInterviewAssignments($application)
                     ->map(fn ($interview) => $interview->toDisplayArray())
                     ->values(),
                 'canEditFinalInterviewDecision' => $this->isHrFinalDecisionEditor(),
                 'user_id' => auth()->id(),
+                'currentBatchWbs' => $currentBatchWbs,
             ],
             $this->applicationFormOptions()
         ));

@@ -7,23 +7,21 @@ import axios from 'axios'
 const page = usePage()
 
 const props = defineProps<{
-    actionBatches?: Record<number, string>,
-    examVenues?: Record<number, string>,
-    examResults?: Record<number, string>,
-    examStatuses?: Record<number, string>,
-    interviewResults?: Record<number, string>,
-    interviewAppStatuses?: Record<number, string>,
-    jobOfferStatuses?: Record<number, string>,
-    applicationResultMap?: {
-        exam?: Record<number, number>,
-        initial_interview?: Record<number, number>,
-        final_interview?: Record<number, number>,
-    },
-    applicationScoreRules?: {
-        exam?: Record<string, any>,
-        initial_interview?: Record<string, number>,
-    },
-    finalInterviewAssignments?: Array<{
+  actionBatches?: Record<number, string>
+  examVenues?: Record<number, string>
+  examResults?: Record<number, string>
+  examStatuses?: Record<number, string>
+  interviewResults?: Record<number, string>
+  interviewAppStatuses?: Record<number, string>
+  jobOfferStatuses?: Record<number, string>
+
+  application?: {
+    exam_result?: number | string
+    initial_interview_result?: number | string
+    final_interview_result?: number | string
+  }
+
+  initialInterviewAssignments?: Array<{
     id: number
     interviewer_id: number
     name: string
@@ -31,15 +29,105 @@ const props = defineProps<{
     score?: number | null
     evaluation_result?: number | null
     evaluation_remarks?: string | null
-}>
-canEditFinalInterviewDecision?: boolean
-user_permissions?: number
-user_id?: number
-    flash?: {
-        error?: string
-        success?: string
-    }
+    schedule_approved?: number | null
+  }>
+
+  finalInterviewAssignments?: Array<{
+    id: number
+    interviewer_id: number
+    name: string
+    role_label: string
+    score?: number | null
+    evaluation_result?: number | null
+    evaluation_remarks?: string | null
+    schedule_approved?: number | null
+  }>
+
+  canEditFinalInterviewDecision?: boolean
+  user_permissions?: number
+  user_id?: number
+  flash?: {
+    error?: string
+    success?: string
+  }
+
+  applicationResultMap?: {
+    exam?: Record<number, number>
+    initial_interview?: Record<number, number>
+    final_interview?: Record<number, number>
+  }
+
+  applicationScoreRules?: {
+    exam?: Record<string, any>
+    initial_interview?: Record<string, number>
+  }
 }>()
+
+const visibleInitialInterviewAssignments = computed(() => {
+  const rows = form.initial_interview_assignments || []
+
+  return rows.filter((row: any) => {
+    const isApproved = Number(row.schedule_approved) === 1
+
+    if (!isApproved) return false
+
+    if (isHrDecisionEditor.value) {
+      return true
+    }
+
+    return Number(row.interviewer_id) === Number(props.user_id || 0)
+  })
+})
+
+
+const initialScoreManuallyEdited = ref(false)
+
+function handleInitialScoreManualInput() {
+  initialScoreManuallyEdited.value = true
+}
+
+
+const initialInterviewEvaluatedRows = computed(() => {
+  return (form.initial_interview_assignments || []).filter((row: any) =>
+    [2, 3].includes(Number(row.evaluation_result))
+  )
+})
+
+watch(
+  () => form.initial_interview_assignments,
+  (rows) => {
+    const list = rows || []
+
+    const numericScores = list
+      .map((row: any) => Number(row.score))
+      .filter((value: number) => !Number.isNaN(value))
+
+    if (numericScores.length === 0) {
+      if (!initialScoreManuallyEdited.value) {
+        form.initial_interview_final = ''
+      }
+      return
+    }
+
+    if (!initialScoreManuallyEdited.value) {
+      const average =
+        numericScores.reduce((sum: number, value: number) => sum + value, 0) / numericScores.length
+
+      form.initial_interview_final = average.toFixed(2)
+    }
+  },
+  { deep: true }
+)
+
+function clampScore(obj: any, field: string, max: number) {
+  let value = Number(obj[field] || 0)
+
+  if (Number.isNaN(value)) value = 0
+  if (value < 0) value = 0
+  if (value > max) value = max
+
+  obj[field] = value
+}
 
 const actionBatches = ref<Array<{ value: number, label: string }>>([])
 const examVenues = ref<Array<{ value: number, label: string }>>([])
@@ -176,6 +264,101 @@ const filteredApplicants = computed(() => {
 })
 
 const liveErrors = ref<Record<string, string>>({})
+
+const scheduleValidationErrors = ref<Record<string, string>>({})
+const selectedBatchWbs = ref<Record<string, { start: string; end: string }> | null>(null)
+
+const scheduleFieldMap: Record<string, { activity: string; label: string; fieldLabel: string }> = {
+    exam_plan_date: {
+        activity: 'sourcing_testing',
+        label: 'Sourcing & Testing',
+        fieldLabel: 'Exam date',
+    },
+    initial_interview_plan_date: {
+        activity: 'initial_interviews',
+        label: 'Initial Interviews',
+        fieldLabel: 'Initial interview date',
+    },
+    final_interview_date: {
+        activity: 'final_interviews',
+        label: 'Final Interviews',
+        fieldLabel: 'Final interview date',
+    },
+    job_offer_schedule: {
+        activity: 'contract_offers',
+        label: 'Job Offers',
+        fieldLabel: 'Job offer date',
+    },
+}
+
+function clearScheduleValidationError(field: string) {
+    delete scheduleValidationErrors.value[field]
+}
+
+function setScheduleValidationError(field: string, message: string) {
+    scheduleValidationErrors.value[field] = message
+}
+
+function getIsoWeekStart(weekStr: string): Date | null {
+    if (!weekStr) return null
+
+    const [yearStr, weekPart] = weekStr.split('-W')
+    const year = Number(yearStr)
+    const week = Number(weekPart)
+
+    if (!year || !week) return null
+
+    const jan4 = new Date(Date.UTC(year, 0, 4))
+    const jan4Day = jan4.getUTCDay() || 7
+    const monday = new Date(jan4)
+    monday.setUTCDate(jan4.getUTCDate() - jan4Day + 1 + (week - 1) * 7)
+    monday.setUTCHours(0, 0, 0, 0)
+
+    return monday
+}
+
+function getIsoWeekEnd(weekStr: string): Date | null {
+    const start = getIsoWeekStart(weekStr)
+    if (!start) return null
+
+    const end = new Date(start)
+    end.setUTCDate(end.getUTCDate() + 6)
+    end.setUTCHours(23, 59, 59, 999)
+
+    return end
+}
+
+function validateScheduleField(field: keyof typeof scheduleFieldMap) {
+    const value = form[field]
+    const config = scheduleFieldMap[field]
+
+    clearScheduleValidationError(field)
+
+    if (!value || !selectedBatchWbs.value) return
+
+    const activityWindow = selectedBatchWbs.value[config.activity]
+    if (!activityWindow?.start || !activityWindow?.end) return
+
+    const start = getIsoWeekStart(activityWindow.start)
+    const end = getIsoWeekEnd(activityWindow.end)
+    const entered = new Date(value)
+
+    if (!start || !end || Number.isNaN(entered.getTime())) return
+
+    if (entered < start || entered > end) {
+        setScheduleValidationError(
+            field,
+            `${config.fieldLabel} must fall within ${config.label} schedule (${activityWindow.start} to ${activityWindow.end}).`
+        )
+    }
+}
+
+function validateAllScheduleFields() {
+    validateScheduleField('exam_plan_date')
+    validateScheduleField('initial_interview_plan_date')
+    validateScheduleField('final_interview_date')
+    validateScheduleField('job_offer_schedule')
+}
 
 const finalScoreManuallyEdited = ref(false)
 
@@ -582,6 +765,32 @@ watch(successMessage, (val) => {
         setTimeout(() => showSuccess.value = false, 5000)
     }
 })
+
+watch(
+    () => form.action_batch_id,
+    async (newBatchId) => {
+        if (!newBatchId) {
+            selectedBatchWbs.value = null
+            scheduleValidationErrors.value = {}
+            return
+        }
+
+        try {
+            const response = await axios.get(`/action/applications/batches/${newBatchId}/resource-schedule`)
+            selectedBatchWbs.value = response.data?.wbs || null
+        } catch (error) {
+            console.error('Failed to load resource schedule:', error)
+            selectedBatchWbs.value = null
+        }
+
+        validateAllScheduleFields()
+    }
+)
+
+watch(() => form.exam_plan_date, () => validateScheduleField('exam_plan_date'))
+watch(() => form.initial_interview_plan_date, () => validateScheduleField('initial_interview_plan_date'))
+watch(() => form.final_interview_date, () => validateScheduleField('final_interview_date'))
+watch(() => form.job_offer_schedule, () => validateScheduleField('job_offer_schedule'))
 
 watch(() => form.action_batch_id, async (newBatchId) => {
     if (!newBatchId) {
@@ -1057,6 +1266,11 @@ const removeFile = (type: 'resume' | 'tor' | 'picture') => {
 function submit() {
     form.clearErrors()
 
+    validateAllScheduleFields()
+
+if (Object.keys(scheduleValidationErrors.value).length > 0) {
+    return
+}
     let hasError = false
 
     if (!form.action_applicant_id) {
@@ -1391,9 +1605,9 @@ watch(
                         :disabled="!isApplicantSelected"
                         :min="examPlanMin"
                     />
-                    <span v-if="form.errors.exam_plan_date" class="error-message">
-                        {{ form.errors.exam_plan_date }}
-                    </span>
+<span v-if="scheduleValidationErrors.exam_plan_date" class="error-message">
+    {{ scheduleValidationErrors.exam_plan_date }}
+</span>
                 </div>
 
                 <div class="form-field">
@@ -1754,12 +1968,9 @@ watch(
                 :disabled="!isApplicantSelected"
                 :min="initialInterviewPlanMin || undefined"
             />
-            <span
-                v-if="form.errors.initial_interview_plan_date"
-                class="error-message"
-            >
-                {{ form.errors.initial_interview_plan_date }}
-            </span>
+<span v-if="scheduleValidationErrors.initial_interview_plan_date" class="error-message">
+    {{ scheduleValidationErrors.initial_interview_plan_date }}
+</span>
         </div>
 
         <div class="form-field">
@@ -2003,9 +2214,9 @@ watch(
             :disabled="!isApplicantSelected"
             :min="finalInterviewMin"
         />
-        <span v-if="form.errors.final_interview_date" class="error-message">
-            {{ form.errors.final_interview_date }}
-        </span>
+<span v-if="scheduleValidationErrors.final_interview_date" class="error-message">
+    {{ scheduleValidationErrors.final_interview_date }}
+</span>
     </div>
 
     <div class="exam-section-layout">
@@ -2178,7 +2389,9 @@ watch(
                                         :disabled="!isApplicantSelected"
                                         :min="jobOfferMin"
                                     />
-                                    <span v-if="form.errors.job_offer_schedule" class="error-message">{{ form.errors.job_offer_schedule }}</span>
+<span v-if="scheduleValidationErrors.job_offer_schedule" class="error-message">
+    {{ scheduleValidationErrors.job_offer_schedule }}
+</span>
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label">Status</label>
