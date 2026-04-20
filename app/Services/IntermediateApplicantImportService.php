@@ -248,8 +248,8 @@ class IntermediateApplicantImportService
 
     private function getValidHandlingResult($latestApp): array
     {
-        // paper_screening_status = 1 or 2
-        if (in_array($latestApp->paper_screening_status ?? 0, [1, 2])) {
+        // paper_screening_status = 1
+        if (in_array($latestApp->paper_screening_status ?? 0, [1])) {
             return [
                 'stage' => 1,
                 'remarks' => 'Application still on screening.'
@@ -264,10 +264,10 @@ class IntermediateApplicantImportService
             ];
         }
 
-        // paper_screening_status = 3 or 4 → Check exam
-        if (in_array($latestApp->paper_screening_status ?? 0, [3, 4])) {
-            // exam_status = 1,2,5
-            if (in_array($latestApp->exam_status ?? 0, [1, 2, 5])) {
+        // paper_screening_status = 2 or 3 or 4 → Check exam
+        if (in_array($latestApp->paper_screening_status ?? 0, [2, 3, 4])) {
+            // exam_status = 1,5
+            if (in_array($latestApp->exam_status ?? 0, [1, 5])) {
                 $remarks = $latestApp->exam_status === 5 
                     ? 'Failed exam.'
                     : 'Application passed screening, now for exam.';
@@ -277,10 +277,10 @@ class IntermediateApplicantImportService
                 ];
             }
 
-            // exam_status = 3 or 4 → Check HR interview
-            if (in_array($latestApp->exam_status ?? 0, [3, 4])) {
-                // hr_interview_status = 1,2,5
-                if (in_array($latestApp->hr_interview_status ?? 0, [1, 2, 5])) {
+            // exam_status = 2 or 3 or 4 → Check HR interview
+            if (in_array($latestApp->exam_status ?? 0, [2, 3, 4])) {
+                // hr_interview_status = 1,5
+                if (in_array($latestApp->hr_interview_status ?? 0, [1, 5])) {
                     $remarks = $latestApp->hr_interview_status === 5
                         ? 'Failed hr interview.'
                         : 'Application passed exam, now for hr interview.';
@@ -290,10 +290,10 @@ class IntermediateApplicantImportService
                     ];
                 }
 
-                // hr_interview_status = 3 or 4 → Check BU interview
-                if (in_array($latestApp->hr_interview_status ?? 0, [3, 4])) {
-                    // bu_interview_status = 1,2,5
-                    if (in_array($latestApp->bu_interview_status ?? 0, [1, 2, 5])) {
+                // hr_interview_status = 2 or 3 or 4 → Check BU interview
+                if (in_array($latestApp->hr_interview_status ?? 0, [2, 3, 4])) {
+                    // bu_interview_status = 1,5
+                    if (in_array($latestApp->bu_interview_status ?? 0, [1, 5])) {
                         $remarks = $latestApp->bu_interview_status === 5
                             ? 'Failed bu interview.'
                             : 'Application passed hr interview, now for bu interview.';
@@ -303,10 +303,10 @@ class IntermediateApplicantImportService
                         ];
                     }
 
-                    // bu_interview_status = 3 or 4 → Check final interview
-                    if (in_array($latestApp->bu_interview_status ?? 0, [3, 4])) {
-                        // final_interview_status = 1,2,5
-                        if (in_array($latestApp->final_interview_status ?? 0, [1, 2, 5])) {
+                    // bu_interview_status = 2 or 3 or 4 → Check final interview
+                    if (in_array($latestApp->bu_interview_status ?? 0, [2, 3, 4])) {
+                        // final_interview_status = 1,5
+                        if (in_array($latestApp->final_interview_status ?? 0, [1, 5])) {
                             $remarks = $latestApp->final_interview_status === 5
                                 ? 'Failed final interview.'
                                 : 'Application passed bu interview, now for final interview.';
@@ -316,8 +316,8 @@ class IntermediateApplicantImportService
                             ];
                         }
 
-                        // final_interview_status = 3 or 4 → Check job offer
-                        if (in_array($latestApp->final_interview_status ?? 0, [3, 4])) {
+                        // final_interview_status = 2 or 3 or 4 → Check job offer
+                        if (in_array($latestApp->final_interview_status ?? 0, [2, 3, 4])) {
                             // job_offer_status = 1,2
                             if (in_array($latestApp->job_offer_status ?? 0, [1, 2])) {
                                 return [
