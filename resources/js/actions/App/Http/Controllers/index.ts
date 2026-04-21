@@ -3,7 +3,6 @@ import ForgotPasswordController from './ForgotPasswordController'
 import DashboardController from './DashboardController'
 import ActionApplicantProgrammingLanguageController from './ActionApplicantProgrammingLanguageController'
 import ActionApplicantSkillController from './ActionApplicantSkillController'
-import IntermediateApplicationController from './IntermediateApplicationController'
 import UserController from './UserController'
 import ResourceScheduleController from './ResourceScheduleController'
 import ActionApplicationController from './ActionApplicationController'
@@ -12,6 +11,7 @@ import ActionBatchController from './ActionBatchController'
 import ActionApplicantController from './ActionApplicantController'
 import IntermediateProjectController from './IntermediateProjectController'
 import IntermediateRequisitionController from './IntermediateRequisitionController'
+import IntermediateApplicationController from './IntermediateApplicationController'
 import Settings from './Settings'
 const Controllers = {
     AuthController: Object.assign(AuthController, AuthController),
@@ -19,7 +19,6 @@ ForgotPasswordController: Object.assign(ForgotPasswordController, ForgotPassword
 DashboardController: Object.assign(DashboardController, DashboardController),
 ActionApplicantProgrammingLanguageController: Object.assign(ActionApplicantProgrammingLanguageController, ActionApplicantProgrammingLanguageController),
 ActionApplicantSkillController: Object.assign(ActionApplicantSkillController, ActionApplicantSkillController),
-IntermediateApplicationController: Object.assign(IntermediateApplicationController, IntermediateApplicationController),
 UserController: Object.assign(UserController, UserController),
 ResourceScheduleController: Object.assign(ResourceScheduleController, ResourceScheduleController),
 ActionApplicationController: Object.assign(ActionApplicationController, ActionApplicationController),
@@ -28,6 +27,7 @@ ActionBatchController: Object.assign(ActionBatchController, ActionBatchControlle
 ActionApplicantController: Object.assign(ActionApplicantController, ActionApplicantController),
 IntermediateProjectController: Object.assign(IntermediateProjectController, IntermediateProjectController),
 IntermediateRequisitionController: Object.assign(IntermediateRequisitionController, IntermediateRequisitionController),
+IntermediateApplicationController: Object.assign(IntermediateApplicationController, IntermediateApplicationController),
 Settings: Object.assign(Settings, Settings),
 }
 

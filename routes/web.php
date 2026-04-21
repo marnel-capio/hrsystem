@@ -76,18 +76,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/bulk-delete', [ActionApplicantSkillController::class, 'bulkDelete']);
     });
 
-    Route::middleware('auth')->group(function () {
-        Route::get('/intermediate/applications/register', [IntermediateApplicationController::class, 'create'])
-            ->name('intermediate.applications.register');
-        
-        Route::post('/intermediate/applications', [IntermediateApplicationController::class, 'store'])
-            ->name('intermediate.applications.store');
-        
-        // API endpoints
-        Route::get('/intermediate/applications/eligible-applicants/{fy_week}', [IntermediateApplicationController::class, 'eligibleApplicants']);
-        Route::post('/intermediate/applications/check-eligibility', [IntermediateApplicationController::class, 'checkEligibility']);
-    });
-
 });
 
     // Update user
@@ -265,6 +253,12 @@ Route::middleware(['auth'])->group(function () {
         // Import intermediate applicants (matches your Vue router.post)
         Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
             ->name('intermediate.applications.import');
+        
+        Route::get('/intermediate/applications/register', [IntermediateApplicationController::class, 'create'])
+            ->name('intermediate.applications.register');
+        
+        Route::post('/intermediate/applications', [IntermediateApplicationController::class, 'store'])
+            ->name('intermediate.applications.store');
     });
 
 // ------------------------
