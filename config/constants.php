@@ -280,15 +280,16 @@ return [
             'exam_application_status',
             'exam_remarks',
         ],
-        'initial_interview' => [
-            'initial_interview_plan_date',
-            'initial_interview_actual_date',
-            'initial_interview_venue',
-            'initial_interview_final',
-            'initial_interview_result',
-            'initial_interview_application_status',
-            'initial_interview_remarks',
-        ],
+'initial_interview' => [
+    'initial_interview_plan_date',
+    'initial_interview_actual_date',
+    'initial_interview_venue',
+    'initial_interview_assignments',
+    'initial_interview_final',
+    'initial_interview_result',
+    'initial_interview_application_status',
+    'initial_interview_remarks',
+],
         'final_interview' => [
             'final_interview_date',
             'final_interview_score_1',
@@ -520,6 +521,29 @@ return [
 
     ],
 
+    'source_maps' => [
+        'type1' => [
+            'Foundit' => 1,
+            'LinkedIn' => 2,
+            'Facebook' => 3,
+            'Mynimo' => 4,
+            'Kalibrr' => 5,
+        ],
+        'type3' => [
+            'AAISI' => 1,
+            'Primover' => 2,
+            'Tech Tierra' => 3,
+            'Spring Valley' => 4,
+            'YENS' => 5,
+        ],
+    ],
+
+    'source_type_groups' => [
+        'type1' => ['Foundit', 'LinkedIn', 'Facebook', 'Mynimo', 'Kalibrr'],
+        'type2' => ['Referral', 'Recruitment Network', 'Job Fairs', 'Website', 'Rehire'],
+        'type3' => ['AAISI', 'Primover', 'Tech Tierra', 'Spring Valley', 'YENS'],
+    ],
+
     'japanese_backgrounds' => [
         1 => 'None',
         2 => 'Self Study / University Level',
@@ -533,5 +557,6 @@ return [
         2 => 'N2',
         1 => 'N1',
     ],
+
 
 ];
