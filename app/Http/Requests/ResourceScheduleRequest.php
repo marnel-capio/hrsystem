@@ -123,7 +123,7 @@ class ResourceScheduleRequest extends FormRequest
                         ucfirst(str_replace('_', ' ', $act)) . " cannot start before {$previousActivityLabel}."
                     );
                 }
-                if ($previousEndDate && $weekStart->lt($previousEndDate)) {
+                if ($previousEndDate && $weekEnd->lt($previousEndDate)) {
                     $validator->errors()->add(
                         "{$act}_startdate",
                         ucfirst(str_replace('_', ' ', $act)) . " cannot start before {$previousActivityLabel} ends."
@@ -197,13 +197,6 @@ class ResourceScheduleRequest extends FormRequest
                 $validator->errors()->add(
                     "{$act}_startdate",
                     'Activity cannot start after the deployment month end.'
-                );
-            }
-
-            if ($endDate->gt($deploymentMonthEnd)) {
-                $validator->errors()->add(
-                    "{$act}_enddate",
-                    'Activity cannot end after the deployment month end.'
                 );
             }
 

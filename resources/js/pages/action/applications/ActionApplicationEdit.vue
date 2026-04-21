@@ -6,6 +6,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 const page = usePage();
 
 const props = defineProps<{
+    currentBatchWbs?: Record<string, { start: string; end: string }> | null;
     application: any;
     examVenues?: Record<number, string>;
     examResults?: Record<number, string>;
@@ -30,6 +31,15 @@ const props = defineProps<{
         general: boolean;
         documents: boolean;
     };
+    initialInterviewAssignments?: Array<{
+    id: number;
+    interviewer_id: number;
+    name: string;
+    role_label: string;
+    score?: number | null;
+    evaluation_result?: number | null;
+    evaluation_remarks?: string | null;
+}>;
     finalInterviewAssignments?: Array<{
         id: number;
         interviewer_id: number;
@@ -56,6 +66,102 @@ const editableStages = computed(
             documents: false,
         },
 );
+
+const scheduleValidationErrors = ref<Record<string, string>>({})
+
+const currentBatchWbs = computed(() => props.currentBatchWbs || null)
+
+const scheduleFieldMap: Record<string, { activity: string; label: string; fieldLabel: string }> = {
+    exam_plan_date: {
+        activity: 'sourcing_testing',
+        label: 'Sourcing & Testing',
+        fieldLabel: 'Exam date',
+    },
+    initial_interview_plan_date: {
+        activity: 'initial_interviews',
+        label: 'Initial Interviews',
+        fieldLabel: 'Initial interview date',
+    },
+    final_interview_date: {
+        activity: 'final_interviews',
+        label: 'Final Interviews',
+        fieldLabel: 'Final interview date',
+    },
+    job_offer_schedule: {
+        activity: 'contract_offers',
+        label: 'Job Offers',
+        fieldLabel: 'Job offer date',
+    },
+}
+
+function clearScheduleValidationError(field: string) {
+    delete scheduleValidationErrors.value[field]
+}
+
+function setScheduleValidationError(field: string, message: string) {
+    scheduleValidationErrors.value[field] = message
+}
+
+function getIsoWeekStart(weekStr: string): Date | null {
+    if (!weekStr) return null
+
+    const [yearStr, weekPart] = weekStr.split('-W')
+    const year = Number(yearStr)
+    const week = Number(weekPart)
+
+    if (!year || !week) return null
+
+    const jan4 = new Date(Date.UTC(year, 0, 4))
+    const jan4Day = jan4.getUTCDay() || 7
+    const monday = new Date(jan4)
+    monday.setUTCDate(jan4.getUTCDate() - jan4Day + 1 + (week - 1) * 7)
+    monday.setUTCHours(0, 0, 0, 0)
+
+    return monday
+}
+
+function getIsoWeekEnd(weekStr: string): Date | null {
+    const start = getIsoWeekStart(weekStr)
+    if (!start) return null
+
+    const end = new Date(start)
+    end.setUTCDate(end.getUTCDate() + 6)
+    end.setUTCHours(23, 59, 59, 999)
+
+    return end
+}
+
+function validateScheduleField(field: keyof typeof scheduleFieldMap) {
+    const value = form[field]
+    const config = scheduleFieldMap[field]
+
+    clearScheduleValidationError(field)
+
+    if (!value || !currentBatchWbs.value) return
+
+    const activityWindow = currentBatchWbs.value[config.activity]
+    if (!activityWindow?.start || !activityWindow?.end) return
+
+    const start = getIsoWeekStart(activityWindow.start)
+    const end = getIsoWeekEnd(activityWindow.end)
+    const entered = new Date(value)
+
+    if (!start || !end || Number.isNaN(entered.getTime())) return
+
+    if (entered < start || entered > end) {
+        setScheduleValidationError(
+            field,
+            `${config.fieldLabel} does not fall within WBS ${config.label} schedule (${activityWindow.start} to ${activityWindow.end}), but you may still choose this date.`
+        )
+    }
+}
+
+function validateAllScheduleFields() {
+    validateScheduleField('exam_plan_date')
+    validateScheduleField('initial_interview_plan_date')
+    validateScheduleField('final_interview_date')
+    validateScheduleField('job_offer_schedule')
+}
 
 const canEditAnything = computed(() =>
     Object.values(editableStages.value).some(Boolean),
@@ -130,6 +236,7 @@ function isBefore(a: string, b: string) {
 }
 
 const finalScoreManuallyEdited = ref(false);
+const initialScoreManuallyEdited = ref(false);
 
 function parseScore(value: string | number | null | undefined): number {
     if (value === '' || value === null || value === undefined) return 0;
@@ -154,6 +261,10 @@ function getInterviewerEvaluationResultFromScore(
 
 function handleFinalScoreManualInput() {
     finalScoreManuallyEdited.value = true;
+}
+
+function handleInitialScoreManualInput() {
+    initialScoreManuallyEdited.value = true;
 }
 
 const form = useForm({
@@ -183,6 +294,18 @@ const form = useForm({
         props.application.initial_interview_actual_date,
     ),
     initial_interview_venue: props.application.initial_interview_venue || '',
+
+    initial_interview_assignments: (props.initialInterviewAssignments || []).map(
+  (row) => ({
+    id: row.id,
+    interviewer_id: row.interviewer_id,
+    name: row.name,
+    role_label: row.role_label,
+    score: row.score ?? '',
+    evaluation_result: row.evaluation_result ?? '',
+    evaluation_remarks: row.evaluation_remarks ?? '',
+  }),
+),
     initial_interview_final: props.application.initial_interview_final || '',
     initial_interview_result: props.application.initial_interview_result || '',
     initial_interview_application_status:
@@ -193,6 +316,8 @@ const form = useForm({
     final_interview_date: formatDateForInput(
         props.application.final_interview_date,
     ),
+
+
     final_interview_assignments: (props.finalInterviewAssignments || []).map(
         (row) => ({
             id: row.id,
@@ -216,6 +341,52 @@ const form = useForm({
     job_offer_status: props.application.job_offer_status || '',
     job_offer_remarks: props.application.job_offer_remarks || '',
     remarks: props.application.remarks || '',
+});
+
+
+const visibleInitialInterviewAssignments = computed(() => {
+    const rows = form.initial_interview_assignments || [];
+
+    if (isHrDecisionEditor.value) {
+        return rows;
+    }
+
+    return rows.filter(
+        (row: any) => Number(row.interviewer_id) === Number(props.user_id || 0),
+    );
+});
+
+const initialInterviewEvaluatedRows = computed(() => {
+    return (form.initial_interview_assignments || []).filter((row: any) =>
+        [2, 3].includes(Number(row.evaluation_result)),
+    );
+});
+
+const allInitialInterviewersPassed = computed(() => {
+    const rows = initialInterviewEvaluatedRows.value;
+    return (
+        rows.length > 0 &&
+        rows.every((row: any) => Number(row.evaluation_result) === 2)
+    );
+});
+
+const allInitialInterviewersFailed = computed(() => {
+    const rows = initialInterviewEvaluatedRows.value;
+    return (
+        rows.length > 0 &&
+        rows.every((row: any) => Number(row.evaluation_result) === 3)
+    );
+});
+
+const hasMixedInitialInterviewResults = computed(() => {
+    const rows = initialInterviewEvaluatedRows.value;
+    const hasPassed = rows.some(
+        (row: any) => Number(row.evaluation_result) === 2,
+    );
+    const hasFailed = rows.some(
+        (row: any) => Number(row.evaluation_result) === 3,
+    );
+    return hasPassed && hasFailed;
 });
 
 const currentApplicant = computed(() => {
@@ -332,12 +503,6 @@ const selectedApplicantLabel = computed(() => {
     return 'Select Applicant';
 });
 
-const finalInterviewOverallManuallyEdited = ref(false)
-
-function markFinalInterviewOverallManualEdit() {
-    finalInterviewOverallManuallyEdited.value = true
-}
-
 const batchName = computed(
     () => props.application.batch?.action_batch || 'N/A',
 );
@@ -430,6 +595,95 @@ watch(
             form.job_offer_schedule = '';
         }
     },
+);
+
+watch(
+    () => form.initial_interview_assignments,
+    (rows) => {
+        const list = rows || [];
+
+        const numericScores = list
+            .map((row: any) => Number(row.score))
+            .filter((value: number) => !Number.isNaN(value));
+
+        if (numericScores.length === 0) {
+            if (!initialScoreManuallyEdited.value) {
+                form.initial_interview_final = '';
+            }
+        } else if (!initialScoreManuallyEdited.value) {
+            const average =
+                numericScores.reduce(
+                    (sum: number, value: number) => sum + value,
+                    0,
+                ) / numericScores.length;
+
+            form.initial_interview_final = average.toFixed(2);
+        }
+
+        (list || []).forEach((row: any, index: number) => {
+            validateScoreField(
+                `initial_interview_assignments.${index}.score`,
+                `${row.name || 'Interviewer'} Score`,
+                row.score,
+            );
+        });
+
+        if (allInitialInterviewersPassed.value) {
+            form.initial_interview_result = '2';
+            form.initial_interview_application_status = '3';
+            return;
+        }
+
+        if (allInitialInterviewersFailed.value) {
+            form.initial_interview_result = '3';
+            form.initial_interview_application_status = '5';
+            return;
+        }
+
+        if (hasMixedInitialInterviewResults.value) {
+            form.initial_interview_application_status = '2';
+            if (!isHrDecisionEditor.value) {
+                form.initial_interview_result = '';
+            }
+            return;
+        }
+
+        if (form.initial_interview_plan_date) {
+            form.initial_interview_application_status = '1';
+        } else {
+            form.initial_interview_application_status = '';
+            form.initial_interview_result = '';
+        }
+    },
+    { deep: true },
+);
+
+watch(
+    () => form.initial_interview_assignments,
+    (rows) => {
+        (rows || []).forEach((row: any) => {
+            if (
+                row.score === '' ||
+                row.score === null ||
+                row.score === undefined
+            ) {
+                row.evaluation_result = '';
+                return;
+            }
+
+            const computedResult = getInterviewerEvaluationResultFromScore(
+                row.score,
+            );
+
+            if (
+                !canEditFinalInterviewDecision.value ||
+                !row.evaluation_result
+            ) {
+                row.evaluation_result = computedResult;
+            }
+        });
+    },
+    { deep: true },
 );
 
 const errorMessage = computed(() => (page.props.flash as any)?.error || '');
@@ -634,65 +888,63 @@ watch(
 watch(
     () => form.final_interview_assignments,
     (rows) => {
-        const list = rows || []
+        const list = rows || [];
 
         const numericScores = list
             .map((row: any) => Number(row.score))
-            .filter((value: number) => !Number.isNaN(value))
+            .filter((value: number) => !Number.isNaN(value));
 
-        if (!finalInterviewOverallManuallyEdited.value) {
-            if (numericScores.length === 0) {
-                form.final_interview_final = ''
-            } else {
-                const average =
-                    numericScores.reduce(
-                        (sum: number, value: number) => sum + value,
-                        0,
-                    ) / numericScores.length
-
-                form.final_interview_final = average.toFixed(2)
+        if (numericScores.length === 0) {
+            if (!finalScoreManuallyEdited.value) {
+                form.final_interview_final = '';
             }
+        } else if (!finalScoreManuallyEdited.value) {
+            const average =
+                numericScores.reduce(
+                    (sum: number, value: number) => sum + value,
+                    0,
+                ) / numericScores.length;
+
+            form.final_interview_final = average.toFixed(2);
         }
 
-        ;(list || []).forEach((row: any, index: number) => {
+        (list || []).forEach((row: any, index: number) => {
             validateScoreField(
                 `final_interview_assignments.${index}.score`,
                 `${row.name || 'Interviewer'} Score`,
                 row.score,
-            )
-        })
+            );
+        });
 
-        if (!finalInterviewOverallManuallyEdited.value) {
-            if (allFinalInterviewersPassed.value) {
-                form.final_interview_result = '2'
-                form.final_interview_application_status = '3'
-                return
-            }
+        if (allFinalInterviewersPassed.value) {
+            form.final_interview_result = '2';
+            form.final_interview_application_status = '3';
+            return;
+        }
 
-            if (allFinalInterviewersFailed.value) {
-                form.final_interview_result = '3'
-                form.final_interview_application_status = '5'
-                return
-            }
+        if (allFinalInterviewersFailed.value) {
+            form.final_interview_result = '3';
+            form.final_interview_application_status = '5';
+            return;
+        }
 
-            if (hasMixedFinalInterviewResults.value) {
-                form.final_interview_application_status = '2'
-                if (!isHrDecisionEditor.value) {
-                    form.final_interview_result = ''
-                }
-                return
+        if (hasMixedFinalInterviewResults.value) {
+            form.final_interview_application_status = '2';
+            if (!isHrDecisionEditor.value) {
+                form.final_interview_result = '';
             }
+            return;
+        }
 
-            if (form.final_interview_date) {
-                form.final_interview_application_status = '1'
-            } else {
-                form.final_interview_application_status = ''
-                form.final_interview_result = ''
-            }
+        if (form.final_interview_date) {
+            form.final_interview_application_status = '1';
+        } else {
+            form.final_interview_application_status = '';
+            form.final_interview_result = '';
         }
     },
     { deep: true },
-)
+);
 
 onMounted(() => {
     if (props.examVenues) {
@@ -1153,22 +1405,31 @@ const normalizeDateTimeForSubmit = (value: unknown) => {
     return value;
 };
 
-function clampScore(obj: any, field: string, max: number) {
-    let value = obj[field];
+function clampAtppPair(obj: any, correctField: string, wrongField: string, max: number) {
+    let correct = Number(obj[correctField] || 0)
+    let wrong = Number(obj[wrongField] || 0)
 
-    if (value === '' || value === null || value === undefined) return;
+    if (Number.isNaN(correct)) correct = 0
+    if (Number.isNaN(wrong)) wrong = 0
 
-    let num = Number(value);
+    // Prevent negatives
+    if (correct < 0) correct = 0
+    if (wrong < 0) wrong = 0
 
-    if (Number.isNaN(num)) {
-        obj[field] = '';
-        return;
+    // Enforce total cap
+    if (correct + wrong > max) {
+        // prioritize the field being edited by reducing the other
+        const excess = correct + wrong - max
+
+        if (document.activeElement?.name === correctField) {
+            wrong = Math.max(0, wrong - excess)
+        } else {
+            correct = Math.max(0, correct - excess)
+        }
     }
 
-    if (num < 0) num = 0;
-    if (num > max) num = max;
-
-    obj[field] = num;
+    obj[correctField] = correct
+    obj[wrongField] = wrong
 }
 
 function getFinalInterviewApplicationStatus(score: number): string {
@@ -1208,10 +1469,18 @@ watch(
     },
 );
 
+watch(() => form.exam_plan_date, () => validateScheduleField('exam_plan_date'))
+watch(() => form.initial_interview_plan_date, () => validateScheduleField('initial_interview_plan_date'))
+watch(() => form.final_interview_date, () => validateScheduleField('final_interview_date'))
+watch(() => form.job_offer_schedule, () => validateScheduleField('job_offer_schedule'))
+watch(() => props.currentBatchWbs, () => validateAllScheduleFields(), { immediate: true })
+
 function submit() {
     form.clearErrors();
 
     form.transform((data) => {
+        console.log('transform data before FormData', data);
+
         const formData = new FormData();
 
         Object.keys(data).forEach((key) => {
@@ -1241,6 +1510,38 @@ function submit() {
                 } else if (value === '' && originalFiles.picture) {
                     formData.append('upload_pic', '');
                 }
+                return;
+            }
+
+            if (key === 'initial_interview_assignments') {
+                ((value as any[]) || []).forEach((row: any, index: number) => {
+                    if (row.id !== null && row.id !== undefined) {
+                        formData.append(
+                            `initial_interview_assignments[${index}][id]`,
+                            String(row.id),
+                        );
+                    }
+
+                    formData.append(
+                        `initial_interview_assignments[${index}][score]`,
+                        row.score !== null && row.score !== undefined
+                            ? String(row.score)
+                            : '',
+                    );
+
+                    formData.append(
+                        `initial_interview_assignments[${index}][evaluation_result]`,
+                        row.evaluation_result !== null &&
+                            row.evaluation_result !== undefined
+                            ? String(row.evaluation_result)
+                            : '',
+                    );
+
+                    formData.append(
+                        `initial_interview_assignments[${index}][evaluation_remarks]`,
+                        row.evaluation_remarks ?? '',
+                    );
+                });
                 return;
             }
 
@@ -1289,6 +1590,10 @@ function submit() {
     form.post(`/action/applications/${props.application.id}`, {
         preserveState: true,
         preserveScroll: true,
+        onStart: () => console.log('form.post started'),
+        onSuccess: () => console.log('form.post success'),
+        onError: (errors) => console.log('form.post errors', errors),
+        onFinish: () => console.log('form.post finished'),
     });
 }
 const examCriteriaDisplay = computed(() => {
@@ -1381,10 +1686,17 @@ const examCriteriaDisplay = computed(() => {
 
                             <div class="form-grid grid-3">
                                 <div class="form-field">
-                                    <label class="field-label !text-gray-500">Upload Resume</label>
+                                    <label class="field-label"
+                                        >Upload Resume</label
+                                    >
 
-                                    <div v-if="form.upload_resume && !resumeFile" class="file-info">
-                                        <span class="file-name">{{ form.upload_resume }}</span>
+                                    <div
+                                        v-if="form.upload_resume && !resumeFile"
+                                        class="file-info"
+                                    >
+                                        <span class="file-name">{{
+                                            form.upload_resume
+                                        }}</span>
                                         <button
                                             type="button"
                                             @click="removeFile('resume')"
@@ -1445,10 +1757,17 @@ const examCriteriaDisplay = computed(() => {
                                 </div>
 
                                 <div class="form-field">
-                                    <label class="field-label !text-gray-500">Upload TOR</label>
+                                    <label class="field-label"
+                                        >Upload TOR</label
+                                    >
 
-                                    <div v-if="form.upload_tor && !torFile" class="file-info">
-                                        <span class="file-name">{{ form.upload_tor }}</span>
+                                    <div
+                                        v-if="form.upload_tor && !torFile"
+                                        class="file-info"
+                                    >
+                                        <span class="file-name">{{
+                                            form.upload_tor
+                                        }}</span>
                                         <button
                                             type="button"
                                             @click="removeFile('tor')"
@@ -1509,10 +1828,17 @@ const examCriteriaDisplay = computed(() => {
                                 </div>
 
                                 <div class="form-field">
-                                    <label class="field-label !text-gray-500">Upload 2x2 Pic</label>
+                                    <label class="field-label"
+                                        >Upload 2x2 Pic</label
+                                    >
 
-                                    <div v-if="form.upload_pic && !pictureFile" class="file-info">
-                                        <span class="file-name">{{ form.upload_pic }}</span>
+                                    <div
+                                        v-if="form.upload_pic && !pictureFile"
+                                        class="file-info"
+                                    >
+                                        <span class="file-name">{{
+                                            form.upload_pic
+                                        }}</span>
                                         <button
                                             type="button"
                                             @click="removeFile('picture')"
@@ -1575,550 +1901,695 @@ const examCriteriaDisplay = computed(() => {
                             </div>
                         </div>
 
-<div class="form-section">
-    <div class="section-header">
-        <h3>Exam Details</h3>
-    </div>
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h3>Exam Details</h3>
+                            </div>
 
-    <div class="form-grid grid-2">
-        <div class="form-field">
-            <label class="field-label !text-gray-500">Exam Plan Date</label>
-            <input
-                type="datetime-local"
-                v-model="form.exam_plan_date"
-                class="form-input"
-                :min="examPlanMin || undefined"
-                :disabled="!canEditExamPlanDate"
-            />
-            <span v-if="form.errors.exam_plan_date" class="error-message">
-                {{ form.errors.exam_plan_date }}
-            </span>
-        </div>
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label"
+                                        >Exam Plan Date</label
+                                    >
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.exam_plan_date"
+                                        class="form-input"
+                                        :min="examPlanMin || undefined"
+                                        :disabled="!canEditExamPlanDate"
+                                    />
+<span v-if="scheduleValidationErrors.exam_plan_date" class="error-message">
+    {{ scheduleValidationErrors.exam_plan_date }}
+</span>
+                                </div>
 
-        <div class="form-field">
-            <label class="field-label !text-gray-500">Exam Actual Date</label>
-            <input
-                type="datetime-local"
-                v-model="form.exam_actual_date"
-                class="form-input"
-                :min="examActualMin || undefined"
-                :disabled="!editableStages.exam"
-            />
-            <span v-if="form.errors.exam_actual_date" class="error-message">
-                {{ form.errors.exam_actual_date }}
-            </span>
-        </div>
-    </div>
+                                <div class="form-field">
+                                    <label class="field-label"
+                                        >Exam Actual Date</label
+                                    >
+                                    <input
+                                        type="datetime-local"
+                                        v-model="form.exam_actual_date"
+                                        class="form-input"
+                                        :min="examActualMin || undefined"
+                                        :disabled="!editableStages.exam"
+                                    />
+                                    <span
+                                        v-if="form.errors.exam_actual_date"
+                                        class="error-message"
+                                    >
+                                        {{ form.errors.exam_actual_date }}
+                                    </span>
+                                </div>
+                            </div>
 
-    <div class="form-field">
-        <label class="field-label !text-gray-500">Exam Venue</label>
-        <select
-            v-model="form.exam_venue"
-            class="form-select"
-            :disabled="!editableStages.exam"
-        >
-            <option value="">Select Venue</option>
-            <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
-                {{ venue.label }}
-            </option>
-        </select>
-        <span v-if="form.errors.exam_venue" class="error-message">
-            {{ form.errors.exam_venue }}
-        </span>
-    </div>
+                            <div class="form-field">
+                                <label class="field-label">Exam Venue</label>
+                                <select
+                                    v-model="form.exam_venue"
+                                    class="form-select"
+                                    :disabled="!editableStages.exam"
+                                >
+                                    <option value="">Select Venue</option>
+                                    <option
+                                        v-for="venue in examVenues"
+                                        :key="venue.value"
+                                        :value="venue.value"
+                                    >
+                                        {{ venue.label }}
+                                    </option>
+                                </select>
+                                <span
+                                    v-if="form.errors.exam_venue"
+                                    class="error-message"
+                                >
+                                    {{ form.errors.exam_venue }}
+                                </span>
+                            </div>
 
-    <div class="exam-section-layout">
-        <div class="exam-form-column">
-            <div class="atpp-stack">
-                <div class="atpp-card">
-                    <div class="atpp-card-title">ATPP Part I (Sequence / Pattern Analysis)</div>
-                    <div class="form-grid grid-2">
-                        <div class="form-field">
-                            <label class="field-label !text-gray-500">Correct</label>
-                            <input
-                                type="number"
-                                step="1"
-                                min="0"
-                                v-model="form.exam_atpp_part1_correct"
-                                class="form-input"
-                                :disabled="!editableStages.exam"
-                            />
-                            <span v-if="form.errors.exam_atpp_part1_correct" class="error-message">
-                                {{ form.errors.exam_atpp_part1_correct }}
-                            </span>
+                            <div class="exam-section-layout">
+                                <div class="exam-form-column">
+                                    <div class="atpp-stack">
+                                        <div class="atpp-card">
+                                            <div class="atpp-card-title">
+                                                ATPP Part I (Sequence / Pattern
+                                                Analysis)
+                                            </div>
+                                            <div class="form-grid grid-2">
+                                                <div class="form-field">
+                                                    <label class="field-label"
+                                                        >Correct</label
+                                                    >
+                                                    <input
+                                                        type="number"
+                                                        step="1"
+                                                        min="0"
+                                                        max="40"
+                                                        @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part1_correct',
+                                                                40,
+                                                            )
+                                                        "
+                                                        v-model="
+                                                            form.exam_atpp_part1_correct
+                                                        "
+                                                        class="form-input"
+                                                        :disabled="
+                                                            !editableStages.exam
+                                                        "
+                                                    />
+                                                    <span
+                                                        v-if="
+                                                            form.errors
+                                                                .exam_atpp_part1_correct
+                                                        "
+                                                        class="error-message"
+                                                    >
+                                                        {{
+                                                            form.errors
+                                                                .exam_atpp_part1_correct
+                                                        }}
+                                                    </span>
+                                                </div>
+
+                                                <div class="form-field">
+                                                    <label class="field-label"
+                                                        >Wrong</label
+                                                    >
+                                                    <input
+                                                        type="number"
+                                                        step="1"
+                                                        min="0"
+                                                        max="40"
+                                                        @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part1_wrong',
+                                                                40,
+                                                            )
+                                                        "
+                                                        v-model="
+                                                            form.exam_atpp_part1_wrong
+                                                        "
+                                                        class="form-input"
+                                                        :disabled="
+                                                            !editableStages.exam
+                                                        "
+                                                    />
+                                                    <span
+                                                        v-if="
+                                                            form.errors
+                                                                .exam_atpp_part1_wrong
+                                                        "
+                                                        class="error-message"
+                                                    >
+                                                        {{
+                                                            form.errors
+                                                                .exam_atpp_part1_wrong
+                                                        }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="atpp-card">
+                                            <div class="atpp-card-title">
+                                                ATPP Part II (Abstract
+                                                Reasoning)
+                                            </div>
+                                            <div class="form-grid grid-2">
+                                                <div class="form-field">
+                                                    <label class="field-label"
+                                                        >Correct</label
+                                                    >
+                                                    <input
+                                                        type="number"
+                                                        step="1"
+                                                        min="0"
+                                                        max="30"
+                                                        @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part2_correct',
+                                                                30,
+                                                            )
+                                                        "
+                                                        v-model="
+                                                            form.exam_atpp_part2_correct
+                                                        "
+                                                        class="form-input"
+                                                        :disabled="
+                                                            !editableStages.exam
+                                                        "
+                                                    />
+                                                    <span
+                                                        v-if="
+                                                            form.errors
+                                                                .exam_atpp_part2_correct
+                                                        "
+                                                        class="error-message"
+                                                    >
+                                                        {{
+                                                            form.errors
+                                                                .exam_atpp_part2_correct
+                                                        }}
+                                                    </span>
+                                                </div>
+
+                                                <div class="form-field">
+                                                    <label class="field-label"
+                                                        >Wrong</label
+                                                    >
+                                                    <input
+                                                        type="number"
+                                                        step="1"
+                                                        min="0"
+                                                                                                                max="30"
+                                                        @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part2_wrong',
+                                                                30,
+                                                            )
+                                                        "
+
+                                                        v-model="
+                                                            form.exam_atpp_part2_wrong
+                                                        "
+                                                        class="form-input"
+                                                        :disabled="
+                                                            !editableStages.exam
+                                                        "
+                                                    />
+                                                    <span
+                                                        v-if="
+                                                            form.errors
+                                                                .exam_atpp_part2_wrong
+                                                        "
+                                                        class="error-message"
+                                                    >
+                                                        {{
+                                                            form.errors
+                                                                .exam_atpp_part2_wrong
+                                                        }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="atpp-card">
+                                            <div class="atpp-card-title">
+                                                ATPP Part III (Problem Solving)
+                                            </div>
+                                            <div class="form-grid grid-2">
+                                                <div class="form-field">
+                                                    <label class="field-label"
+                                                        >Correct</label
+                                                    >
+                                                    <input
+                                                        type="number"
+                                                        step="1"
+                                                        min="0"
+                                                        max="25"
+                                                        @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part3_correct',
+                                                                25,
+                                                            )
+                                                        "
+                                                        v-model="
+                                                            form.exam_atpp_part3_correct
+                                                        "
+                                                        class="form-input"
+                                                        :disabled="
+                                                            !editableStages.exam
+                                                        "
+                                                    />
+                                                    <span
+                                                        v-if="
+                                                            form.errors
+                                                                .exam_atpp_part3_correct
+                                                        "
+                                                        class="error-message"
+                                                    >
+                                                        {{
+                                                            form.errors
+                                                                .exam_atpp_part3_correct
+                                                        }}
+                                                    </span>
+                                                </div>
+
+                                                <div class="form-field">
+                                                    <label class="field-label"
+                                                        >Wrong</label
+                                                    >
+                                                    <input
+                                                        type="number"
+                                                        step="1"
+                                                        min="0"
+                                                                                                                max="25"
+                                                        @input="
+                                                            clampScore(
+                                                                form,
+                                                                'exam_atpp_part3_wrong',
+                                                                25,
+                                                            )
+                                                        "
+
+                                                        v-model="
+                                                            form.exam_atpp_part3_wrong
+                                                        "
+                                                        class="form-input"
+                                                        :disabled="
+                                                            !editableStages.exam
+                                                        "
+                                                    />
+                                                    <span
+                                                        v-if="
+                                                            form.errors
+                                                                .exam_atpp_part3_wrong
+                                                        "
+                                                        class="error-message"
+                                                    >
+                                                        {{
+                                                            form.errors
+                                                                .exam_atpp_part3_wrong
+                                                        }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="exam-criteria-column">
+                                    <div class="criteria-panel">
+                                        <template v-if="examCriteriaDisplay">
+                                            <div class="criteria-panel-header">
+                                                <div
+                                                    class="criteria-panel-title"
+                                                >
+                                                    Exam Criteria
+                                                </div>
+                                            </div>
+
+                                            <div class="criteria-rule passed">
+                                                <div
+                                                    class="criteria-rule-title"
+                                                >
+                                                    PASSED
+                                                </div>
+                                                <ul class="criteria-list">
+                                                    <li>
+                                                        ATPP must be at least
+                                                        {{
+                                                            examCriteriaDisplay
+                                                                .passed.attp
+                                                        }}
+                                                    </li>
+                                                    <li>
+                                                        GIT must be at least
+                                                        {{
+                                                            examCriteriaDisplay
+                                                                .passed.git
+                                                        }}
+                                                    </li>
+                                                    <li>
+                                                        PRG must be at least
+                                                        {{
+                                                            examCriteriaDisplay
+                                                                .passed.prg
+                                                        }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div
+                                                v-if="examCriteriaDisplay.p2"
+                                                class="criteria-rule p2"
+                                            >
+                                                <div
+                                                    class="criteria-rule-title"
+                                                >
+                                                    P2
+                                                </div>
+                                                <ul class="criteria-list">
+                                                    <li>
+                                                        ATPP must be at least
+                                                        {{
+                                                            examCriteriaDisplay
+                                                                .p2.attp
+                                                        }}
+                                                    </li>
+                                                    <li>
+                                                        GIT must be at least
+                                                        {{
+                                                            examCriteriaDisplay
+                                                                .p2.git
+                                                        }}
+                                                    </li>
+                                                    <li>
+                                                        PRG must be at least
+                                                        {{
+                                                            examCriteriaDisplay
+                                                                .p2.prg
+                                                        }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div class="criteria-rule failed">
+                                                <div
+                                                    class="criteria-rule-title"
+                                                >
+                                                    FAILED
+                                                </div>
+                                                <ul class="criteria-list">
+                                                    <li>
+                                                        ATPP is below
+                                                        {{
+                                                            examCriteriaDisplay
+                                                                .p2?.attp ??
+                                                            examCriteriaDisplay
+                                                                .passed.attp
+                                                        }}
+                                                    </li>
+                                                    <li>
+                                                        or GIT is below
+                                                        {{
+                                                            examCriteriaDisplay
+                                                                .p2?.git ??
+                                                            examCriteriaDisplay
+                                                                .passed.git
+                                                        }}
+                                                    </li>
+                                                    <li>
+                                                        or PRG is below
+                                                        {{
+                                                            examCriteriaDisplay
+                                                                .p2?.prg ??
+                                                            examCriteriaDisplay
+                                                                .passed.prg
+                                                        }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </template>
+
+                                        <template v-else>
+                                            <div class="criteria-panel-header">
+                                                <div
+                                                    class="criteria-panel-title"
+                                                >
+                                                    Exam Criteria
+                                                </div>
+                                                <div
+                                                    class="criteria-panel-subtitle"
+                                                >
+                                                    Applicant category
+                                                    unavailable
+                                                </div>
+                                            </div>
+
+                                            <div class="criteria-empty">
+                                                The applicable criteria depends
+                                                on the applicant's age and
+                                                degree category.
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-grid grid-3 pt-5">
+                                <div class="form-field">
+                                    <label class="field-label"
+                                        >ATPP Final Result</label
+                                    >
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        :value="computedAtppResult"
+                                        class="form-input"
+                                        readonly
+                                    />
+                                    <small class="helper-text">
+                                        ATPP Final Result = Total Correct -
+                                        (Total Wrong / 4)
+                                    </small>
+                                    <span
+                                        v-if="form.errors.exam_atpp_result"
+                                        class="error-message"
+                                    >
+                                        {{ form.errors.exam_atpp_result }}
+                                    </span>
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label"
+                                        >GIT Result</label
+                                    >
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        v-model="form.exam_git_result"
+                                         min="0"
+                                        max="12"
+                                        class="form-input"
+                                        @input="clampScore(form, 'exam_git_result', 12)"
+                                        :disabled="!editableStages.exam"
+                                    />
+                                    <span
+                                        v-if="form.errors.exam_git_result"
+                                        class="error-message"
+                                    >
+                                        {{ form.errors.exam_git_result }}
+                                    </span>
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label"
+                                        >PRG Result</label
+                                    >
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        v-model="form.exam_prg_result"
+                                        min="0"
+                                        max="80"
+                                        class="form-input"
+                                        :disabled="!editableStages.exam"
+                                        @input="clampScore(form, 'exam_prg_result', 80)"
+                                    />
+                                    <span
+                                        v-if="form.errors.exam_prg_result"
+                                        class="error-message"
+                                    >
+                                        {{ form.errors.exam_prg_result }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label"
+                                        >Exam Result</label
+                                    >
+                                    <input
+                                        type="text"
+                                        class="form-input"
+                                        :value="
+                                            examResultLabel ||
+                                            (!form.exam_application_status
+                                                ? 'Auto-filled from application status'
+                                                : '')
+                                        "
+                                        readonly
+                                        :disabled="!editableStages.exam"
+                                    />
+                                    <span
+                                        v-if="form.errors.exam_result"
+                                        class="error-message"
+                                        >{{ form.errors.exam_result }}</span
+                                    >
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label"
+                                        >Exam Application Status</label
+                                    >
+                                    <select
+                                        v-model="form.exam_application_status"
+                                        class="form-select"
+                                        :disabled="!editableStages.exam"
+                                    >
+                                        <option value="">Select Status</option>
+                                        <option
+                                            v-for="status in examStatuses"
+                                            :key="status.value"
+                                            :value="status.value"
+                                        >
+                                            {{ status.label }}
+                                        </option>
+                                    </select>
+                                    <span
+                                        v-if="
+                                            form.errors.exam_application_status
+                                        "
+                                        class="error-message"
+                                    >
+                                        {{
+                                            form.errors.exam_application_status
+                                        }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="field-label">Exam Comments</label>
+                                <textarea
+                                    v-model="form.exam_remarks"
+                                    rows="3"
+                                    class="form-textarea"
+                                    :disabled="!editableStages.exam"
+                                ></textarea>
+                                <span
+                                    v-if="form.errors.exam_remarks"
+                                    class="error-message"
+                                >
+                                    {{ form.errors.exam_remarks }}
+                                </span>
+                            </div>
                         </div>
-
-                        <div class="form-field">
-                            <label class="field-label !text-gray-500">Wrong</label>
-                            <input
-                                type="number"
-                                step="1"
-                                min="0"
-                                v-model="form.exam_atpp_part1_wrong"
-                                class="form-input"
-                                :disabled="!editableStages.exam"
-                            />
-                            <span v-if="form.errors.exam_atpp_part1_wrong" class="error-message">
-                                {{ form.errors.exam_atpp_part1_wrong }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="atpp-card">
-                    <div class="atpp-card-title">ATPP Part II (Abstract Reasoning)</div>
-                    <div class="form-grid grid-2">
-                        <div class="form-field">
-                            <label class="field-label !text-gray-500">Correct</label>
-                            <input
-                                type="number"
-                                step="1"
-                                min="0"
-                                v-model="form.exam_atpp_part2_correct"
-                                class="form-input"
-                                :disabled="!editableStages.exam"
-                            />
-                            <span v-if="form.errors.exam_atpp_part2_correct" class="error-message">
-                                {{ form.errors.exam_atpp_part2_correct }}
-                            </span>
-                        </div>
-
-                        <div class="form-field">
-                            <label class="field-label !text-gray-500">Wrong</label>
-                            <input
-                                type="number"
-                                step="1"
-                                min="0"
-                                v-model="form.exam_atpp_part2_wrong"
-                                class="form-input"
-                                :disabled="!editableStages.exam"
-                            />
-                            <span v-if="form.errors.exam_atpp_part2_wrong" class="error-message">
-                                {{ form.errors.exam_atpp_part2_wrong }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="atpp-card">
-                    <div class="atpp-card-title">ATPP Part III (Problem Solving)</div>
-                    <div class="form-grid grid-2">
-                        <div class="form-field">
-                            <label class="field-label !text-gray-500">Correct</label>
-                            <input
-                                type="number"
-                                step="1"
-                                min="0"
-                                v-model="form.exam_atpp_part3_correct"
-                                class="form-input"
-                                :disabled="!editableStages.exam"
-                            />
-                            <span v-if="form.errors.exam_atpp_part3_correct" class="error-message">
-                                {{ form.errors.exam_atpp_part3_correct }}
-                            </span>
-                        </div>
-
-                        <div class="form-field">
-                            <label class="field-label !text-gray-500">Wrong</label>
-                            <input
-                                type="number"
-                                step="1"
-                                min="0"
-                                v-model="form.exam_atpp_part3_wrong"
-                                class="form-input"
-                                :disabled="!editableStages.exam"
-                            />
-                            <span v-if="form.errors.exam_atpp_part3_wrong" class="error-message">
-                                {{ form.errors.exam_atpp_part3_wrong }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="exam-criteria-column">
-            <div class="criteria-panel">
-                <template v-if="examCriteriaDisplay">
-                    <div class="criteria-panel-header">
-                        <div class="criteria-panel-title">Exam Criteria</div>
-                    </div>
-
-                    <div class="criteria-rule passed">
-                        <div class="criteria-rule-title">PASSED</div>
-                        <ul class="criteria-list">
-                            <li>ATPP must be at least {{ examCriteriaDisplay.passed.attp }}</li>
-                            <li>GIT must be at least {{ examCriteriaDisplay.passed.git }}</li>
-                            <li>PRG must be at least {{ examCriteriaDisplay.passed.prg }}</li>
-                        </ul>
-                    </div>
-
-                    <div v-if="examCriteriaDisplay.p2" class="criteria-rule p2">
-                        <div class="criteria-rule-title">P2</div>
-                        <ul class="criteria-list">
-                            <li>ATPP must be at least {{ examCriteriaDisplay.p2.attp }}</li>
-                            <li>GIT must be at least {{ examCriteriaDisplay.p2.git }}</li>
-                            <li>PRG must be at least {{ examCriteriaDisplay.p2.prg }}</li>
-                        </ul>
-                    </div>
-
-                    <div class="criteria-rule failed">
-                        <div class="criteria-rule-title">FAILED</div>
-                        <ul class="criteria-list">
-                            <li>ATPP is below {{ examCriteriaDisplay.p2?.attp ?? examCriteriaDisplay.passed.attp }}</li>
-                            <li>or GIT is below {{ examCriteriaDisplay.p2?.git ?? examCriteriaDisplay.passed.git }}</li>
-                            <li>or PRG is below {{ examCriteriaDisplay.p2?.prg ?? examCriteriaDisplay.passed.prg }}</li>
-                        </ul>
-                    </div>
-                </template>
-
-                <template v-else>
-                    <div class="criteria-panel-header">
-                        <div class="criteria-panel-title">Exam Criteria</div>
-                        <div class="criteria-panel-subtitle">Applicant category unavailable</div>
-                    </div>
-
-                    <div class="criteria-empty">
-                        The applicable criteria depends on the applicant's age and degree category.
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
-
-    <div class="form-grid grid-3 pt-5">
-        <div class="form-field">
-            <label class="field-label !text-gray-500">ATPP Final Result</label>
-            <input
-                type="number"
-                step="0.01"
-                :value="computedAtppResult"
-                class="form-input"
-                readonly
-            />
-            <small class="helper-text">
-                ATPP Final Result = Total Correct - (Total Wrong / 4)
-            </small>
-            <span v-if="form.errors.exam_atpp_result" class="error-message">
-                {{ form.errors.exam_atpp_result }}
-            </span>
-        </div>
-
-        <div class="form-field">
-            <label class="field-label !text-gray-500">GIT Result</label>
-            <input
-                type="number"
-                step="0.01"
-                v-model="form.exam_git_result"
-                class="form-input"
-                :disabled="!editableStages.exam"
-            />
-            <span v-if="form.errors.exam_git_result" class="error-message">
-                {{ form.errors.exam_git_result }}
-            </span>
-        </div>
-
-        <div class="form-field">
-            <label class="field-label !text-gray-500">PRG Result</label>
-            <input
-                type="number"
-                step="0.01"
-                v-model="form.exam_prg_result"
-                class="form-input"
-                :disabled="!editableStages.exam"
-            />
-            <span v-if="form.errors.exam_prg_result" class="error-message">
-                {{ form.errors.exam_prg_result }}
-            </span>
-        </div>
-    </div>
-
-    <div class="form-grid grid-2">
-        <div class="form-field">
-            <label class="field-label !text-gray-500">Exam Result</label>
-            <input
-                type="text"
-                class="form-input"
-                :value="examResultLabel || (!form.exam_application_status ? 'Auto-filled from application status' : '')"
-                readonly
-                :disabled="!editableStages.exam"
-            />
-            <span v-if="form.errors.exam_result" class="error-message">{{ form.errors.exam_result }}</span>
-        </div>
-
-        <div class="form-field">
-            <label class="field-label !text-gray-500">Exam Application Status</label>
-            <select
-                v-model="form.exam_application_status"
-                class="form-select"
-                :disabled="!editableStages.exam"
-            >
-                <option value="">Select Status</option>
-                <option v-for="status in examStatuses" :key="status.value" :value="status.value">
-                    {{ status.label }}
-                </option>
-            </select>
-            <span v-if="form.errors.exam_application_status" class="error-message">
-                {{ form.errors.exam_application_status }}
-            </span>
-        </div>
-    </div>
-
-    <div class="form-field">
-        <label class="field-label !text-gray-500">Exam Comments</label>
-        <textarea
-            v-model="form.exam_remarks"
-            rows="3"
-            class="form-textarea"
-            :disabled="!editableStages.exam"
-        ></textarea>
-        <span v-if="form.errors.exam_remarks" class="error-message">
-            {{ form.errors.exam_remarks }}
-        </span>
-    </div>
-</div>
 <div
     class="form-section"
-    :class="{ 'pointer-events-none opacity-50': isInitialBlocked }"
+    :class="{
+        'pointer-events-none opacity-50':
+            isInitialBlocked,
+    }"
 >
     <div class="section-header">
         <h3>Initial Interview</h3>
-        <div v-if="isInitialBlocked" class="mb-2 text-sm text-red-500">
-            Initial Interview is disabled because applicant failed previous stage.
+        <div
+            v-if="isInitialBlocked"
+            class="mb-2 text-sm text-red-500"
+        >
+            Initial Interview is disabled because applicant failed exam.
         </div>
     </div>
 
-    <div class="exam-section-layout">
-        <div class="exam-form-column">
-            <div class="form-grid grid-2">
-                <div class="form-field">
-                    <label class="field-label !text-gray-500">Plan Date</label>
-                    <input
-                        type="datetime-local"
-                        v-model="form.initial_interview_plan_date"
-                        class="form-input"
-                        :min="initialInterviewPlanMin || undefined"
-                        :disabled="!canEditInitialInterviewPlanDate"
-                    />
-                    <span
-                        v-if="form.errors.initial_interview_plan_date"
-                        class="error-message"
-                    >
-                        {{ form.errors.initial_interview_plan_date }}
-                    </span>
-                </div>
-
-                <div class="form-field">
-                    <label class="field-label !text-gray-500">Actual Date</label>
-                    <input
-                        type="datetime-local"
-                        v-model="form.initial_interview_actual_date"
-                        class="form-input"
-                        :min="initialInterviewActualMin || undefined"
-                        :disabled="
-                            !editableStages.initial_interview || isInitialBlocked
-                        "
-                    />
-                    <span
-                        v-if="form.errors.initial_interview_actual_date"
-                        class="error-message"
-                    >
-                        {{ form.errors.initial_interview_actual_date }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="form-field">
-                <label class="field-label !text-gray-500">Venue</label>
-                <select
-                    v-model="form.initial_interview_venue"
-                    class="form-select"
-                    :disabled="
-                        !editableStages.initial_interview || isInitialBlocked
-                    "
-                >
-                    <option value="">Select Venue</option>
-                    <option
-                        v-for="venue in examVenues"
-                        :key="venue.value"
-                        :value="venue.value"
-                    >
-                        {{ venue.label }}
-                    </option>
-                </select>
-                <span
-                    v-if="form.errors.initial_interview_venue"
-                    class="error-message"
-                >
-                    {{ form.errors.initial_interview_venue }}
-                </span>
-            </div>
-
-            <div class="form-field">
-                <label class="field-label !text-gray-500">
-                    Initial Interview Final Score
-                </label>
-                <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="5"
-                    v-model="form.initial_interview_final"
-                    class="form-input"
-                    @input="clampScore(form, 'initial_interview_final', 5)"
-                    :disabled="
-                        !editableStages.initial_interview || isInitialBlocked
-                    "
-                />
-                <span
-                    v-if="form.errors.initial_interview_final"
-                    class="error-message"
-                >
-                    {{ form.errors.initial_interview_final }}
-                </span>
-            </div>
-        </div>
-
-        <div class="exam-criteria-column">
-            <div class="criteria-panel compact">
-                <div class="criteria-panel-title">
-                    Initial Interview Criteria
-                </div>
-
-                <div class="criteria-rule passed">
-                    <div class="criteria-rule-title">
-                        1 - Highly Recommended
-                    </div>
-                </div>
-
-                <div class="criteria-rule passed">
-                    <div class="criteria-rule-title">
-                        2 - Recommended
-                    </div>
-                </div>
-
-                <div class="criteria-rule p2">
-                    <div class="criteria-rule-title">3 - Average</div>
-                </div>
-
-                <div class="criteria-rule failed">
-                    <div class="criteria-rule-title">
-                        4 - Not Recommended
-                    </div>
-                </div>
-
-                <div class="criteria-rule failed">
-                    <div class="criteria-rule-title">
-                        5 - Never Recommended
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="form-grid grid-2">
+    <div class="form-grid grid-3">
         <div class="form-field">
-            <label class="field-label !text-gray-500">Result</label>
+            <label class="field-label">Plan Date</label>
             <input
-                type="text"
+                type="datetime-local"
+                v-model="form.initial_interview_plan_date"
                 class="form-input"
-                :value="
-                    initialInterviewResultLabel ||
-                    (!form.initial_interview_application_status
-                        ? 'Auto-filled from application status'
-                        : '')
-                "
-                readonly
-                :disabled="
-                    !editableStages.initial_interview || isInitialBlocked
-                "
+                :min="initialInterviewPlanMin || undefined"
+                :disabled="!editableStages.initial_interview"
             />
+<span v-if="scheduleValidationErrors.initial_interview_plan_date" class="error-message">
+    {{ scheduleValidationErrors.initial_interview_plan_date }}
+</span>
         </div>
 
         <div class="form-field">
-            <label class="field-label !text-gray-500">
-                Application Status
-            </label>
-            <select
-                v-model="form.initial_interview_application_status"
-                class="form-select"
-                :disabled="
-                    !editableStages.initial_interview || isInitialBlocked
-                "
+            <label class="field-label">Actual Date</label>
+            <input
+                type="datetime-local"
+                v-model="form.initial_interview_actual_date"
+                class="form-input"
+                :min="initialInterviewActualMin || undefined"
+                :disabled="!editableStages.initial_interview"
+            />
+            <span
+                v-if="form.errors.initial_interview_actual_date"
+                class="error-message"
             >
-                <option value="">Select Status</option>
+                {{ form.errors.initial_interview_actual_date }}
+            </span>
+        </div>
+
+        <div class="form-field">
+            <label class="field-label">Venue</label>
+            <select
+                v-model="form.initial_interview_venue"
+                class="form-select"
+                :disabled="!editableStages.initial_interview"
+            >
+                <option value="">Select Venue</option>
                 <option
-                    v-for="status in interviewAppStatuses"
-                    :key="status.value"
-                    :value="status.value"
+                    v-for="venue in examVenues"
+                    :key="venue.value"
+                    :value="venue.value"
                 >
-                    {{ status.label }}
+                    {{ venue.label }}
                 </option>
             </select>
+            <span
+                v-if="form.errors.initial_interview_venue"
+                class="error-message"
+            >
+                {{ form.errors.initial_interview_venue }}
+            </span>
         </div>
-    </div>
-
-    <div class="form-field mt-3">
-        <label class="field-label !text-gray-500">
-            Initial Interview Comments
-        </label>
-        <textarea
-            v-model="form.initial_interview_remarks"
-            rows="3"
-            class="form-textarea"
-            :disabled="
-                !editableStages.initial_interview || isInitialBlocked
-            "
-        ></textarea>
-        <span
-            v-if="form.errors.initial_interview_remarks"
-            class="error-message"
-        >
-            {{ form.errors.initial_interview_remarks }}
-        </span>
-    </div>
-</div>
-
-<div
-    class="form-section"
-    :class="{ 'pointer-events-none opacity-50': isFinalBlocked }"
->
-    <div class="section-header">
-        <h3>Final Interview</h3>
-        <div v-if="isFinalBlocked" class="mb-2 text-sm text-red-500">
-            Final Interview is disabled because applicant failed previous stage.
-        </div>
-    </div>
-
-    <div class="form-field">
-        <label class="field-label !text-gray-500">Date</label>
-        <input
-            type="datetime-local"
-            v-model="form.final_interview_date"
-            class="form-input"
-            :min="finalInterviewMin || undefined"
-            :disabled="!editableStages.final_interview"
-        />
-        <span
-            v-if="form.errors.final_interview_date"
-            class="error-message"
-        >
-            {{ form.errors.final_interview_date }}
-        </span>
     </div>
 
     <div class="exam-section-layout">
         <div class="exam-form-column">
             <div
-                v-if="visibleFinalInterviewAssignments.length === 0"
+                v-if="visibleInitialInterviewAssignments.length === 0"
                 class="criteria-empty"
             >
-                No final interviewers approved yet.
+                No initial interviewers approved yet.
             </div>
 
             <div v-else class="atpp-stack">
                 <div
-                    v-for="assignment in visibleFinalInterviewAssignments"
+                    v-for="(assignment, index) in visibleInitialInterviewAssignments"
                     :key="assignment.id"
                     class="atpp-card"
                 >
@@ -2131,198 +2602,477 @@ const examCriteriaDisplay = computed(() => {
 
                     <div class="form-grid grid-2">
                         <div class="form-field">
-                            <label class="field-label !text-gray-500">Score</label>
+                            <label class="field-label">Score</label>
                             <input
-                                type="number"
                                 v-model="assignment.score"
+                                type="number"
+                                step="0.01"
                                 min="0"
                                 max="5"
-                                step="0.01"
                                 class="form-input"
-                                @input="clampScore(assignment, 'score', 5)"
+                                :disabled="
+                                    !editableStages.initial_interview ||
+                                    isInitialBlocked
+                                "
                             />
+                            <span
+                                v-if="form.errors[`initial_interview_assignments.${index}.score`]"
+                                class="error-message"
+                            >
+                                {{ form.errors[`initial_interview_assignments.${index}.score`] }}
+                            </span>
                         </div>
 
                         <div class="form-field">
-                            <label class="field-label !text-gray-500">Result</label>
+                            <label class="field-label">Evaluation Result</label>
                             <select
                                 v-model="assignment.evaluation_result"
                                 class="form-select"
-                                :disabled="!editableStages.final_interview"
+                                :disabled="
+                                    !editableStages.initial_interview ||
+                                    isInitialBlocked
+                                "
                             >
                                 <option value="">Select Result</option>
                                 <option value="1">Pending</option>
                                 <option value="2">Passed</option>
                                 <option value="3">Failed</option>
                             </select>
+                            <span
+                                v-if="form.errors[`initial_interview_assignments.${index}.evaluation_result`]"
+                                class="error-message"
+                            >
+                                {{ form.errors[`initial_interview_assignments.${index}.evaluation_result`] }}
+                            </span>
                         </div>
                     </div>
 
-                    <div class="form-field">
-                        <label class="field-label !text-gray-500">
-                            Interviewer Remarks
-                        </label>
+                    <div class="form-field mt-3">
+                        <label class="field-label">Interviewer Remarks</label>
                         <textarea
                             v-model="assignment.evaluation_remarks"
-                            rows="2"
+                            rows="3"
                             class="form-textarea"
-                            :disabled="!editableStages.final_interview"
+                            :disabled="
+                                !editableStages.initial_interview ||
+                                isInitialBlocked
+                            "
                         ></textarea>
+                        <span
+                            v-if="form.errors[`initial_interview_assignments.${index}.evaluation_remarks`]"
+                            class="error-message"
+                        >
+                            {{ form.errors[`initial_interview_assignments.${index}.evaluation_remarks`] }}
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="exam-criteria-column">
-            <div class="criteria-panel compact">
+        <div class="criteria-panel">
+            <div class="criteria-panel-header">
                 <div class="criteria-panel-title">
-                    Final Interview Criteria
+                    Initial Interview Criteria
                 </div>
+                <div class="criteria-panel-subtitle">
+                    1 is best, 5 is worst
+                </div>
+            </div>
 
-                <div class="criteria-rule passed">
-                    <div class="criteria-rule-title">
-                        1 - Highly Recommended
-                    </div>
-                </div>
-
-                <div class="criteria-rule passed">
-                    <div class="criteria-rule-title">
-                        2 - Recommended
-                    </div>
-                </div>
-
-                <div class="criteria-rule p2">
-                    <div class="criteria-rule-title">3 - Average</div>
-                </div>
-
-                <div class="criteria-rule failed">
-                    <div class="criteria-rule-title">
-                        4 - Not Recommended
-                    </div>
-                </div>
-
-                <div class="criteria-rule failed">
-                    <div class="criteria-rule-title">
-                        5 - Never Recommended
-                    </div>
-                </div>
+            <div class="criteria-rule passed">
+                <div class="criteria-rule-title">1 - Highly Recommended</div>
+            </div>
+            <div class="criteria-rule passed">
+                <div class="criteria-rule-title">2 - Recommended</div>
+            </div>
+            <div class="criteria-rule p2">
+                <div class="criteria-rule-title">3 - Average</div>
+            </div>
+            <div class="criteria-rule failed">
+                <div class="criteria-rule-title">4 - Not Recommended</div>
+            </div>
+            <div class="criteria-rule failed">
+                <div class="criteria-rule-title">5 - Never Recommended</div>
             </div>
         </div>
     </div>
 
-    <div class="form-grid grid-3 mt-3">
+    <div class="form-grid grid-2">
         <div class="form-field">
-            <label class="field-label !text-gray-500">Final Score</label>
+            <label class="field-label">Average Score</label>
             <input
                 type="number"
-                v-model="form.final_interview_final"
-                min="0"
-                max="5"
                 step="0.01"
+                v-model="form.initial_interview_final"
                 class="form-input"
-                :readonly="!canEditFinalInterviewDecision"
-                :disabled="!editableStages.final_interview"
-                @input="
-                    finalInterviewOverallManuallyEdited = true;
-                    canEditFinalInterviewDecision &&
-                        clampScore(form, 'final_interview_final', 5)
-                "
+                :disabled="!editableStages.initial_interview || isInitialBlocked"
+                @input="handleInitialScoreManualInput"
             />
+            <span
+                v-if="form.errors.initial_interview_final"
+                class="error-message"
+            >
+                {{ form.errors.initial_interview_final }}
+            </span>
         </div>
 
         <div class="form-field">
-            <label class="field-label !text-gray-500">Result</label>
-
-            <input
-                v-if="
-                    allFinalInterviewersPassed ||
-                    allFinalInterviewersFailed
-                "
-                type="text"
-                class="form-input"
-                :value="
-                    finalInterviewResultLabel ||
-                    (!form.final_interview_application_status
-                        ? 'Auto-filled from application status'
-                        : '')
-                "
-                readonly
-                :disabled="!editableStages.final_interview"
-            />
-
-            <select
-                v-else-if="
-                    hasMixedFinalInterviewResults &&
-                    canEditFinalInterviewDecision
-                "
-                v-model="form.final_interview_result"
-                @change="markFinalInterviewOverallManualEdit()"
-                class="form-select"
-                :disabled="!editableStages.final_interview"
-            >
-                <option value="">Select Final Result</option>
-                <option value="2">Passed</option>
-                <option value="3">Failed</option>
-            </select>
-
-            <input
-                v-else
-                type="text"
-                class="form-input"
-                :value="finalInterviewResultLabel || 'For HR deliberation'"
-                readonly
-                :disabled="!editableStages.final_interview"
-            />
-
-            <p
-                v-if="!canEditFinalInterviewDecision"
-                class="mt-1 text-xs text-zinc-500"
-            >
-                Final result is editable by HR Admins or HR Managers.
-            </p>
-        </div>
-
-        <div class="form-field">
-            <label class="field-label !text-gray-500">
-                Application Status
-            </label>
+            <label class="field-label">Result</label>
             <input
                 type="text"
                 class="form-input"
-                :value="
-                    interviewAppStatuses.find(
-                        (s) =>
-                            String(s.value) ===
-                            String(form.final_interview_application_status),
-                    )?.label || ''
-                "
+                :value="initialInterviewResultLabel || (!form.initial_interview_application_status ? 'Auto-filled' : '')"
                 readonly
-                :disabled="!editableStages.final_interview"
+                :disabled="true"
             />
         </div>
     </div>
 
-        <div class="form-field mt-3">
-        <label class="field-label !text-gray-500">
-            Final Interview Comments
-        </label>
-        <textarea
-            v-model="form.final_interview_remarks"
-            rows="3"
-            class="form-textarea"
-            :disabled="!editableStages.final_interview"
-        ></textarea>
-        <span
-            v-if="form.errors.final_interview_remarks"
-            class="error-message"
-        >
-            {{ form.errors.final_interview_remarks }}
-        </span>
+    <div class="form-grid grid-2">
+        <div class="form-field">
+            <label class="field-label">Application Status</label>
+            <select
+                v-model="form.initial_interview_application_status"
+                class="form-select"
+                :disabled="
+                    !editableStages.initial_interview ||
+                    isInitialBlocked
+                "
+            >
+                <option value="">Select Status</option>
+                <option
+                    v-for="status in interviewAppStatuses"
+                    :key="status.value"
+                    :value="status.value"
+                >
+                    {{ status.label }}
+                </option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label class="field-label">Overall Comments</label>
+            <textarea
+                v-model="form.initial_interview_remarks"
+                rows="3"
+                class="form-textarea"
+                :disabled="
+                    !editableStages.initial_interview ||
+                    isInitialBlocked
+                "
+            ></textarea>
+            <span
+                v-if="form.errors.initial_interview_remarks"
+                class="error-message"
+            >
+                {{ form.errors.initial_interview_remarks }}
+            </span>
+        </div>
     </div>
 </div>
+                        <div
+                            class="form-section"
+                            :class="{
+                                'pointer-events-none opacity-50':
+                                    isFinalBlocked,
+                            }"
+                        >
+                            <div class="section-header">
+                                <h3>Final Interview</h3>
+                                <div
+                                    v-if="isFinalBlocked"
+                                    class="mb-2 text-sm text-red-500"
+                                >
+                                    Final Interview is disabled because
+                                    applicant failed previous stage.
+                                </div>
+                            </div>
 
-<div class="form-section"
-    :class="{ 'opacity-50 pointer-events-none': isJobOfferBlocked }">
+                            <div class="form-field">
+                                <label class="field-label">Date</label>
+                                <input
+                                    type="datetime-local"
+                                    v-model="form.final_interview_date"
+                                    class="form-input"
+                                    :min="finalInterviewMin || undefined"
+                                    :disabled="!editableStages.final_interview"
+                                />
+<span v-if="scheduleValidationErrors.final_interview_date" class="error-message">
+    {{ scheduleValidationErrors.final_interview_date }}
+</span>
+                            </div>
+
+                            <div class="exam-section-layout">
+                                <div class="exam-form-column">
+                                    <div
+                                        v-if="
+                                            visibleFinalInterviewAssignments.length ===
+                                            0
+                                        "
+                                        class="criteria-empty"
+                                    >
+                                        No final interviewers approved yet.
+                                    </div>
+
+                                    <div v-else class="atpp-stack">
+                                        <div
+                                            v-for="(
+                                                assignment, index
+                                            ) in visibleFinalInterviewAssignments"
+                                            :key="assignment.id"
+                                            class="atpp-card"
+                                        >
+                                            <div class="atpp-card-title">
+                                                {{ assignment.name }}
+                                                <span
+                                                    class="criteria-panel-subtitle"
+                                                    >({{
+                                                        assignment.role_label
+                                                    }})</span
+                                                >
+                                            </div>
+
+                                            <div class="form-grid grid-2">
+                                                <div class="form-field">
+                                                    <label class="field-label"
+                                                        >Score</label
+                                                    >
+                                                    <input
+                                                        type="number"
+                                                        v-model="
+                                                            assignment.score
+                                                        "
+                                                        min="0"
+                                                        max="5"
+                                                        step="0.01"
+                                                        class="form-input"
+                                                        @input="
+                                                            clampScore(
+                                                                assignment,
+                                                                'score',
+                                                                5
+                                                            )
+                                                        "
+                                                    />
+                                                </div>
+
+                                                <div class="form-field">
+                                                    <label class="field-label"
+                                                        >Result</label
+                                                    >
+                                                    <select
+                                                        v-model="
+                                                            assignment.evaluation_result
+                                                        "
+                                                        class="form-select"
+                                                        :disabled="
+                                                            !editableStages.final_interview
+                                                        "
+                                                    >
+                                                        <option value="">
+                                                            Select Result
+                                                        </option>
+                                                        <option value="1">
+                                                            Pending
+                                                        </option>
+                                                        <option value="2">
+                                                            Passed
+                                                        </option>
+                                                        <option value="3">
+                                                            Failed
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-field">
+                                                <label class="field-label"
+                                                    >Interviewer Remarks</label
+                                                >
+                                                <textarea
+                                                    v-model="
+                                                        assignment.evaluation_remarks
+                                                    "
+                                                    rows="2"
+                                                    class="form-textarea"
+                                                    :disabled="
+                                                        !editableStages.final_interview
+                                                    "
+                                                ></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="exam-criteria-column">
+                                    <div class="criteria-panel compact">
+                                        <div class="criteria-panel-title">
+                                            Final Interview Criteria
+                                        </div>
+
+                                        <div class="criteria-rule passed">
+                                            <div class="criteria-rule-title">
+                                                1 - Highly Recommended
+                                            </div>
+                                        </div>
+
+                                        <div class="criteria-rule passed">
+                                            <div class="criteria-rule-title">
+                                                2 - Recommended
+                                            </div>
+                                        </div>
+
+                                        <div class="criteria-rule p2">
+                                            <div class="criteria-rule-title">
+                                                3 - Average
+                                            </div>
+                                        </div>
+
+                                        <div class="criteria-rule failed">
+                                            <div class="criteria-rule-title">
+                                                4 - Not Recommended
+                                            </div>
+                                        </div>
+
+                                        <div class="criteria-rule failed">
+                                            <div class="criteria-rule-title">
+                                                5 - Never Recommended
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-grid grid-3 mt-3">
+                                <div class="form-field">
+                                    <label class="field-label"
+                                        >Final Score</label
+                                    >
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="5"
+                                        v-model="form.final_interview_final"
+                                        @input="
+                                            handleFinalScoreManualInput();
+                                            clampScore(
+                                                form,
+                                                'final_interview_final',
+                                                5
+                                            );
+                                        "
+                                        class="form-input"
+                                        :disabled="
+                                            !editableStages.final_interview
+                                        "
+                                    />
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label">Result</label>
+                                    <input
+                                        v-if="
+                                            allFinalInterviewersPassed ||
+                                            allFinalInterviewersFailed
+                                        "
+                                        type="text"
+                                        class="form-input"
+                                        :value="
+                                            finalInterviewResultLabel ||
+                                            (!form.final_interview_application_status
+                                                ? 'Auto-filled from application status'
+                                                : '')
+                                        "
+                                        readonly
+                                        :disabled="
+                                            !editableStages.final_interview
+                                        "
+                                    />
+
+                                    <select
+                                        v-else-if="
+                                            hasMixedFinalInterviewResults &&
+                                            canEditFinalInterviewDecision
+                                        "
+                                        v-model="form.final_interview_result"
+                                        class="form-select"
+                                        :disabled="
+                                            !editableStages.final_interview
+                                        "
+                                    >
+                                        <option value="">
+                                            Select Final Result
+                                        </option>
+                                        <option value="2">Passed</option>
+                                        <option value="3">Failed</option>
+                                    </select>
+
+                                    <input
+                                        v-else
+                                        type="text"
+                                        class="form-input"
+                                        :value="
+                                            finalInterviewResultLabel ||
+                                            'For HR deliberation'
+                                        "
+                                        readonly
+                                        :disabled="
+                                            !editableStages.final_interview
+                                        "
+                                    />
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label"
+                                        >Application Status</label
+                                    >
+                                    <input
+                                        type="text"
+                                        class="form-input"
+                                        :value="
+                                            interviewAppStatuses.find(
+                                                (s) =>
+                                                    String(s.value) ===
+                                                    String(
+                                                        form.final_interview_application_status,
+                                                    ),
+                                            )?.label || ''
+                                        "
+                                        readonly
+                                        :disabled="
+                                            !editableStages.final_interview
+                                        "
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="form-field mt-3">
+                                <label class="field-label"
+                                    >Final Interview Comments</label
+                                >
+                                <textarea
+                                    v-model="form.final_interview_remarks"
+                                    rows="3"
+                                    class="form-textarea"
+                                    :disabled="!editableStages.final_interview"
+                                ></textarea>
+                                <span
+                                    v-if="form.errors.final_interview_remarks"
+                                    class="error-message"
+                                >
+                                    {{ form.errors.final_interview_remarks }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="form-section"
+                            :class="{
+                                'pointer-events-none opacity-50':
+                                    isJobOfferBlocked,
+                            }"
+                        >
                             <div class="section-header">
                                 <h3>Job Offer</h3>
                                 <div
@@ -2336,7 +3086,7 @@ const examCriteriaDisplay = computed(() => {
 
                             <div class="form-grid grid-2">
                                 <div class="form-field">
-                                    <label class="field-label !text-gray-500">Schedule</label>
+                                    <label class="field-label">Schedule</label>
                                     <input
                                         type="datetime-local"
                                         v-model="form.job_offer_schedule"
@@ -2344,17 +3094,18 @@ const examCriteriaDisplay = computed(() => {
                                         :min="jobOfferScheduleMin || undefined"
                                         :disabled="!editableStages.job_offer"
                                     />
-                                    <span
-                                        v-if="form.errors.job_offer_schedule"
-                                        class="error-message"
-                                        >{{
-                                            form.errors.job_offer_schedule
-                                        }}</span
+<span v-if="scheduleValidationErrors.job_offer_schedule" class="error-message">
+    {{ scheduleValidationErrors.job_offer_schedule }}
+</span>
                                     >
                                 </div>
                                 <div class="form-field">
-                                    <label class="field-label !text-gray-500">Status</label>
-                                    <select v-model="form.job_offer_status" class="form-select" :disabled="!editableStages.job_offer">
+                                    <label class="field-label">Status</label>
+                                    <select
+                                        v-model="form.job_offer_status"
+                                        class="form-select"
+                                        :disabled="!editableStages.job_offer"
+                                    >
                                         <option value="">Select Status</option>
                                         <option
                                             v-for="status in jobOfferStatuses"
@@ -2368,9 +3119,19 @@ const examCriteriaDisplay = computed(() => {
                             </div>
 
                             <div class="form-field">
-                                <label class="field-label !text-gray-500">Job Offer Comments</label>
-                                <textarea v-model="form.job_offer_remarks" rows="3" class="form-textarea" :disabled="!editableStages.job_offer"></textarea>
-                                <span v-if="form.errors.job_offer_remarks" class="error-message">
+                                <label class="field-label"
+                                    >Job Offer Comments</label
+                                >
+                                <textarea
+                                    v-model="form.job_offer_remarks"
+                                    rows="3"
+                                    class="form-textarea"
+                                    :disabled="!editableStages.job_offer"
+                                ></textarea>
+                                <span
+                                    v-if="form.errors.job_offer_remarks"
+                                    class="error-message"
+                                >
                                     {{ form.errors.job_offer_remarks }}
                                 </span>
                             </div>
@@ -2382,9 +3143,19 @@ const examCriteriaDisplay = computed(() => {
                             </div>
 
                             <div class="form-field">
-                                <label class="field-label !text-gray-500">General Remarks</label>
-                                <textarea v-model="form.remarks" rows="3" class="form-textarea" :disabled="!editableStages.general"></textarea>
-                                <span v-if="form.errors.remarks" class="error-message">
+                                <label class="field-label"
+                                    >General Remarks</label
+                                >
+                                <textarea
+                                    v-model="form.remarks"
+                                    rows="3"
+                                    class="form-textarea"
+                                    :disabled="!editableStages.general"
+                                ></textarea>
+                                <span
+                                    v-if="form.errors.remarks"
+                                    class="error-message"
+                                >
                                     {{ form.errors.remarks }}
                                 </span>
                             </div>
@@ -2577,6 +3348,7 @@ const examCriteriaDisplay = computed(() => {
 .field-label {
     margin: 0;
     font-size: 0.875rem;
+    font-weight: 500;
     color: var(--ats-text);
     line-height: 1.4;
 }

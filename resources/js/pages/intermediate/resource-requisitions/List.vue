@@ -101,30 +101,13 @@ onMounted(() => {
 });
 
 onMounted(() => {
-  console.log('Requisition data:', requisitions.value); // Check the raw data
+  console.log('Requisition data:', requisitions.value);
 });
 
 </script>
 
 <template>
   <AppLayout>
-    <!-- Success Notification -->
-<div 
-  v-if="showSuccess"
-  class="full-width-alert"
->
-  <div 
-    class="alert-banner alert-success-banner"
-  >
-      <p class="text-white text-m font-medium text-left">{{ successMessage }}</p>
-    <button 
-      @click="showSuccess = false"
-      style="all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: rgba(0,0,0,0.3); color:white; font-weight:bold; font-size:1rem;"
-    >
-      X
-    </button>
-  </div>
-</div>
     <div class="page-content">
 
       <!-- PAGE HEADER -->
