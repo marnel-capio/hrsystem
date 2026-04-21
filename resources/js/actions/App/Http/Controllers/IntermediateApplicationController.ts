@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:0
+ * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,6 +18,7 @@ index.definition = {
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:0
+ * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,6 +28,7 @@ index.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:0
+ * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,6 +38,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:0
+ * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,6 +49,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:0
+ * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,6 +60,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:0
+ * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,6 +70,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:0
+ * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
