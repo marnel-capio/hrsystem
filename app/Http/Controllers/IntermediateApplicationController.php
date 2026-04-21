@@ -65,6 +65,26 @@ class IntermediateApplicationController extends Controller
 
     public function create()
     {
+        $cutoffDate = Carbon::now()->subMonths(6);
+
+        $intermediateApplicants = IntermediateApplicant::query()
+            ->where(function ($query) use ($cutoffDate) {
+
+                $query->whereDoesntHave('applications')
+                    ->orWhereHas('latestApplication', function ($q) use ($cutoffDate) {
+                        $q->where('created_time', '<', $cutoffDate);
+                    });
+            })
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->map(fn ($applicant) => [
+                'id' => $applicant->id,
+                'name' => trim($applicant->first_name.' '.$applicant->last_name),
+                'email_address' => $applicant->email_address,
+            ])
+            ->toArray();
+
         return Inertia::render('intermediate/applications/Register', [
             'examStatuses' => config('constants.exam_statuses'),
             'hrStatuses' => config('constants.interview_statuses'),
@@ -85,17 +105,7 @@ class IntermediateApplicationController extends Controller
                 ])
                 ->toArray(),
 
-            'intermediateApplicants' => IntermediateApplicant::query()
-                ->whereDoesntHave('applications')
-                ->orderBy('first_name')
-                ->orderBy('last_name')
-                ->get()
-                ->map(fn ($applicant) => [
-                    'id' => $applicant->id,
-                    'name' => trim($applicant->first_name.' '.$applicant->last_name),
-                    'email_address' => $applicant->email_address,
-                ])
-                ->toArray(),
+             'intermediateApplicants' => $intermediateApplicants,
         ]);
     }
 

@@ -2561,6 +2561,7 @@ namespace App\Models {
      * @property-read \App\Models\User $registeredBy
      * @property-read \App\Models\User $createdBy
      * @property-read \App\Models\User $updatedBy
+     * @property-read \App\Models\IntermediateApplication $latestApplication
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermediateApplicationWorkExperience> $workExperiences
      * @property-read int|null $work_experiences_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermediateApplicantSkill> $skills
