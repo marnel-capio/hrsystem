@@ -462,7 +462,7 @@ watch(
         <form @submit.prevent="createResourceSchedule">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <label class="text-sm required font-bold">Batch Name</label>
+              <label class="text-sm required font-semibold">Batch Name</label>
               <select v-model="form.action_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5">
                 <option value="">Select</option>
                 <option v-for="batch in props.newBatches" :key="batch.id" :value="batch.id">
@@ -475,7 +475,7 @@ watch(
             </div>
 
             <div>
-              <label class="text-sm required font-bold">Target Location</label>
+              <label class="text-sm required font-semibold">Target Location</label>
               <select v-model="form.target_location" class="w-full bg-zinc-50 border rounded-lg p-2.5">
                 <option value="">Select</option>
                 <option value="1">Manila</option>
@@ -487,7 +487,7 @@ watch(
             </div>
 
             <div>
-              <label class="text-sm required font-bold">Target Trainees</label>
+              <label class="text-sm required font-semibold">Target Trainees</label>
               <input v-model="form.target_trainees" type="number" disabled class="w-full bg-zinc-50 border rounded-lg p-2.5" />
               <p v-if="form.errors.target_trainees" class="text-red-600 text-xs mt-1">
                 {{ form.errors.target_trainees }}
@@ -495,7 +495,7 @@ watch(
             </div>
 
             <div>
-              <label class="text-sm required font-bold">Date of Deployment</label>
+              <label class="text-sm required font-semibold">Date of Deployment</label>
               <input v-model="form.deployment_date" readonly class="w-full bg-zinc-50 border rounded-lg p-2.5" />
               <p v-if="form.errors.deployment_date" class="text-red-600 text-xs mt-1">
                 {{ form.errors.deployment_date }}
@@ -503,7 +503,7 @@ watch(
             </div>
 
             <div>
-              <label class="text-sm text-gray-500">Compare with Previous Batch</label>
+              <label class="text-sm text-gray-500 font-semibold">Compare with Previous Batch</label>
               <select v-model="form.prev_batch_id" class="w-full bg-zinc-50 border rounded-lg p-2.5">
                 <option value="">Select</option>
                 <option v-for="batch in props.prevBatches" :key="batch.id" :value="batch.id">
@@ -519,7 +519,7 @@ watch(
           <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mt-10">
             <template v-for="act in ganttActivities" :key="act">
               <div>
-                <label class="text-sm required font-bold">{{ formatActivityName(act) }}</label>
+                <label class="text-sm required font-semibold">{{ formatActivityName(act) }}</label>
 
                 <div v-if="act !== 'training'" class="grid grid-cols-2 gap-3 mt-1 mb-1">
                   <div>
@@ -626,7 +626,7 @@ watch(
           </div>
 
           <div class="mt-10">
-            <label class="text-sm text-gray-500">Remarks</label>
+            <label class="text-sm text-gray-500 font-semibold">Remarks</label>
             <textarea
               v-model="form.remarks"
               class="w-full bg-zinc-50 border rounded-lg p-2.5 mt-1"
