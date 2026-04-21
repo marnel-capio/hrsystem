@@ -1430,7 +1430,7 @@ watch(
                             v-if="page.props.hasMixedInitialInterviewResults"
                             class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
                         >
-                            Mixed interviewer results. Final score is up to HR
+                            Mixed interviewer results. Final status is up to HR
                             deliberation.
                         </div>
 
@@ -1621,7 +1621,7 @@ watch(
                             v-if="page.props.hasMixedFinalInterviewResults"
                             class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
                         >
-                            Mixed interviewer results. Final score is up to HR
+                            Mixed interviewer results. Final status is up to HR
                             deliberation.
                         </div>
 

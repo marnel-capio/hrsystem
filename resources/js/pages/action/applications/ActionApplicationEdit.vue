@@ -605,9 +605,12 @@ watch(
     },
 );
 
+const initialStatusManuallyEdited = ref(false);
+
 watch(
     () => form.initial_interview_assignments,
     (rows) => {
+        if (initialStatusManuallyEdited.value) return;
         const list = rows || [];
 
         const numericScores = list
@@ -1180,6 +1183,16 @@ watch(
         form.initial_interview_result = mappedResult
             ? String(mappedResult)
             : '';
+    },
+);
+
+watch(
+    () => form.initial_interview_application_status,
+    (newStatus, oldStatus) => {
+        // If user changed it manually (not from the assignments watch)
+        if (oldStatus !== undefined && newStatus !== oldStatus) {
+            initialStatusManuallyEdited.value = true;
+        }
     },
 );
 
