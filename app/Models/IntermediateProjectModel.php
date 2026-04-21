@@ -43,16 +43,12 @@ class IntermediateProjectModel extends Model
 
 
     //TO BE USED IN RESOURCE REQS
-    public static function getProjects($excludeScheduled = true)
+    public static function getProjects()
     {
         $requisitionIds = IntermediateRequisitionModel::pluck('project_id')->toArray();
         $query = DB::table('projects')->select('id', 'project_name', 'project_description');
 
-        if ($excludeScheduled) {
-            $query->whereNotIn('id', $requisitionIds);
-        } else {
-            $query->whereIn('id', $requisitionIds);
-        }
+        $query->whereIn('id', $requisitionIds);
 
         $projects = $query->get();
 

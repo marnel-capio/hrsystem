@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 
@@ -177,6 +177,52 @@ watch(() => form.value.project_id, (newId) => {
 });
 
 
+watch(() => form.value.request_type, async (newRequestType) => {
+  if (newRequestType === '1') {
+    form.value.replacement_due_to = '';
+    await nextTick(); 
+    console.log('Dropdown should reset now.');
+  }
+});
+
+
+watch(() => form.value.request_type, (newRequestType) => {
+  if (newRequestType === '1') {  
+    form.value.person_to_replace = '';  
+    form.value.replacement_due_to = '';  
+  }
+});
+
+watch(() => form.value.engagement_type, (newEngagementType) => {
+  if (newEngagementType === '3') {  
+    form.value.expected_salary_range = '';  
+  }
+});
+
+watch(
+  () => form.value.location_assignment,
+  (val) => {
+    if (val !== '6') {
+      form.value.custom_location = ''
+    }
+  },
+  { immediate: true }
+)
+
+
+onMounted(() => {
+  if (form.value.project_id) {
+    const project = props.newProjects.find(
+      p => p.id === Number(form.value.project_id)
+    )
+
+    if (project) {
+      form.value.project_description = project.project_description
+    }
+  }
+})
+
+
 const submit = () => {
   person_to_replaceError.value = ''
   custom_locationError.value = ''
@@ -275,7 +321,9 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         <!-- If Replacement, Due To -->
         <div class="flex flex-col w-full">
           <label class="text-sm mb-1">If Replacement, Due To</label>
-          <select v-model="form.replacement_due_to" class="border p-2 rounded w-full" :disabled="form.request_type !== '2'" :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}">
+          <select v-model="form.replacement_due_to" class="border p-2 rounded w-full" 
+          :disabled="form.request_type !== '2'" 
+          :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}">
             <option disabled value="">Select Reason</option>
             <option value="1">Promotion</option>
             <option value="2">Attrition</option>
