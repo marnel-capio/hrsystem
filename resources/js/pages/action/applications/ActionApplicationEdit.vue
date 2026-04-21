@@ -652,15 +652,14 @@ watch(
         }
 
         if (hasMixedInitialInterviewResults.value) {
-            form.initial_interview_application_status = '2';
-            if (!isHrDecisionEditor.value) {
-                form.initial_interview_result = '';
-            }
+            form.initial_interview_application_status = '1';
+            form.initial_interview_result = '1';
             return;
         }
 
         if (form.initial_interview_plan_date) {
             form.initial_interview_application_status = '1';
+            form.initial_interview_result = '1';
         } else {
             form.initial_interview_application_status = '';
             form.initial_interview_result = '';
@@ -940,15 +939,14 @@ watch(
         }
 
         if (hasMixedFinalInterviewResults.value) {
-            form.final_interview_application_status = '2';
-            if (!isHrDecisionEditor.value) {
-                form.final_interview_result = '';
-            }
+            form.final_interview_application_status = '1';
+            form.final_interview_result = '1';
             return;
         }
 
         if (form.final_interview_date) {
             form.final_interview_application_status = '1';
+            form.final_interview_result = '1';
         } else {
             form.final_interview_application_status = '';
             form.final_interview_result = '';
