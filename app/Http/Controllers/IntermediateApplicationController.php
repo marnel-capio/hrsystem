@@ -115,12 +115,13 @@ class IntermediateApplicationController extends Controller
 
         try {
             $data = $request->validated();
+            //throw new \Exception("Test error");
 
-            // ✅ DEFAULT VALUES (non-null)
+            //  DEFAULT VALUES (non-null)
             $data['paper_screening_status'] = 1;  // Screening Pending
             $data['application_stage'] = 1;       // New/Screening
 
-            // ✅ UPGRADE if advanced data exists
+            //  UPGRADE if advanced data exists
             $data['application_stage'] = $this->determineApplicationStage($data);
 
             // File uploads
@@ -169,7 +170,10 @@ class IntermediateApplicationController extends Controller
                 \Storage::disk('public')->delete($picPath);
             }
 
-            return back()->with('error', config('errors.transaction_failed.errorMessage'));
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors(['error' => config('errors.transaction_failed.errorMessage')]);
         }
     }
 
