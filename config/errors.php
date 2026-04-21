@@ -169,6 +169,7 @@ return [
     'start_date_after' => [
         'errorCode' => 'START_DATE_AFTER',
         'errorMessage' => 'The selected date must be in the future.',
+
     'TARGET_DATE_BETWEEN' => [
         'errorCode' => 'TARGET_DATE_BETWEEN',
         'errorMessage' => 'The selected date must be between the previous and next ACTION Batch.',
@@ -195,7 +196,13 @@ return [
     'project_name_unique'=>[
         'errorCode' => 'PROJECT_NAME_UNIQUE',
         'errorMessage' => 'Project already exists.',
-    ]
+    ],
 
+    'start_date_custom' => [
+        'errorCode' => 'START_DATE_CUSTOM',
+        'errorMessage' => 'The selected date must be at least 2 days ahead.',
+    ],
+
+]
 ];
 

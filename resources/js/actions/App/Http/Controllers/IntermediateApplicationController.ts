@@ -1,7 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
- * @see app/Http/Controllers/IntermediateApplicationController.php:0
  * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
@@ -17,7 +16,6 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
- * @see app/Http/Controllers/IntermediateApplicationController.php:0
  * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
@@ -27,7 +25,6 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
- * @see app/Http/Controllers/IntermediateApplicationController.php:0
  * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
@@ -37,7 +34,6 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
- * @see app/Http/Controllers/IntermediateApplicationController.php:0
  * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
@@ -48,7 +44,6 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
- * @see app/Http/Controllers/IntermediateApplicationController.php:0
  * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
@@ -59,7 +54,6 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
- * @see app/Http/Controllers/IntermediateApplicationController.php:0
  * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */
@@ -69,7 +63,6 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
- * @see app/Http/Controllers/IntermediateApplicationController.php:0
  * @see app/Http/Controllers/IntermediateApplicationController.php:15
  * @route '/intermediate/applications'
  */

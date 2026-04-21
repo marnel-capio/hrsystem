@@ -5,6 +5,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Rules\MaxLength;
 use App\Rules\RequiredField;
+use Carbon\Carbon;  
 
 
 class IntermediateRequisitionRequest extends FormRequest
@@ -35,7 +36,18 @@ class IntermediateRequisitionRequest extends FormRequest
         'role' => ['nullable','string',new MaxLength(1024)],
         'expected_salary_range' => ['nullable','string',new MaxLength(1024)],
         'remarks' => ['nullable','string',new MaxLength(1024)],
-        'start_date' => [new RequiredField,'date', 'after:today'],
+        'start_date' => [
+            'required', 
+            'date', 
+            function ($attribute, $value, $fail) {
+                $twoDaysAhead = Carbon::now()->addDays(2);  
+                $startDate = Carbon::parse($value);  
+
+                if ($startDate->lt($twoDaysAhead)) {
+                    $fail('The start date must be at least 2 days ahead.');
+                }
+            }
+        ],
     ];
 }
 
@@ -44,7 +56,7 @@ class IntermediateRequisitionRequest extends FormRequest
     return [
 
         'custom_location.required_if' => config('errors.field_required.errorMessage'),
-        'start_date.after' => config('errors.start_date_after.errorMessage'),
+        'start_date_rrf' => config('errors.start_date_rrf.errorMessage'),
         'no_resources_needed.max' => config('errors.max_length_exceeded.errorMessage'),
 
 

@@ -144,10 +144,15 @@ const validateremarks = () => {
     ? `This field exceeds the maximum allowed length.`
     : ''
 }
+
 const validateStartDate = () => {
-  start_dateError.value = form.value.start_date && form.value.start_date < today
-    ? 'The selected date must be in the future.'
-    : ''
+  const twoDaysAhead = new Date(today);
+  twoDaysAhead.setDate(twoDaysAhead.getDate() + 2); 
+  const startDate = new Date(form.value.start_date); 
+
+  start_dateError.value = startDate && startDate < twoDaysAhead
+    ? 'The selected date must be at least 2 days ahead.'
+    : '';
 }
 
 
@@ -203,7 +208,7 @@ const submit = () => {
 
 
 const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1); 
+tomorrow.setDate(tomorrow.getDate() + 2); 
 const tomorrowISOString = tomorrow.toISOString().slice(0, 10); 
 </script>
 

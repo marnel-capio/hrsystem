@@ -44,7 +44,6 @@ index.url = (args: { applicantId: string | number } | [applicantId: string | num
 
 /**
 * @see \App\Http\Controllers\ActionApplicantSkillController::index
- * @see [unknown]:0
  * @see app/Http/Controllers/ActionApplicantSkillController.php:16
  * @route '/action/applicants/{applicantId}/skills'
  */
@@ -54,7 +53,6 @@ index.get = (args: { applicantId: string | number } | [applicantId: string | num
 })
 /**
 * @see \App\Http\Controllers\ActionApplicantSkillController::index
- * @see [unknown]:0
  * @see app/Http/Controllers/ActionApplicantSkillController.php:16
  * @route '/action/applicants/{applicantId}/skills'
  */
