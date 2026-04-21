@@ -28,6 +28,7 @@ class ActionApplicationController extends Controller
     public function index()
     {
         $search = request('search', '');
+        $user = Auth::user();
 
         $applications = ActionApplication::listPageData($search);
         $actionBatches = ActionBatchModel::getWithTargetLocationAndApplications();
@@ -36,7 +37,7 @@ class ActionApplicationController extends Controller
             'applications'    => $applications,
             'actionBatches'   => $actionBatches,
             'filters'         => ['search' => $search],
-            'userPermissions' => auth()->user()->permissions,
+            'user_permissions' => $user->permissions,
         ]);
     }
 
