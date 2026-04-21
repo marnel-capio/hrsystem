@@ -1,22 +1,23 @@
 <?php
 
-use App\Http\Controllers\ActionBatchController;
 use App\Http\Controllers\ActionApplicantController;
+use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
+use App\Http\Controllers\ActionApplicantSkillController;
+use App\Http\Controllers\ActionApplicationController;
+use App\Http\Controllers\ActionBatchController;
+use App\Http\Controllers\ApplicationImportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\IntermediateApplicantController;
+use App\Http\Controllers\IntermediateApplicantSkillController;
+use App\Http\Controllers\IntermediateApplicationController;
 use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\IntermediateRequisitionController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ActionApplicationController;
-use App\Http\Controllers\ApplicationImportController;
-use App\Http\Controllers\IntermediateApplicationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
-use App\Http\Controllers\IntermediateApplicantController;
-use App\Http\Controllers\ActionApplicantSkillController;
 
 
 /**
@@ -276,6 +277,14 @@ Route::middleware(['auth', 'check.permission'])->group(function () {
         Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
             ->name('intermediate.applications.import');
     });
+
+    Route::prefix('intermediate/applicants/{applicantId}/skills')->group(function () {
+    Route::get('/', [IntermediateApplicantSkillController::class, 'index']);
+    Route::post('/', [IntermediateApplicantSkillController::class, 'store']);
+    Route::put('/{skillId}', [IntermediateApplicantSkillController::class, 'update']);
+    Route::delete('/{skillId}', [IntermediateApplicantSkillController::class, 'destroy']);
+    Route::post('/bulk-delete', [IntermediateApplicantSkillController::class, 'bulkDelete']);
+});
 
 // ------------------------
 // Include additional routes

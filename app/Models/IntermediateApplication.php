@@ -111,16 +111,9 @@ class IntermediateApplication extends Model
         );
     }
 
-    protected function fullApplicantName(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->intermediateApplicant?->full_name ?? 'Unknown'
-        );
-    }
-
     protected $appends = [
     'fullApplicantName',
-    'projectName',       
+    'projectName',
     'stageLabel'
 ];
 
@@ -191,7 +184,7 @@ class IntermediateApplication extends Model
                 $subQuery->whereRaw('CONCAT(first_name, " ", last_name) LIKE ?', ["%{$search}%"])
                          ->orWhere('email_address', 'like', "%{$search}%");
             })->orWhere('position', 'like', "%{$search}%")
-              ->orWhereHas('project', fn($subQuery) => 
+              ->orWhereHas('project', fn($subQuery) =>
                   $subQuery->where('project_name', 'like', "%{$search}%")
               );
         });
@@ -260,4 +253,27 @@ class IntermediateApplication extends Model
             $application->updated_by = auth()->id() ?? 1;
         });
     }
+
+protected function fullApplicantName(): Attribute
+{
+    return Attribute::make(
+        get: fn () => $this->intermediateApplicant?->full_name ?? 'Unknown'
+    );
+}
+
+public function getFullApplicantNameAttribute()
+{
+    return $this->intermediateApplicant?->full_name ?? 'Unknown';
+}
+
+public function getProjectNameAttribute()
+{
+    return $this->project?->project_name;
+}
+
+public function getStageLabelAttribute()
+{
+    return $this->getStageLabel();
+}
+
 }

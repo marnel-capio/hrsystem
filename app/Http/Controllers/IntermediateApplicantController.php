@@ -77,11 +77,15 @@ class IntermediateApplicantController extends Controller
     }
 
     public function show($id)
-    {
-        $applicant = IntermediateApplicant::with('skills')->findOrFail($id);
+{
+    $applicant = IntermediateApplicant::with(['skills', 'applications'])->findOrFail($id);
 
-        return Inertia::render('intermediate/applicants/IntermediateApplicantDetails', [
-            'applicant' => $applicant,
-        ]);
-    }
+    return Inertia::render('intermediate/applicants/IntermediateApplicantDetails', [
+        'applicant' => $applicant,
+        'user_permissions' => auth()->user()?->permissions ?? 0,
+        'japaneseBackgrounds' => config('constants.japanese_backgrounds'),
+        'japaneseLevels' => config('constants.japanese_levels'),
+    ]);
+}
+
 }
