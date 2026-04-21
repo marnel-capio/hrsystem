@@ -468,7 +468,7 @@ return [
 
         'initial_interview' => [
             'passed_min' => 2.0,
-            'p2_min' => 2.5,
+            'p2_min' => 3.0,
             'failed_min' => 4.0,
         ],
 

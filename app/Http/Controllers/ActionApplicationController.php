@@ -1001,10 +1001,6 @@ private function visibleFinalInterviewAssignments(ActionApplication $application
             config('constants.interview_assignment_status.completed'),
         ]);
 
-    if ($this->canOnlySeeOwnFinalInterviewEvaluation()) {
-        $query->where('interviewer_id', auth()->id());
-    }
-
     return $query->orderBy('id')->get();
 }
 
