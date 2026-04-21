@@ -2531,6 +2531,9 @@ namespace App\Models {
      * @property mixed $updated_by
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
+     * @property string|null $background_remarks
+     * @property bool|null $japanese_level
+     * @property bool $japanese_background
      * @property string|null $remarks
      * @property string|null $emergency_contact_address
      * @property string|null $emergency_contact_number
@@ -2548,18 +2551,8 @@ namespace App\Models {
      * @property string $email_address
      * @property string|null $address
      * @property integer $age
-<<<<<<< HEAD
-<<<<<<< HEAD
-     * @property string $birthdate
-     * @property bool $gender
-=======
-     * @property integer|null $gender
-     * @property string $birthdate
->>>>>>> develop
-=======
      * @property string $birthdate
      * @property integer $gender
->>>>>>> develop
      * @property string|null $middle_name
      * @property string $first_name
      * @property string $last_name
@@ -2611,6 +2604,9 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereEmergencyContactNumber($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereEmergencyContactAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereRemarks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereJapaneseBackground($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereJapaneseLevel($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereBackgroundRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereCreatedTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereUpdatedBy($value)

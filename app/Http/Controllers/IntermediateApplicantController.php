@@ -27,6 +27,8 @@ class IntermediateApplicantController extends Controller
             'sourceTypes' => config('constants.intermediateSourceTypes'),
             'sources' => config('constants.intermediateSources'),
             'genders' => config('constants.genders'),
+            'japaneseBackgrounds' => config('constants.japanese_backgrounds'),
+            'japaneseLevels' => config('constants.japanese_levels'),
         ]);
     }
 
@@ -56,6 +58,8 @@ class IntermediateApplicantController extends Controller
                 'sourceTypes' => config('constants.intermediateSourceTypes'),
                 'sources' => config('constants.intermediateSources'),
                 'genders' => config('constants.genders'),
+                'japaneseBackgrounds' => config('constants.japanese_backgrounds'),
+                'japaneseLevels' => config('constants.japanese_levels'),
                 'flash' => [
                     'error' => config('errors.transaction_failed.errorMessage'),
                 ],

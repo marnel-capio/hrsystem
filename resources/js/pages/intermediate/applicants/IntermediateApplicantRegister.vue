@@ -11,6 +11,8 @@ const props = defineProps<{
     sourceTypes?: Record<number, string>,
     sources?: Record<number, string>,
     genders?: Record<number, string>,
+    japaneseBackgrounds?: Record<number, string>,
+    japaneseLevels?: Record<number, string>,
     flash?: {
         error?: string
     }
@@ -26,6 +28,20 @@ const sources = props.sources
 
 const genders = props.genders
     ? Object.entries(props.genders).map(([value, label]) => ({ value: Number(value), label }))
+    : []
+
+const japaneseBackgrounds = props.japaneseBackgrounds
+    ? Object.entries(props.japaneseBackgrounds).map(([value, label]) => ({
+        value: Number(value),
+        label
+    }))
+    : []
+
+const japaneseLevels = props.japaneseLevels
+    ? Object.entries(props.japaneseLevels).map(([value, label]) => ({
+        value: Number(value),
+        label
+    }))
     : []
 
 const form = useForm({
@@ -53,11 +69,15 @@ const form = useForm({
     emergency_contact_name: '',
     emergency_contact_number: '',
     emergency_contact_address: '',
-    remarks: ''
+    remarks: '',
+    japanese_background: '',
+    japanese_level: '',
+    background_remarks: '',
 })
 
 const isSourceDisabled = computed(() => ![1, 2].includes(Number(form.source_type)))
 const isOtherSourceDisabled = computed(() => Number(form.source_type) !== 3)
+const isJapaneseLevelDisabled = computed(() => Number(form.japanese_background) !== 3)
 
 const filteredSources = computed(() => {
     const type = Number(form.source_type)
@@ -126,10 +146,19 @@ const rules = {
         if (val === '' || val === null || val === undefined) return true
         const age = Number(val)
         if (Number.isNaN(age)) return 'Age must be a valid number'
-        if (age < 1) return 'The age field must be at least 1.'
-        if (age > 99) return 'The age field must not be greater than 99.'
+        if (age < 1) return 'Value must be greater than or equal to 1.'
+        if (age > 99) return 'Value must be less than or equal to 99.'
         return true
     },
+
+    children: (val: string | number) => {
+    if (val === '' || val === null || val === undefined) return true
+    const num = Number(val)
+    if (Number.isNaN(num)) return 'Children must be a valid number'
+    if (num < 0) return 'Value must be greater than or equal to 0.'
+    if (num > 99) return 'Value must be less than or equal to 99.'
+    return true
+},
 
     email_address: (val: string) => {
         if (!val) return true
@@ -141,6 +170,14 @@ const rules = {
     contact_no: (_val: string) => true,
 
     emergency_contact_number: (_val: string) => true,
+
+    japanese_background: (val: string | number) => !!val || 'This is a required field',
+    japanese_level: (val: string | number) => {
+        if (Number(form.japanese_background) === 3 && !val) {
+            return 'This is a required field'
+        }
+        return true
+    },
 }
 
 function validateField(field: keyof typeof rules) {
@@ -167,8 +204,41 @@ function hasBlockingFrontendErrors() {
     })
 }
 
+function hasBlockingErrors() {
+    const requiredFields: Array<keyof typeof rules> = [
+        'source_type',
+        'source',
+        'other_source',
+        'last_name',
+        'first_name',
+        'gender',
+        'birthdate',
+        'age',
+        'email_address',
+        'contact_no',
+        'japanese_background',
+        'japanese_level',
+    ]
+
+    return requiredFields.some(field => {
+        const msg = (form.errors as any)[field]
+        return !!msg
+    })
+}
+
+watch(() => form.japanese_background, (val) => {
+    if (Number(val) !== 3) {
+        form.japanese_level = ''
+        form.clearErrors('japanese_level')
+    }
+})
+
+watch(() => form.japanese_background, () => validateField('japanese_background'))
+watch(() => form.japanese_level, () => validateField('japanese_level'))
+
 watch(() => form.age, () => validateField('age'))
 watch(() => form.email_address, () => validateField('email_address'))
+watch(() => form.children, () => validateField('children'))
 
 async function submit() {
     form.clearErrors()
@@ -393,20 +463,60 @@ watch(
                     <div class="form-row">
                         <div class="form-group half">
                             <label class="field-label">Year Attended</label>
-                            <input type="text" v-model="form.year_attended" placeholder="Year Attended" />
+                            <input type="text" v-model="form.year_attended" placeholder="e.g. 2007-2011, etc." />
                             <span v-if="form.errors.year_attended" class="error">{{ form.errors.year_attended }}</span>
                         </div>
 
                         <div class="form-group half">
                             <label class="field-label">Others</label>
-                            <input type="text" v-model="form.others" placeholder="Others" />
+                            <input type="text" v-model="form.others" placeholder="Indicate other schools and degrees taken." />
                             <span v-if="form.errors.others" class="error">{{ form.errors.others }}</span>
                         </div>
                     </div>
 
                     <div class="form-group">
+    <label class="field-label-required required">Japanese Background</label>
+
+    <div class="radio-group">
+        <label v-for="j in japaneseBackgrounds" :key="j.value">
+            <input type="radio" :value="j.value" v-model="form.japanese_background" />
+            {{ j.label }}
+        </label>
+    </div>
+
+    <span v-if="form.errors.japanese_background" class="error">
+        {{ form.errors.japanese_background }}
+    </span>
+</div>
+
+<div class="form-group">
+    <label :class="[isJapaneseLevelDisabled ? 'field-label' : 'field-label-required required']">
+        Japanese Level
+    </label>
+
+    <select v-model="form.japanese_level" :disabled="isJapaneseLevelDisabled">
+        <option disabled value="">Select Level</option>
+        <option v-for="j in japaneseLevels" :key="j.value" :value="j.value">
+            {{ j.label }}
+        </option>
+    </select>
+
+    <span v-if="!isJapaneseLevelDisabled && form.errors.japanese_level" class="error">
+        {{ form.errors.japanese_level }}
+    </span>
+</div>
+
+<div class="form-group">
+    <label class="field-label">Japanese Background Remarks</label>
+    <textarea v-model="form.background_remarks"></textarea>
+    <span v-if="form.errors.background_remarks" class="error">
+        {{ form.errors.background_remarks }}
+    </span>
+</div>
+
+                    <div class="form-group">
                         <label class="field-label">Spouse Details</label>
-                        <textarea v-model="form.spouse_details"></textarea>
+                        <textarea v-model="form.spouse_details" placeholder="NAME - AGE - OCCUPATION (e.g. Juan Dela Cruz - 34 - Nurse)"></textarea>
                         <span v-if="form.errors.spouse_details" class="error">{{ form.errors.spouse_details }}</span>
                     </div>
 
@@ -418,19 +528,19 @@ watch(
 
                     <div class="form-group">
                         <label class="field-label">Father Details</label>
-                        <textarea v-model="form.father_details"></textarea>
+                        <textarea v-model="form.father_details" placeholder="NAME - AGE - OCCUPATION (e.g. Juan Dela Cruz - 34 - Nurse)"></textarea>
                         <span v-if="form.errors.father_details" class="error">{{ form.errors.father_details }}</span>
                     </div>
 
                     <div class="form-group">
                         <label class="field-label">Mother Details</label>
-                        <textarea v-model="form.mother_details"></textarea>
+                        <textarea v-model="form.mother_details" placeholder="NAME - AGE - OCCUPATION (e.g. Juan Dela Cruz - 34 - Nurse)"></textarea>
                         <span v-if="form.errors.mother_details" class="error">{{ form.errors.mother_details }}</span>
                     </div>
 
                     <div class="form-group">
-                        <label class="field-label">Sibling Details</label>
-                        <textarea v-model="form.sibling_details"></textarea>
+                        <label class="field-label">Sibling/s Details</label>
+                        <textarea v-model="form.sibling_details" placeholder="NAME - AGE - OCCUPATION (e.g. Juan Dela Cruz - 34 - Nurse)"></textarea>
                         <span v-if="form.errors.sibling_details" class="error">{{ form.errors.sibling_details }}</span>
                     </div>
 
@@ -581,7 +691,7 @@ watch(
     color: #da0f19;
 }
 
-input,
+input:not([type="radio"]):not([type="checkbox"]),
 select,
 textarea {
     padding: 0.6rem 1rem;
@@ -591,14 +701,14 @@ textarea {
     transition: border 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
-input:focus,
+input:not([type="radio"]):not([type="checkbox"]):focus,
 select:focus,
 textarea:focus {
     outline: none;
     border-color: var(--ats-primary, #1C7BA5);
 }
 
-input:disabled,
+input:not([type="radio"]):not([type="checkbox"]):disabled,
 select:disabled,
 textarea:disabled {
     background-color: #d4d4d8;
@@ -785,5 +895,32 @@ select option[value=""] {
     .name-fields .middle-name {
         flex: 1 1 100%;
     }
+}
+
+.radio-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--ats-primary, #1C7BA5);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    appearance: auto;
 }
 </style>

@@ -48,6 +48,17 @@ public function rules(): array
             'required_if:source_type,3',
         ],
 
+        'japanese_background' => [new RequiredField, 'numeric', 'in:1,2,3'],
+
+'japanese_level' => [
+    'nullable',
+    'numeric',
+    'in:1,2,3,4,5',
+    'required_if:japanese_background,3',
+],
+
+'background_remarks' => ['nullable', 'string', new MaxLength(255)],
+
         'last_name' => [new RequiredField, new MaxLength(80), new AlphaSpaceDash],
         'first_name' => [new RequiredField, new MaxLength(80), new AlphaSpaceDash],
         'middle_name' => ['nullable', new MaxLength(80), new AlphaSpaceDash],
@@ -63,7 +74,7 @@ public function rules(): array
         'school_graduated_from' => ['nullable', 'string', new MaxLength(80)],
         'course' => ['nullable', 'string', new MaxLength(10)],
         'year_attended' => ['nullable', 'string', new MaxLength(10)],
-        'others' => ['nullable', 'string', new MaxLength(1024)],
+        'others' => ['nullable', 'string', new MaxLength(80)],
 
         'spouse_details' => ['nullable', 'string', new MaxLength(1024)],
         'children' => ['nullable', 'numeric', 'min:0', 'max:99'],
@@ -79,13 +90,14 @@ public function rules(): array
     ];
 }
 
-    public function messages(): array
-    {
-        return [
-            'source.required_if' => config('errors.field_required.errorMessage'),
-            'other_source.required_if' => config('errors.field_required.errorMessage'),
-            'age.numeric' => config('constants.age_numeric.errorMessage'),
-            'children.numeric' => 'Children must be a valid number.',
-        ];
-    }
+public function messages(): array
+{
+    return [
+        'source.required_if' => config('errors.field_required.errorMessage'),
+        'other_source.required_if' => config('errors.field_required.errorMessage'),
+        'japanese_level.required_if' => config('errors.field_required.errorMessage'),
+        'age.numeric' => config('constants.age_numeric.errorMessage'),
+        'children.numeric' => 'Children must be a valid number.',
+    ];
+}
 }
