@@ -6,7 +6,6 @@ import {
     User,
     FileText,
     File,
-    Image,
     Award,
     Calendar,
     Star,
@@ -181,21 +180,21 @@ const getVenueLabel = (venue: number | null) => {
     return examVenues.value?.[venue] || '-';
 };
 
-const lockedInterviewStatuses = [1, 2, 4]
+const lockedInterviewStatuses = [1, 2, 4];
 
 const editableInterviewIds = computed(() => {
     return interviews.value
         .filter((i: any) => !lockedInterviewStatuses.includes(Number(i.status)))
-        .map((i: any) => i.id)
-})
+        .map((i: any) => i.id);
+});
 
 const toggleSelectAll = () => {
     if (selectAll.value) {
-        selectedInterviewers.value = [...editableInterviewIds.value]
+        selectedInterviewers.value = [...editableInterviewIds.value];
     } else {
-        selectedInterviewers.value = []
+        selectedInterviewers.value = [];
     }
-}
+};
 
 const hasScheduledJobOffer = computed(() => {
     return !!application.value?.job_offer_schedule;
@@ -287,10 +286,6 @@ const formatDateTime = (dateString: string | null) => {
     });
 };
 
-const initialInterviewAssignments = computed(
-    () => page.props.initialInterviewAssignments || [],
-);
-
 const finalInterviewAssignments = computed(
     () => page.props.finalInterviewAssignments || [],
 );
@@ -324,12 +319,14 @@ const formatScore = (score: number | null) => {
 
 const getFileUrl = (filename: string | null) => {
     if (!filename) return null;
-    return `/storage/${filename}`;
-};
 
-const getExamResultLabel = (result: number) => {
-    const results = { 1: 'Pending', 2: 'Passed', 3: 'Failed' };
-    return results[result as keyof typeof results];
+    // If it's already a full URL (like Google Drive), return as-is
+    if (filename.startsWith('http://') || filename.startsWith('https://')) {
+        return filename;
+    }
+
+    // Otherwise treat it as local storage
+    return `/storage/${filename}`;
 };
 
 const getExamApplicationStatusLabel = (status: number) => {
@@ -343,11 +340,6 @@ const getExamApplicationStatusLabel = (status: number) => {
         7: 'No Show',
     };
     return statuses[status as keyof typeof statuses];
-};
-
-const getInterviewResultLabel = (result: number) => {
-    const results = { 1: 'Pending', 2: 'Passed', 3: 'Failed' };
-    return results[result as keyof typeof results];
 };
 
 const getInterviewApplicationStatusLabel = (status: number) => {
@@ -402,19 +394,6 @@ const getInterviewStatusBadgeClass = (status: number) => {
     return classes[status] || 'bg-gray-100 text-gray-800';
 };
 
-const getJobOfferStatusBadgeClass = (status: number) => {
-    const classes: Record<number, string> = {
-        1: 'bg-yellow-100 text-yellow-800', // Pending
-        2: 'bg-blue-100 text-blue-800', // Done
-        3: 'bg-green-100 text-green-800', // Accept
-        4: 'bg-red-100 text-red-800', // Decline
-        5: 'bg-gray-100 text-gray-800', // Withdraw
-        6: 'bg-gray-100 text-gray-800', // Retracted
-    };
-
-    return classes[status] || 'bg-gray-100 text-gray-800';
-};
-
 const getStageBadgeClass = (type: number) => {
     const classes: Record<number, string> = {
         1: 'bg-purple-100 text-purple-800',
@@ -422,15 +401,6 @@ const getStageBadgeClass = (type: number) => {
         3: 'bg-green-100 text-green-800',
     };
     return classes[type] || 'bg-gray-100 text-gray-800';
-};
-
-const getStatusBadgeColor = (status: string | null) => {
-    if (!status) return 'bg-gray-200 text-gray-700';
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('passed')) return 'bg-green-100 text-green-800';
-    if (statusLower.includes('failed')) return 'bg-red-100 text-red-800';
-    if (statusLower.includes('pending')) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-gray-200 text-gray-700';
 };
 
 function getExamStatusBadgeClass(status: number | null | undefined) {
@@ -456,56 +426,33 @@ function getExamStatusBadgeClass(status: number | null | undefined) {
 }
 
 const getOverallStatus = () => {
-    const examResult = Number(application.value.exam_result);
-    const initialResult = Number(application.value.initial_interview_result);
-    const finalResult = Number(application.value.final_interview_result);
     const jobStatus = Number(application.value.job_offer_status);
 
-    // Terminal job offer outcomes
     if (jobStatus === 3) return 'Offer Accepted';
     if (jobStatus === 4) return 'Offer Declined';
     if (jobStatus === 5) return 'Offer Withdrawn';
     if (jobStatus === 6) return 'Offer Retracted';
 
-    // Failures
-    if (finalResult === 3) return 'Failed Final Interview';
-    if (initialResult === 3) return 'Failed Initial Interview';
-    if (examResult === 3) return 'Failed Exam';
+    if (application.value.final_interview_result === 2)
+        return 'Passed Final Interview';
+    if (application.value.final_interview_result === 3)
+        return 'Failed Final Interview';
+    if (application.value.initial_interview_result === 2)
+        return 'Passed Initial Interview';
+    if (application.value.initial_interview_result === 3)
+        return 'Failed Initial Interview';
+    if (application.value.exam_result === 2) return 'Passed Exam';
+    if (application.value.exam_result === 3) return 'Failed Exam';
 
-    // Next stage labels
-    if (finalResult === 2) return 'For Job Offer';
-    if (initialResult === 2) return 'For Final Interview';
-    if (examResult === 2) return 'For Initial Interview';
-
-    // If job offer is already scheduled/done but not final outcome yet
-    if (jobStatus === 1 || jobStatus === 2) return 'For Job Offer';
-
-    // If exam not yet done
-    if (!examResult || examResult === 1) {
-        return 'New';
-    }
-
-    // Fallback (just in case)
-    return 'New';
+    return 'In Progress';
 };
 
 const getOverallStatusColor = () => {
     const status = getOverallStatus();
-
     if (status === 'Offer Accepted') return 'bg-green-100 text-green-800';
-    if (
-        status === 'Offer Declined' ||
-        status === 'Offer Withdrawn' ||
-        status === 'Offer Retracted' ||
-        status.includes('Failed')
-    ) {
+    if (status.includes('Failed') || status.includes('Declined'))
         return 'bg-red-100 text-red-800';
-    }
-
-    if (status.startsWith('For ')) {
-        return 'bg-blue-100 text-blue-800';
-    }
-
+    if (status.includes('Passed')) return 'bg-blue-100 text-blue-800';
     return 'bg-yellow-100 text-yellow-800';
 };
 
@@ -672,15 +619,6 @@ const sendNotification = async () => {
 
 const downloadApplication = () => {
     window.open(`/action/applications/${application.value.id}/print`, '_blank');
-};
-
-const stageLabel = (type: number) => {
-    const stages: Record<number, string> = {
-        1: 'Exam',
-        2: 'Initial Interview',
-        3: 'Final Interview',
-    };
-    return stages[type] || 'Interview';
 };
 
 const applicantFullName = computed(() => {
@@ -1192,14 +1130,6 @@ watch(
                                 <Award class="h-5 w-5 text-blue-600" /> EXAM
                                 DETAILS
                             </h2>
-                            <!-- <span
-                :class="[
-                    'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
-                    getStatusBadgeColor(getExamResultLabel(application.exam_result))
-                ]"
-            >
-                {{ getExamResultLabel(application.exam_result) || 'Pending' }}
-            </span> -->
                         </div>
 
                         <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -1455,164 +1385,115 @@ watch(
                         </div>
                     </div>
 
-<!-- INITIAL INTERVIEW DETAILS -->
-<div
-    class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900"
->
-    <div class="mb-4 flex items-center justify-between">
-        <h2 class="flex items-center gap-2 text-lg font-bold">
-            <Calendar class="h-5 w-5 text-blue-600" />
-            INITIAL INTERVIEW DETAILS
-        </h2>
-    </div>
-
-    <div
-    v-if="page.props.hasMixedInitialInterviewResults"
-    class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
->
-    Mixed interviewer results. Final score is up to HR deliberation.
-</div>
-
-    <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
-            <div class="mb-1 text-xs text-zinc-500">
-                Interview Date
-            </div>
-            <div class="text-sm font-medium">
-                {{
-                    formatDateTime(
-                        application.initial_interview_plan_date,
-                    )
-                }}
-            </div>
-        </div>
-
-        <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
-            <div class="mb-1 text-xs text-zinc-500">
-                Final Score
-            </div>
-            <div class="text-lg font-bold">
-                {{
-                    formatScore(
-                        application.initial_interview_final,
-                    )
-                }}
-            </div>
-        </div>
-
-        <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
-            <div class="mb-1 text-xs text-zinc-500">
-                Application Status
-            </div>
-            <div>
-                <span
-                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
-                    :class="
-                        getApplicationStatusBadgeClass(
-                            application.initial_interview_application_status,
-                        )
-                    "
-                >
-                    {{
-                        getInterviewApplicationStatusLabel(
-                            application.initial_interview_application_status,
-                        ) || '-'
-                    }}
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <div class="mb-5">
-        <div class="mb-3 text-sm font-semibold">
-            Approved Initial Interviewers
-        </div>
-
-        <div
-            v-if="initialInterviewAssignments.length === 0"
-            class="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500 dark:border-zinc-700"
-        >
-            No initial interviewers assigned.
-        </div>
-
-        <div
-            v-else
-            class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700"
-        >
-            <table class="w-full text-sm">
-                <thead class="bg-zinc-50 dark:bg-zinc-800">
-                    <tr>
-                        <th class="px-4 py-3 text-left font-semibold">
-                            Interviewer
-                        </th>
-                        <th class="px-4 py-3 text-left font-semibold">
-                            Role
-                        </th>
-                        <th class="px-4 py-3 text-left font-semibold">
-                            Score
-                        </th>
-                        <th class="px-4 py-3 text-left font-semibold">
-                            Result
-                        </th>
-                        <th class="px-4 py-3 text-left font-semibold">
-                            Remarks
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="assignment in initialInterviewAssignments"
-                        :key="assignment.id"
-                        class="border-t border-zinc-200 dark:border-zinc-700"
+                    <!-- INITIAL INTERVIEW DETAILS -->
+                    <div
+                        class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900"
                     >
-                        <td class="px-4 py-3 font-medium">
-                            {{ assignment.name || '-' }}
-                        </td>
-                        <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                            {{ assignment.role_label || '-' }}
-                        </td>
-                        <td class="px-4 py-3">
-                            {{ formatScore(assignment.score) }}
-                        </td>
-                        <td class="px-4 py-3">
-                            <span
-                                :class="[
-                                    'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
-                                    getEvaluationBadgeClass(
-                                        assignment.evaluation_result,
-                                    ),
-                                ]"
+                        <div class="mb-4 flex items-center justify-between">
+                            <h2
+                                class="flex items-center gap-2 text-lg font-bold"
+                            >
+                                <Calendar class="h-5 w-5 text-blue-600" />
+                                INITIAL INTERVIEW DETAILS
+                            </h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
+                            <div
+                                class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800"
+                            >
+                                <div class="mb-1 text-xs text-zinc-500">
+                                    Plan Date
+                                </div>
+                                <div class="text-sm font-medium">
+                                    {{
+                                        formatDateTime(
+                                            application.initial_interview_plan_date,
+                                        )
+                                    }}
+                                </div>
+                            </div>
+                            <div
+                                class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800"
+                            >
+                                <div class="mb-1 text-xs text-zinc-500">
+                                    Actual Date
+                                </div>
+                                <div class="text-sm font-medium">
+                                    {{
+                                        formatDateTime(
+                                            application.initial_interview_actual_date,
+                                        )
+                                    }}
+                                </div>
+                            </div>
+                            <div
+                                class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800"
+                            >
+                                <div class="mb-1 text-xs text-zinc-500">
+                                    Venue
+                                </div>
+                                <div class="text-sm font-medium">
+                                    {{
+                                        getVenueLabel(
+                                            application.initial_interview_venue,
+                                        ) || '-'
+                                    }}
+                                </div>
+                            </div>
+                            <div
+                                class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800"
+                            >
+                                <div class="mb-1 text-xs text-zinc-500">
+                                    Final Score
+                                </div>
+                                <div class="text-lg font-bold">
+                                    {{
+                                        formatScore(
+                                            application.initial_interview_final,
+                                        )
+                                    }}
+                                </div>
+                            </div>
+                            <div
+                                class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800"
+                            >
+                                <div class="mb-1 text-xs text-zinc-500">
+                                    Application Status
+                                </div>
+                                <div>
+                                    <span
+                                        class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
+                                        :class="
+                                            getApplicationStatusBadgeClass(
+                                                application.initial_interview_application_status,
+                                            )
+                                        "
+                                    >
+                                        {{
+                                            getInterviewApplicationStatusLabel(
+                                                application.initial_interview_application_status,
+                                            ) || '-'
+                                        }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5">
+                            <div class="mb-2 text-sm font-semibold">
+                                Comments
+                            </div>
+                            <div
+                                class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800"
                             >
                                 {{
-                                    getEvaluationResultLabel(
-                                        assignment.evaluation_result,
-                                    )
+                                    application.initial_interview_remarks ||
+                                    'No comments'
                                 }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                            {{ assignment.evaluation_remarks || '—' }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div>
-        <div class="mb-2 text-sm font-semibold">
-            Comments
-        </div>
-        <div
-            class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800"
-        >
-            {{
-                application.initial_interview_remarks ||
-                'No comments'
-            }}
-        </div>
-    </div>
-</div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- FINAL INTERVIEW DETAILS -->
                     <div
@@ -1625,22 +1506,14 @@ watch(
                                 <Star class="h-5 w-5 text-blue-600" /> FINAL
                                 INTERVIEW DETAILS
                             </h2>
-                            <!-- <span
-                :class="[
-                    'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
-                    getStatusBadgeColor(getInterviewResultLabel(application.final_interview_result))
-                ]"
-            >
-                {{ getInterviewResultLabel(application.final_interview_result) || 'Pending' }}
-            </span> -->
                         </div>
 
                         <div
                             v-if="page.props.hasMixedFinalInterviewResults"
                             class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
                         >
-                            Mixed interviewer results. Final score is up to HR
-                            deliberation.
+                            Mixed interviewer results. Final application status
+                            is up to HR deliberation.
                         </div>
 
                         <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -1822,14 +1695,6 @@ watch(
                                 <CheckCircle class="h-5 w-5 text-blue-600" />
                                 JOB OFFER DETAILS
                             </h2>
-                            <!-- <span
-                :class="[
-                    'inline-flex px-3 py-1 text-xs font-semibold rounded-full',
-                    getJobOfferStatusBadgeClass(application.job_offer_status)
-                ]"
-            >
-                {{ getJobOfferStatusLabel(application.job_offer_status) || 'Pending' }}
-            </span> -->
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -1989,25 +1854,38 @@ watch(
                                 </thead>
 
                                 <tbody>
-<tr
-    v-for="interview in interviews"
-    :key="interview.id"
-    class="border-t border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
->
+                                    <tr
+                                        v-for="interview in interviews"
+                                        :key="interview.id"
+                                        class="border-t border-zinc-200 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/50"
+                                    >
                                         <td
                                             class="px-4 py-3"
                                             v-if="canManageInterviewers"
                                         >
-<div class="flex items-center justify-center">
-    <input
-        v-if="!lockedInterviewStatuses.includes(Number(interview.status))"
-        type="checkbox"
-        v-model="selectedInterviewers"
-        :value="interview.id"
-        class="rounded border-gray-300"
-    />
-    <div v-else class="w-4 h-4"></div>
-</div>
+                                            <div
+                                                class="flex items-center justify-center"
+                                            >
+                                                <input
+                                                    v-if="
+                                                        !lockedInterviewStatuses.includes(
+                                                            Number(
+                                                                interview.status,
+                                                            ),
+                                                        )
+                                                    "
+                                                    type="checkbox"
+                                                    v-model="
+                                                        selectedInterviewers
+                                                    "
+                                                    :value="interview.id"
+                                                    class="rounded border-gray-300"
+                                                />
+                                                <div
+                                                    v-else
+                                                    class="h-4 w-4"
+                                                ></div>
+                                            </div>
                                         </td>
 
                                         <td class="px-4 py-3">

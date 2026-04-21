@@ -269,17 +269,25 @@ return [
     ],
 
     'action_application_stage_fields' => [
-        'exam' => [
-            'exam_plan_date',
-            'exam_actual_date',
-            'exam_venue',
-            'exam_atpp_result',
-            'exam_git_result',
-            'exam_prg_result',
-            'exam_result',
-            'exam_application_status',
-            'exam_remarks',
-        ],
+'exam' => [
+    'exam_plan_date',
+    'exam_actual_date',
+    'exam_venue',
+
+    'exam_atpp_part1_correct',
+    'exam_atpp_part1_wrong',
+    'exam_atpp_part2_correct',
+    'exam_atpp_part2_wrong',
+    'exam_atpp_part3_correct',
+    'exam_atpp_part3_wrong',
+
+    'exam_atpp_result',
+    'exam_git_result',
+    'exam_prg_result',
+    'exam_result',
+    'exam_application_status',
+    'exam_remarks',
+],
 'initial_interview' => [
     'initial_interview_plan_date',
     'initial_interview_actual_date',

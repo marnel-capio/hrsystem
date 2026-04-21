@@ -248,7 +248,6 @@ class ApplicationImportController extends Controller
                     // duplicate + failed before + old enough => NEW
                     $applicationBranch = 'new';
                     $applicationOverrides = [
-                        'remarks' => 'New',
                         'exam_application_status' => null,
                         'initial_interview_application_status' => null,
                         'final_interview_application_status' => null,
@@ -259,7 +258,7 @@ class ApplicationImportController extends Controller
                     // duplicate + not failed + recent => FOR INITIAL INTERVIEW
                     $applicationBranch = 'for_initial_interview';
                     $applicationOverrides = [
-                        'remarks' => 'For Initial Interview',
+                        'remarks' => 'For Initial Interview, recent application is within 6 months.',
                         'exam_application_status' => $lastApplication->exam_application_status ?: 5,
                         'exam_plan_date' => $lastApplication->exam_plan_date,
                         'initial_interview_application_status' => 1,
@@ -270,7 +269,7 @@ class ApplicationImportController extends Controller
                     // duplicate + not failed + older than 6 months => FOR EXAM
                     $applicationBranch = 'for_exam';
                     $applicationOverrides = [
-                        'remarks' => 'Re-applied from previous ACTION batch.',
+                        'remarks' => 'Re-applied. Had an application for previous ACTION batch.',
                         'exam_application_status' => null,
                         'exam_plan_date' => null,
                         'initial_interview_application_status' => null,

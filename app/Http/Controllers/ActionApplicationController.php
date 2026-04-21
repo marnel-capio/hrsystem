@@ -200,11 +200,14 @@ public function show($id)
 
 public function update(UpdateActionApplicationRequest $request, $id)
 {
+
+
     $application = ActionApplication::with(['interviews', 'applicant'])->findOrFail($id);
     $originalData = $application->toArray();
 
     $validated = $request->validated();
     $validated = $this->handleUploads($request, $validated, true);
+
 
     $permission = (int) auth()->user()->permissions;
     $editableStages = $application->getEditableStagesFor(auth()->user());
