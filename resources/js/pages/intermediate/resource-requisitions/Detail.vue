@@ -263,7 +263,7 @@ const formatDate = (dateString: string | null) => {
           </h3>
 
           <p class="text-center mb-6">
-            Are you sure you want to delete a resource requisition for <strong>"{{ requisition.project_name }}"</strong>?<br>
+            Are you sure you want to delete a Resource Requisition for Project <strong>"{{ requisition.project_name }}"</strong>?<br>
             This action cannot be undone.
           </p>
 

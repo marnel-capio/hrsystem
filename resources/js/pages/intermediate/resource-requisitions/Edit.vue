@@ -167,10 +167,15 @@ const validateremarks = () => {
     ? `This field exceeds the maximum allowed length.`
     : ''
 }
+
 const validateStartDate = () => {
-  start_dateError.value = form.value.start_date && form.value.start_date < today
-    ? 'The selected date must be in the future.'
-    : ''
+  const twoDaysAhead = new Date(today);
+  twoDaysAhead.setDate(twoDaysAhead.getDate() + 2); 
+  const startDate = new Date(form.value.start_date); 
+
+  start_dateError.value = startDate && startDate < twoDaysAhead
+    ? 'The selected date must be at least 2 days ahead.'
+    : '';
 }
 
 watch(() => form.value.project_id, (newId) => {
@@ -226,13 +231,10 @@ console.log('projects:', props.newProjects)
 watch(() => form.value.request_type, async (newRequestType) => {
   if (newRequestType === '1') {
     form.value.replacement_due_to = '';
-    await nextTick(); // Ensure DOM updates before doing anything else
+    await nextTick(); 
     console.log('Dropdown should reset now.');
   }
 });
-
-
-
 
 
 
@@ -272,11 +274,27 @@ onMounted(() => {
   }
 })
 
+onMounted(() => {
+  if (form.value.engagement_type === '3') {
+    form.value.expected_salary_range = '';  
+  }
+
+  if (form.value.project_id) {
+    const project = props.newProjects.find(
+      p => p.id === Number(form.value.project_id)
+    )
+
+    if (project) {
+      form.value.project_description = project.project_description
+    }
+  }
+})
 
 
 const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1); 
+tomorrow.setDate(tomorrow.getDate() + 2); 
 const tomorrowISOString = tomorrow.toISOString().slice(0, 10); 
+
 </script>
 
 <template>
@@ -605,8 +623,8 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             rows="6"
             class="border p-2 rounded w-full"
             placeholder="Expected Salary/Billing Range"
-            :disabled="form.engagement_type === '3'"
-            :class="{'bg-gray-200 cursor-not-allowed': form.engagement_type === '3'}"
+            :disabled="form.engagement_type == '3'"
+            :class="{'bg-gray-200 cursor-not-allowed': form.engagement_type == '3'}"
           />
           <span v-if="expected_salary_rangeError" class="text-red-600 text-xs mt-1">
             {{ expected_salary_rangeError }}

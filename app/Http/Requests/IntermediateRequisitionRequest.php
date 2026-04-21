@@ -3,6 +3,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Rules\MaxLength;
+use App\Rules\RequiredField;
+use Carbon\Carbon;  
 
 
 class IntermediateRequisitionRequest extends FormRequest
@@ -15,25 +18,36 @@ class IntermediateRequisitionRequest extends FormRequest
     public function rules(): array
 {
     return [
-        'engagement_type' => 'required|integer',
-        'sourcing_type' => 'required|integer',
-        'request_type' => 'required|integer',
+        'engagement_type' => [new RequiredField, 'integer'],
+        'sourcing_type' => [new RequiredField, 'integer'],
+        'request_type' => [new RequiredField, 'integer'],
         'replacement_due_to' => 'nullable|integer',
-        'person_to_replace' => 'nullable|string|max:80',
-        'location_assignment' => 'required|integer',
-        'project_id' => 'required|integer',
-        'custom_location' => 'nullable|string|max:1024|required_if:location_assignment,6',
-        'business_unit' => 'required|string|max:20',
-        'resource' => 'nullable|string|max:1024',
-        'practice' => 'nullable|string|max:1024',
+        'person_to_replace' => ['nullable', 'string', new MaxLength(80)],
+        'location_assignment' => [new RequiredField, 'integer'],
+        'project_id' => [new RequiredField, 'integer'],
+        'custom_location' => ['nullable','string',new MaxLength(1024),'required_if:location_assignment,6'],
+        'business_unit' => [new RequiredField,'string',new MaxLength(20)],
+        'resource' => ['nullable','string',new MaxLength(1024)],
+        'practice' => ['nullable','string',new MaxLength(1024)],
         'no_resources_needed' => 'nullable|integer|max:100',
-        'duration_project_engagement' => 'nullable|string|max:20',
-        'required_skills' => 'nullable|string|max:1024',
-        'preferred_skills' => 'nullable|string|max:1024',
-        'role' => 'nullable|string|max:1024|max:1024',
-        'expected_salary_range' => 'nullable|string|max:80',
-        'remarks' => 'nullable|string|max:1024',
-        'start_date' => 'required|date|after:today',
+        'duration_project_engagement' => ['nullable','string',new MaxLength(20)],
+        'required_skills' => ['nullable','string',new MaxLength(1024)],
+        'preferred_skills' => ['nullable','string',new MaxLength(1024)],
+        'role' => ['nullable','string',new MaxLength(1024)],
+        'expected_salary_range' => ['nullable','string',new MaxLength(1024)],
+        'remarks' => ['nullable','string',new MaxLength(1024)],
+        'start_date' => [
+            'required', 
+            'date', 
+            function ($attribute, $value, $fail) {
+                $twoDaysAhead = Carbon::now()->addDays(2);  
+                $startDate = Carbon::parse($value);  
+
+                if ($startDate->lt($twoDaysAhead)) {
+                    $fail('The start date must be at least 2 days ahead.');
+                }
+            }
+        ],
     ];
 }
 
@@ -41,30 +55,10 @@ class IntermediateRequisitionRequest extends FormRequest
 {
     return [
 
-        'engagement_type.required' => config('errors.field_required.errorMessage'), 
-
-        'sourcing_type.required' => config('errors.field_required.errorMessage'), 
-        'request_type.required' => config('errors.field_required.errorMessage'), 
-        'replacement_due_to.max' => config('errors.max_length_exceeded.errorMessage'),
-        'person_to_replace.max' => config('errors.max_length_exceeded.errorMessage'),
-        'custom_location.max' => config('errors.max_length_exceeded.errorMessage'),
         'custom_location.required_if' => config('errors.field_required.errorMessage'),
-        'location_assignment.required' => config('errors.field_required.errorMessage'), 
-        'project_id.required' => config('errors.field_required.errorMessage'),
-
-        'business_unit.required' => config('errors.field_required.errorMessage'),
-        'business_unit.max' => config('errors.max_length_exceeded.errorMessage'),
-
-        'resource.max' => config('errors.max_length_exceeded.errorMessage'),
-        'practice.max' => config('errors.max_length_exceeded.errorMessage'),
+        'start_date_rrf' => config('errors.start_date_rrf.errorMessage'),
         'no_resources_needed.max' => config('errors.max_length_exceeded.errorMessage'),
-        'duration_project_engagement.max' => config('errors.max_length_exceeded.errorMessage'),
-        'required_skills.max' => config('errors.max_length_exceeded.errorMessage'),
-        'role.max' => config('errors.max_length_exceeded.errorMessage'),
-        'expected_salary_range.max' => config('errors.max_length_exceeded.errorMessage'),
-        'remarks.max' => config('errors.max_length_exceeded.errorMessage'),
-        'start_date.after' => config('errors.start_date_after.errorMessage'),
-        'start_date.required' => config('errors.field_required.errorMessage'),
+
 
 
     ];

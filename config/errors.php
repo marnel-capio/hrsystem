@@ -195,7 +195,12 @@ return [
     'project_name_unique'=>[
         'errorCode' => 'PROJECT_NAME_UNIQUE',
         'errorMessage' => 'Project already exists.',
-    ]
+    ],
+    
+    'start_date_custom' => [
+        'errorCode' => 'START_DATE_CUSTOM',
+        'errorMessage' => 'The selected date must be at least 2 days ahead.',
+    ],
 
 ]];
 
