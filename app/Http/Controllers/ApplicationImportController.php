@@ -388,7 +388,8 @@ class ApplicationImportController extends Controller
                         $totalApplicants,
                         $newApplicants,
                         $existingApplicants,
-                        $failedUploads  
+                        $failedUploads,
+                        $skippedApplicants 
                     )
                 );
             } catch (\Exception $e) {

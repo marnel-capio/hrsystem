@@ -427,19 +427,19 @@ console.log('Received batches:', props.actionBatches);
           <tbody>
             <tr v-for="app in paginatedSchedules" :key="app.id">
               <!-- Application ID as clickable link -->
-<td class="border px-3 py-2">
-  <Link :href="`/action/applications/${app.id}`" class="text-blue-600 hover:underline">
-    {{ app.first_name }} {{ app.middle_name ? app.middle_name + ' ' : '' }}{{ app.last_name }}
-  </Link>
-</td>
+            <td class="border px-3 py-2">
+              <Link :href="`/action/applications/${app.id}`" class="text-blue-600 hover:underline">
+                {{ app.first_name }} {{ app.middle_name ? app.middle_name + ' ' : '' }}{{ app.last_name }}
+              </Link>
+            </td>
 
               <!-- Batch Name -->
               <td class="border px-3 py-2">{{ app.action_batch }}</td>
 
               <!-- Trainee From -->
-<td class="border px-3 py-2">
-  {{ app.target_location !== null ? formatLocation(app.target_location) : 'Unknown' }}
-</td>
+            <td class="border px-3 py-2">
+              {{ app.target_location !== null ? formatLocation(app.target_location) : 'Unknown' }}
+            </td>
             </tr>
 
             <tr v-if="paginatedSchedules.length === 0">

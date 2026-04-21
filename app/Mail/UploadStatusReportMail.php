@@ -15,21 +15,21 @@ class UploadStatusReportMail extends Mailable
     public string $senderRole;
     public string $batchName;
     public string $date;
-    public array $failedList = [];
 
     public function __construct(
     string $batchName,
-    array $reportData = [],  // Array with senderName and senderRole
+    array $reportData = [], 
     public int $totalApplicants,
     public int $newApplicants,
-    public int $existingApplicants ,
-    public int $failedUploads 
-) {
+    public int $existingApplicants,
+    public int $failedUploads,
+    public array $failedList
+)
+{
     $this->senderName = Auth::user()?->full_name ?? 'AWS HR';
     $this->senderRole = Auth::user()?->role_label ?? 'HR';
     $this->batchName = $batchName;
     $this->date = now()->format('F j, Y');
-
 }
 
     public function build()
@@ -42,16 +42,13 @@ class UploadStatusReportMail extends Mailable
 {
     $failedListHtml = '';
 
-    // Ensure $this->failedList is an array and contains arrays with 'name' and 'reason' keys
-    if (is_array($this->failedList)) {
+    if (is_array($this->failedList) && count($this->failedList) > 0) {
         foreach ($this->failedList as $failed) {
-            // Check if each item in the failed list is an array with the expected structure
-            if (is_array($failed) && isset($failed['name'], $failed['reason'])) {
-                $failedListHtml .= '<p style="margin-left:15px; margin-bottom:5px;">- ' . e($failed['name']) . ', ' . e($failed['reason']) . '</p>';
-            } else {
-                // Handle invalid data structure
-                $failedListHtml .= '<p style="margin-left:15px; margin-bottom:5px;">- Invalid failed data</p>';
-            }
+            $splitFailed = explode(' - ', $failed);
+            $name = isset($splitFailed[0]) ? $splitFailed[0] : 'Unknown Name';
+            $reason = isset($splitFailed[1]) ? $splitFailed[1] : 'No reason provided';
+
+            $failedListHtml .= '<li style="font-size:12px; margin-left:3px;">' . e($name) . ' - ' . e($reason) . '</li>';
         }
     } else {
         $failedListHtml = '<p style="margin-left:15px; margin-bottom:5px;">No failed applicants.</p>';
@@ -81,21 +78,16 @@ class UploadStatusReportMail extends Mailable
                         Upload Status Report (<b  style="color: #2F359E;">' . e($this->batchName) . '</b>) as of ' . e($this->date) . '
                     </h5>
                     <br>
-                    <p><strong>Total Number of Applicants:</strong> ' . e($this->totalApplicants) . '</p>
-                    <p><b>Number of Successful Uploads:</b> ' . e($this->newApplicants) . '</p>
-                    <p><b>Number of failed uploads:</b> ' . e($this->failedUploads) . ' </p>
-                    <p style="margin-left:15px;">
-                     <br>
-                    </p>
-                    
+                    <p>Total Number of Applicants: ' . e($this->totalApplicants) . '</p>
+                    <p>Number of Successful Uploads: ' . e($this->newApplicants) . '</p>
+                    <p>Number of failed uploads: ' . e($this->failedUploads) . ' </p><br>
+                    <p>Failed Uploads:</p>
+                    ' . $failedListHtml . '
+                    <br><br><br>
 
-                    <br>
-
-
-                    <br>
                     <p>Thank you,</p>
-                    <strong>' . e($this->senderName) . '</strong>
-                    <p margin:0;">' . e($this->senderRole) . '</p>
+                    <p><strong>' . e($this->senderName) . '</strong></p>
+                    <p>' . e($this->senderRole) . '</p>
                 </div>
             </div>
 
