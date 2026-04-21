@@ -1173,7 +1173,7 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                                     <label class="field-label">Request Requisition Forms</label>
                                     <select v-model="form.resource_schedule_id" class="form-select"
                                         :disabled="isFormFieldDisabled">
-                                        <option value="">Select</option>
+                                        <option value="">Select Requisition Form</option>
                                         <option v-for="schedule in sourceProjects" :key="schedule.value"
                                             :value="schedule.value">
                                             {{ schedule.label }}
