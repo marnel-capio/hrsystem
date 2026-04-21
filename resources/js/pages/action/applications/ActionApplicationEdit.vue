@@ -510,6 +510,13 @@ const batchName = computed(
 
 const getFileUrl = (filename: string | null) => {
     if (!filename) return null;
+
+    // If it's already a full URL (like Google Drive), return as-is
+    if (filename.startsWith('http://') || filename.startsWith('https://')) {
+        return filename;
+    }
+
+    // Otherwise treat it as local storage
     return `/storage/${filename}`;
 };
 
@@ -834,6 +841,11 @@ function validateScoreField(
 
     if (Number.isNaN(num)) {
         form.setError(field as any, `${label} must be a valid number.`);
+        return;
+    }
+
+    if (num < 0 || num > 999.99) {
+        form.setError(field as any, `${label} must be between 0 and 999.99.`);
         return;
     }
 
@@ -2818,9 +2830,6 @@ const examCriteriaDisplay = computed(() => {
                                         <div class="criteria-panel-title">
                                             Initial Interview Criteria
                                         </div>
-                                        <div class="criteria-panel-subtitle">
-                                            1 is best, 5 is worst
-                                        </div>
                                     </div>
 
                                     <div class="criteria-rule passed">
@@ -2851,10 +2860,10 @@ const examCriteriaDisplay = computed(() => {
                                 </div>
                             </div>
 
-                            <div class="form-grid grid-2">
+                            <div class="form-grid grid-2 pt-3">
                                 <div class="form-field">
                                     <label class="field-label"
-                                        >Average Score</label
+                                        >Final Score</label
                                     >
                                     <input
                                         type="number"
@@ -2924,7 +2933,7 @@ const examCriteriaDisplay = computed(() => {
 
                                 <div class="form-field">
                                     <label class="field-label"
-                                        >Overall Comments</label
+                                        >Initial Interview Comments</label
                                     >
                                     <textarea
                                         v-model="form.initial_interview_remarks"

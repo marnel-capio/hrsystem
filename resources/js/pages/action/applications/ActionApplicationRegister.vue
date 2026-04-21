@@ -2957,9 +2957,6 @@ onUnmounted(() => {
                                         <div class="criteria-panel-title">
                                             Initial Interview Criteria
                                         </div>
-                                        <div class="criteria-panel-subtitle">
-                                            1 is best, 5 is worst
-                                        </div>
                                     </div>
 
                                     <div class="criteria-rule passed">
@@ -2993,7 +2990,7 @@ onUnmounted(() => {
                             <div class="form-grid grid-2">
                                 <div class="form-field">
                                     <label class="field-label"
-                                        >Average Score</label
+                                        >Final Score</label
                                     >
                                     <input
                                         type="number"
@@ -3065,7 +3062,7 @@ onUnmounted(() => {
 
                                 <div class="form-field">
                                     <label class="field-label"
-                                        >Overall Comments</label
+                                        >Initial Interview Comments</label
                                     >
                                     <textarea
                                         v-model="form.initial_interview_remarks"
