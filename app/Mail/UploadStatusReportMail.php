@@ -56,7 +56,7 @@ class UploadStatusReportMail extends Mailable
 
     return '
     <div style="font-family: Arial, sans-serif; background:#f4f4f5; padding:30px;">
-        <div style="background:#ffffff; border:1px solid #B1B6C4; border-radius:10px; overflow:hidden;">
+        <div style="background:#80ABCB; border:1px solid #B1B6C4; border-radius:10px; overflow:hidden;">
             <div style="background:#cae1fc; color:#fff; padding:15px 20px; border-radius:10px 10px 0 0;">
                 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
                     <tr>
@@ -72,22 +72,21 @@ class UploadStatusReportMail extends Mailable
                 </table>
             </div>
 
-            <div style="background:#ffffff; border-radius:0 0 10px 10px; overflow:hidden;">
+            <div style="background:#ffffff;  overflow:hidden;">
                 <div style="padding:25px; color:#333;">
                     <h5 style="margin-top:0;">
                         Upload Status Report (<b  style="color: #2F359E;">' . e($this->batchName) . '</b>) as of ' . e($this->date) . '
                     </h5>
-                    <br>
-                    <p>Total Number of Applicants: ' . e($this->totalApplicants) . '</p>
-                    <p>Number of Successful Uploads: ' . e($this->newApplicants) . '</p>
-                    <p>Number of failed uploads: ' . e($this->failedUploads) . ' </p><br>
+                    <p>Total Number of Applicants: ' . e($this->totalApplicants) . '<br>
+                    Number of Successful Uploads: ' . e($this->newApplicants) . '<br>
+                    Number of failed uploads: ' . e($this->failedUploads) . '
                     <p>Failed Uploads:</p>
-                    ' . $failedListHtml . '
-                    <br><br><br>
+                    ' . $failedListHtml . '</p>
+                    <br>
 
-                    <p>Thank you,</p>
-                    <p><strong>' . e($this->senderName) . '</strong></p>
-                    <p>' . e($this->senderRole) . '</p>
+                    <p>Best Regards,<br>
+                    <strong>' . e($this->senderName) . '</strong><br>
+                    ' . e($this->senderRole) . '</p>
                 </div>
             </div>
 
@@ -100,7 +99,9 @@ class UploadStatusReportMail extends Mailable
     </div>
     <style>
     p{
-        font-size:12px;}
+        font-size: 12px;
+        margin-bottom:7px;
+        }
     </style>';
 }
 }

@@ -423,7 +423,11 @@ class ApplicationImportController extends Controller
             ", Failed: " . count($allFailed);
 
         Log::createLog('ACTION', $logMessage, $user->id);
+        $userEmail = Auth::user()->email_address;
         $emails = $this->getHrAdminEmails();
+        if (!in_array($userEmail, $emails)) {
+            $emails[] = $userEmail;
+        }
 
         $batchName = ActionBatchModel::where('id', $request->batch_id)
             ->value('action_batch');
@@ -472,6 +476,7 @@ class ApplicationImportController extends Controller
         ->values()
         ->toArray();
 }
+
 
     private function parseFile($file)
     {
