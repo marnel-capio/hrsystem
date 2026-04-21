@@ -169,7 +169,7 @@ const submit = () => {
     <div class="text-xs overflow-x-auto mt-6 mr-4 p-6 bg-white shadow-lg rounded-lg border ml-5">
       <div class="grid grid-cols-2 gap-4">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-bold mb-1">ACTION Batch <label class="text-red-500">*</label></label>
+          <label class="text-xs font-bold mb-1">ACTION Batch<label class="text-red-500">*</label></label>
           <input
             v-model="form.action_batch"
             readonly
@@ -183,7 +183,7 @@ const submit = () => {
 
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-bold mb-1">Target Trainees <label class="text-red-500">*</label></label>
+          <label class="text-xs font-bold mb-1">Target Trainees<label class="text-red-500">*</label></label>
           <input
             v-model="form.target_trainees"
             placeholder="Target Trainees"
@@ -203,7 +203,7 @@ const submit = () => {
 
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2 w-40">
-          <label class="text-xs font-bold mb-1">Target Start Date <label class="text-red-500">*</label></label>
+          <label class="text-xs font-bold mb-1">Target Start Date<label class="text-red-500">*</label></label>
           <input
             v-model="sanitizedTargetDate"
             type="month"
@@ -224,7 +224,7 @@ const submit = () => {
 
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs mb-1 text-gray-500">Remarks</label>
+          <label class="text-xs mb-1">Remarks</label>
           <textarea
             v-model="form.remarks"
             rows="6"

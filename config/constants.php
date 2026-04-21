@@ -90,7 +90,7 @@ return [
         'LOCATION_2_NAME' => 'Cebu',
     ],
 
-    'full_edit_permissions' => [1, 2, 3],
+    'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
 
     'sourceTypes' => [
@@ -280,15 +280,16 @@ return [
             'exam_application_status',
             'exam_remarks',
         ],
-        'initial_interview' => [
-            'initial_interview_plan_date',
-            'initial_interview_actual_date',
-            'initial_interview_venue',
-            'initial_interview_final',
-            'initial_interview_result',
-            'initial_interview_application_status',
-            'initial_interview_remarks',
-        ],
+'initial_interview' => [
+    'initial_interview_plan_date',
+    'initial_interview_actual_date',
+    'initial_interview_venue',
+    'initial_interview_assignments',
+    'initial_interview_final',
+    'initial_interview_result',
+    'initial_interview_application_status',
+    'initial_interview_remarks',
+],
         'final_interview' => [
             'final_interview_date',
             'final_interview_score_1',
