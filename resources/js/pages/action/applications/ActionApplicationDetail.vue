@@ -1427,7 +1427,15 @@ watch(
                         </div>
 
                         <div
-                            v-if="page.props.hasMixedInitialInterviewResults"
+                            v-if="
+                                page.props.hasMixedInitialInterviewResults &&
+                                [1, 2].includes(
+                                    Number(
+                                        page.props.application
+                                            .initial_interview_application_status,
+                                    ),
+                                )
+                            "
                             class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
                         >
                             Mixed interviewer results. Final status is up to HR
@@ -1618,7 +1626,15 @@ watch(
                         </div>
 
                         <div
-                            v-if="page.props.hasMixedFinalInterviewResults"
+                            v-if="
+                                page.props.hasMixedFinalInterviewResults &&
+                                [1, 2].includes(
+                                    Number(
+                                        page.props.application
+                                            .final_interview_application_status,
+                                    ),
+                                )
+                            "
                             class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
                         >
                             Mixed interviewer results. Final status is up to HR
