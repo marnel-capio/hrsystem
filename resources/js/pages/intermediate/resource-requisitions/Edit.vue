@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, nextTick  } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 
@@ -173,7 +173,6 @@ const validateStartDate = () => {
     : ''
 }
 
-
 watch(() => form.value.project_id, (newId) => {
   const project = props.newProjects.find(p => p.id === Number(newId));
 
@@ -201,7 +200,7 @@ const submit = () => {
   start_dateError.value = ''
 
   if (form.value.location_assignment === '6' && !form.value.custom_location) {
-    custom_locationError.value = 'Custom location is required if you select "Other".';
+    custom_locationError.value = 'This is a required field.';
     form.value.processing = false;
     loading.value = false;
     return;
@@ -223,10 +222,30 @@ const submit = () => {
 console.log('project_id:', form.value.project_id)
 console.log('projects:', props.newProjects)
 
-watch(() => form.value.request_type, (val) => {
-  if (val !== '2') {
+
+watch(() => form.value.request_type, async (newRequestType) => {
+  if (newRequestType === '1') {
     form.value.replacement_due_to = '';
-    form.value.person_to_replace = '';
+    await nextTick(); // Ensure DOM updates before doing anything else
+    console.log('Dropdown should reset now.');
+  }
+});
+
+
+
+
+
+
+watch(() => form.value.request_type, (newRequestType) => {
+  if (newRequestType === '1') {  
+    form.value.person_to_replace = '';  
+    form.value.replacement_due_to = '';  
+  }
+});
+
+watch(() => form.value.engagement_type, (newEngagementType) => {
+  if (newEngagementType === '3') {  
+    form.value.expected_salary_range = '';  
   }
 });
 
@@ -239,14 +258,7 @@ watch(
   },
   { immediate: true }
 )
-watch(
-  () => form.value.location_assignment,
-  (val) => {
-    if (val !== '6') {
-      form.value.custom_location = '';  
-    }
-  }
-)
+
 
 onMounted(() => {
   if (form.value.project_id) {
@@ -286,7 +298,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         <!-- Engagement Type -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Engagement Type <label class="text-red-500">*</label></label>
-          <select v-model="form.engagement_type" class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
+          <select v-model="form.engagement_type" class="border p-2 rounded w-full">
             <option disabled value="">Select Engagement Type</option>
             <option value="1">Permanent</option>
             <option value="2">Temporary (Consultant)</option>
@@ -300,7 +312,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         <!-- Sourcing Type -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Sourcing Type <label class="text-red-500">*</label></label>
-          <select v-model="form.sourcing_type" class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
+          <select v-model="form.sourcing_type" class="border p-2 rounded w-full">
             <option disabled value="">Select Sourcing Type</option>
             <option value="1">Internal</option>
             <option value="2">External</option>
@@ -314,7 +326,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         <!-- Request Type -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Request Type <label class="text-red-500">*</label></label>
-          <select v-model="form.request_type" class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
+          <select v-model="form.request_type" class="border p-2 rounded w-full">
             <option disabled value="">Select Request Type</option>
             <option value="1">New Requirement</option>
             <option value="2">Replacement</option>
@@ -330,7 +342,9 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         <!-- If Replacement, Due To -->
         <div class="flex flex-col w-full">
           <label class="text-sm mb-1 text-gray-500">If Replacement, Due To</label>
-          <select v-model="form.replacement_due_to" class="border p-2 rounded w-full" :disabled="form.request_type !== '2'" :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}">
+          <select v-model="form.replacement_due_to" class="border p-2 rounded w-full" 
+          :disabled="form.request_type == '1'"
+          :class="{'bg-gray-200 cursor-not-allowed': form.request_type == '1'}">
             <option disabled value="">Select Reason</option>
             <option value="1">Promotion</option>
             <option value="2">Attrition</option>
@@ -348,8 +362,8 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             type="text"
             placeholder="Person to Replace"
             class="border p-2 rounded w-full"
-            :disabled="form.request_type !== '2'"
-            :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}"
+            :disabled="form.request_type == '1'"
+            :class="{'bg-gray-200 cursor-not-allowed': form.request_type == '1'}"
           />
           <span v-if="page.props.errors?.person_to_replace" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.person_to_replace }}
@@ -362,7 +376,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         <!-- Location Assignment -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 font-bold">Location Assignment <label class="text-red-500">*</label></label>
-          <select v-model="form.location_assignment" class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
+          <select v-model="form.location_assignment" class="border p-2 rounded w-full">
             <option disabled value="">Select Location</option>
             <option value="1">Alabang</option>
             <option value="2">Makati</option>
@@ -383,9 +397,10 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             v-model="form.custom_location"
             type="text"
             @input="validatecustom_location"
-            :class="{'bg-gray-200 cursor-not-allowed': form.location_assignment !== '6'}"
-            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
+            class="border p-2 rounded w-full"
             placeholder="Specify location"
+            :disabled="form.location_assignment !== '6'"
+            :class="{'bg-gray-200 cursor-not-allowed': form.location_assignment !== '6'}"
           />
           <span v-if="page.props.errors?.custom_location" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.custom_location }}
@@ -414,13 +429,13 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Business Unit -->
         <div class="flex flex-col">
-          <label class="text-sm font-bold mb-1">Business Unit<label class="text-red-500">*</label></label>
+          <label class="text-sm font-bold mb-1">Business Unit <label class="text-red-500">*</label></label>
           <input
             v-model="form.business_unit"
             @input="validatebusiness_unit"
             type="text"
             placeholder="Business Unit"
-            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
+            class="border p-2 rounded w-full"
           />
           <span v-if="page.props.errors?.business_unit" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.business_unit }}
@@ -451,7 +466,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             @input="validateresource"
             type="text"
             placeholder="Indicate position title or service required."
-            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
+            class="border p-2 rounded w-full"
           />
           <span v-if="resourceError" class="text-red-600 text-xs mt-1">
             {{ resourceError }}
@@ -469,7 +484,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             @input="validatepractice"
             type="text"
             placeholder="Indicate JAVA, C, C++, Mobile, etc."
-            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
+            class="border p-2 rounded w-full"
           />
           <span v-if="practiceError" class="text-red-600 text-xs mt-1">
             {{ practiceError }}
@@ -490,7 +505,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             @input="validateno_resources_needed"
             type="number"
             placeholder="No. of Resources Needed"
-            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
+            class="border p-2 rounded w-full"
             
           />
           <span v-if="no_resources_neededError" class="text-red-600 text-xs mt-1">
@@ -509,7 +524,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             type="date"
             :min="tomorrowISOString"
             @input="validateStartDate"
-            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
+            class="border p-2 rounded w-full"
           />
           <span v-if="page.props.errors?.start_date" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.start_date }}
@@ -527,7 +542,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             @input="validateduration_project_engagement"
             type="text"
             placeholder="Duration of Project Engagement"
-            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
+            class="border p-2 rounded w-full"
           />
           <span v-if="duration_project_engagementError" class="text-red-600 text-xs mt-1">
             {{ duration_project_engagementError }}
@@ -590,8 +605,8 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             rows="6"
             class="border p-2 rounded w-full"
             placeholder="Expected Salary/Billing Range"
-            :disabled="form.engagement_type !== '1' && form.engagement_type !== '2'"
-            :class="{'bg-gray-200 cursor-not-allowed': form.engagement_type !== '1' && form.engagement_type !== '2'}"
+            :disabled="form.engagement_type === '3'"
+            :class="{'bg-gray-200 cursor-not-allowed': form.engagement_type === '3'}"
           />
           <span v-if="expected_salary_rangeError" class="text-red-600 text-xs mt-1">
             {{ expected_salary_rangeError }}
