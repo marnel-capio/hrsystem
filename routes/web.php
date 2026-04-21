@@ -259,6 +259,9 @@ Route::middleware(['auth'])->group(function () {
         
         Route::post('/intermediate/applications', [IntermediateApplicationController::class, 'store'])
             ->name('intermediate.applications.store');
+        
+        Route::get('/intermediate/applications/{id}', [IntermediateApplicationController::class, 'show'])
+            ->name('intermediate.applications.show');
     });
 
 // ------------------------

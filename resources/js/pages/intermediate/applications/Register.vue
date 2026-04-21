@@ -2794,4 +2794,45 @@ a.btn-secondary:hover {
 .criteria-panel.compact .criteria-panel-header {
     margin-bottom: 0.5rem;
 }
+
+/* Add these toast notification styles at the beginning of your style section */
+.full-width-alert {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+}
+
+.alert-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    font-weight: 500;
+    color: #fff;
+}
+
+.alert-error-banner {
+    background-color: #dc2626; /* error red */
+}
+
+.alert-success-banner {
+    background-color: #10b981; /* success green */
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 0.5rem;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
 </style>
