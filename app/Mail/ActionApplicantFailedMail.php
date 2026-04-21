@@ -24,7 +24,7 @@ class ActionApplicantFailedMail extends Mailable
 
     public function build()
     {
-        return $this->subject('【HR System】Application Update')
+        return $this->subject('【HR System】ACTION Application Result')
             ->view('emails.action-applicant-failed')
             ->with([
                 'application' => $this->application,

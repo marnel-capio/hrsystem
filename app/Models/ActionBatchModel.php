@@ -69,7 +69,6 @@ class ActionBatchModel extends Model
             ->get();
     }
 
-        // Get previous batch name
     public static function prevBatchName($id): ?string
     {
         return DB::table('action_batches')

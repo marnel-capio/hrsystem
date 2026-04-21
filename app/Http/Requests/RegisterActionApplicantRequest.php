@@ -3,11 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Rules\AlphaSpaceDash;
+use App\Rules\GenEmail;
 use App\Rules\MaxLength;
 use App\Rules\RequiredField;
-use App\Rules\GenEmail;
-use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
+
 
 class RegisterActionApplicantRequest extends FormRequest
 {
@@ -57,7 +58,7 @@ class RegisterActionApplicantRequest extends FormRequest
                     }
                 },
             ],
-            'email_address' => [new RequiredField, 'email', new MaxLength(80), new GenEmail,],
+            'email_address' => [new RequiredField, 'email', new MaxLength(80), new GenEmail],
             'gender' => [new RequiredField, 'numeric', 'in:1,2'],
             'age' => [new RequiredField, 'numeric', 'min:1', 'max:99'],
             'school' => [new RequiredField, 'string', new MaxLength(80)],
@@ -65,6 +66,18 @@ class RegisterActionApplicantRequest extends FormRequest
             'others_degree' => ['nullable', 'string', new MaxLength(80)],
             'expected_graduation' => [new RequiredField, 'string', 'max:20'],
             'awards_recognition' => ['nullable', 'string', new MaxLength(1024)],
+            'japanese_background' => [
+                new RequiredField,
+                Rule::in(array_keys(config('constants.japanese_backgrounds'))),
+            ],
+
+            'japanese_level' => [
+                Rule::requiredIf($this->japanese_background == 3),
+                'nullable',
+                Rule::in(array_keys(config('constants.japanese_levels'))),
+            ],
+
+            'background_remarks' => ['nullable', 'string', new MaxLength(255)],
             'other_examination_certificate' => ['nullable', 'string', new MaxLength(1024)],
             'thesis_project' => ['nullable', 'string', new MaxLength(1024)],
             'extra_curricular' => ['nullable', 'string', new MaxLength(1024)],
