@@ -2987,7 +2987,7 @@ onUnmounted(() => {
                                 </div>
                             </div>
 
-                            <div class="form-grid grid-2">
+                            <div class="form-grid grid-3 mt-3">
                                 <div class="form-field">
                                     <label class="field-label"
                                         >Final Score</label
@@ -3035,9 +3035,7 @@ onUnmounted(() => {
                                         readonly
                                     />
                                 </div>
-                            </div>
 
-                            <div class="form-grid grid-2">
                                 <div class="form-field">
                                     <label class="field-label"
                                         >Application Status</label
@@ -3059,19 +3057,19 @@ onUnmounted(() => {
                                         </option>
                                     </select>
                                 </div>
+                            </div>
 
-                                <div class="form-field">
-                                    <label class="field-label"
-                                        >Initial Interview Comments</label
-                                    >
-                                    <textarea
-                                        v-model="form.initial_interview_remarks"
-                                        placeholder="Enter any remarks here."
-                                        rows="3"
-                                        class="form-textarea"
-                                        :disabled="!isApplicantSelected"
-                                    ></textarea>
-                                </div>
+                            <div class="form-field">
+                                <label class="field-label"
+                                    >Initial Interview Comments</label
+                                >
+                                <textarea
+                                    v-model="form.initial_interview_remarks"
+                                    placeholder="Enter any remarks here."
+                                    rows="3"
+                                    class="form-textarea"
+                                    :disabled="!isApplicantSelected"
+                                ></textarea>
                             </div>
                         </div>
 

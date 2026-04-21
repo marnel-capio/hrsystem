@@ -1435,14 +1435,12 @@ function clampAtppPair(
     if (Number.isNaN(correct)) correct = 0;
     if (Number.isNaN(wrong)) wrong = 0;
 
-    // 🚨 NEW: clamp individually
     if (correct < 0) correct = 0;
     if (wrong < 0) wrong = 0;
 
     if (correct > max) correct = max;
     if (wrong > max) wrong = max;
 
-    // 🚨 EXISTING: clamp total
     if (correct + wrong > max) {
         const excess = correct + wrong - max;
 
@@ -2860,7 +2858,7 @@ const examCriteriaDisplay = computed(() => {
                                 </div>
                             </div>
 
-                            <div class="form-grid grid-2 pt-3">
+                            <div class="form-grid grid-3 mt-3">
                                 <div class="form-field">
                                     <label class="field-label"
                                         >Final Score</label
@@ -2874,7 +2872,14 @@ const examCriteriaDisplay = computed(() => {
                                             !editableStages.initial_interview ||
                                             isInitialBlocked
                                         "
-                                        @input="handleInitialScoreManualInput"
+                                        @input="
+                                            handleInitialScoreManualInput();
+                                            clampScore(
+                                                form,
+                                                'initial_interview_final',
+                                                5,
+                                            );
+                                        "
                                     />
                                     <span
                                         v-if="
@@ -2900,12 +2905,9 @@ const examCriteriaDisplay = computed(() => {
                                                 : '')
                                         "
                                         readonly
-                                        :disabled="true"
                                     />
                                 </div>
-                            </div>
 
-                            <div class="form-grid grid-2">
                                 <div class="form-field">
                                     <label class="field-label"
                                         >Application Status</label
@@ -2930,33 +2932,26 @@ const examCriteriaDisplay = computed(() => {
                                         </option>
                                     </select>
                                 </div>
-
-                                <div class="form-field">
-                                    <label class="field-label"
-                                        >Initial Interview Comments</label
-                                    >
-                                    <textarea
-                                        v-model="form.initial_interview_remarks"
-                                        rows="3"
-                                        class="form-textarea"
-                                        :disabled="
-                                            !editableStages.initial_interview ||
-                                            isInitialBlocked
-                                        "
-                                    ></textarea>
-                                    <span
-                                        v-if="
-                                            form.errors
-                                                .initial_interview_remarks
-                                        "
-                                        class="error-message"
-                                    >
-                                        {{
-                                            form.errors
-                                                .initial_interview_remarks
-                                        }}
-                                    </span>
-                                </div>
+                            </div>
+                            <div class="form-field mt-3">
+                                <label class="field-label mt-3"
+                                    >Initial Interview Comments</label
+                                >
+                                <textarea
+                                    v-model="form.initial_interview_remarks"
+                                    rows="3"
+                                    class="form-textarea"
+                                    :disabled="
+                                        !editableStages.initial_interview ||
+                                        isInitialBlocked
+                                    "
+                                ></textarea>
+                                <span
+                                    v-if="form.errors.initial_interview_remarks"
+                                    class="error-message"
+                                >
+                                    {{ form.errors.initial_interview_remarks }}
+                                </span>
                             </div>
                         </div>
                         <div
@@ -3168,54 +3163,15 @@ const examCriteriaDisplay = computed(() => {
                                 <div class="form-field">
                                     <label class="field-label">Result</label>
                                     <input
-                                        v-if="
-                                            allFinalInterviewersPassed ||
-                                            allFinalInterviewersFailed
-                                        "
                                         type="text"
                                         class="form-input"
                                         :value="
                                             finalInterviewResultLabel ||
                                             (!form.final_interview_application_status
-                                                ? 'Auto-filled from application status'
+                                                ? 'Auto-filled'
                                                 : '')
                                         "
                                         readonly
-                                        :disabled="
-                                            !editableStages.final_interview
-                                        "
-                                    />
-
-                                    <select
-                                        v-else-if="
-                                            hasMixedFinalInterviewResults &&
-                                            canEditFinalInterviewDecision
-                                        "
-                                        v-model="form.final_interview_result"
-                                        class="form-select"
-                                        :disabled="
-                                            !editableStages.final_interview
-                                        "
-                                    >
-                                        <option value="">
-                                            Select Final Result
-                                        </option>
-                                        <option value="2">Passed</option>
-                                        <option value="3">Failed</option>
-                                    </select>
-
-                                    <input
-                                        v-else
-                                        type="text"
-                                        class="form-input"
-                                        :value="
-                                            finalInterviewResultLabel ||
-                                            'For HR deliberation'
-                                        "
-                                        readonly
-                                        :disabled="
-                                            !editableStages.final_interview
-                                        "
                                     />
                                 </div>
 
@@ -3223,23 +3179,25 @@ const examCriteriaDisplay = computed(() => {
                                     <label class="field-label"
                                         >Application Status</label
                                     >
-                                    <input
-                                        type="text"
-                                        class="form-input"
-                                        :value="
-                                            interviewAppStatuses.find(
-                                                (s) =>
-                                                    String(s.value) ===
-                                                    String(
-                                                        form.final_interview_application_status,
-                                                    ),
-                                            )?.label || ''
+                                    <select
+                                        v-model="
+                                            form.final_interview_application_status
                                         "
-                                        readonly
+                                        class="form-select"
                                         :disabled="
-                                            !editableStages.final_interview
+                                            !editableStages.final_interview ||
+                                            isInitialBlocked
                                         "
-                                    />
+                                    >
+                                        <option value="">Select Status</option>
+                                        <option
+                                            v-for="status in interviewAppStatuses"
+                                            :key="status.value"
+                                            :value="status.value"
+                                        >
+                                            {{ status.label }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -3300,7 +3258,6 @@ const examCriteriaDisplay = computed(() => {
                                             scheduleValidationErrors.job_offer_schedule
                                         }}
                                     </span>
-                                    >
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label">Status</label>
