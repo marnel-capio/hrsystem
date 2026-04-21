@@ -22,7 +22,6 @@ class IntermediateRequisitionService
     $requisition->person_to_replace = $data['person_to_replace'] ?? null;
 
     $requisition->location_assignment = $data['location_assignment'];
-    $requisition->project_id = $data['project_id'];
     $requisition->business_unit = $data['business_unit'];
     $requisition->resource = $data['resource']?? null;
     $requisition->practice = $data['practice']?? null;
@@ -139,6 +138,7 @@ public function update($data, $request)
             'person_to_replace',
 
             'location_assignment',
+            'custom_location',
             'project_id',
             'business_unit',
 
@@ -158,16 +158,16 @@ public function update($data, $request)
         ];
 
         foreach ($fields as $field) {
-            $oldValue = $oldData[$field] ?? '[empty]';
-            $newValue = $project->$field ?? '[empty]';
+        $oldValue = $oldData[$field] ?? '[empty]';
+        $newValue = $requisition->$field ?? '[empty]';
 
-            $oldValueStr = $oldValue === '' ? '[empty]' : $oldValue;
-            $newValueStr = $newValue === '' ? '[empty]' : $newValue;
+        $oldValueStr = $oldValue === '' ? '[empty]' : $oldValue;
+        $newValueStr = $newValue === '' ? '[empty]' : $newValue;
 
-            if ($oldValueStr !== $newValueStr) {
-                $activityLines[] = "{$field}: {$oldValueStr} -> {$newValueStr}";
-            }
+        if ($oldValueStr !== $newValueStr) {
+            $activityLines[] = "{$field}: {$oldValueStr} -> {$newValueStr}";
         }
+    }
 
         $activity = implode("\n", $activityLines);
 
