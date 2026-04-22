@@ -1,3 +1,5 @@
+index application 
+
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { ref, computed, watch, onMounted } from 'vue'
