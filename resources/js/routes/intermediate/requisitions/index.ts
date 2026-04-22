@@ -487,4 +487,10 @@ edit: Object.assign(edit, edit),
 update: Object.assign(update, update),
 }
 
+export default requisitionse),
+show: Object.assign(show, show),
+edit: Object.assign(edit, edit),
+update: Object.assign(update, update),
+}
+
 export default requisitions

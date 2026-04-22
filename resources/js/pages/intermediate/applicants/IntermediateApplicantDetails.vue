@@ -38,6 +38,36 @@ const addSkillRemarksError = ref<string | null>(null);
 const editSkillNameError = ref<string | null>(null);
 const editSkillRemarksError = ref<string | null>(null);
 
+const canSeeRestrictedRemarks = computed(() =>
+    [1, 2, 3].includes(userPermissions.value),
+);
+
+const examResultLabel = (value: number | null | undefined) => {
+    switch (Number(value)) {
+        case 1:
+            return 'Pending';
+        case 2:
+            return 'Passed';
+        case 3:
+            return 'Failed';
+        default:
+            return '-';
+    }
+};
+
+const interviewResultLabel = (value: number | null | undefined) => {
+    switch (Number(value)) {
+        case 1:
+            return 'Pending';
+        case 2:
+            return 'Passed';
+        case 3:
+            return 'Failed';
+        default:
+            return '-';
+    }
+};
+
 const messages = {
     record_created_successfully: {
         errorMessage: 'Record created successfully.',
@@ -886,31 +916,37 @@ onMounted(() => {
                             No.
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
-                            Stage
-                        </th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">
-                            FY Week
-                        </th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">
-                            Position
-                        </th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">
-                            Paper Screening
+                            Exam Result
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
                             Exam Status
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
-                            HR Interview Status
+                            Exam Remarks
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
-                            BU Interview Status
+                            Initial Interview Result
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Initial Interview Status
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Initial Interview Remarks
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Final Interview Result
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
                             Final Interview Status
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
+                            Final Interview Remarks
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
                             Job Offer Status
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Job Offer Remarks
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
                             Remarks
@@ -928,65 +964,64 @@ onMounted(() => {
                         >
                             {{ index + 1 }}
                         </td>
+
                         <td class="px-2 py-2 text-center">
-                            {{ stageLabel(app.application_stage) }}
+                            <span
+                                class="rounded-full border px-2 py-1 text-xs"
+                                :class="
+                                    getPaperScreeningBadgeClass(app.exam_result)
+                                "
+                            >
+                                {{ examResultLabel(app.exam_result) }}
+                            </span>
                         </td>
+
                         <td class="px-2 py-2 text-center">
-                            {{ app.fy_week || '-' }}
+                            <span
+                                class="rounded-full border px-2 py-1 text-xs"
+                                :class="
+                                    getResultBadgeClass(
+                                        app.exam_application_status,
+                                    )
+                                "
+                            >
+                                {{
+                                    applicationStatusLabel(
+                                        app.exam_application_status,
+                                    )
+                                }}
+                            </span>
                         </td>
-                        <td class="px-2 py-2 text-center">
-                            {{ app.position || '-' }}
+
+                        <td class="max-w-[220px] px-2 py-2 text-center">
+                            <div
+                                class="mx-auto w-full truncate"
+                                :title="
+                                    canSeeRestrictedRemarks
+                                        ? app.exam_remarks || '-'
+                                        : 'Restricted'
+                                "
+                            >
+                                {{
+                                    canSeeRestrictedRemarks
+                                        ? app.exam_remarks || '-'
+                                        : '-'
+                                }}
+                            </div>
                         </td>
+
                         <td class="px-2 py-2 text-center">
                             <span
                                 class="rounded-full border px-2 py-1 text-xs"
                                 :class="
                                     getPaperScreeningBadgeClass(
-                                        app.paper_screening_status,
+                                        app.initial_interview_result,
                                     )
                                 "
                             >
                                 {{
-                                    paperScreeningLabel(
-                                        app.paper_screening_status,
-                                    )
-                                }}
-                            </span>
-                        </td>
-                        <td class="px-2 py-2 text-center">
-                            <span
-                                class="rounded-full border px-2 py-1 text-xs"
-                                :class="getResultBadgeClass(app.exam_status)"
-                            >
-                                {{ applicationStatusLabel(app.exam_status) }}
-                            </span>
-                        </td>
-
-                        <td class="px-2 py-2 text-center">
-                            <span
-                                class="rounded-full border px-2 py-1 text-xs"
-                                :class="
-                                    getResultBadgeClass(app.hr_interview_status)
-                                "
-                            >
-                                {{
-                                    applicationStatusLabel(
-                                        app.hr_interview_status,
-                                    )
-                                }}
-                            </span>
-                        </td>
-
-                        <td class="px-2 py-2 text-center">
-                            <span
-                                class="rounded-full border px-2 py-1 text-xs"
-                                :class="
-                                    getResultBadgeClass(app.bu_interview_status)
-                                "
-                            >
-                                {{
-                                    applicationStatusLabel(
-                                        app.bu_interview_status,
+                                    interviewResultLabel(
+                                        app.initial_interview_result,
                                     )
                                 }}
                             </span>
@@ -997,16 +1032,84 @@ onMounted(() => {
                                 class="rounded-full border px-2 py-1 text-xs"
                                 :class="
                                     getResultBadgeClass(
-                                        app.final_interview_status,
+                                        app.initial_interview_application_status,
                                     )
                                 "
                             >
                                 {{
                                     applicationStatusLabel(
-                                        app.final_interview_status,
+                                        app.initial_interview_application_status,
                                     )
                                 }}
                             </span>
+                        </td>
+
+                        <td class="max-w-[220px] px-2 py-2 text-center">
+                            <div
+                                class="mx-auto w-full truncate"
+                                :title="
+                                    canSeeRestrictedRemarks
+                                        ? app.initial_interview_remarks || '-'
+                                        : 'Restricted'
+                                "
+                            >
+                                {{
+                                    canSeeRestrictedRemarks
+                                        ? app.initial_interview_remarks || '-'
+                                        : '-'
+                                }}
+                            </div>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            <span
+                                class="rounded-full border px-2 py-1 text-xs"
+                                :class="
+                                    getPaperScreeningBadgeClass(
+                                        app.final_interview_result,
+                                    )
+                                "
+                            >
+                                {{
+                                    interviewResultLabel(
+                                        app.final_interview_result,
+                                    )
+                                }}
+                            </span>
+                        </td>
+
+                        <td class="px-2 py-2 text-center">
+                            <span
+                                class="rounded-full border px-2 py-1 text-xs"
+                                :class="
+                                    getResultBadgeClass(
+                                        app.final_interview_application_status,
+                                    )
+                                "
+                            >
+                                {{
+                                    applicationStatusLabel(
+                                        app.final_interview_application_status,
+                                    )
+                                }}
+                            </span>
+                        </td>
+
+                        <td class="max-w-[220px] px-2 py-2 text-center">
+                            <div
+                                class="mx-auto w-full truncate"
+                                :title="
+                                    canSeeRestrictedRemarks
+                                        ? app.final_interview_remarks || '-'
+                                        : 'Restricted'
+                                "
+                            >
+                                {{
+                                    canSeeRestrictedRemarks
+                                        ? app.final_interview_remarks || '-'
+                                        : '-'
+                                }}
+                            </div>
                         </td>
 
                         <td class="px-2 py-2 text-center">
@@ -1019,7 +1122,25 @@ onMounted(() => {
                                 {{ jobOfferStatusLabel(app.job_offer_status) }}
                             </span>
                         </td>
-                        <td class="max-w-[250px] px-2 py-2 text-center">
+
+                        <td class="max-w-[220px] px-2 py-2 text-center">
+                            <div
+                                class="mx-auto w-full truncate"
+                                :title="
+                                    canSeeRestrictedRemarks
+                                        ? app.job_offer_remarks || '-'
+                                        : 'Restricted'
+                                "
+                            >
+                                {{
+                                    canSeeRestrictedRemarks
+                                        ? app.job_offer_remarks || '-'
+                                        : '-'
+                                }}
+                            </div>
+                        </td>
+
+                        <td class="max-w-[220px] px-2 py-2 text-center">
                             <div
                                 class="mx-auto w-full truncate"
                                 :title="app.remarks || '-'"
@@ -1044,7 +1165,7 @@ onMounted(() => {
 
                     <tr v-if="!applications.length">
                         <td
-                            colspan="12"
+                            colspan="14"
                             class="py-4 text-center text-gray-500 italic"
                         >
                             No application records found.
