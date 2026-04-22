@@ -445,7 +445,6 @@ public function createIntermediateWorkExperienceUpdateLog(array $oldData, array 
     $activityLines = [];
     $activityLines[] = "Updated work experience for {$applicant->email_address}.";
     $activityLines[] = "Details:";
-    $activityLines[] = "※Only updated fields will reflect changes in DB";
 
     $fields = [
         'employer',

@@ -784,6 +784,7 @@ const getJapaneseLevelLabel = (id: number | null | undefined) => {
 
 onMounted(() => {
     fetchSkills();
+    fetchWorkExperiences();
 });
 </script>
 
@@ -791,161 +792,259 @@ onMounted(() => {
     <Head title="INTERMEDIATE Applicant Detail" />
 
     <div v-if="addWorkModalVisible" class="modal-overlay">
-    <div class="modal-content modal-large">
-        <h3 class="modal-title">Add Work Experience</h3>
+        <div class="modal-content modal-large">
+            <h3 class="modal-title">Add Work Experience</h3>
 
-        <div class="modal-grid">
-            <div class="modal-field">
-                <label>Employer</label>
-                <input v-model="newWork.employer" class="modal-input" />
-                <span v-if="workErrors.employer" class="modal-error">{{ workErrors.employer }}</span>
+            <div class="modal-grid">
+                <div class="modal-field">
+                    <label>Employer</label>
+                    <input v-model="newWork.employer" class="modal-input" />
+                    <span v-if="workErrors.employer" class="modal-error">{{
+                        workErrors.employer
+                    }}</span>
+                </div>
+
+                <div class="modal-field">
+                    <label>Company Address</label>
+                    <input
+                        v-model="newWork.company_address"
+                        class="modal-input"
+                    />
+                    <span
+                        v-if="workErrors.company_address"
+                        class="modal-error"
+                        >{{ workErrors.company_address }}</span
+                    >
+                </div>
+
+                <div class="modal-field">
+                    <label>Job Title</label>
+                    <input v-model="newWork.job_title" class="modal-input" />
+                    <span v-if="workErrors.job_title" class="modal-error">{{
+                        workErrors.job_title
+                    }}</span>
+                </div>
+
+                <div class="modal-field">
+                    <label>Dates Employed</label>
+                    <input
+                        v-model="newWork.date_employed"
+                        class="modal-input"
+                        placeholder="(e.g. August 2018 - March 2020)"
+                    />
+                    <span v-if="workErrors.date_employed" class="modal-error">{{
+                        workErrors.date_employed
+                    }}</span>
+                </div>
+
+                <div class="modal-field">
+                    <label>Salary</label>
+                    <input v-model="newWork.salary" class="modal-input" />
+                    <span v-if="workErrors.salary" class="modal-error">{{
+                        workErrors.salary
+                    }}</span>
+                </div>
+
+                <div class="modal-field">
+                    <label>Supervisor</label>
+                    <input
+                        v-model="newWork.name_supervisor"
+                        class="modal-input"
+                        placeholder="(Juan Dela Cruz - 0916XXXXX)"
+                    />
+                    <span
+                        v-if="workErrors.name_supervisor"
+                        class="modal-error"
+                        >{{ workErrors.name_supervisor }}</span
+                    >
+                </div>
             </div>
 
             <div class="modal-field">
-                <label>Company Address</label>
-                <input v-model="newWork.company_address" class="modal-input" />
-                <span v-if="workErrors.company_address" class="modal-error">{{ workErrors.company_address }}</span>
+                <label>Work Description</label>
+                <textarea
+                    v-model="newWork.work_description"
+                    class="modal-textarea"
+                ></textarea>
+                <span v-if="workErrors.work_description" class="modal-error">{{
+                    workErrors.work_description
+                }}</span>
             </div>
 
             <div class="modal-field">
-                <label>Job Title</label>
-                <input v-model="newWork.job_title" class="modal-input" />
-                <span v-if="workErrors.job_title" class="modal-error">{{ workErrors.job_title }}</span>
+                <label>Reason for Leaving</label>
+                <textarea
+                    v-model="newWork.reason_for_leaving"
+                    class="modal-textarea"
+                ></textarea>
+                <span
+                    v-if="workErrors.reason_for_leaving"
+                    class="modal-error"
+                    >{{ workErrors.reason_for_leaving }}</span
+                >
             </div>
 
             <div class="modal-field">
-                <label>Date Employed</label>
-                <input v-model="newWork.date_employed" class="modal-input" />
-                <span v-if="workErrors.date_employed" class="modal-error">{{ workErrors.date_employed }}</span>
+                <label>Remarks</label>
+                <textarea
+                    v-model="newWork.remarks"
+                    class="modal-textarea"
+                ></textarea>
+                <span v-if="workErrors.remarks" class="modal-error">{{
+                    workErrors.remarks
+                }}</span>
             </div>
 
-            <div class="modal-field">
-                <label>Salary</label>
-                <input v-model="newWork.salary" class="modal-input" />
-                <span v-if="workErrors.salary" class="modal-error">{{ workErrors.salary }}</span>
+            <div class="modal-actions">
+                <button class="btn-red" @click="closeAddWorkModal">
+                    Cancel
+                </button>
+                <button class="btn-primary" @click="saveNewWork">Add</button>
             </div>
-
-            <div class="modal-field">
-                <label>Supervisor</label>
-                <input v-model="newWork.name_supervisor" class="modal-input" />
-                <span v-if="workErrors.name_supervisor" class="modal-error">{{ workErrors.name_supervisor }}</span>
-            </div>
-        </div>
-
-        <div class="modal-field">
-            <label>Work Description</label>
-            <textarea v-model="newWork.work_description" class="modal-textarea"></textarea>
-            <span v-if="workErrors.work_description" class="modal-error">{{ workErrors.work_description }}</span>
-        </div>
-
-        <div class="modal-field">
-            <label>Reason for Leaving</label>
-            <textarea v-model="newWork.reason_for_leaving" class="modal-textarea"></textarea>
-            <span v-if="workErrors.reason_for_leaving" class="modal-error">{{ workErrors.reason_for_leaving }}</span>
-        </div>
-
-        <div class="modal-field">
-            <label>Remarks</label>
-            <textarea v-model="newWork.remarks" class="modal-textarea"></textarea>
-            <span v-if="workErrors.remarks" class="modal-error">{{ workErrors.remarks }}</span>
-        </div>
-
-        <div class="modal-actions">
-            <button class="btn-red" @click="closeAddWorkModal">Cancel</button>
-            <button class="btn-primary" @click="saveNewWork">Add</button>
-        </div>
-    </div>
-</div>
-
-<div v-if="editWorkModalVisible" class="modal-overlay">
-    <div class="modal-content modal-large">
-        <h3 class="modal-title">Edit Work Experience</h3>
-
-        <div class="modal-grid">
-            <div class="modal-field">
-                <label>Employer</label>
-                <input v-model="editedWork.employer" class="modal-input" />
-                <span v-if="editWorkErrors.employer" class="modal-error">{{ editWorkErrors.employer }}</span>
-            </div>
-
-            <div class="modal-field">
-                <label>Company Address</label>
-                <input v-model="editedWork.company_address" class="modal-input" />
-                <span v-if="editWorkErrors.company_address" class="modal-error">{{ editWorkErrors.company_address }}</span>
-            </div>
-
-            <div class="modal-field">
-                <label>Job Title</label>
-                <input v-model="editedWork.job_title" class="modal-input" />
-                <span v-if="editWorkErrors.job_title" class="modal-error">{{ editWorkErrors.job_title }}</span>
-            </div>
-
-            <div class="modal-field">
-                <label>Date Employed</label>
-                <input v-model="editedWork.date_employed" class="modal-input" />
-                <span v-if="editWorkErrors.date_employed" class="modal-error">{{ editWorkErrors.date_employed }}</span>
-            </div>
-
-            <div class="modal-field">
-                <label>Salary</label>
-                <input v-model="editedWork.salary" class="modal-input" />
-                <span v-if="editWorkErrors.salary" class="modal-error">{{ editWorkErrors.salary }}</span>
-            </div>
-
-            <div class="modal-field">
-                <label>Supervisor</label>
-                <input v-model="editedWork.name_supervisor" class="modal-input" />
-                <span v-if="editWorkErrors.name_supervisor" class="modal-error">{{ editWorkErrors.name_supervisor }}</span>
-            </div>
-        </div>
-
-        <div class="modal-field">
-            <label>Work Description</label>
-            <textarea v-model="editedWork.work_description" class="modal-textarea"></textarea>
-            <span v-if="editWorkErrors.work_description" class="modal-error">{{ editWorkErrors.work_description }}</span>
-        </div>
-
-        <div class="modal-field">
-            <label>Reason for Leaving</label>
-            <textarea v-model="editedWork.reason_for_leaving" class="modal-textarea"></textarea>
-            <span v-if="editWorkErrors.reason_for_leaving" class="modal-error">{{ editWorkErrors.reason_for_leaving }}</span>
-        </div>
-
-        <div class="modal-field">
-            <label>Remarks</label>
-            <textarea v-model="editedWork.remarks" class="modal-textarea"></textarea>
-            <span v-if="editWorkErrors.remarks" class="modal-error">{{ editWorkErrors.remarks }}</span>
-        </div>
-
-        <div class="modal-actions">
-            <button class="btn-red" @click="closeEditWorkModal">Cancel</button>
-            <button class="btn-primary" @click="saveWorkEdit">Save</button>
         </div>
     </div>
-</div>
 
-<div v-if="deleteWorkModalVisible" class="modal-overlay">
-    <div class="modal-content">
-        <h3 class="modal-title text-red-500">Confirm Delete</h3>
+    <div v-if="editWorkModalVisible" class="modal-overlay">
+        <div class="modal-content modal-large">
+            <h3 class="modal-title">Edit Work Experience</h3>
 
-        <p class="mb-4 text-center">
-            Are you sure you want to delete
-            <strong>
-                {{
-                    isBulkDeleteWorkModal
-                        ? selectedWorkExperiences.length + ' selected work experience(s)'
-                        : 'this work experience'
-                }}
-            </strong
-            >?
-        </p>
+            <div class="modal-grid">
+                <div class="modal-field">
+                    <label>Employer</label>
+                    <input v-model="editedWork.employer" class="modal-input" />
+                    <span v-if="editWorkErrors.employer" class="modal-error">{{
+                        editWorkErrors.employer
+                    }}</span>
+                </div>
 
-        <div class="modal-actions">
-            <button class="btn-red" @click="closeWorkDeleteModal">Cancel</button>
-            <button class="btn-primary" @click="performWorkDelete">Delete</button>
+                <div class="modal-field">
+                    <label>Company Address</label>
+                    <input
+                        v-model="editedWork.company_address"
+                        class="modal-input"
+                    />
+                    <span
+                        v-if="editWorkErrors.company_address"
+                        class="modal-error"
+                        >{{ editWorkErrors.company_address }}</span
+                    >
+                </div>
+
+                <div class="modal-field">
+                    <label>Job Title</label>
+                    <input v-model="editedWork.job_title" class="modal-input" />
+                    <span v-if="editWorkErrors.job_title" class="modal-error">{{
+                        editWorkErrors.job_title
+                    }}</span>
+                </div>
+
+                <div class="modal-field">
+                    <label>Date Employed</label>
+                    <input
+                        v-model="editedWork.date_employed"
+                        class="modal-input"
+                    />
+                    <span
+                        v-if="editWorkErrors.date_employed"
+                        class="modal-error"
+                        >{{ editWorkErrors.date_employed }}</span
+                    >
+                </div>
+
+                <div class="modal-field">
+                    <label>Salary</label>
+                    <input v-model="editedWork.salary" class="modal-input" />
+                    <span v-if="editWorkErrors.salary" class="modal-error">{{
+                        editWorkErrors.salary
+                    }}</span>
+                </div>
+
+                <div class="modal-field">
+                    <label>Supervisor</label>
+                    <input
+                        v-model="editedWork.name_supervisor"
+                        class="modal-input"
+                    />
+                    <span
+                        v-if="editWorkErrors.name_supervisor"
+                        class="modal-error"
+                        >{{ editWorkErrors.name_supervisor }}</span
+                    >
+                </div>
+            </div>
+
+            <div class="modal-field">
+                <label>Work Description</label>
+                <textarea
+                    v-model="editedWork.work_description"
+                    class="modal-textarea"
+                ></textarea>
+                <span
+                    v-if="editWorkErrors.work_description"
+                    class="modal-error"
+                    >{{ editWorkErrors.work_description }}</span
+                >
+            </div>
+
+            <div class="modal-field">
+                <label>Reason for Leaving</label>
+                <textarea
+                    v-model="editedWork.reason_for_leaving"
+                    class="modal-textarea"
+                ></textarea>
+                <span
+                    v-if="editWorkErrors.reason_for_leaving"
+                    class="modal-error"
+                    >{{ editWorkErrors.reason_for_leaving }}</span
+                >
+            </div>
+
+            <div class="modal-field">
+                <label>Remarks</label>
+                <textarea
+                    v-model="editedWork.remarks"
+                    class="modal-textarea"
+                ></textarea>
+                <span v-if="editWorkErrors.remarks" class="modal-error">{{
+                    editWorkErrors.remarks
+                }}</span>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-red" @click="closeEditWorkModal">
+                    Cancel
+                </button>
+                <button class="btn-primary" @click="saveWorkEdit">Save</button>
+            </div>
         </div>
     </div>
-</div>
+
+    <div v-if="deleteWorkModalVisible" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title text-red-500">Confirm Delete</h3>
+
+            <p class="mb-4 text-center">
+                Are you sure you want to delete
+                <strong>
+                    {{
+                        isBulkDeleteWorkModal
+                            ? selectedWorkExperiences.length +
+                              ' selected work experience(s)'
+                            : 'this work experience'
+                    }} </strong
+                >?
+            </p>
+
+            <div class="modal-actions">
+                <button class="btn-red" @click="closeWorkDeleteModal">
+                    Cancel
+                </button>
+                <button class="btn-primary" @click="performWorkDelete">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
     <!-- Add Skill Modal -->
     <div v-if="addSkillModalVisible" class="modal-overlay">
         <div class="modal-content">
@@ -1661,75 +1760,150 @@ onMounted(() => {
         </div>
 
         <div
-    class="mx-5 mt-6 rounded-xl border bg-white p-6 shadow"
-    v-if="![5, 6].includes(userPermissions)"
->
-    <div class="mb-4 flex items-center justify-between">
-        <h3 class="text-lg font-semibold">Work Experiences</h3>
+            class="mx-5 mt-6 rounded-xl border bg-white p-6 shadow"
+            v-if="![5, 6].includes(userPermissions)"
+        >
+            <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-lg font-semibold">Work Experiences</h3>
 
-        <div class="flex gap-2">
-            <button @click="openAddWorkModal" class="btn-primary btn-small">
-                Add
-            </button>
-            <button
-                @click="confirmBulkDeleteWork"
-                class="btn-red btn-small"
-                :disabled="!selectedWorkExperiences.length"
-            >
-                Delete Selected
-            </button>
+                <div class="flex gap-2">
+                    <button
+                        @click="openAddWorkModal"
+                        class="btn-primary btn-small"
+                    >
+                        Add
+                    </button>
+                    <button
+                        @click="confirmBulkDeleteWork"
+                        class="btn-red btn-small"
+                        :disabled="!selectedWorkExperiences.length"
+                    >
+                        Delete Selected
+                    </button>
+                </div>
+            </div>
+
+            <table class="unified-table">
+                <thead>
+                    <tr>
+                        <th class="col-checkbox">
+                            <input
+                                type="checkbox"
+                                @change="toggleAllWorkExperiences"
+                            />
+                        </th>
+                        <th>Employer</th>
+                        <th>Job Title</th>
+                        <th>Salary</th>
+                        <th>Dates Employed</th>
+                        <th class="col-actions text-center">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <template v-for="work in workExperiences" :key="work.id">
+                        <!-- MAIN ROW -->
+                        <tr
+                            @click="work.expanded = !work.expanded"
+                            class="expandable-row cursor-pointer"
+                        >
+                            <td class="col-checkbox">
+                                <input
+                                    type="checkbox"
+                                    :value="work.id"
+                                    v-model="selectedWorkExperiences"
+                                    @click.stop
+                                />
+                            </td>
+
+                            <td>
+                                {{ work.employer || '-' }}
+                                <span class="expand-hint">
+                                    {{
+                                        work.expanded
+                                            ? 'Click row to collapse'
+                                            : 'Click row to expand'
+                                    }}</span
+                                >
+                            </td>
+                            <td>{{ work.job_title || '-' }}</td>
+                            <td>{{ work.salary || '-' }}</td>
+                            <td>{{ work.date_employed || '-' }}</td>
+
+                            <td class="text-center">
+                                <div class="flex justify-center gap-2">
+                                    <Pen
+                                        class="h-5 w-5 cursor-pointer text-blue-500"
+                                        @click.stop="openEditWorkModal(work)"
+                                    />
+                                    <Trash
+                                        class="h-5 w-5 cursor-pointer text-red-500"
+                                        @click.stop="confirmDeleteWork(work.id)"
+                                    />
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- EXPANDED DETAILS ROW -->
+                        <tr v-if="work.expanded">
+                            <td colspan="6" class="expanded-row">
+                                <div class="expanded-grid-3col">
+                                    <!-- row 1 -->
+
+                                    <div class="long-text">
+                                        <span class="label"
+                                            >Work Description:</span
+                                        >
+                                        <span>{{
+                                            work.work_description || '-'
+                                        }}</span>
+                                    </div>
+
+                                    <div>
+                                        <span class="label">Supervisor:</span>
+                                        <span>{{
+                                            work.name_supervisor || '-'
+                                        }}</span>
+                                    </div>
+
+                                    <div class="long-text">
+                                        <span class="label">Remarks:</span>
+                                        <span>{{ work.remarks || '-' }}</span>
+                                    </div>
+
+                                    <!-- row 2 -->
+                                    <div>
+                                        <span class="label">Address:</span>
+                                        <span>{{
+                                            work.company_address || '-'
+                                        }}</span>
+                                    </div>
+
+                                    <div class="long-text">
+                                        <span class="label"
+                                            >Reason for Leaving:</span
+                                        >
+                                        <span>{{
+                                            work.reason_for_leaving || '-'
+                                        }}</span>
+                                    </div>
+
+                                    <div>
+                                        <span class="label" hidden>—</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+
+                    <tr v-if="!workExperiences.length">
+                        <td colspan="5" class="unified-empty">
+                            No work experiences found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-    </div>
-
-    <table class="unified-table table-fixed">
-        <thead>
-            <tr>
-                <th class="col-checkbox">
-                    <input type="checkbox" @change="toggleAllWorkExperiences" />
-                </th>
-                <th>Employer</th>
-                <th>Job Title</th>
-                <th>Date Employed</th>
-                <th>Remarks</th>
-                <th class="col-actions">Actions</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            <tr v-for="work in workExperiences" :key="work.id">
-                <td class="col-checkbox">
-                    <input
-                        type="checkbox"
-                        :value="work.id"
-                        v-model="selectedWorkExperiences"
-                    />
-                </td>
-                <td>{{ work.employer || '-' }}</td>
-                <td>{{ work.job_title || '-' }}</td>
-                <td>{{ work.date_employed || '-' }}</td>
-                <td>{{ work.remarks || '-' }}</td>
-                <td class="text-center">
-                    <div class="flex items-center justify-center gap-2">
-                        <Pen
-                            class="h-5 w-5 cursor-pointer text-blue-500"
-                            @click="openEditWorkModal(work)"
-                        />
-                        <Trash
-                            class="h-5 w-5 cursor-pointer text-red-500"
-                            @click="confirmDeleteWork(work.id)"
-                        />
-                    </div>
-                </td>
-            </tr>
-
-            <tr v-if="!workExperiences.length">
-                <td colspan="6" class="unified-empty">
-                    No work experiences found.
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
     </AppLayout>
 </template>
 
@@ -1906,6 +2080,107 @@ onMounted(() => {
 
 @media (max-width: 768px) {
     .modal-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.expanded-row {
+    background-color: #f9fafb;
+    padding: 1rem;
+}
+
+.expanded-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.expanded-grid strong {
+    font-size: 0.7rem;
+    color: #6b7280;
+}
+
+.expandable-row {
+    position: relative;
+}
+
+.expand-hint {
+    display: inline-block;
+    margin-top: 0.35rem;
+    font-size: 0.65rem;
+    color: #6b7280;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.expandable-row:hover .expand-hint {
+    opacity: 1;
+}
+
+.expand-hint {
+    margin-left: 25px; /* adjust as needed */
+}
+
+.expanded-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem 1rem;
+    font-size: 0.75rem;
+}
+
+.expanded-grid-3col div {
+    display: flex;
+    gap: 0.25rem;
+    align-items: flex-start;
+    line-height: 1.3;
+    min-width: 0;
+}
+
+.expanded-grid-3col .label {
+    font-weight: 600;
+    color: #6b7280;
+    min-width: 90px;
+    flex-shrink: 0;
+}
+
+.expanded-grid-3col span:last-child {
+    word-break: break-word;
+}
+
+.expanded-row,
+.expanded-row * {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+}
+
+.expanded-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem 1rem;
+    font-size: 0.75rem;
+}
+
+.expanded-grid-3col div {
+    min-width: 0;
+}
+
+.expanded-grid-3col .label {
+    font-weight: 600;
+    color: #6b7280;
+    margin-right: 0.25rem;
+}
+
+.expanded-grid-3col .full-width {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 1024px) {
+    .expanded-grid-3col {
         grid-template-columns: 1fr;
     }
 }
