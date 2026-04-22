@@ -157,7 +157,7 @@ class IntermediateApplicationController extends Controller
 
             DB::commit();
 
-            return redirect()->route('intermediate.applications.index')
+            return redirect()->route('intermediate.applications.show', $application->id)
                 ->with('success', config('errors.record_created_successfully.errorMessage'));
 
         } catch (\Throwable $e) {
@@ -295,5 +295,10 @@ class IntermediateApplicationController extends Controller
                ! empty($data['exam_result']) ||
                ! empty($data['exam_application_status']) ||
                ! empty($data['exam_remarks']);
+    }
+
+    public function show($id)
+    {
+        return Inertia::render('intermediate/applications/Detail');
     }
 }
