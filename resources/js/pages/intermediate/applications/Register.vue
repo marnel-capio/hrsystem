@@ -1737,7 +1737,7 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                             <Link href="/intermediate/applications" class="btn btn-secondary">Cancel</Link>
                             <button type="submit" :disabled="form.processing || isFormFieldDisabled"
                                 class="btn btn-primary">
-                                {{ form.processing ? 'Creating…' : 'Create Application' }}
+                                {{ form.processing ? 'Creating…' : 'Create' }}
                             </button>
                         </div>
                     </form>
