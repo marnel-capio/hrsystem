@@ -3273,22 +3273,22 @@ namespace App\Models {
      * @property string|null $parked_to
      * @property string|null $aws_rank
      * @property \Illuminate\Support\Carbon|null $aws_start_date
-     * @property \Illuminate\Support\Carbon|null $job_offer_accepted_date
+     * @property string|null $job_offer_accepted_date
      * @property integer|null $job_offer_status
-     * @property integer|null $final_interview_status
-     * @property integer|null $bu_interview_status
-     * @property integer|null $hr_interview_status
-     * @property integer|null $exam_status
+     * @property bool|null $final_interview_status
+     * @property bool|null $bu_interview_status
+     * @property bool|null $hr_interview_status
+     * @property bool|null $exam_status
      * @property integer $paper_screening_status
      * @property string|null $final_interview_week
-     * @property \Illuminate\Support\Carbon|null $final_interview_datetime
+     * @property string|null $final_interview_datetime
      * @property string|null $bu_interview_week
-     * @property \Illuminate\Support\Carbon|null $bu_interview_datetime
+     * @property string|null $bu_interview_datetime
      * @property string|null $hr_interview_week
-     * @property \Illuminate\Support\Carbon|null $hr_interview_datetime
+     * @property string|null $hr_interview_datetime
      * @property float|null $tech_exam
      * @property float|null $atpp
-     * @property \Illuminate\Support\Carbon|null $testing_datetime
+     * @property string|null $testing_datetime
      * @property string|null $site_assignment
      * @property string|null $asking_rate
      * @property string|null $current_employer
@@ -3307,10 +3307,10 @@ namespace App\Models {
      * @property string|null $work_preference
      * @property string|null $desired_salary_range
      * @property string|null $availability_date
-     * @property integer|null $answer_q4
-     * @property integer|null $answer_q3
-     * @property integer|null $answer_q2
-     * @property integer|null $answer_q1
+     * @property boolean|null $answer_q4
+     * @property boolean|null $answer_q3
+     * @property boolean|null $answer_q2
+     * @property boolean|null $answer_q1
      * @property string|null $upload_pic
      * @property string|null $upload_resume
      * @property mixed $source_project_id
@@ -3320,10 +3320,10 @@ namespace App\Models {
      * @property mixed $intermediate_applicant_id
      * @property integer $application_stage
      * @property int $id
-     * @property-read mixed $stage_label
      * @property-read mixed $status_labels
-     * @property-read mixed $project_name
      * @property-read mixed $full_applicant_name
+     * @property-read mixed $project_name
+     * @property-read mixed $stage_label
      * @property-read \App\Models\IntermediateApplicant $intermediateApplicant
      * @property-read \App\Models\IntermediateProjectModel $project
      * @property-read \App\Models\User $contactedBy
@@ -4420,7 +4420,7 @@ namespace App\Models {
      * @property bool $engagement_type
      * @property int $id
      * @property-read mixed $project_description
-     * @property-read mixed $location_assignment_label
+     * @property-read mixed $custom_location_name
      * @property-read \App\Models\IntermediateProjectModel $project
      * @property-read \App\Models\User $requestedBy
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereId($value)
