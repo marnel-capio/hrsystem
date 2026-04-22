@@ -559,9 +559,14 @@ const handleResumeUpload = (event: Event) => {
         resumeFile.value = file
         form.upload_resume = file.name
 
-        if (file.type === 'application/pdf' && resumePreview.value) {
-            URL.revokeObjectURL(resumePreview.value)
-            resumePreview.value = URL.createObjectURL(file)
+        // ✅ KEY FIX: Always create preview URL for PDFs (like working code)
+        if (resumePreview.value) {
+            URL.revokeObjectURL(resumePreview.value)  // Always cleanup first
+        }
+        if (file.type === 'application/pdf') {
+            resumePreview.value = URL.createObjectURL(file)  // Always create for PDF
+        } else {
+            resumePreview.value = null  // Clear for non-PDF
         }
 
         form.clearErrors('upload_resume')
@@ -596,11 +601,12 @@ const handlePictureUpload = (event: Event) => {
     }
 }
 
+// ✅ UPDATE THIS (add proper cleanup like working code)
 const removeFile = (type: 'resume' | 'picture') => {
     if (type === 'resume') {
         resumeFile.value = null
         form.upload_resume = ''
-        if (resumePreview.value) {
+        if (resumePreview.value) {  // ✅ Always check & cleanup
             URL.revokeObjectURL(resumePreview.value)
             resumePreview.value = null
         }
@@ -612,6 +618,10 @@ const removeFile = (type: 'resume' | 'picture') => {
             picturePreview.value = null
         }
     }
+    
+    // ✅ Clear file input (like working code)
+    const fileInputs = document.querySelectorAll('input[type="file"]')
+    fileInputs.forEach((input: any) => input.value = '')
 }
 
 function setLiveError(field: string, message: string) {
@@ -1628,8 +1638,6 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                             </div>
 
                             <div class="exam-section-layout">
-
-                                <!-- LEFT SIDE -->
                                 <!-- LEFT SIDE -->
                                 <div class="exam-form-column">
 

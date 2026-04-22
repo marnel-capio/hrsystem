@@ -967,17 +967,15 @@ watch(() => form.final_interview_application_status, (newStatus) => {
 })
 
 const handleResumeUpload = (event: Event) => {
+    if (!isApplicantSelected.value) return
+
     const target = event.target as HTMLInputElement
     if (target.files && target.files[0]) {
         const file = target.files[0]
-        const allowedTypes = [
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        ]
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
 
         if (!allowedTypes.includes(file.type)) {
-            form.setError('upload_resume', 'Please upload a PDF or Word document')
+            form.setError('upload_resume', 'Please upload PDF or Word document')
             return
         }
 
@@ -989,17 +987,19 @@ const handleResumeUpload = (event: Event) => {
         resumeFile.value = file
         form.upload_resume = file.name
 
+        // ✅ KEY FIX: Always create preview URL for PDFs (like working code)
+        if (resumePreview.value) {
+            URL.revokeObjectURL(resumePreview.value)  // Always cleanup first
+        }
         if (file.type === 'application/pdf') {
-            if (resumePreview.value) URL.revokeObjectURL(resumePreview.value)
-            resumePreview.value = URL.createObjectURL(file)
+            resumePreview.value = URL.createObjectURL(file)  // Always create for PDF
         } else {
-            resumePreview.value = null
+            resumePreview.value = null  // Clear for non-PDF
         }
 
         form.clearErrors('upload_resume')
     }
 }
-
 const handleTorUpload = (event: Event) => {
     const target = event.target as HTMLInputElement
     if (target.files && target.files[0]) {
