@@ -4081,6 +4081,7 @@ namespace App\Models {
     }
 
     /**
+<<<<<<< HEAD
      * App\Models\IntermediateInterviewer
      *
      * @property \Illuminate\Support\Carbon|null $updated_time
@@ -4436,6 +4437,8 @@ namespace App\Models {
     }
 
     /**
+=======
+>>>>>>> feature/intermediate/application/register
      * App\Models\IntermediateProjectModel
      *
      * @property \Illuminate\Support\Carbon|null $updated_time
