@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
  * @see app/Http/Controllers/ActionApplicationController.php:679
+ * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
 export const bulkAdd = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,6 +18,7 @@ bulkAdd.definition = {
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
  * @see app/Http/Controllers/ActionApplicationController.php:679
+ * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
 bulkAdd.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -45,6 +47,7 @@ bulkAdd.url = (args: { id: string | number } | [id: string | number ] | string |
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
  * @see app/Http/Controllers/ActionApplicationController.php:679
+ * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
 bulkAdd.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -55,6 +58,7 @@ bulkAdd.post = (args: { id: string | number } | [id: string | number ] | string 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
  * @see app/Http/Controllers/ActionApplicationController.php:679
+ * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
     const bulkAddForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -65,6 +69,7 @@ bulkAdd.post = (args: { id: string | number } | [id: string | number ] | string 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
  * @see app/Http/Controllers/ActionApplicationController.php:679
+ * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
         bulkAddForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -150,6 +155,7 @@ bulkDelete.post = (args: { applicationId: string | number } | [applicationId: st
 /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
  * @see app/Http/Controllers/ActionApplicationController.php:794
+ * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
 export const decision = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -165,6 +171,7 @@ decision.definition = {
 /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
  * @see app/Http/Controllers/ActionApplicationController.php:794
+ * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
 decision.url = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions) => {
@@ -191,6 +198,7 @@ decision.url = (args: { applicationId: string | number, interviewId: string | nu
 /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
  * @see app/Http/Controllers/ActionApplicationController.php:794
+ * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
 decision.post = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -201,6 +209,7 @@ decision.post = (args: { applicationId: string | number, interviewId: string | n
     /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
  * @see app/Http/Controllers/ActionApplicationController.php:794
+ * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
     const decisionForm = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -211,6 +220,7 @@ decision.post = (args: { applicationId: string | number, interviewId: string | n
             /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
  * @see app/Http/Controllers/ActionApplicationController.php:794
+ * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
         decisionForm.post = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -222,6 +232,7 @@ decision.post = (args: { applicationId: string | number, interviewId: string | n
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
  * @see app/Http/Controllers/ActionApplicationController.php:568
+ * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
 export const bulkUpdateSchedule = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -237,6 +248,7 @@ bulkUpdateSchedule.definition = {
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
  * @see app/Http/Controllers/ActionApplicationController.php:568
+ * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
 bulkUpdateSchedule.url = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -265,6 +277,7 @@ bulkUpdateSchedule.url = (args: { applicationId: string | number } | [applicatio
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
  * @see app/Http/Controllers/ActionApplicationController.php:568
+ * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
 bulkUpdateSchedule.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -275,6 +288,7 @@ bulkUpdateSchedule.post = (args: { applicationId: string | number } | [applicati
     /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
  * @see app/Http/Controllers/ActionApplicationController.php:568
+ * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
     const bulkUpdateScheduleForm = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -285,6 +299,7 @@ bulkUpdateSchedule.post = (args: { applicationId: string | number } | [applicati
             /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
  * @see app/Http/Controllers/ActionApplicationController.php:568
+ * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
         bulkUpdateScheduleForm.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

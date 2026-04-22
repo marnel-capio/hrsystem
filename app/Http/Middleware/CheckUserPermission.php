@@ -300,6 +300,9 @@ class CheckUserPermission
 
         if (in_array($routeName, [
             'intermediate.requisitions.register',
+            'intermediate.requisitions.store',
+            'intermediate.requisitions.edit',
+            'intermediate.requisitions.update',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
