@@ -82,7 +82,7 @@ class IntermediateApplicantController extends Controller
 
     public function show($id)
 {
-    $applicant = IntermediateApplicant::with(['skills', 'applications'])->findOrFail($id);
+    $applicant = IntermediateApplicant::with(['skills', 'workExperiences', 'applications'])->findOrFail($id);
 
     return Inertia::render('intermediate/applicants/IntermediateApplicantDetails', [
         'applicant' => $applicant,

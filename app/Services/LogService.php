@@ -421,4 +421,89 @@ public function createIntermediateSkillBulkDeleteLog(array $skills, int $applica
 
     Log::createLog('INTERMEDIATE', $activity, $applicantId, $ipAddress);
 }
+
+public function createIntermediateWorkExperienceCreateLog(array $data, int $applicantId): void
+{
+    $applicant = IntermediateApplicant::find($applicantId);
+    if (! $applicant) return;
+
+    $ipAddress = request()->ip();
+    $label = $data['employer'] ?? $data['job_title'] ?? 'work experience';
+
+    $activity = "Added {$label} work experience to {$applicant->email_address}.";
+
+    Log::createLog('INTERMEDIATE', $activity, $applicantId, $ipAddress);
+}
+
+public function createIntermediateWorkExperienceUpdateLog(array $oldData, array $newData, int $applicantId): void
+{
+    $applicant = IntermediateApplicant::find($applicantId);
+    if (! $applicant) return;
+
+    $ipAddress = request()->ip();
+
+    $activityLines = [];
+    $activityLines[] = "Updated work experience for {$applicant->email_address}.";
+    $activityLines[] = "Details:";
+    $activityLines[] = "※Only updated fields will reflect changes in DB";
+
+    $fields = [
+        'employer',
+        'company_address',
+        'job_title',
+        'date_employed',
+        'work_description',
+        'salary',
+        'reason_for_leaving',
+        'name_supervisor',
+        'remarks',
+    ];
+
+    $hasChanges = false;
+
+    foreach ($fields as $field) {
+        $old = $oldData[$field] ?? '';
+        $new = $newData[$field] ?? '';
+
+        if ((string) $old !== (string) $new) {
+            $activityLines[] = "{$field}: {$old} -> {$new}";
+            $hasChanges = true;
+        }
+    }
+
+    if (! $hasChanges) return;
+
+    $activity = implode("\n", $activityLines);
+
+    Log::createLog('INTERMEDIATE', $activity, $applicantId, $ipAddress);
+}
+
+public function createIntermediateWorkExperienceDeleteLog(array $oldData, int $applicantId): void
+{
+    $applicant = IntermediateApplicant::find($applicantId);
+    if (! $applicant) return;
+
+    $ipAddress = request()->ip();
+    $label = $oldData['employer'] ?? $oldData['job_title'] ?? 'work experience';
+
+    $activity = "Deleted {$label} work experience of {$applicant->email_address}.";
+
+    Log::createLog('INTERMEDIATE', $activity, $applicantId, $ipAddress);
+}
+
+public function createIntermediateWorkExperienceBulkDeleteLog(array $works, int $applicantId): void
+{
+    $applicant = IntermediateApplicant::find($applicantId);
+    if (! $applicant) return;
+
+    $ipAddress = request()->ip();
+
+    $labels = collect($works)
+        ->map(fn ($w) => $w['employer'] ?? $w['job_title'] ?? 'work experience')
+        ->implode(', ');
+
+    $activity = "Deleted {$labels} work experience(s) of {$applicant->email_address}.";
+
+    Log::createLog('INTERMEDIATE', $activity, $applicantId, $ipAddress);
+}
 }

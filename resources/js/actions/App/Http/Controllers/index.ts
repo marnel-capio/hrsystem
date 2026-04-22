@@ -14,6 +14,7 @@ import IntermediateRequisitionController from './IntermediateRequisitionControll
 import IntermediateApplicationController from './IntermediateApplicationController'
 import IntermediateApplicantController from './IntermediateApplicantController'
 import IntermediateApplicantSkillController from './IntermediateApplicantSkillController'
+import IntermediateApplicantWorkExperienceController from './IntermediateApplicantWorkExperienceController'
 import Settings from './Settings'
 const Controllers = {
     AuthController: Object.assign(AuthController, AuthController),
@@ -32,6 +33,7 @@ IntermediateRequisitionController: Object.assign(IntermediateRequisitionControll
 IntermediateApplicationController: Object.assign(IntermediateApplicationController, IntermediateApplicationController),
 IntermediateApplicantController: Object.assign(IntermediateApplicantController, IntermediateApplicantController),
 IntermediateApplicantSkillController: Object.assign(IntermediateApplicantSkillController, IntermediateApplicantSkillController),
+IntermediateApplicantWorkExperienceController: Object.assign(IntermediateApplicantWorkExperienceController, IntermediateApplicantWorkExperienceController),
 Settings: Object.assign(Settings, Settings),
 }
 

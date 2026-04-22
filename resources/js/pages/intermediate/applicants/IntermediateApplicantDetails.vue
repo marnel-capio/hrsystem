@@ -42,6 +42,262 @@ const canSeeRestrictedRemarks = computed(() =>
     [1, 2, 3].includes(userPermissions.value),
 );
 
+const workExperiences = ref<any[]>(
+    page.props.workExperiences || applicant.value?.workExperiences || [],
+);
+
+const selectedWorkExperiences = ref<number[]>([]);
+
+const addWorkModalVisible = ref(false);
+const editWorkModalVisible = ref(false);
+const deleteWorkModalVisible = ref(false);
+
+const newWork = ref({
+    employer: '',
+    company_address: '',
+    job_title: '',
+    date_employed: '',
+    work_description: '',
+    salary: '',
+    reason_for_leaving: '',
+    name_supervisor: '',
+    remarks: '',
+});
+
+const workBeingEdited = ref<any | null>(null);
+
+const editedWork = ref({
+    employer: '',
+    company_address: '',
+    job_title: '',
+    date_employed: '',
+    work_description: '',
+    salary: '',
+    reason_for_leaving: '',
+    name_supervisor: '',
+    remarks: '',
+});
+
+const deleteWorkTargetId = ref<number | null>(null);
+const isBulkDeleteWorkModal = ref(false);
+
+const workErrors = ref<Record<string, string | null>>({
+    employer: null,
+    company_address: null,
+    job_title: null,
+    date_employed: null,
+    work_description: null,
+    salary: null,
+    reason_for_leaving: null,
+    name_supervisor: null,
+    remarks: null,
+});
+
+const editWorkErrors = ref<Record<string, string | null>>({
+    employer: null,
+    company_address: null,
+    job_title: null,
+    date_employed: null,
+    work_description: null,
+    salary: null,
+    reason_for_leaving: null,
+    name_supervisor: null,
+    remarks: null,
+});
+
+const resetWorkErrors = () => {
+    workErrors.value = {
+        employer: null,
+        company_address: null,
+        job_title: null,
+        date_employed: null,
+        work_description: null,
+        salary: null,
+        reason_for_leaving: null,
+        name_supervisor: null,
+        remarks: null,
+    };
+};
+
+const resetEditWorkErrors = () => {
+    editWorkErrors.value = {
+        employer: null,
+        company_address: null,
+        job_title: null,
+        date_employed: null,
+        work_description: null,
+        salary: null,
+        reason_for_leaving: null,
+        name_supervisor: null,
+        remarks: null,
+    };
+};
+
+const fetchWorkExperiences = async () => {
+    try {
+        const res = await axios.get(
+            `/intermediate/applicants/${applicant.value.id}/work-experiences`,
+        );
+        workExperiences.value = res.data;
+    } catch {
+        // keep server-provided props if route does not exist yet
+    }
+};
+
+const openAddWorkModal = () => {
+    newWork.value = {
+        employer: '',
+        company_address: '',
+        job_title: '',
+        date_employed: '',
+        work_description: '',
+        salary: '',
+        reason_for_leaving: '',
+        name_supervisor: '',
+        remarks: '',
+    };
+    resetWorkErrors();
+    addWorkModalVisible.value = true;
+};
+
+const closeAddWorkModal = () => {
+    addWorkModalVisible.value = false;
+    resetWorkErrors();
+};
+
+const saveNewWork = async () => {
+    resetWorkErrors();
+
+    try {
+        await axios.post(
+            `/intermediate/applicants/${applicant.value.id}/work-experiences`,
+            newWork.value,
+        );
+
+        await fetchWorkExperiences();
+        closeAddWorkModal();
+        showToastMessage(
+            messages.record_created_successfully.errorMessage,
+            'success',
+        );
+    } catch (error: any) {
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors;
+            Object.keys(workErrors.value).forEach((key) => {
+                workErrors.value[key] = errors[key]?.[0] || null;
+            });
+        } else {
+            showToastMessage(messages.transaction_failed.errorMessage, 'error');
+        }
+    }
+};
+
+const openEditWorkModal = (work: any) => {
+    workBeingEdited.value = { ...work };
+    editedWork.value = {
+        employer: work.employer || '',
+        company_address: work.company_address || '',
+        job_title: work.job_title || '',
+        date_employed: work.date_employed || '',
+        work_description: work.work_description || '',
+        salary: work.salary || '',
+        reason_for_leaving: work.reason_for_leaving || '',
+        name_supervisor: work.name_supervisor || '',
+        remarks: work.remarks || '',
+    };
+    resetEditWorkErrors();
+    editWorkModalVisible.value = true;
+};
+
+const closeEditWorkModal = () => {
+    editWorkModalVisible.value = false;
+    workBeingEdited.value = null;
+    resetEditWorkErrors();
+};
+
+const saveWorkEdit = async () => {
+    if (!workBeingEdited.value) return;
+
+    resetEditWorkErrors();
+
+    try {
+        await axios.put(
+            `/intermediate/applicants/${applicant.value.id}/work-experiences/${workBeingEdited.value.id}`,
+            editedWork.value,
+        );
+
+        await fetchWorkExperiences();
+        closeEditWorkModal();
+        showToastMessage(
+            messages.record_updated_successfully.errorMessage,
+            'success',
+        );
+    } catch (error: any) {
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors;
+            Object.keys(editWorkErrors.value).forEach((key) => {
+                editWorkErrors.value[key] = errors[key]?.[0] || null;
+            });
+        } else {
+            showToastMessage(messages.update_failed.errorMessage, 'error');
+        }
+    }
+};
+
+const confirmDeleteWork = (id: number) => {
+    deleteWorkTargetId.value = id;
+    isBulkDeleteWorkModal.value = false;
+    deleteWorkModalVisible.value = true;
+};
+
+const confirmBulkDeleteWork = () => {
+    if (!selectedWorkExperiences.value.length) return;
+    isBulkDeleteWorkModal.value = true;
+    deleteWorkTargetId.value = null;
+    deleteWorkModalVisible.value = true;
+};
+
+const closeWorkDeleteModal = () => {
+    deleteWorkModalVisible.value = false;
+    deleteWorkTargetId.value = null;
+    isBulkDeleteWorkModal.value = false;
+};
+
+const performWorkDelete = async () => {
+    try {
+        if (isBulkDeleteWorkModal.value) {
+            await axios.post(
+                `/intermediate/applicants/${applicant.value.id}/work-experiences/bulk-delete`,
+                {
+                    ids: selectedWorkExperiences.value,
+                },
+            );
+            selectedWorkExperiences.value = [];
+        } else if (deleteWorkTargetId.value !== null) {
+            await axios.delete(
+                `/intermediate/applicants/${applicant.value.id}/work-experiences/${deleteWorkTargetId.value}`,
+            );
+        }
+
+        await fetchWorkExperiences();
+        showToastMessage(
+            messages.record_deleted_successfully.errorMessage,
+            'success',
+        );
+    } catch {
+        showToastMessage(messages.record_deleted_failed.errorMessage, 'error');
+    } finally {
+        closeWorkDeleteModal();
+    }
+};
+
+const toggleAllWorkExperiences = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    selectedWorkExperiences.value = target.checked
+        ? workExperiences.value.map((w) => w.id)
+        : [];
+};
+
 const examResultLabel = (value: number | null | undefined) => {
     switch (Number(value)) {
         case 1:
@@ -533,6 +789,163 @@ onMounted(() => {
 
 <template>
     <Head title="INTERMEDIATE Applicant Detail" />
+
+    <div v-if="addWorkModalVisible" class="modal-overlay">
+    <div class="modal-content modal-large">
+        <h3 class="modal-title">Add Work Experience</h3>
+
+        <div class="modal-grid">
+            <div class="modal-field">
+                <label>Employer</label>
+                <input v-model="newWork.employer" class="modal-input" />
+                <span v-if="workErrors.employer" class="modal-error">{{ workErrors.employer }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Company Address</label>
+                <input v-model="newWork.company_address" class="modal-input" />
+                <span v-if="workErrors.company_address" class="modal-error">{{ workErrors.company_address }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Job Title</label>
+                <input v-model="newWork.job_title" class="modal-input" />
+                <span v-if="workErrors.job_title" class="modal-error">{{ workErrors.job_title }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Date Employed</label>
+                <input v-model="newWork.date_employed" class="modal-input" />
+                <span v-if="workErrors.date_employed" class="modal-error">{{ workErrors.date_employed }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Salary</label>
+                <input v-model="newWork.salary" class="modal-input" />
+                <span v-if="workErrors.salary" class="modal-error">{{ workErrors.salary }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Supervisor</label>
+                <input v-model="newWork.name_supervisor" class="modal-input" />
+                <span v-if="workErrors.name_supervisor" class="modal-error">{{ workErrors.name_supervisor }}</span>
+            </div>
+        </div>
+
+        <div class="modal-field">
+            <label>Work Description</label>
+            <textarea v-model="newWork.work_description" class="modal-textarea"></textarea>
+            <span v-if="workErrors.work_description" class="modal-error">{{ workErrors.work_description }}</span>
+        </div>
+
+        <div class="modal-field">
+            <label>Reason for Leaving</label>
+            <textarea v-model="newWork.reason_for_leaving" class="modal-textarea"></textarea>
+            <span v-if="workErrors.reason_for_leaving" class="modal-error">{{ workErrors.reason_for_leaving }}</span>
+        </div>
+
+        <div class="modal-field">
+            <label>Remarks</label>
+            <textarea v-model="newWork.remarks" class="modal-textarea"></textarea>
+            <span v-if="workErrors.remarks" class="modal-error">{{ workErrors.remarks }}</span>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-red" @click="closeAddWorkModal">Cancel</button>
+            <button class="btn-primary" @click="saveNewWork">Add</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="editWorkModalVisible" class="modal-overlay">
+    <div class="modal-content modal-large">
+        <h3 class="modal-title">Edit Work Experience</h3>
+
+        <div class="modal-grid">
+            <div class="modal-field">
+                <label>Employer</label>
+                <input v-model="editedWork.employer" class="modal-input" />
+                <span v-if="editWorkErrors.employer" class="modal-error">{{ editWorkErrors.employer }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Company Address</label>
+                <input v-model="editedWork.company_address" class="modal-input" />
+                <span v-if="editWorkErrors.company_address" class="modal-error">{{ editWorkErrors.company_address }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Job Title</label>
+                <input v-model="editedWork.job_title" class="modal-input" />
+                <span v-if="editWorkErrors.job_title" class="modal-error">{{ editWorkErrors.job_title }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Date Employed</label>
+                <input v-model="editedWork.date_employed" class="modal-input" />
+                <span v-if="editWorkErrors.date_employed" class="modal-error">{{ editWorkErrors.date_employed }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Salary</label>
+                <input v-model="editedWork.salary" class="modal-input" />
+                <span v-if="editWorkErrors.salary" class="modal-error">{{ editWorkErrors.salary }}</span>
+            </div>
+
+            <div class="modal-field">
+                <label>Supervisor</label>
+                <input v-model="editedWork.name_supervisor" class="modal-input" />
+                <span v-if="editWorkErrors.name_supervisor" class="modal-error">{{ editWorkErrors.name_supervisor }}</span>
+            </div>
+        </div>
+
+        <div class="modal-field">
+            <label>Work Description</label>
+            <textarea v-model="editedWork.work_description" class="modal-textarea"></textarea>
+            <span v-if="editWorkErrors.work_description" class="modal-error">{{ editWorkErrors.work_description }}</span>
+        </div>
+
+        <div class="modal-field">
+            <label>Reason for Leaving</label>
+            <textarea v-model="editedWork.reason_for_leaving" class="modal-textarea"></textarea>
+            <span v-if="editWorkErrors.reason_for_leaving" class="modal-error">{{ editWorkErrors.reason_for_leaving }}</span>
+        </div>
+
+        <div class="modal-field">
+            <label>Remarks</label>
+            <textarea v-model="editedWork.remarks" class="modal-textarea"></textarea>
+            <span v-if="editWorkErrors.remarks" class="modal-error">{{ editWorkErrors.remarks }}</span>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-red" @click="closeEditWorkModal">Cancel</button>
+            <button class="btn-primary" @click="saveWorkEdit">Save</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="deleteWorkModalVisible" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title text-red-500">Confirm Delete</h3>
+
+        <p class="mb-4 text-center">
+            Are you sure you want to delete
+            <strong>
+                {{
+                    isBulkDeleteWorkModal
+                        ? selectedWorkExperiences.length + ' selected work experience(s)'
+                        : 'this work experience'
+                }}
+            </strong
+            >?
+        </p>
+
+        <div class="modal-actions">
+            <button class="btn-red" @click="closeWorkDeleteModal">Cancel</button>
+            <button class="btn-primary" @click="performWorkDelete">Delete</button>
+        </div>
+    </div>
+</div>
     <!-- Add Skill Modal -->
     <div v-if="addSkillModalVisible" class="modal-overlay">
         <div class="modal-content">
@@ -1246,6 +1659,77 @@ onMounted(() => {
                 </tbody>
             </table>
         </div>
+
+        <div
+    class="mx-5 mt-6 rounded-xl border bg-white p-6 shadow"
+    v-if="![5, 6].includes(userPermissions)"
+>
+    <div class="mb-4 flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Work Experiences</h3>
+
+        <div class="flex gap-2">
+            <button @click="openAddWorkModal" class="btn-primary btn-small">
+                Add
+            </button>
+            <button
+                @click="confirmBulkDeleteWork"
+                class="btn-red btn-small"
+                :disabled="!selectedWorkExperiences.length"
+            >
+                Delete Selected
+            </button>
+        </div>
+    </div>
+
+    <table class="unified-table table-fixed">
+        <thead>
+            <tr>
+                <th class="col-checkbox">
+                    <input type="checkbox" @change="toggleAllWorkExperiences" />
+                </th>
+                <th>Employer</th>
+                <th>Job Title</th>
+                <th>Date Employed</th>
+                <th>Remarks</th>
+                <th class="col-actions">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr v-for="work in workExperiences" :key="work.id">
+                <td class="col-checkbox">
+                    <input
+                        type="checkbox"
+                        :value="work.id"
+                        v-model="selectedWorkExperiences"
+                    />
+                </td>
+                <td>{{ work.employer || '-' }}</td>
+                <td>{{ work.job_title || '-' }}</td>
+                <td>{{ work.date_employed || '-' }}</td>
+                <td>{{ work.remarks || '-' }}</td>
+                <td class="text-center">
+                    <div class="flex items-center justify-center gap-2">
+                        <Pen
+                            class="h-5 w-5 cursor-pointer text-blue-500"
+                            @click="openEditWorkModal(work)"
+                        />
+                        <Trash
+                            class="h-5 w-5 cursor-pointer text-red-500"
+                            @click="confirmDeleteWork(work.id)"
+                        />
+                    </div>
+                </td>
+            </tr>
+
+            <tr v-if="!workExperiences.length">
+                <td colspan="6" class="unified-empty">
+                    No work experiences found.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
     </AppLayout>
 </template>
 
@@ -1407,6 +1891,23 @@ onMounted(() => {
     justify-content: center;
     gap: 0.5rem;
     margin-top: 1rem;
+}
+
+.modal-large {
+    width: 800px;
+    max-width: 95%;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .modal-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 ```

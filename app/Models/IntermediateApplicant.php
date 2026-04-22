@@ -207,11 +207,13 @@ class IntermediateApplicant extends Model
         });
     }
 
-    public function workExperiences()
-    {
-        return $this->hasMany(IntermediateApplicationWorkExperience::class, 'intermediate_applicant_id');
-    }
-
+public function workExperiences()
+{
+    return $this->hasMany(
+        IntermediateApplicantWorkExperience::class,
+        'intermediate_applicant_id'
+    )->where('is_deleted', 0);
+}
     public function skills()
     {
         return $this->hasMany(IntermediateApplicantSkill::class, 'intermediate_applicant_id');
@@ -299,4 +301,6 @@ class IntermediateApplicant extends Model
 
         return self::createApplicant($data);
     }
+
+
 }

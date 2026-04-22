@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\IntermediateApplicantController;
 use App\Http\Controllers\IntermediateApplicantSkillController;
+use App\Http\Controllers\IntermediateApplicantWorkExperienceController;
 use App\Http\Controllers\IntermediateApplicationController;
 use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\IntermediateRequisitionController;
@@ -297,6 +298,14 @@ Route::put('/intermediate/applicants/{id}/update', [IntermediateApplicantControl
     Route::delete('/{skillId}', [IntermediateApplicantSkillController::class, 'destroy']);
     Route::post('/bulk-delete', [IntermediateApplicantSkillController::class, 'bulkDelete']);
 
+});
+
+Route::prefix('intermediate/applicants/{applicantId}/work-experiences')->group(function () {
+    Route::get('/', [IntermediateApplicantWorkExperienceController::class, 'index']);
+    Route::post('/', [IntermediateApplicantWorkExperienceController::class, 'store']);
+    Route::put('/{workId}', [IntermediateApplicantWorkExperienceController::class, 'update']);
+    Route::delete('/{workId}', [IntermediateApplicantWorkExperienceController::class, 'destroy']);
+    Route::post('/bulk-delete', [IntermediateApplicantWorkExperienceController::class, 'bulkDelete']);
 });
 
 
