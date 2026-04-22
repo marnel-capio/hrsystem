@@ -104,8 +104,6 @@ class IntermediateRequisitionController extends Controller
     $hrUsers = User::query()
         ->whereNotNull('email_address')
         ->whereIn('permissions', [
-            config('constants.HR_ADMIN_PERMISSION.value'),
-            config('constants.HR_MANAGER_PERMISSION.value'),
             config('constants.HR_RECRUITER_PERMISSION.value'),
         ])
         ->pluck('email_address')
@@ -199,6 +197,7 @@ class IntermediateRequisitionController extends Controller
             config('constants.HR_ADMIN_PERMISSION.value'),
             config('constants.HR_MANAGER_PERMISSION.value'),
             config('constants.HR_RECRUITER_PERMISSION.value'),
+            config('constants.BU_MANAGER_PERMISSION.value'),
         ];
 
         return User::query()

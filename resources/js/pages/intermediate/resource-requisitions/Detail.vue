@@ -89,6 +89,7 @@ const props = defineProps<{
     success?: string;
     error?: string;
   };
+  user_permissions: number;
   requisition: {
   id: number;
   project_name: string;
@@ -193,6 +194,18 @@ const formatDate = (dateString: string | null) => {
   return date.toLocaleString('en-US', options);
 };
 
+console.log('User Permissions in Vue:', props.user_permissions);
+
+const HR_ADMIN_PERMISSION = 1;
+const BU_MANAGER_PERMISSION = 5; 
+
+const isAllowedToManage = computed(() => {
+  console.log('Checking permissions...');
+  return props.user_permissions === HR_ADMIN_PERMISSION || props.user_permissions === BU_MANAGER_PERMISSION;
+});
+
+console.log('Is Allowed to Manage:', isAllowedToManage.value);
+
 </script>
 
 <template>
@@ -220,12 +233,12 @@ const formatDate = (dateString: string | null) => {
       <!-- Header -->
       <div class="flex items-center justify-between">
         <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-          Resource Requisitions Details
+          Resource Requisition Detail
         </h1>
 
         <div class="flex gap-3">
           <button
-            v-if="props.userPermissions !== 3"
+            v-if="isAllowedToManage"
             @click.prevent="sendNotification"
             :disabled="sendingNotification || notificationSent"
             class="btn-send"
@@ -236,7 +249,7 @@ const formatDate = (dateString: string | null) => {
           </button>
 
           <a
-            v-if="props.userPermissions !== 3"
+            v-if="isAllowedToManage"
             :href="`/intermediate/resource-requisitions/${props.requisition.id}/edit`"
             class="btn-edit"
           >
@@ -244,7 +257,7 @@ const formatDate = (dateString: string | null) => {
           </a>
 
           <button
-            v-if="props.userPermissions !== 3"
+            v-if="isAllowedToManage"
             @click="confirmDelete"
             class="btn-delete"
           >

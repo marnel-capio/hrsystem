@@ -520,7 +520,7 @@ return [
         ],
 
     ],
-
+'resource_requisitions' => [
         'engagement_type' => [
         'ET_PERMANENT_VALUE' => 1,
         'ET_TEMPORARY_VALUE' => 2,
@@ -569,6 +569,10 @@ return [
         'LA_3_NAME' => 'Cebu',
         'LA_4_NAME' => 'Japan',
         'LA_5_NAME' => 'China',
+    ],
+
+],
+
     'source_maps' => [
         'type1' => [
             'Foundit' => 1,
@@ -606,5 +610,4 @@ return [
         1 => 'N1',
     ],
 
-    ]
 ];
