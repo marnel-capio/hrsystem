@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
+ * @see app/Http/Controllers/ActionApplicationController.php:679
  * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
@@ -16,6 +17,7 @@ bulkAdd.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
+ * @see app/Http/Controllers/ActionApplicationController.php:679
  * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
@@ -44,6 +46,7 @@ bulkAdd.url = (args: { id: string | number } | [id: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
+ * @see app/Http/Controllers/ActionApplicationController.php:679
  * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
@@ -54,6 +57,7 @@ bulkAdd.post = (args: { id: string | number } | [id: string | number ] | string 
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
+ * @see app/Http/Controllers/ActionApplicationController.php:679
  * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
@@ -64,6 +68,7 @@ bulkAdd.post = (args: { id: string | number } | [id: string | number ] | string 
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkAdd
+ * @see app/Http/Controllers/ActionApplicationController.php:679
  * @see app/Http/Controllers/ActionApplicationController.php:622
  * @route '/action/applications/{id}/interviews/bulk-add'
  */
@@ -149,6 +154,7 @@ bulkDelete.post = (args: { applicationId: string | number } | [applicationId: st
     bulkDelete.form = bulkDeleteForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
+ * @see app/Http/Controllers/ActionApplicationController.php:794
  * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
@@ -164,6 +170,7 @@ decision.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
+ * @see app/Http/Controllers/ActionApplicationController.php:794
  * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
@@ -190,6 +197,7 @@ decision.url = (args: { applicationId: string | number, interviewId: string | nu
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
+ * @see app/Http/Controllers/ActionApplicationController.php:794
  * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
@@ -200,6 +208,7 @@ decision.post = (args: { applicationId: string | number, interviewId: string | n
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
+ * @see app/Http/Controllers/ActionApplicationController.php:794
  * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
@@ -210,6 +219,7 @@ decision.post = (args: { applicationId: string | number, interviewId: string | n
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::decision
+ * @see app/Http/Controllers/ActionApplicationController.php:794
  * @see app/Http/Controllers/ActionApplicationController.php:737
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */

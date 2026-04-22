@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::index
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:23
  * @see app/Http/Controllers/IntermediateRequisitionController.php:26
  * @route '/intermediate/resource-requisitions'
  */
@@ -16,6 +17,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::index
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:23
  * @see app/Http/Controllers/IntermediateRequisitionController.php:26
  * @route '/intermediate/resource-requisitions'
  */
@@ -25,6 +27,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::index
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:23
  * @see app/Http/Controllers/IntermediateRequisitionController.php:26
  * @route '/intermediate/resource-requisitions'
  */
@@ -34,6 +37,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::index
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:23
  * @see app/Http/Controllers/IntermediateRequisitionController.php:26
  * @route '/intermediate/resource-requisitions'
  */
@@ -44,6 +48,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::index
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:23
  * @see app/Http/Controllers/IntermediateRequisitionController.php:26
  * @route '/intermediate/resource-requisitions'
  */
@@ -54,6 +59,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::index
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:23
  * @see app/Http/Controllers/IntermediateRequisitionController.php:26
  * @route '/intermediate/resource-requisitions'
  */
@@ -63,6 +69,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::index
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:23
  * @see app/Http/Controllers/IntermediateRequisitionController.php:26
  * @route '/intermediate/resource-requisitions'
  */
@@ -79,6 +86,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
@@ -94,6 +102,7 @@ register.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
@@ -103,6 +112,7 @@ register.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
@@ -112,6 +122,7 @@ register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
@@ -122,6 +133,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
@@ -132,6 +144,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
@@ -141,6 +154,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::register
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:41
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
@@ -157,6 +171,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     register.form = registerForm
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::store
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:0
  * @see app/Http/Controllers/IntermediateRequisitionController.php:53
  * @route '/intermediate/resource-requisitions'
  */
@@ -172,6 +187,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::store
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:0
  * @see app/Http/Controllers/IntermediateRequisitionController.php:53
  * @route '/intermediate/resource-requisitions'
  */
@@ -181,6 +197,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::store
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:0
  * @see app/Http/Controllers/IntermediateRequisitionController.php:53
  * @route '/intermediate/resource-requisitions'
  */
@@ -191,6 +208,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::store
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:0
  * @see app/Http/Controllers/IntermediateRequisitionController.php:53
  * @route '/intermediate/resource-requisitions'
  */
@@ -201,6 +219,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::store
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:0
  * @see app/Http/Controllers/IntermediateRequisitionController.php:53
  * @route '/intermediate/resource-requisitions'
  */
@@ -212,6 +231,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @see app/Http/Controllers/IntermediateRequisitionController.php:78
  * @route '/intermediate/resource-requisitions/{id}'
  */
@@ -227,6 +247,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @see app/Http/Controllers/IntermediateRequisitionController.php:78
  * @route '/intermediate/resource-requisitions/{id}'
  */
@@ -255,6 +276,7 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @see app/Http/Controllers/IntermediateRequisitionController.php:78
  * @route '/intermediate/resource-requisitions/{id}'
  */
@@ -264,6 +286,7 @@ show.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @see app/Http/Controllers/IntermediateRequisitionController.php:78
  * @route '/intermediate/resource-requisitions/{id}'
  */
@@ -274,6 +297,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @see app/Http/Controllers/IntermediateRequisitionController.php:78
  * @route '/intermediate/resource-requisitions/{id}'
  */
@@ -284,6 +308,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @see app/Http/Controllers/IntermediateRequisitionController.php:78
  * @route '/intermediate/resource-requisitions/{id}'
  */
@@ -293,6 +318,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::show
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:46
  * @see app/Http/Controllers/IntermediateRequisitionController.php:78
  * @route '/intermediate/resource-requisitions/{id}'
  */
