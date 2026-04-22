@@ -850,7 +850,7 @@ onMounted(() => {
                     <input
                         v-model="newWork.name_supervisor"
                         class="modal-input"
-                        placeholder="(Juan Dela Cruz - 0916XXXXX)"
+                        placeholder="(e.g Juan Dela Cruz - 0916XXXXX)"
                     />
                     <span
                         v-if="workErrors.name_supervisor"
