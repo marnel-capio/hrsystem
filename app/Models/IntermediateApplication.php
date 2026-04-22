@@ -16,7 +16,9 @@ class IntermediateApplication extends Model
     protected $table = 'intermediate_applicants_applications';
 
     public $timestamps = true;
+
     const CREATED_AT = 'created_time';
+
     const UPDATED_AT = 'updated_time';
 
     /**
@@ -110,7 +112,7 @@ class IntermediateApplication extends Model
         'replied_date',
 
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     /**
@@ -185,8 +187,7 @@ class IntermediateApplication extends Model
     protected function fullApplicantName(): Attribute
     {
         return Attribute::make(
-            get: fn () =>
-                $this->applicant
+            get: fn () => $this->applicant
                     ? "{$this->applicant->first_name} {$this->applicant->last_name}"
                     : 'Unknown'
         );
@@ -235,10 +236,9 @@ class IntermediateApplication extends Model
                 $sub->whereRaw("CONCAT(first_name,' ',last_name) LIKE ?", ["%{$search}%"])
                     ->orWhere('email_address', 'like', "%{$search}%");
             })
-            ->orWhere('position', 'like', "%{$search}%")
-            ->orWhereHas('project', fn ($p) =>
-                $p->where('project_name', 'like', "%{$search}%")
-            );
+                ->orWhere('position', 'like', "%{$search}%")
+                ->orWhereHas('project', fn ($p) => $p->where('project_name', 'like', "%{$search}%")
+                );
         });
     }
 
@@ -279,5 +279,16 @@ class IntermediateApplication extends Model
         static::updating(function ($model) {
             $model->updated_by = auth()->id() ?? 1;
         });
+    }
+
+    public function resourceSchedule(): BelongsTo
+    {
+        return $this->belongsTo(IntermediateRequisitionModel::class, 'resource_schedule_id');
+    }
+
+    // Then access project through requisition
+    public function getProjectNameAttribute(): string
+    {
+        return $this->resourceSchedule?->project?->project_name ?? 'N/A';
     }
 }

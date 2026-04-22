@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreIntermediateApplicationRequest;
 use App\Models\IntermediateApplicant;
 use App\Models\IntermediateApplication;
+use App\Models\IntermediateInterviewer;
 use App\Models\IntermediateRequisitionModel;
 use App\Models\Log;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -105,7 +107,7 @@ class IntermediateApplicationController extends Controller
                 ])
                 ->toArray(),
 
-             'intermediateApplicants' => $intermediateApplicants,
+            'intermediateApplicants' => $intermediateApplicants,
         ]);
     }
 
@@ -115,7 +117,7 @@ class IntermediateApplicationController extends Controller
 
         try {
             $data = $request->validated();
-            //throw new \Exception("Test error");
+            // throw new \Exception("Test error");
 
             //  DEFAULT VALUES (non-null)
             $data['paper_screening_status'] = 1;  // Screening Pending
@@ -299,6 +301,259 @@ class IntermediateApplicationController extends Controller
 
     public function show($id)
     {
-        return Inertia::render('intermediate/applications/Detail');
+        // Eager load the relationships
+        $application = IntermediateApplication::with([
+            'intermediateApplicant',
+            'resourceSchedule.project',
+        ])->findOrFail($id);
+
+        // Get project name
+        $projectName = null;
+        if ($application->resourceSchedule && $application->resourceSchedule->project) {
+            $projectName = $application->resourceSchedule->project->project_name;
+        }
+
+        $workExperiences = $application->intermediateApplicant?->workExperiences()
+            ->where('is_deleted', '!=', 1)
+            ->orWhereNull('is_deleted')
+            ->get() ?? collect([]);
+
+        $skills = $application->intermediateApplicant?->skills()
+            ->where('is_deleted', '!=', 1)
+            ->orWhereNull('is_deleted')
+            ->get() ?? collect([]);
+
+        $interviews = IntermediateInterviewer::with('interviewer')
+            ->where('intermediate_application_id', $id)
+            ->get()
+            ->map(function ($interview) {
+                return [
+                    'id' => $interview->id,
+                    'interviewer_id' => $interview->interviewer_id,
+                    'name' => $interview->interviewer->full_name ?? 'Unknown',
+                    'email_address' => $interview->interviewer->email_address ?? '',
+                    'role_label' => $interview->interviewer->role_label ?? 'Interviewer',
+                    'interview_type' => $interview->interview_type,
+                    'scheduled_date' => $interview->scheduled_date,
+                    'status' => $interview->interview_status,
+                    'decline_reason' => $interview->decline_reason,
+                    'pending_approval_notified_at' => $interview->pending_approval_notified_at,
+                ];
+            });
+
+        // Get available interviewers
+        $availableInterviewers = User::actionInterviewers()
+            ->where('active_status', 1)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->map(function ($user) {
+                return $user->toInterviewerOption();
+            })
+            ->values()
+            ->toArray();
+
+        return Inertia::render('intermediate/applications/Detail', [
+            'application' => [
+                'id' => $application->id,
+                'position' => $application->position,
+                'upload_pic' => $application->upload_pic,
+                'upload_resume' => $application->upload_resume,
+                'application_stage' => $application->application_stage,
+                'project_name' => $projectName,
+                'paper_screening_status' => $application->paper_screening_status,
+
+                // Screening Questions
+                'answer_q1' => $application->answer_q1,
+                'answer_q2' => $application->answer_q2,
+                'answer_q3' => $application->answer_q3,
+                'answer_q4' => $application->answer_q4,
+
+                // Availability & Preferences
+                'availability_date' => $application->availability_date,
+                'work_preference' => $application->work_preference,
+
+                // Compensation
+                'basic_pay' => $application->basic_pay,
+                'bonuses' => $application->bonuses,
+                'allowances' => $application->allowances,
+
+                // Benefits
+                'hmo' => $application->hmo,
+                'leaves' => $application->leaves,
+                'other_benefits' => $application->other_benefits,
+
+                // Desired & Target
+                'desired_salary_range' => $application->desired_salary_range,
+                'targeted_company' => $application->targeted_company,
+                'industry_experience' => $application->industry_experience,
+
+                // Exam Details
+                'exam_plan_date' => $application->exam_plan_date,
+                'exam_actual_date' => $application->exam_actual_date,
+                'exam_venue' => $application->exam_venue,
+                'exam_application_status' => $application->exam_application_status,
+                'exam_atpp_part1_correct' => $application->exam_atpp_part1_correct,
+                'exam_atpp_part1_wrong' => $application->exam_atpp_part1_wrong,
+                'exam_atpp_part2_correct' => $application->exam_atpp_part2_correct,
+                'exam_atpp_part2_wrong' => $application->exam_atpp_part2_wrong,
+                'exam_atpp_part3_correct' => $application->exam_atpp_part3_correct,
+                'exam_atpp_part3_wrong' => $application->exam_atpp_part3_wrong,
+                'exam_atpp_result' => $application->exam_atpp_result,
+                'exam_tech_result' => $application->exam_tech_result,
+                'exam_result' => $application->exam_result,
+                'exam_remarks' => $application->exam_remarks,
+
+                // Initial Interview Details
+                'initial_interview_plan_date' => $application->initial_interview_plan_date,
+                'initial_interview_actual_date' => $application->initial_interview_actual_date,
+                'initial_interview_venue' => $application->initial_interview_venue,
+                'initial_interview_final' => $application->initial_interview_final,
+                'initial_interview_result' => $application->initial_interview_result,
+                'initial_interview_application_status' => $application->initial_interview_application_status,
+                'initial_interview_remarks' => $application->initial_interview_remarks,
+
+                // Final Interview Details
+                'final_interview_date' => $application->final_interview_date,
+                'final_interview_final' => $application->final_interview_final,
+                'final_interview_result' => $application->final_interview_result,
+                'final_interview_application_status' => $application->final_interview_application_status,
+                'final_interview_remarks' => $application->final_interview_remarks,
+
+                // Job Offer Details
+                'job_offer_schedule' => $application->job_offer_schedule,
+                'job_offer_status' => $application->job_offer_status,
+                'job_offer_remarks' => $application->job_offer_remarks,
+
+                'applicant' => [
+                    'first_name' => $application->intermediateApplicant->first_name ?? '',
+                    'last_name' => $application->intermediateApplicant->last_name ?? '',
+                    'middle_name' => $application->intermediateApplicant->middle_name ?? '',
+                    'email_address' => $application->intermediateApplicant->email_address ?? '',
+                    'contact_no' => $application->intermediateApplicant->contact_no ?? '',
+                ],
+            ],
+
+            // ✅ These should only appear ONCE
+            'interviews' => $interviews,
+            'availableInterviewers' => $availableInterviewers,
+            'initialInterviewAssignments' => [],
+            'finalInterviewAssignments' => [],
+
+            // Work experiences
+            'workExperiences' => $workExperiences->map(function ($experience) {
+                return [
+                    'id' => $experience->id,
+                    'employer' => $experience->employer,
+                    'job_title' => $experience->job_title,
+                    'name_supervisor' => $experience->name_supervisor,
+                    'work_description' => $experience->work_description,
+                ];
+            })->toArray(),
+
+            // Skills
+            'skills' => $skills->map(function ($skill) {
+                return [
+                    'id' => $skill->id,
+                    'skill' => $skill->skill,
+                ];
+            })->toArray(),
+
+            'examVenues' => [
+                1 => 'Gmeet',
+                2 => 'Zoom',
+                3 => 'USJ-R Basak',
+                4 => 'AdDU',
+            ],
+
+            // Permissions and flash messages
+            'userPermissions' => auth()->user()->permissions ?? 0,
+            'user_id' => auth()->id(),
+            'hasMixedInitialInterviewResults' => false,
+            'hasMixedFinalInterviewResults' => false,
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+            ],
+        ]);
+    }
+
+    /**
+     * Update paper screening status
+     */
+    public function updatePaperScreening(Request $request, $id)
+    {
+        $request->validate([
+            'paper_screening_status' => 'required|integer|in:1,2,3,4,5,6',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $application = IntermediateApplication::findOrFail($id);
+
+            $oldStatus = $application->paper_screening_status;
+            $newStatus = $request->paper_screening_status;
+
+            $application->paper_screening_status = $newStatus;
+
+            // If status is Passed (5) or 1st Priority (2), move to For Exam stage
+            if (in_array($newStatus, [2, 5]) && $application->application_stage == 1) {
+                $application->application_stage = 2; // For Exam
+            }
+
+            $application->save();
+
+            // Log the action
+            Log::createLog(
+                'Intermediate',
+                "Paper screening status updated from {$oldStatus} to {$newStatus} for application #{$application->id} - {$application->intermediateApplicant?->email_address}",
+                $application->intermediate_applicant_id
+            );
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Paper screening status updated successfully!',
+                'paper_screening_status' => $newStatus,
+                'application_stage' => $application->application_stage,
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('Failed to update paper screening status: '.$e->getMessage());
+
+            return response()->json([
+                'message' => 'Failed to update paper screening status. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    private function getRoleLabel($permissions): string
+    {
+        return match ((int) $permissions) {
+            1 => 'HR Staff',
+            2 => 'HR Manager',
+            3 => 'Admin',
+            5 => 'BU Head',
+            6 => 'Interviewer',
+            default => 'Staff',
+        };
+    }
+
+    public function availableInterviewers()
+    {
+        $interviewers = User::actionInterviewers()
+            ->where('active_status', 1)
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->map(function ($user) {
+                return $user->toInterviewerOption();
+            });
+
+        return response()->json(['interviewers' => $interviewers]);
     }
 }
