@@ -618,7 +618,7 @@ const removeFile = (type: 'resume' | 'picture') => {
             picturePreview.value = null
         }
     }
-    
+
     // ✅ Clear file input (like working code)
     const fileInputs = document.querySelectorAll('input[type="file"]')
     fileInputs.forEach((input: any) => input.value = '')
@@ -806,6 +806,17 @@ function submit() {
 
     if (!form.intermediate_applicant_id) {
         form.setError('intermediate_applicant_id', 'Applicant is required.')
+        hasError = true
+    }
+
+    if (form.remarks && form.remarks.length > 65535) {
+        remarksError.value = true
+        hasError = true
+    }
+
+    // Check initial interview remarks length
+    if (form.initial_interview_remarks && form.initial_interview_remarks.length > 65535) {
+        initialRemarksError.value = true
         hasError = true
     }
 
@@ -1111,6 +1122,25 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
         form.clearErrors('initial_interview_actual_date')
     }
 })
+
+
+watch(() => form.remarks, (newValue) => {
+    if (newValue && newValue.length > 1024) {
+        form.setError('remarks', 'This field exceeds the maximum allowed length.')
+    } else {
+        form.clearErrors('remarks')
+    }
+})
+
+watch(() => form.initial_interview_remarks, (newValue) => {
+    if (newValue && newValue.length > 1024) {
+        form.setError('initial_interview_remarks', 'This field exceeds the maximum allowed length.')
+    } else {
+        form.clearErrors('initial_interview_remarks')
+    }
+})
+
+
 </script>
 
 <template>
@@ -1403,7 +1433,7 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                                     </option>
                                 </select>
                                 <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue
-                                }}</span>
+                                    }}</span>
                             </div>
                             <div class="exam-section-layout">
                                 <!-- LEFT SIDE -->
@@ -1626,7 +1656,7 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                                 <textarea v-model="form.exam_remarks" placeholder="Enter any remarks here..." rows="3"
                                     class="form-textarea" :disabled="!isApplicantSelected"></textarea>
                                 <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
 
@@ -1683,6 +1713,7 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                                         <label class="field-label">Initial Interview Remarks</label>
                                         <textarea v-model="form.initial_interview_remarks" class="form-textarea"
                                             :disabled="isFormFieldDisabled" rows="3"></textarea>
+                                        <span v-if="form.errors.initial_interview_remarks" class="error-message">{{ form.errors.initial_interview_remarks }}</span>
                                     </div>
 
                                 </div>
@@ -1729,6 +1760,7 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                                 <label class="field-label !text-gray-500">Overall Remarks</label>
                                 <textarea v-model="form.remarks" class="form-textarea" :disabled="isFormFieldDisabled"
                                     rows="4" placeholder="Any additional notes or comments..."></textarea>
+                                <span v-if="form.errors.remarks" class="error-message">{{ form.errors.remarks }}</span>
                             </div>
                         </div>
 

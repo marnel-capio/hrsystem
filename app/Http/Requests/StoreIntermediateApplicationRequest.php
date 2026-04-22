@@ -88,7 +88,7 @@ class StoreIntermediateApplicationRequest extends FormRequest
 
             'initial_interview_result' => ['nullable'],
             'initial_interview_application_status' => ['nullable'],
-            'initial_interview_remarks' => ['nullable'],
+            'initial_interview_remarks' => ['nullable', new MaxLength(1024),],
 
             // Final Interview
             'final_interview_date' => ['nullable', 'date'],
