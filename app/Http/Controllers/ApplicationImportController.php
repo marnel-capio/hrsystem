@@ -17,6 +17,12 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 use App\Http\Requests\ImportIntermediateApplicationRequest;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Mail\UploadStatusReportMail;
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
+
+
+
 
 
 class ApplicationImportController extends Controller
@@ -50,9 +56,48 @@ class ApplicationImportController extends Controller
         ]);
     }
 
+
+
+
+    public function getTotalApplicants(int $batchId): int
+    {
+        // Count applicants already existing in the ActionApplication for the given action_batch_id
+        $existingApplicantsCount = ActionApplication::where('action_batch_id', $batchId)->count();
+
+
+        // Total count = Existing applicants for this batch + Newly imported applicants
+        return $existingApplicantsCount;
+    }
+    public function getNewApplicants(array $importedApplicants): int
+    {
+        return count($importedApplicants);
+    }
+    
+    public function getExistingApplicants(int $batchId, array $importedApplicants): int
+    {
+        $totalApplicants = $this->getTotalApplicants($batchId);
+        
+        $newApplicants = $this->getNewApplicants($importedApplicants);
+
+        return $totalApplicants - $newApplicants;
+    }
+
+    public function getFailedUploads(array $failedApplicants, array $skippedApplicants): int
+    {
+        return count($failedApplicants) + count($skippedApplicants);
+    }
+
+    public function getLoggedUserName()
+{
+    $user = Auth::user(); 
+    return $user ? $user->name : 'Unknown User';
+}
+    
+
     public function import(ImportApplicationsRequest $request)
     {
-
+        $user = Auth::user();
+        $userName = $this->getLoggedUserName();
         $validated = $request->validated();
 
         $batch = ActionBatchModel::with('resourceSchedule')
@@ -64,27 +109,23 @@ class ApplicationImportController extends Controller
         $rows = $this->parseFile($file);
 
         $config = config('constants');
-        $sourceTypeMap = $config['source_type'];
-        $sourceMap = $config['source'];
         $genderMap = $config['gender'];
         $examStatusMap = $config['exam_status'];
 
         $importedApplicants = [];
+        $oldApplicants = [];
         $skippedApplicants = [];
         $failedApplicants = [];
-        $now = now()->format('Y-m-d H:i:s');
 
         foreach ($rows as $rowIndex => $row) {
             if (empty(array_filter($row))) {
-                $skippedApplicants[] = 'Row '.($rowIndex + 2).' - Empty row';
-
+                $skippedApplicants[] = "Row " . ($rowIndex + 2) . " - Empty row";
                 continue;
             }
 
             $name = trim($row['Full Name (Last Name, First Name, Middle Initial)'] ?? '');
             if (empty($name)) {
-                $skippedApplicants[] = 'Row '.($rowIndex + 2).' - No name found';
-
+                $skippedApplicants[] = "Row " . ($rowIndex + 2) . " - No name found";
                 continue;
             }
 
@@ -95,47 +136,51 @@ class ApplicationImportController extends Controller
                 // PARSE EXCEL TIMESTAMP
                 // -------------------------
                 $rawTimestamp = trim($row['Timestamp'] ?? '');
-                $createdTime = now()->format('Y-m-d H:i:s'); // default fallback
-                if (! empty($rawTimestamp)) {
-                    // Attempt d/m/Y H:i:s
+                $createdTime = now()->format('Y-m-d H:i:s');
+
+                if (!empty($rawTimestamp)) {
                     $ts = \DateTime::createFromFormat('d/m/Y H:i:s', $rawTimestamp);
+
                     if ($ts === false) {
-                        // fallback to strtotime in case Excel formatted differently
                         $parsed = strtotime($rawTimestamp);
                         if ($parsed !== false) {
-                            $ts = new \DateTime;
+                            $ts = new \DateTime();
                             $ts->setTimestamp($parsed);
                         }
                     }
+
                     if ($ts !== false) {
                         $createdTime = $ts->format('Y-m-d H:i:s');
                     }
                 }
-                \Log::debug('Parsed timestamp', ['row' => $rowIndex + 2, 'createdTime' => $createdTime]);
+
+                \Log::debug('Parsed timestamp', [
+                    'row' => $rowIndex + 2,
+                    'createdTime' => $createdTime,
+                ]);
 
                 // -------------------------
                 // REQUIRED FIELDS CHECK
                 // -------------------------
-                $hasGender = ! empty(trim($row['Gender'] ?? ''));
-                $hasSource = ! empty(trim($row['From what recruitment channel have you applied for this job?'] ?? ''));
-                $hasResume = ! empty(trim($row['Upload your updated resume'] ?? ''));
+                $hasGender = !empty(trim($row['Gender'] ?? ''));
+                $hasSource = !empty(trim($row['From what recruitment channel have you applied for this job?'] ?? ''));
+                $hasResume = !empty(trim($row['Upload your updated resume'] ?? ''));
 
-                if (! $hasGender) {
+                if (!$hasGender) {
                     $skippedApplicants[] = "{$name} - Missing gender";
                     DB::rollBack();
-
                     continue;
                 }
-                if (! $hasSource) {
+
+                if (!$hasSource) {
                     $skippedApplicants[] = "{$name} - Missing source";
                     DB::rollBack();
-
                     continue;
                 }
-                if (! $hasResume) {
+
+                if (!$hasResume) {
                     $skippedApplicants[] = "{$name} - Missing resume";
                     DB::rollBack();
-
                     continue;
                 }
 
@@ -144,14 +189,13 @@ class ApplicationImportController extends Controller
                 // -------------------------
                 $rawGender = strtolower(preg_replace('/\s+/', '', $row['Gender']));
                 $gender = $genderMap[$rawGender] ?? null;
+
                 if (is_null($gender)) {
                     $skippedApplicants[] = "{$name} - Invalid gender";
                     DB::rollBack();
-
                     continue;
                 }
 
-                $config = config('constants');
                 $recruitmentPortalKeywords = $config['recruitment_portal_keywords'];
                 $sourceMap = $config['source_map'];
 
@@ -159,22 +203,18 @@ class ApplicationImportController extends Controller
                 \Log::info('Source value:', ['rawSource' => $rawSource]);
 
                 if (in_array($rawSource, $recruitmentPortalKeywords)) {
-                    // Recruitment Portal
                     $source_type = 3;
-                    $source = $sourceMap[$rawSource];
+                    $source = $sourceMap[$rawSource] ?? null;
                     $other_source = null;
                 } elseif ($rawSource === 'Referral (Employee Referral or Applicant Referral)') {
-                    // Employee Referral
                     $source_type = 4;
                     $source = null;
                     $other_source = $rawSource;
                 } elseif ($rawSource === 'Campus Recruitment Activity') {
-                    // Campus Recruitment
                     $source_type = 1;
                     $source = null;
                     $other_source = $rawSource;
                 } else {
-                    // Everything else goes to other_source with null source_type and source
                     $source_type = null;
                     $source = null;
                     $other_source = $rawSource;
@@ -190,86 +230,142 @@ class ApplicationImportController extends Controller
                 // EXAM STATUS & DATE
                 // -------------------------
                 $rawExamStatus = trim(strtolower($row['Results'] ?? ''));
-                $examApplicationStatusFromExcel = $examStatusMap[$rawExamStatus] ?? 1;
+                $exam_application_status = $examStatusMap[$rawExamStatus] ?? 1;
 
                 $rawDate = trim($row['Exam Schedule.'] ?? '');
                 $exam_plan_date = null;
-                if (! empty($rawDate)) {
+
+                if (!empty($rawDate)) {
                     $ts = strtotime($rawDate);
                     if ($ts !== false) {
                         $exam_plan_date = date('Y-m-d H:i:s', $ts);
                     }
                 }
 
-                // -------------------------
-                // DECIDE APPLICANT TYPE
-                // -------------------------
-                $email = trim($row['Email Address'] ?? '');
-                $existingApplicant = ActionApplicant::where('email_address', $email)->first();
-                $lastApplication = $existingApplicant
-                    ? ActionApplication::where('action_applicant_id', $existingApplicant->id)
-                        ->orderBy('source_date', 'desc')
-                        ->first()
-                    : null;
+            // -------------------------
+            // CHECK EXISTING APPLICANT / LAST APPLICATION
+            // -------------------------
+            $email = trim($row['Email Address'] ?? '');
+            $existingApplicant = ActionApplicant::where('email_address', $email)->first();
 
-                $exam_application_status = $examApplicationStatusFromExcel;
-                $initial_interview_application_status = null;
-                $failedExamStatuses = [6, 7];
-                $failedInitialStatuses = [5];
-                $currentRowTime = Carbon::parse($createdTime);
-                $sixMonthsAgo = $currentRowTime->copy()->subMonths(6);
+            $lastApplication = $existingApplicant
+                ? ActionApplication::where('action_applicant_id', $existingApplicant->id)
+                    ->orderBy('source_date', 'desc')
+                    ->first()
+                : null;
 
-                if (! $existingApplicant) {
-                    // New applicant
-                    $applicant = ActionApplicant::updateOrCreateFromRow(
-                        $row, $gender, $source_type, $source, $other_source, $createdTime, now()->format('Y-m-d H:i:s')
-                    );
-                } elseif ($lastApplication) {
-                    $applicant = $existingApplicant;
-                    $lastAppTime = Carbon::parse($lastApplication->source_date);
+            $failedExamStatuses = [6, 7];
+            $failedInitialStatuses = [5];
+            $failedFinalStatuses = [5];
+            $failedJobOfferStatuses = [4, 5, 6];
 
-                    $isFailed = in_array($lastApplication->exam_application_status, $failedExamStatuses) ||
-                                in_array($lastApplication->initial_interview_application_status, $failedInitialStatuses);
+            $currentRowTime = Carbon::parse($createdTime);
+            $sixMonthsAgo = $currentRowTime->copy()->subMonths(6);
 
-                    if ($isFailed && $lastAppTime > $sixMonthsAgo) {
-                        $skippedApplicants[] = "{$name} - Failed within last 6 months, cannot reapply yet.";
-                        DB::rollBack();
+            // -------------------------
+            // DECIDE IMPORT BRANCH
+            // -------------------------
+            $applicationBranch = 'new';
+            $applicationOverrides = [
+                'remarks' => 'New',
+                'exam_application_status' => null,
+                'initial_interview_application_status' => null,
+                'final_interview_application_status' => null,
+                'job_offer_status' => null,
+                'exam_plan_date' => null,
+            ];
 
-                        continue;
-                    } elseif ($isFailed && $lastAppTime <= $sixMonthsAgo) {
-                        // New application, no statuses
-                    } elseif (! $isFailed && $lastAppTime > $sixMonthsAgo) {
-                        $initial_interview_application_status = 1;
-                    }
+            if ($existingApplicant && $lastApplication) {
+                $lastAppTime = Carbon::parse($lastApplication->source_date);
+
+                $isFailed = in_array($lastApplication->exam_application_status, $failedExamStatuses) ||
+                            in_array($lastApplication->initial_interview_application_status, $failedInitialStatuses) ||
+                            in_array($lastApplication->final_interview_application_status, $failedFinalStatuses) ||
+                            in_array($lastApplication->job_offer_status, $failedJobOfferStatuses);
+
+                $withinSixMonths = $lastAppTime > $sixMonthsAgo;
+
+                if ($isFailed && $withinSixMonths) {
+                    $skippedApplicants[] = "{$name} - Failed within last 6 months, cannot reapply yet.";
+                    DB::rollBack();
+                    continue;
                 }
 
-                \Log::info('Exam status mapping', [
-                    'rawExamStatus' => $rawExamStatus,
-                    'mapped' => $examApplicationStatusFromExcel,
-                ]);
+                if ($isFailed && !$withinSixMonths) {
+                    // duplicate + failed before + old enough => NEW
+                    $applicationBranch = 'new';
+                    $applicationOverrides = [
+                        'remarks' => 'New',
+                        'exam_application_status' => null,
+                        'initial_interview_application_status' => null,
+                        'final_interview_application_status' => null,
+                        'job_offer_status' => null,
+                        'exam_plan_date' => null,
+                    ];
+                } elseif (!$isFailed && $withinSixMonths) {
+                    // duplicate + not failed + recent => FOR INITIAL INTERVIEW
+                    $applicationBranch = 'for_initial_interview';
+                    $applicationOverrides = [
+                        'remarks' => 'For Initial Interview',
+                        'exam_application_status' => $lastApplication->exam_application_status ?: 5,
+                        'exam_plan_date' => $lastApplication->exam_plan_date,
+                        'initial_interview_application_status' => 1,
+                        'final_interview_application_status' => null,
+                        'job_offer_status' => null,
+                    ];
+                } else {
+                    // duplicate + not failed + older than 6 months => FOR EXAM
+                    $applicationBranch = 'for_exam';
+                    $applicationOverrides = [
+                        'remarks' => 'Re-applied from previous ACTION batch.',
+                        'exam_application_status' => null,
+                        'exam_plan_date' => null,
+                        'initial_interview_application_status' => null,
+                        'final_interview_application_status' => null,
+                        'job_offer_status' => null,
+                    ];
+                }
+            }
 
-                // -------------------------
-                // CREATE APPLICATION
-                // -------------------------
-                ActionApplication::updateOrCreateFromRow(
-                    $applicant->id,
-                    $request->batch_id,
-                    $row,
-                    $exam_application_status,
-                    $exam_plan_date,
-                    now()->format('Y-m-d H:i:s'),
-                    $batchTargetLocation,
-                    $createdTime
-                );
+            // -------------------------
+            // ALWAYS UPSERT APPLICANT DATA
+            // -------------------------
+            $applicant = ActionApplicant::updateOrCreateFromRow(
+                $row,
+                $gender,
+                $source_type,
+                $source,
+                $other_source,
+                $existingApplicant?->created_time ?? $createdTime,
+                now()->format('Y-m-d H:i:s')
+            );
 
-                DB::commit();
-                $importedApplicants[] = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
+            ActionApplicant::syncProgrammingLanguagesFromRow($applicant->id, $row);
 
-                \Log::info('Saving application', [
-                    'name' => $name,
-                    'exam_application_status' => $exam_application_status,
-                ]);
+            // -------------------------
+            // CREATE / UPDATE APPLICATION
+            // -------------------------
+            ActionApplication::updateOrCreateFromRow(
+                $applicant->id,
+                $request->batch_id,
+                $row,
+                $exam_application_status,
+                $exam_plan_date,
+                now()->format('Y-m-d H:i:s'),
+                $batchTargetLocation,
+                $createdTime,
+                $applicationOverrides
+            );
 
+            DB::commit();
+            $importedApplicants[] = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
+
+            \Log::info('Saving application', [
+                'name' => $name,
+                'branch' => $applicationBranch,
+                'exam_application_status' => $applicationOverrides['exam_application_status'] ?? $exam_application_status,
+                'initial_interview_application_status' => $applicationOverrides['initial_interview_application_status'] ?? null,
+            ]);
             } catch (\Throwable $e) {
                 DB::rollBack();
 
@@ -283,9 +379,15 @@ class ApplicationImportController extends Controller
                     'line' => $e->getLine(),
                 ]);
 
-                $failedApplicants[] = "{$name} - ".$e->getMessage();
+                $failedApplicants[] = "{$name} - " . $e->getMessage();
             }
         }
+
+        $totalApplicants = $this->getTotalApplicants($request->batch_id);
+        $newApplicants = $this->getNewApplicants($importedApplicants);
+        $existingApplicants = $this->getExistingApplicants($request->batch_id, $importedApplicants);
+        $failedUploads = $this->getFailedUploads($failedApplicants, $skippedApplicants); 
+
         // -------------------------
         // Prepare messages that show on screen & logging
         // -------------------------
@@ -297,9 +399,10 @@ class ApplicationImportController extends Controller
             foreach ($importedApplicants as $index => $name) {
                 $successList[] = ($index + 1).'. '.$name;
             }
-            $successMsg = 'Count of Successful Uploads: '.count($importedApplicants)."\n\n".
-                        config('errors.successful_action_application_import.errorMessage')."\n".
-                        implode("\n", $successList)."\n\n";
+
+            $successMsg = "Count of Successful Uploads: " . count($importedApplicants) . "\n\n" .
+                config('errors.successful_action_application_import.errorMessage') . "\n" .
+                implode("\n", $successList) . "\n\n";
         }
 
         $allFailed = array_merge($failedApplicants, $skippedApplicants);
@@ -309,22 +412,71 @@ class ApplicationImportController extends Controller
             foreach ($allFailed as $index => $name) {
                 $errorList[] = ($index + 1).'. '.$name;
             }
-            $errorMsg = 'Count of Failed Uploads: '.count($allFailed)."\n\n".
-                        config('errors.failed_action_application_import.errorMessage')."\n".
-                        implode("\n", $errorList)."\n\n";
+
+            $errorMsg = "Count of Failed Uploads: " . count($allFailed) . "\n\n" .
+                config('errors.failed_action_application_import.errorMessage') . "\n" .
+                implode("\n", $errorList) . "\n\n";
         }
 
-        // Log after all imports
         $user = Auth::user();
-        $logMessage = "Imported ACTION applications and applicants. Total rows: {$totalRows}, Success: ".count($importedApplicants).
-                    ', Failed: '.count($allFailed);
+        $logMessage = "Imported ACTION applications and applicants. Total rows: {$totalRows}, Success: " . count($importedApplicants) .
+            ", Failed: " . count($allFailed);
+
         Log::createLog('ACTION', $logMessage, $user->id);
+        $userEmail = Auth::user()->email_address;
+        $emails = $this->getHrAdminEmails();
+        if (!in_array($userEmail, $emails)) {
+            $emails[] = $userEmail;
+        }
+
+        $batchName = ActionBatchModel::where('id', $request->batch_id)
+            ->value('action_batch');
+
+        if (!empty($emails)) {
+            try {
+                Mail::to($emails)->send(
+                    new UploadStatusReportMail(
+                        $batchName, 
+                        [
+                            'senderName' => $userName, 
+                            'senderRole' => '$', 
+                        ], 
+                        $totalApplicants,
+                        $newApplicants,
+                        $existingApplicants,
+                        $failedUploads,
+                        $skippedApplicants 
+                    )
+                );
+            } catch (\Exception $e) {
+                \Log::error('Upload status report email failed', [
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return back()->with([
             'success' => $successMsg ?: null,
             'error' => $errorMsg ?: null,
+            'userPermissions' => auth()->user()->permissions
         ]);
     }
+
+    private function getHrAdminEmails(): array
+{
+    $permissionIds = [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+    ];
+
+    return User::query()
+        ->whereIn('permissions', $permissionIds)
+        ->whereNotNull('email_address')
+        ->pluck('email_address')
+        ->unique()
+        ->values()
+        ->toArray();
+}
+
 
     private function parseFile($file)
     {
