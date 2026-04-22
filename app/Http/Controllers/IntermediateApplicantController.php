@@ -12,6 +12,7 @@ use App\Http\Requests\UpdateIntermediateApplicantRequest;
 use App\Services\LogService;
 use Illuminate\Support\Facades\Config;
 
+
 class IntermediateApplicantController extends Controller
 {
     public function index()
@@ -105,7 +106,7 @@ public function edit($id)
     ]);
 }
 
-public function update(UpdateIntermediateApplicantRequest $request, $id)
+public function update(UpdateIntermediateApplicantRequest $request, $id, LogService $logService)
 {
     $applicant = IntermediateApplicant::findOrFail($id);
 
@@ -119,11 +120,11 @@ public function update(UpdateIntermediateApplicantRequest $request, $id)
             'last_name',
             'first_name',
             'middle_name',
+            'email_address',
             'gender',
             'birthdate',
             'age',
             'address',
-            'email_address',
             'contact_no',
             'school_graduated_from',
             'course',
@@ -147,6 +148,8 @@ public function update(UpdateIntermediateApplicantRequest $request, $id)
 
         $newData = $applicant->fresh()->only(array_keys($oldData));
 
+        $logService->createIntermediateApplicantUpdateLog($oldData, $newData, $applicant->id);
+
         DB::commit();
 
         return redirect()
@@ -155,7 +158,7 @@ public function update(UpdateIntermediateApplicantRequest $request, $id)
     } catch (\Throwable $e) {
         DB::rollBack();
 
-        return Inertia::back()->with('error', config('errors.record_updated_failed.errorMessage'));
+        return back()->with('error', config('errors.record_updated_failed.errorMessage'));
     }
 }
 

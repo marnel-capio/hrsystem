@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ActionApplicant;
 use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Models\IntermediateApplicant;
 
 class LogService
 {
@@ -203,6 +204,119 @@ class LogService
         ]);
     }
 
+    public function createIntermediateApplicantUpdateLog(array $oldData, array $newData, int $applicantId): void
+{
+    $applicant = IntermediateApplicant::find($applicantId);
+
+    if (! $applicant) {
+        return;
+    }
+
+    $ipAddress = request()->ip();
+
+    $activityLines = [];
+
+    $activityLines[] = "Updated INTERMEDIATE Applicant: {$applicant->first_name} {$applicant->last_name}.";
+    $activityLines[] = 'Details:';
+
+    $sourceTypes = config('constants.intermediateSourceTypes', []);
+    $sources = config('constants.intermediateSources', []);
+    $genders = config('constants.genders', []);
+    $japaneseBackgrounds = config('constants.japanese_backgrounds', []);
+    $japaneseLevels = config('constants.japanese_levels', []);
+
+    $fields = [
+        'source_type',
+        'source',
+        'other_source',
+        'last_name',
+        'first_name',
+        'middle_name',
+        'email_address',
+        'gender',
+        'birthdate',
+        'age',
+        'address',
+        'contact_no',
+        'school_graduated_from',
+        'course',
+        'year_attended',
+        'others',
+        'japanese_background',
+        'japanese_level',
+        'background_remarks',
+        'spouse_details',
+        'children',
+        'father_details',
+        'mother_details',
+        'sibling_details',
+        'emergency_contact_name',
+        'emergency_contact_number',
+        'emergency_contact_address',
+        'remarks',
+    ];
+
+    foreach ($fields as $field) {
+        $oldValue = $oldData[$field] ?? null;
+        $newValue = $newData[$field] ?? null;
+
+        $oldValueStr = $oldValue;
+        $newValueStr = $newValue;
+
+        switch ($field) {
+            case 'source_type':
+                $oldValueStr = $sourceTypes[$oldValue] ?? $oldValue;
+                $newValueStr = $sourceTypes[$newValue] ?? $newValue;
+                break;
+
+            case 'source':
+                $oldValueStr = $sources[$oldValue] ?? $oldValue;
+                $newValueStr = $sources[$newValue] ?? $newValue;
+                break;
+
+            case 'gender':
+                $oldValueStr = $genders[$oldValue] ?? $oldValue;
+                $newValueStr = $genders[$newValue] ?? $newValue;
+                break;
+
+            case 'japanese_background':
+                $oldValueStr = $japaneseBackgrounds[$oldValue] ?? $oldValue;
+                $newValueStr = $japaneseBackgrounds[$newValue] ?? $newValue;
+                break;
+
+            case 'japanese_level':
+                $oldValueStr = $japaneseLevels[$oldValue] ?? $oldValue;
+                $newValueStr = $japaneseLevels[$newValue] ?? $newValue;
+                break;
+
+            default:
+                $oldValueStr = (string) $oldValue;
+                $newValueStr = (string) $newValue;
+                break;
+        }
+
+        if ($oldValueStr !== $newValueStr) {
+            $activityLines[] = "{$field}: {$oldValueStr} -> {$newValueStr}";
+        }
+    }
+
+    if (count($activityLines) <= 2) {
+        return;
+    }
+
+    $activity = implode("\n", $activityLines);
+
+    Log::create([
+        'module' => 'INTERMEDIATE',
+        'activity' => $activity,
+        'ip_address' => $ipAddress,
+        'created_by' => auth()->id(),
+        'updated_by' => auth()->id(),
+        'create_time' => now(),
+        'update_time' => now(),
+    ]);
+}
+
     public function createSkillUpdateLog(array $oldData, array $newData, int $applicantId): void
     {
         $applicant = ActionApplicant::find($applicantId);
@@ -228,4 +342,83 @@ class LogService
 
         Log::createLog('ACTION', $activity, $applicantId, $ipAddress);
     }
+
+public function createIntermediateSkillCreateLog(array $data, int $applicantId): void
+{
+    $applicant = IntermediateApplicant::find($applicantId);
+
+    if (! $applicant) return;
+
+    $ipAddress = request()->ip();
+
+    $skill = $data['skill'] ?? '';
+
+    $activity = "Added {$skill} skill to {$applicant->email_address}.";
+
+    Log::createLog('INTERMEDIATE', $activity, $applicantId, $ipAddress);
+}
+
+public function createIntermediateSkillUpdateLog(array $oldData, array $newData, int $applicantId): void
+{
+    $applicant = IntermediateApplicant::find($applicantId);
+
+    if (! $applicant) return;
+
+    $ipAddress = request()->ip();
+
+    $activityLines = [];
+    $activityLines[] = "Updated skill for {$applicant->email_address}.";
+    $activityLines[] = "Details:";
+
+    $hasChanges = false;
+
+    if (($oldData['skill'] ?? '') !== ($newData['skill'] ?? '')) {
+        $activityLines[] = "skill: {$oldData['skill']} -> {$newData['skill']}";
+        $hasChanges = true;
+    }
+
+    if (($oldData['remarks'] ?? '') !== ($newData['remarks'] ?? '')) {
+        $activityLines[] = "remarks: {$oldData['remarks']} -> {$newData['remarks']}";
+        $hasChanges = true;
+    }
+
+    if (! $hasChanges) return;
+
+    $activity = implode("\n", $activityLines);
+
+    Log::createLog('INTERMEDIATE', $activity, $applicantId, $ipAddress);
+}
+
+public function createIntermediateSkillDeleteLog(array $oldData, int $applicantId): void
+{
+    $applicant = IntermediateApplicant::find($applicantId);
+
+    if (! $applicant) return;
+
+    $ipAddress = request()->ip();
+
+    $skill = $oldData['skill'] ?? '';
+
+    $activity = "Deleted {$skill} skill of {$applicant->email_address}.";
+
+    Log::createLog('INTERMEDIATE', $activity, $applicantId, $ipAddress);
+}
+
+public function createIntermediateSkillBulkDeleteLog(array $skills, int $applicantId): void
+{
+    $applicant = IntermediateApplicant::find($applicantId);
+
+    if (! $applicant) return;
+
+    $ipAddress = request()->ip();
+
+    $skillNames = collect($skills)
+        ->pluck('skill')
+        ->filter()
+        ->implode(', ');
+
+    $activity = "Deleted {$skillNames} skill(s) of {$applicant->email_address}.";
+
+    Log::createLog('INTERMEDIATE', $activity, $applicantId, $ipAddress);
+}
 }

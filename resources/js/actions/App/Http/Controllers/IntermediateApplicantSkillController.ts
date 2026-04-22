@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::index
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:12
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:13
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
 export const index = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::index
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:12
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:13
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
 index.url = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ index.url = (args: { applicantId: string | number } | [applicantId: string | num
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::index
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:12
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:13
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
 index.get = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ index.get = (args: { applicantId: string | number } | [applicantId: string | num
 })
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::index
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:12
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:13
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
 index.head = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ index.head = (args: { applicantId: string | number } | [applicantId: string | nu
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::index
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:12
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:13
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
     const indexForm = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ index.head = (args: { applicantId: string | number } | [applicantId: string | nu
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::index
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:12
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:13
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
         indexForm.get = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.head = (args: { applicantId: string | number } | [applicantId: string | nu
         })
             /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::index
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:12
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:13
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
         indexForm.head = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -98,7 +98,7 @@ index.head = (args: { applicantId: string | number } | [applicantId: string | nu
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::store
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:19
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:20
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
 export const store = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -113,7 +113,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::store
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:19
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:20
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
 store.url = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -141,7 +141,7 @@ store.url = (args: { applicantId: string | number } | [applicantId: string | num
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::store
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:19
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:20
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
 store.post = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -151,7 +151,7 @@ store.post = (args: { applicantId: string | number } | [applicantId: string | nu
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::store
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:19
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:20
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
     const storeForm = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -161,7 +161,7 @@ store.post = (args: { applicantId: string | number } | [applicantId: string | nu
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::store
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:19
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:20
  * @route '/intermediate/applicants/{applicantId}/skills'
  */
         storeForm.post = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -172,7 +172,7 @@ store.post = (args: { applicantId: string | number } | [applicantId: string | nu
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::update
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:26
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
 export const update = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -187,7 +187,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::update
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:26
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
 update.url = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions) => {
@@ -213,7 +213,7 @@ update.url = (args: { applicantId: string | number, skillId: string | number } |
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::update
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:26
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
 update.put = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -223,7 +223,7 @@ update.put = (args: { applicantId: string | number, skillId: string | number } |
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::update
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:26
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
     const updateForm = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -238,7 +238,7 @@ update.put = (args: { applicantId: string | number, skillId: string | number } |
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::update
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:26
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
         updateForm.put = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -254,7 +254,7 @@ update.put = (args: { applicantId: string | number, skillId: string | number } |
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::destroy
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:51
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
 export const destroy = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -269,7 +269,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::destroy
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:51
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
 destroy.url = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions) => {
@@ -295,7 +295,7 @@ destroy.url = (args: { applicantId: string | number, skillId: string | number } 
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::destroy
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:51
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
 destroy.delete = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -305,7 +305,7 @@ destroy.delete = (args: { applicantId: string | number, skillId: string | number
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::destroy
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:51
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
     const destroyForm = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -320,7 +320,7 @@ destroy.delete = (args: { applicantId: string | number, skillId: string | number
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::destroy
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:33
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:51
  * @route '/intermediate/applicants/{applicantId}/skills/{skillId}'
  */
         destroyForm.delete = (args: { applicantId: string | number, skillId: string | number } | [applicantId: string | number, skillId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -336,7 +336,7 @@ destroy.delete = (args: { applicantId: string | number, skillId: string | number
     destroy.form = destroyForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::bulkDelete
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:40
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:65
  * @route '/intermediate/applicants/{applicantId}/skills/bulk-delete'
  */
 export const bulkDelete = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -351,7 +351,7 @@ bulkDelete.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::bulkDelete
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:40
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:65
  * @route '/intermediate/applicants/{applicantId}/skills/bulk-delete'
  */
 bulkDelete.url = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -379,7 +379,7 @@ bulkDelete.url = (args: { applicantId: string | number } | [applicantId: string 
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::bulkDelete
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:40
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:65
  * @route '/intermediate/applicants/{applicantId}/skills/bulk-delete'
  */
 bulkDelete.post = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -389,7 +389,7 @@ bulkDelete.post = (args: { applicantId: string | number } | [applicantId: string
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::bulkDelete
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:40
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:65
  * @route '/intermediate/applicants/{applicantId}/skills/bulk-delete'
  */
     const bulkDeleteForm = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -399,7 +399,7 @@ bulkDelete.post = (args: { applicantId: string | number } | [applicantId: string
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicantSkillController::bulkDelete
- * @see app/Http/Controllers/IntermediateApplicantSkillController.php:40
+ * @see app/Http/Controllers/IntermediateApplicantSkillController.php:65
  * @route '/intermediate/applicants/{applicantId}/skills/bulk-delete'
  */
         bulkDeleteForm.post = (args: { applicantId: string | number } | [applicantId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

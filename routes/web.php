@@ -250,9 +250,19 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/intermediate/resource-requisitions/{id}/update', [IntermediateRequisitionController::class, 'update'])->name('intermediate.requisitions.update');
     });
 
+
+    // ------------------------
+// Intermediate Applications
+// ------------------------
+
     Route::middleware(['check.permission'])->group(function () {
         Route::get('/intermediate/applications', [IntermediateApplicationController::class, 'index'])
             ->name('intermediate.applications.index');
+
+                    // Import intermediate applicants (matches your Vue router.post)
+        Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
+            ->name('intermediate.applications.import');
+    });
 
     // ------------------------
 // Intermediate Applicants
@@ -279,10 +289,6 @@ Route::middleware(['auth', 'check.permission'])->group(function () {
 Route::put('/intermediate/applicants/{id}/update', [IntermediateApplicantController::class, 'update'])
     ->name('intermediate.applicants.update');
 });
-        // Import intermediate applicants (matches your Vue router.post)
-        Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
-            ->name('intermediate.applications.import');
-    });
 
     Route::prefix('intermediate/applicants/{applicantId}/skills')->group(function () {
     Route::get('/', [IntermediateApplicantSkillController::class, 'index']);
