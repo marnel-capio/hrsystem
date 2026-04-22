@@ -108,6 +108,18 @@ onMounted(() => {
 
 <template>
   <AppLayout>
+    <div v-if="showSuccess" class="full-width-alert">
+      <div class="alert-banner alert-success-banner">
+        <div class="alert-body">{{ successMessage }}</div>
+        <button class="close-btn" @click="showSuccess = false">×</button>
+      </div>
+    </div>
+    <div v-if="showError" class="full-width-alert">
+      <div class="alert-banner alert-error-banner">
+        <div class="alert-body">{{ errorMessage }}</div>
+        <button class="close-btn" @click="showError = false">×</button>
+      </div>
+    </div>
     <div class="page-content">
 
       <!-- PAGE HEADER -->

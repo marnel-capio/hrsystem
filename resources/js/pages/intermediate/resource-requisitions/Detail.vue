@@ -400,7 +400,7 @@ console.log('Is Allowed to Manage:', isAllowedToManage.value);
               <td class="px-3 py-2 border-y border-x-0">{{ formatDate(requisition.start_date) || '-'}}</td>
             </tr>
             <tr>
-              <td class="font-semibold px-3 py-2 border-y border-x-0">Duration</td>
+              <td class="font-semibold px-3 py-2 border-y border-x-0">Duration of Project Engagement</td>
               <td class="px-3 py-2 border-y border-x-0">{{ requisition.duration_project_engagement || '-'}}</td>
             </tr>
           </tbody>

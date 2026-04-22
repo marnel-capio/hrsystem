@@ -143,15 +143,16 @@ class IntermediateRequisitionController extends Controller
         ($requisition->Location_assignment == 4 ? 'Japan' : 'China')));
         $start_date = $requisition->start_date;
         $emails = $this->getDeleteNotificationEmails();
-
         try {
             DB::beginTransaction();
+            // TEST ERROR
+            //throw new \Exception("Test error");
 
             Log::info("Deleted resource requisition", [
-        'module' => 'ResourceRequisitions',
-        'project_name' => $projectName,
-        'requisition_id' => $requisition->id,
-    ]);
+                'module' => 'ResourceRequisitions',
+                'project_name' => $projectName,
+                'requisition_id' => $requisition->id,
+            ]);
             $requisition->delete();
 
             DB::commit();
