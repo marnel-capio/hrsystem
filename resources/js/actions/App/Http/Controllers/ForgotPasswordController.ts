@@ -134,9 +134,4 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 const ForgotPasswordController = { create, store }
 
-export default ForgotPasswordController})
-    
-    store.form = storeForm
-const ForgotPasswordController = { create, store }
-
 export default ForgotPasswordController

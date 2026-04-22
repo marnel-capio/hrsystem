@@ -111,6 +111,4 @@ importIntermediateApplicants.post = (options?: RouteQueryOptions): RouteDefiniti
     importIntermediateApplicants.form = importIntermediateApplicantsForm
 const ApplicationImportController = { importMethod, importIntermediateApplicants, import: importMethod }
 
-export default ApplicationImportControllerrtController = { importMethod, importIntermediateApplicants, import: importMethod }
-
 export default ApplicationImportController
