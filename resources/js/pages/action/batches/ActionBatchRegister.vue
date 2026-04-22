@@ -149,7 +149,7 @@ const submit = () => {
       <!-- Target Trainees -->
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-bold mb-1">Target Trainees <label class="text-red-500">*</label></label>
+          <label class="text-xs font-bold mb-1">Target Trainees<label class="text-red-500">*</label></label>
           <input
             v-model="form.target_trainees"
             placeholder="Target Trainees"
@@ -170,7 +170,7 @@ const submit = () => {
       <!-- Target Date -->
       <div class="grid grid-cols-2 gap-4 mt-5 w-40">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs font-bold mb-1">Target Start Date <label class="text-red-500">*</label></label>
+          <label class="text-xs font-bold mb-1">Target Start Date<label class="text-red-500">*</label></label>
           <input
             v-model="sanitizedTargetDate"
             type="month"
@@ -189,7 +189,7 @@ const submit = () => {
       <!-- Remarks -->
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-xs mb-1 !text-gray-500">Remarks</label>
+          <label class="text-xs mb-1">Remarks</label>
           <textarea
             v-model="form.remarks"
             rows="6"

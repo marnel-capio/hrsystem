@@ -90,7 +90,7 @@ return [
         'LOCATION_2_NAME' => 'Cebu',
     ],
 
-    'full_edit_permissions' => [1, 2, 3],
+    'full_edit_permissions' => [1, 2],
     'limited_edit_permissions' => [3, 4, 5, 6],
 
     'sourceTypes' => [
@@ -284,6 +284,7 @@ return [
             'initial_interview_plan_date',
             'initial_interview_actual_date',
             'initial_interview_venue',
+            'initial_interview_assignments',
             'initial_interview_final',
             'initial_interview_result',
             'initial_interview_application_status',
@@ -542,7 +543,7 @@ return [
         'type2' => ['Referral', 'Recruitment Network', 'Job Fairs', 'Website', 'Rehire'],
         'type3' => ['AAISI', 'Primover', 'Tech Tierra', 'Spring Valley', 'YENS'],
     ],
-    
+
     'japanese_backgrounds' => [
         1 => 'None',
         2 => 'Self Study / University Level',
@@ -557,7 +558,7 @@ return [
         1 => 'N1',
     ],
 
-     'exam_statuses' => [
+    'exam_statuses' => [
         1 => 'Pending',
         2 => 'Done',
         3 => 'Passed',
@@ -592,5 +593,4 @@ return [
         ],
     ],
 
-    
 ];
