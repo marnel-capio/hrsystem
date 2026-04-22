@@ -1630,9 +1630,9 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                             <div class="exam-section-layout">
 
                                 <!-- LEFT SIDE -->
+                                <!-- LEFT SIDE -->
                                 <div class="exam-form-column">
 
-                                    <!-- ✅ STEP 4: Template (should already be correct) -->
                                     <div class="form-grid grid-2 mb-6">
                                         <div class="form-field">
                                             <label class="field-label">Initial Interview Plan Date</label>
@@ -1664,7 +1664,6 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                                             <option v-for="venue in examVenues" :key="venue.value" :value="venue.value">
                                                 {{ venue.label }}
                                             </option>
-
                                         </select>
 
                                         <span v-if="form.errors.initial_interview_venue" class="error-message">
@@ -1672,29 +1671,17 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                                         </span>
                                     </div>
 
-                                    <!-- Score -->
-                                    <div class="form-field mb-6">
-                                        <label class="field-label">Initial Interview Final Score</label>
-
-                                        <input type="number" v-model.number="form.initial_interview_final"
-                                            class="form-input" min="1" max="5" step="0.50"
-                                            :disabled="isFormFieldDisabled"
-                                            @input="clampScore(form, 'initial_interview_final', 5)" />
-
-                                        <span v-if="form.errors.initial_interview_final" class="error-message">
-                                            {{ form.errors.initial_interview_final }}
-                                        </span>
-
-                                        <span v-if="liveErrors.initial_interview_final" class="error-message">
-                                            {{ liveErrors.initial_interview_final }}
-                                        </span>
+                                    <div class="form-field">
+                                        <label class="field-label">Initial Interview Remarks</label>
+                                        <textarea v-model="form.initial_interview_remarks" class="form-textarea"
+                                            :disabled="isFormFieldDisabled" rows="3"></textarea>
                                     </div>
 
                                 </div>
 
+
                                 <!-- RIGHT SIDE (CRITERIA PANEL - MATCHED STYLE) -->
                                 <div class="exam-criteria-column">
-
                                     <div class="criteria-panel compact">
                                         <div class="criteria-panel-title">
                                             Initial Interview Criteria
@@ -1719,177 +1706,11 @@ watch(() => form.initial_interview_actual_date, (newVal) => {
                                         <div class="criteria-rule failed">
                                             <div class="criteria-rule-title">5 - Never Recommended</div>
                                         </div>
-
                                     </div>
-
                                 </div>
-
                             </div>
-
-                            <!-- RESULT + STATUS ROW -->
-                            <div class="form-grid grid-2 mb-6">
-
-                                <div class="form-field">
-                                    <label class="field-label">Initial Interview Result</label>
-                                    <input type="text" class="form-input"
-                                        :value="initialInterviewResultLabel || 'Pending'" readonly
-                                        :disabled="!isApplicantSelected" />
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Initial Interview Status</label>
-                                    <select v-model="form.initial_interview_application_status" class="form-select"
-                                        :disabled="isFormFieldDisabled">
-
-                                        <option value="">Select</option>
-
-                                        <option v-for="status in initialInterviewStatuses" :key="status.value"
-                                            :value="status.value">
-                                            {{ status.label }}
-                                        </option>
-
-                                    </select>
-                                </div>
-
-                            </div>
-
-                            <!-- REMARKS -->
-                            <div class="form-field">
-                                <label class="field-label">Initial Interview Remarks</label>
-                                <textarea v-model="form.initial_interview_remarks" class="form-textarea"
-                                    :disabled="isFormFieldDisabled" rows="3"></textarea>
-                            </div>
-
                         </div>
 
-                        <!-- Final Interview -->
-                        <div class="form-section" :class="{ 'disabled-section': isFormFieldDisabled }">
-
-                            <div class="section-header">
-                                <h3>Final Interview</h3>
-                            </div>
-
-                            <div class="exam-section-layout">
-
-                                <!-- LEFT SIDE -->
-                                <div class="exam-form-column">
-
-                                    <!-- Date -->
-                                    <div class="form-field mb-6">
-                                        <label class="field-label">Final Interview Date</label>
-                                        <input type="datetime-local" v-model="form.final_interview_date" class="form-input"
-                                            :min="finalInterviewMin" :disabled="isFormFieldDisabled" />
-                                    </div>
-
-                                    <!-- Score -->
-                                    <div class="form-field mb-6">
-                                        <label class="field-label">Final Interview Final Score</label>
-
-                                        <input type="number" v-model.number="form.final_interview_final"
-                                            class="form-input" min="1" max="5" step="0.50"
-                                            :disabled="isFormFieldDisabled"
-                                            @input="clampScore(form, 'final_interview_final', 5)" />
-
-                                        <span v-if="form.errors.final_interview_final" class="error-message">
-                                            {{ form.errors.final_interview_final }}
-                                        </span>
-
-                                        <span v-if="liveErrors.final_interview_final" class="error-message">
-                                            {{ liveErrors.final_interview_final }}
-                                        </span>
-                                    </div>
-
-                                </div>
-
-                                <!-- RIGHT SIDE (CRITERIA PANEL) -->
-                                <div class="exam-criteria-column">
-
-                                    <div class="criteria-panel compact">
-                                        <div class="criteria-panel-title">
-                                            Final Interview Criteria
-                                        </div>
-
-                                        <div class="criteria-rule passed">
-                                            <div class="criteria-rule-title">1 - Highly Recommended</div>
-                                        </div>
-
-                                        <div class="criteria-rule passed">
-                                            <div class="criteria-rule-title">2 - Recommended</div>
-                                        </div>
-
-                                        <div class="criteria-rule p2">
-                                            <div class="criteria-rule-title">3 - Average</div>
-                                        </div>
-
-                                        <div class="criteria-rule failed">
-                                            <div class="criteria-rule-title">4 - Not Recommended</div>
-                                        </div>
-
-                                        <div class="criteria-rule failed">
-                                            <div class="criteria-rule-title">5 - Never Recommended</div>
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                            <!-- RESULT + STATUS ROW -->
-                            <div class="form-grid grid-2 mb-6">
-
-                                <div class="form-field">
-                                    <label class="field-label">Final Interview Result</label>
-                                    <input type="text" class="form-input" :value="finalResultLabel" readonly
-                                        :disabled="!isApplicantSelected" />
-                                </div>
-
-                                <div class="form-field">
-                                    <label class="field-label">Final Interview Status</label>
-                                    <input type="text" class="form-input" :value="finalStatusLabel" readonly
-                                        :disabled="!isApplicantSelected" />
-                                </div>
-
-                            </div>
-
-                            <!-- REMARKS -->
-                            <div class="form-field">
-                                <label class="field-label !text-gray-500">Final Interview Remarks</label>
-                                <textarea v-model="form.final_interview_remarks" class="form-textarea"
-                                    :disabled="isFormFieldDisabled" rows="3"></textarea>
-                            </div>
-
-                        </div>
-
-                        <!-- Job Offer & Post Offer -->
-                        <div class="form-section" :class="{ 'disabled-section': isFormFieldDisabled }">
-                            <div class="section-header">
-                                <h3>Job Offer & Post Offer</h3>
-                            </div>
-                            <div class="form-grid grid-2 mb-6">
-                                <div class="form-field">
-                                    <label class="field-label">Job Offer Schedule</label>
-                                    <input type="datetime-local" v-model="form.job_offer_schedule" class="form-input"
-                                        :min="jobOfferMin" :disabled="isFormFieldDisabled" />
-                                </div>
-                                <div class="form-field">
-                                    <label class="field-label">Job Offer Status</label>
-                                    <select v-model="form.job_offer_status" class="form-select"
-                                        :disabled="isFormFieldDisabled">
-                                        <option :value="null">Select</option>
-                                        <option v-for="status in jobOfferStatuses" :key="status.value"
-                                            :value="status.value">
-                                            {{ status.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-field">
-                                <label class="field-label !text-gray-500">Job Offer Remarks</label>
-                                <textarea v-model="form.job_offer_remarks" class="form-textarea"
-                                    :disabled="isFormFieldDisabled" rows="2"></textarea>
-                            </div>
-                        </div>
 
                         <!-- General Remarks -->
                         <div class="form-section" :class="{ 'disabled-section': isFormFieldDisabled }">
@@ -2814,11 +2635,13 @@ a.btn-secondary:hover {
 }
 
 .alert-error-banner {
-    background-color: #dc2626; /* error red */
+    background-color: #dc2626;
+    /* error red */
 }
 
 .alert-success-banner {
-    background-color: #10b981; /* success green */
+    background-color: #10b981;
+    /* success green */
 }
 
 .close-btn {
