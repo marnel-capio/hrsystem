@@ -13,14 +13,14 @@
 
                     <!-- Header -->
                     <tr>
-                        <td style="background-color: #80ABCB; padding: 20px; text-align: center;">
-                            <img src="{{ asset('images/aws.png') }}" alt="AWS Logo" width="40" style="display: block;">
+                        <td style="background-color: #0d6efd; padding: 20px; text-align: center;">
+                            <img src="{{ asset('images/aws-logo.jpg') }}" alt="AWS Logo" width="150" style="display: block;">
                         </td>
                     </tr>
 
                     <!-- Body -->
                     <tr>
-                        <td style="padding: 25px; color: #333333; font-size: 12px;">
+                        <td style="padding: 30px; color: #333333;">
                             @yield('content')
                         </td>
                     </tr>

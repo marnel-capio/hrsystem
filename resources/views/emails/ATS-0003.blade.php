@@ -15,8 +15,8 @@
 
                     <!-- Header / Logo -->
                     <tr>
-                        <td style="background-color: #80ABCB; padding: 20px; text-align: center;">
-                            <img src="{{ asset('images/aws.png') }}" alt="AWS Logo" width="40"
+                        <td style="background-color: #0d6efd; padding: 20px; text-align: center;">
+                            <img src="{{ asset('images/aws-logo.jpg') }}" alt="AWS Logo" width="150"
                                 style="display: block;">
                         </td>
                     </tr>
@@ -24,23 +24,26 @@
                     <!-- Body -->
                     <tr>
                         <td style="padding: 30px; color: #333333;">
-                            <p style="font-size: 12px;">Good Day!</p>
+                            <p style="font-size: 16px;">Good Day!</p>
 
-                            <p style="font-size: 12px; line-height: 1.6;">
+                            <p style="font-size: 16px; line-height: 1.6;">
                                 A resource schedule has been deleted.
                             </p>
 
-                            <p style="font-size: 12px; line-height: 1.6;">
+                            <p style="font-size: 16px; line-height: 1.6;">
                                 <strong>Batch:</strong> {{ $batchName }}
-                            <br>
+                            </p>
 
-                                <strong>Target Location:</strong> {{ $targetLocation }}<br>
+                            <p style="font-size: 16px; line-height: 1.6;">
+                                <strong>Target Location:</strong> {{ $targetLocation }}
+                            </p>
 
+                            <p style="font-size: 16px; line-height: 1.6;">
                                 <strong>Deployment Date:</strong> {{ $deploymentDate }}
-                            </p><br>
+                            </p>
 
-                            <p style="font-size: 12px; line-height: 1.6;">
-                                Best Regards,<br>
+                            <p style="font-size: 16px; line-height: 1.6;">
+                                Thank you,<br>
                                 <strong>{{ $senderName }}</strong><br>
                                 <span style="font-size: 14px; color: #555;">
                                     {{ $senderRole }}
@@ -52,7 +55,7 @@
                     <!-- Footer -->
                     <tr>
                         <td
-                            style="background-color: #f1f3f6; padding: 20px; text-align: center; font-size: 10px; color: #999999;">
+                            style="background-color: #f1f3f6; padding: 20px; text-align: center; font-size: 12px; color: #999999;">
                             &copy; {{ date('Y') }} Advanced World Solutions. All rights reserved.
                         </td>
                     </tr>

@@ -6,56 +6,61 @@
     <title>New Resource Schedule Notification</title>
 </head>
 
-<body style="font-family: Arial, sans-serif; background:#f4f4f5; padding:30px;">
-    <div style="background:#80ABCB; border:1px solid #B1B6C4; border-radius:10px; overflow:hidden;">
-        <div style="background:#cae1fc; color:#fff; padding:15px 20px; border-radius:10px 10px 0 0;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-                <tr>
-                    <td width="50" style="vertical-align:middle;">
-                        <img 
-                            src="{{ asset('images/aws.png') }}"
-                            alt="AWS Logo"
-                            width="40"
-                            style="display:block; border-radius:6px;">
-                    </td>
-                </tr>
-            </table>
-        </div>
+<body style="font-family: Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f6f8; padding: 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0"
+                    style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
 
-        <div style="background:#ffffff; overflow:hidden;">
-            <div style="padding:25px; color:#333; font-size: 12px;">
-                <p>Good Day! <br><br>
-                A resource schedule has been created/updated.<br><br>
-                <strong>Batch:</strong>
-                <a href="{{ $link }}" 
-                   style="color:blue; text-decoration: underline; font-weight:bold;">
-                   {{ $batchName }}
-                </a><br><br>
-                Please review in the HR System for further details.
-                </p><br>
+                    <!-- Header / Logo -->
+                    <tr>
+                        <td style="background-color: #0d6efd; padding: 20px; text-align: center;">
+                            <img src="{{ asset('images/aws-logo.jpg') }}" alt="AWS Logo" width="150"
+                                style="display: block;">
+                        </td>
+                    </tr>
 
-                <p>Best Regards,<br>
-                <strong>{{ $senderName }}</strong><br>
-                <span style="font-size: 12px; color: #555;">
-                    {{ $senderRole }}
-                </span></p>
-            </div>
-        </div>
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 30px; color: #333333;">
+                            <p style="font-size: 16px;">Good Day!</p>
 
-        <!-- FOOTER (BOTTOM OF CARD, EDGE-TO-EDGE) -->
-        <div style="padding:10px; background:#f3f4f6; text-align:center; border-top:1px solid #cfd0d5;">
-            <p style="font-size:12px; color:#6b7280; margin:0;">
-                © {{ date('Y') }} Advanced World Solutions. All rights reserved.
-            </p>
-        </div>
-    </div>
+                            <p style="font-size: 16px; line-height: 1.6;">
+                                A resource schedule has been created/updated.
+                            </p>
 
-    <style>
-        p {
-            font-size: 12px;
-            margin-bottom: 7px;
-        }
-    </style>
+                            <p style="font-size: 16px; line-height: 1.6; font-weight: bold;">
+                                Batch: <a href="{{ $link }}"
+                                    style="color: #0d6efd; text-decoration: underline;">{{ $batchName }}</a>
+                            </p>
+
+                            <p style="font-size: 16px; line-height: 1.6;">
+                                Please review in the HR System for further details.
+                            </p>
+
+                            <p style="font-size: 16px; line-height: 1.6;">
+                                Thank you,<br>
+                                <strong>{{ $senderName }}</strong><br>
+                                <span style="font-size: 14px; color: #555;">
+                                    {{ $senderRole }}
+                                </span>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td
+                            style="background-color: #f1f3f6; padding: 20px; text-align: center; font-size: 12px; color: #999999;">
+                            &copy; {{ date('Y') }} Advanced World Solutions. All rights reserved.
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>

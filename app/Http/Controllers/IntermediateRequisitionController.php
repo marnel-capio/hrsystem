@@ -3,24 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\IntermediateRequisitionModel;
-use App\Models\IntermediateProjectModel; 
-use App\Http\Requests\IntermediateRequisitionRequest;
+use App\Http\Requests\IntermediateRequest;
 use Inertia\Inertia;
-use App\Services\IntermediateRequisitionService;
+use App\Services\IntermediateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-
 
 
 class IntermediateRequisitionController extends Controller
 {
-    protected $intermediateRequisitionService;
+    protected $intermediateService;
 
-    public function __construct(IntermediateRequisitionService $intermediateRequisitionService)
+    public function __construct(IntermediateService $intermediateService)
     {
-        $this->intermediateRequisitionService = $intermediateRequisitionService;
+        $this->intermediateService = $intermediateService;
     }
 
     public function index(Request $request)
@@ -43,37 +40,8 @@ class IntermediateRequisitionController extends Controller
 
     public function create()
     {
-        $projects = IntermediateProjectModel::getProjects(); 
-
-        return Inertia::render('intermediate/resource-requisitions/Register', [
-            'newProjects' => $projects,
-        ]);
+        return Inertia::render('intermediate/resource-requisitions/Register');
     }
-
-    public function store(IntermediateRequisitionRequest $request)
-{
-    try {
-        DB::beginTransaction();
-                
-        $requisition = $this->intermediateRequisitionService->create($request->validated(), $request);
-        
-        DB::commit();
-        
-        return redirect()
-            ->route('intermediate.requisitions.show', ['id' => $requisition->id])
-            ->with('success', config('errors.record_created_successfully.errorMessage'));
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-
-        Log::error('Error creating requisition: ', ['error' => $e->getMessage()]);
-        
-        return back()->withErrors([
-            'error' => config('errors.transaction_failed.errorMessage')
-        ]);
-    }
-}
-
 
     public function show($id)
     {
