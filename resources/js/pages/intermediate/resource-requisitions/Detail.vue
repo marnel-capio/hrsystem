@@ -340,11 +340,11 @@ const formatDate = (dateString: string | null) => {
               </tr>
               <tr>
                 <td class="font-semibold px-3 py-2 border-y border-x-0">Replacement Reason</td>
-                <td class="px-3 py-2 border-y border-x-0">{{ requisition.replacement_due_to_label }}</td>
+                <td class="px-3 py-2 border-y border-x-0">{{ requisition.replacement_due_to_label || '-'}}</td>
               </tr>
               <tr>
                 <td class="font-semibold px-3 py-2 border-y border-x-0">Person to Replace</td>
-                <td class="px-3 py-2 border-y border-x-0">{{ requisition.person_to_replace }}</td>
+                <td class="px-3 py-2 border-y border-x-0">{{ requisition.person_to_replace || '-'}}</td>
               </tr>
             </tbody>
           </table>
@@ -362,7 +362,7 @@ const formatDate = (dateString: string | null) => {
                   :key="index"
                   class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full mr-1 mb-1"
                 >
-                  {{ item.trim() }}
+                  {{ item.trim() || '-'}}
                 </span>
               </td>
             </tr>
@@ -374,21 +374,21 @@ const formatDate = (dateString: string | null) => {
                   :key="index"
                   class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full mr-1 mb-1"
                 >
-                  {{ item.trim() }}
+                  {{ item.trim() || '-'}}
                 </span>
               </td>
             </tr>
             <tr>
               <td class="font-semibold px-3 py-2 border-y border-x-0">No. of Resources Needed</td>
-              <td class="px-3 py-2 border-y border-x-0">{{ requisition.no_resources_needed }}</td>
+              <td class="px-3 py-2 border-y border-x-0">{{ requisition.no_resources_needed || '-'}}</td>
             </tr>
             <tr>
               <td class="font-semibold px-3 py-2 border-y border-x-0">Start Date</td>
-              <td class="px-3 py-2 border-y border-x-0">{{ formatDate(requisition.start_date) }}</td>
+              <td class="px-3 py-2 border-y border-x-0">{{ formatDate(requisition.start_date) || '-'}}</td>
             </tr>
             <tr>
               <td class="font-semibold px-3 py-2 border-y border-x-0">Duration</td>
-              <td class="px-3 py-2 border-y border-x-0">{{ requisition.duration_project_engagement }}</td>
+              <td class="px-3 py-2 border-y border-x-0">{{ requisition.duration_project_engagement || '-'}}</td>
             </tr>
           </tbody>
         </table>
