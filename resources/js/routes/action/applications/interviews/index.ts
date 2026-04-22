@@ -221,6 +221,7 @@ decision.post = (args: { applicationId: string | number, interviewId: string | n
     decision.form = decisionForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:568
  * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
@@ -236,6 +237,7 @@ bulkUpdateSchedule.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:568
  * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
@@ -264,6 +266,7 @@ bulkUpdateSchedule.url = (args: { applicationId: string | number } | [applicatio
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:568
  * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
@@ -274,6 +277,7 @@ bulkUpdateSchedule.post = (args: { applicationId: string | number } | [applicati
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:568
  * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
@@ -284,6 +288,7 @@ bulkUpdateSchedule.post = (args: { applicationId: string | number } | [applicati
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::bulkUpdateSchedule
+ * @see app/Http/Controllers/ActionApplicationController.php:568
  * @see app/Http/Controllers/ActionApplicationController.php:511
  * @route '/action/applications/{applicationId}/interviews/bulk-update-schedule'
  */
