@@ -353,7 +353,7 @@ console.log('Is Allowed to Manage:', isAllowedToManage.value);
               </tr>
               <tr>
                 <td class="font-semibold px-3 py-2 border-y border-x-0">Replacement Reason</td>
-                <td class="px-3 py-2 border-y border-x-0">{{ requisition.replacement_due_to_label || '-'}}</td>
+                <td class="px-3 py-2 border-y border-x-0">{{ requisition.replacement_due_to_label}}</td>
               </tr>
               <tr>
                 <td class="font-semibold px-3 py-2 border-y border-x-0">Person to Replace</td>

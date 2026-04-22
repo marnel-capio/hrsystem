@@ -159,25 +159,25 @@ class IntermediateRequisitionModel extends Model
     'project_description',
 ];
 
-    public function getEngagementTypeLabelAttribute()
-    {
-        return config('constants.engagement_type.ET_' . $this->engagement_type . '_NAME');
-    }
+public function getEngagementTypeLabelAttribute()
+{
+    return config('constants.resource_requisitions.engagement_type.ET_' . $this->engagement_type . '_NAME', 'Unknown');
+}
 
-    public function getSourcingTypeLabelAttribute()
-    {
-        return config('constants.sourcing_type.ST_' . $this->sourcing_type . '_NAME');
-    }
+public function getSourcingTypeLabelAttribute()
+{
+    return config('constants.resource_requisitions.sourcing_type.ST_' . $this->sourcing_type . '_NAME', 'Unknown');
+}
 
-    public function getRequestTypeLabelAttribute()
-    {
-        return config('constants.request_type.RT_' . $this->request_type . '_NAME');
-    }
+public function getRequestTypeLabelAttribute()
+{
+    return config('constants.resource_requisitions.request_type.RT_' . $this->request_type . '_NAME', 'Unknown');
+}
 
-    public function getReplacementDueToLabelAttribute()
-    {
-        return config('constants.replacement_due_to.RDT_' . $this->replacement_due_to . '_NAME');
-    }
+public function getReplacementDueToLabelAttribute()
+{
+    return config('constants.resource_requisitions.replacement_due_to.RDT_' . $this->replacement_due_to . '_NAME', 'Unknown');
+}
 
     public function getLocationAssignmentLabelAttr()
     {
