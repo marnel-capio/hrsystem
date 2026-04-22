@@ -272,6 +272,12 @@ Route::middleware(['auth', 'check.permission'])->group(function () {
 
     Route::get('/intermediate/applicants/{id}', [IntermediateApplicantController::class, 'show'])
         ->name('intermediate.applicants.show');
+
+    Route::get('/intermediate/applicants/{id}/edit', [IntermediateApplicantController::class, 'edit'])
+    ->name('intermediate.applicants.edit');
+
+Route::put('/intermediate/applicants/{id}/update', [IntermediateApplicantController::class, 'update'])
+    ->name('intermediate.applicants.update');
 });
         // Import intermediate applicants (matches your Vue router.post)
         Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
@@ -284,7 +290,10 @@ Route::middleware(['auth', 'check.permission'])->group(function () {
     Route::put('/{skillId}', [IntermediateApplicantSkillController::class, 'update']);
     Route::delete('/{skillId}', [IntermediateApplicantSkillController::class, 'destroy']);
     Route::post('/bulk-delete', [IntermediateApplicantSkillController::class, 'bulkDelete']);
+
 });
+
+
 
 // ------------------------
 // Include additional routes
