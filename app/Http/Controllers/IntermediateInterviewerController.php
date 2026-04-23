@@ -6,6 +6,7 @@ use App\Models\IntermediateApplication;
 use App\Models\IntermediateInterviewer;
 use App\Models\Log;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -63,6 +64,16 @@ class IntermediateInterviewerController extends Controller
      */
     public function bulkAdd(Request $request, $applicationId)
     {
+        date_default_timezone_set('Asia/Manila');
+
+        // ✅ DEBUG: Log all incoming data
+        \Log::info('=== BULK ADD DEBUG ===');
+        \Log::info('Application ID: '.$applicationId);
+        \Log::info('Request all data: ', $request->all());
+        \Log::info('Scheduled date raw: '.$request->input('scheduled_date'));
+        \Log::info('Interview type: '.$request->input('interview_type'));
+        \Log::info('Interviewer IDs: ', $request->input('interviewer_ids', []));
+
         $validator = Validator::make($request->all(), [
             'interviewer_ids' => 'required|array|min:1',
             'interviewer_ids.*' => 'required|integer|exists:users,id',
@@ -79,6 +90,9 @@ class IntermediateInterviewerController extends Controller
         try {
             $application = IntermediateApplication::findOrFail($applicationId);
             $added = [];
+
+            $scheduledDate = Carbon::parse($request->scheduled_date)
+                ->timezone('Asia/Manila');
 
             foreach ($request->interviewer_ids as $interviewerId) {
                 // Check if already assigned for this stage
@@ -151,6 +165,7 @@ class IntermediateInterviewerController extends Controller
      */
     public function bulkUpdateSchedule(Request $request, $applicationId)
     {
+        date_default_timezone_set('Asia/Manila');
         $validator = Validator::make($request->all(), [
             'interview_ids' => 'required|array|min:1',
             'interview_ids.*' => 'required|integer|exists:intermediate_application_interviews,id',
@@ -165,6 +180,10 @@ class IntermediateInterviewerController extends Controller
 
         try {
             $application = IntermediateApplication::findOrFail($applicationId);
+
+            $scheduledDate = Carbon::parse($request->scheduled_date)
+                ->timezone('Asia/Manila');
+
             $updated = IntermediateInterviewer::whereIn('id', $request->interview_ids)
                 ->update(['scheduled_date' => $request->scheduled_date]);
 
@@ -425,9 +444,110 @@ class IntermediateInterviewerController extends Controller
             1 => 'HR Staff',
             2 => 'HR Manager',
             3 => 'Admin',
-            5 => 'BU Head',
+            5 => 'BU Manager',
             6 => 'Interviewer',
             default => 'Staff',
         };
+    }
+
+    /**
+     * Update schedule for entire stage and reset all to pending
+     */
+    public function stageUpdateSchedule(Request $request, $applicationId)
+    {
+        date_default_timezone_set('Asia/Manila');
+        $validator = Validator::make($request->all(), [
+            'interview_type' => 'required|integer|in:1,2,3',
+            'scheduled_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $application = IntermediateApplication::findOrFail($applicationId);
+            $stage = $request->interview_type;
+
+            $scheduledDate = Carbon::parse($request->scheduled_date)
+                ->timezone('Asia/Manila');
+
+            // Update ALL interviewers in this stage
+            $updated = IntermediateInterviewer::where('intermediate_application_id', $applicationId)
+                ->where('interview_type', $stage)
+                ->update([
+                    'scheduled_date' => $request->scheduled_date,
+                    'interview_status' => 1, // Reset to Pending Approval
+                    'decline_reason' => null, // Clear any decline reasons
+                    'pending_approval_notified_at' => null, // Reset notification flag
+                ]);
+
+            // Update the application's plan date
+            $applicationDate = null;
+            if ($stage == 1) {
+                $application->exam_plan_date = $request->scheduled_date;
+                $applicationDate = $application->exam_plan_date;
+            } elseif ($stage == 2) {
+                $application->initial_interview_plan_date = $request->scheduled_date;
+                $applicationDate = $application->initial_interview_plan_date;
+            } elseif ($stage == 3) {
+                $application->final_interview_date = $request->scheduled_date;
+                $applicationDate = $application->final_interview_date;
+            }
+            $application->save();
+
+            // Get stage name for logging
+            $stageName = match ($stage) {
+                1 => 'Exam',
+                2 => 'Initial Interview',
+                3 => 'Final Interview',
+                default => 'Unknown'
+            };
+
+            // Log the action
+            Log::createLog(
+                'Intermediate',
+                "{$stageName} schedule updated and reset to pending for application #{$applicationId} ({$updated} interviewer(s))",
+                $application->intermediate_applicant_id
+            );
+
+            DB::commit();
+
+            // Return fresh interviews with eager loaded interviewer
+            $interviews = IntermediateInterviewer::with('interviewer')
+                ->where('intermediate_application_id', $applicationId)
+                ->get()
+                ->map(function ($interview) {
+                    return [
+                        'id' => $interview->id,
+                        'interviewer_id' => $interview->interviewer_id,
+                        'name' => $interview->interviewer->full_name ?? 'Unknown',
+                        'email_address' => $interview->interviewer->email_address ?? '',
+                        'role_label' => $interview->interviewer->role_label ?? 'Interviewer',
+                        'interview_type' => $interview->interview_type,
+                        'scheduled_date' => $interview->scheduled_date,
+                        'status' => $interview->interview_status,
+                        'decline_reason' => $interview->decline_reason,
+                        'pending_approval_notified_at' => $interview->pending_approval_notified_at,
+                    ];
+                });
+
+            return response()->json([
+                'message' => "{$stageName} schedule updated successfully! All interviewers reset to pending approval.",
+                'interviews' => $interviews,
+                'application_date' => $applicationDate,
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::error('Stage schedule update failed: '.$e->getMessage());
+
+            return response()->json([
+                'message' => 'Failed to update stage schedule',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 }

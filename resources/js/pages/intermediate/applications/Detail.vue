@@ -103,9 +103,18 @@ const lockedInterviewStatuses = [1, 2, 4];
 
 const editableInterviewIds = computed(() => {
     return interviews.value
-        .filter((i: any) => !lockedInterviewStatuses.includes(Number(i.status)))
+        .filter((i: any) => canSelectInterview(i))
         .map((i: any) => i.id);
 });
+
+// Check if a stage has at least one approved interviewer
+const hasApprovedInStage = (stage: number): boolean => {
+    const stageInterviewers = interviews.value.filter(
+        (i: any) => i && Number(i.interview_type) === stage
+    );
+    
+    return stageInterviewers.some((i: any) => Number(i.status) === 2);
+};
 
 const toggleSelectAll = () => {
     if (selectAll.value) {
@@ -307,42 +316,42 @@ const willTriggerApplicantAutoEmail = computed(() => {
 const normalizeDateTimeForSubmit = (value: string) => {
     if (!value) return value;
 
-    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
-        return value.replace('T', ' ') + ':00';
-    }
-
-    return value;
+    // Create date object
+    const date = new Date(value);
+    
+    // Format using Philippine Time explicitly
+    const phDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+    
+    const year = phDate.getFullYear();
+    const month = String(phDate.getMonth() + 1).padStart(2, '0');
+    const day = String(phDate.getDate()).padStart(2, '0');
+    const hours = String(phDate.getHours()).padStart(2, '0');
+    const minutes = String(phDate.getMinutes()).padStart(2, '0');
+    
+    console.log('Original value:', value);
+    console.log('Converted to PHT:', `${year}-${month}-${day} ${hours}:${minutes}:00`);
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:00`;
 };
 
 const formatDateTime = (dateString: string | null) => {
     if (!dateString) return '-';
 
-    const raw = String(dateString)
-        .replace('T', ' ')
-        .replace('Z', '')
-        .slice(0, 16);
-    const [datePart, timePart] = raw.split(' ');
-
-    if (!datePart || !timePart) return String(dateString);
-
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hour, minute] = timePart.split(':').map(Number);
-
-    const localDate = new Date(
-        year,
-        (month || 1) - 1,
-        day || 1,
-        hour || 0,
-        minute || 0,
-    );
-
-    return localDate.toLocaleString('en-US', {
+    // Parse the date string
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) return String(dateString);
+    
+    // Format to Philippine Time (UTC+8)
+    return date.toLocaleString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
         hour: 'numeric',
         minute: 'numeric',
         hour12: true,
+        timeZone: 'Asia/Manila'  // ← Force Philippine Time
     });
 };
 
@@ -538,13 +547,30 @@ const canViewDeclineReason = (interview: any) => {
 };
 
 // Modal actions
+// Check if all selected interviewers are from the same stage
+const allSameStage = computed(() => {
+    if (selectedInterviewers.value.length === 0) return false;
+    
+    const selectedInterviews = interviews.value.filter((i: any) =>
+        selectedInterviewers.value.includes(i.id)
+    );
+    
+    const stages = [...new Set(selectedInterviews.map((i: any) => Number(i.interview_type)))];
+    return stages.length === 1;
+});
+
 const openBulkEditScheduleModal = () => {
     bulkEditScheduleErrors.value.selectedInterviewers = '';
     bulkEditScheduleErrors.value.scheduledDate = '';
 
     if (selectedInterviewers.value.length === 0) {
-        bulkEditScheduleErrors.value.selectedInterviewers =
-            'This is a required field.';
+        bulkEditScheduleErrors.value.selectedInterviewers = 'This is a required field.';
+        return;
+    }
+
+    // Check if any selected stage has approved interviewers
+    if (hasApprovedInSelectedStages.value) {
+        bulkEditScheduleErrors.value.selectedInterviewers = scheduleEditErrorMessage.value;
         return;
     }
 
@@ -554,8 +580,16 @@ const openBulkEditScheduleModal = () => {
 
 const openAcceptDeclineModal = (interview: any) => {
     acceptDeclineInterviewer.value = interview;
-    acceptDeclineDecision.value = '';
-    acceptDeclineReason.value = '';
+
+    // If already declined, pre-select "accept" for change of mind
+    if (interview.status === 3) {
+        acceptDeclineDecision.value = 'accept';
+        acceptDeclineReason.value = '';
+    } else {
+        acceptDeclineDecision.value = '';
+        acceptDeclineReason.value = '';
+    }
+
     acceptDeclineErrors.value.decision = '';
     acceptDeclineErrors.value.reason = '';
     showAcceptDeclineModal.value = true;
@@ -574,7 +608,14 @@ const closeDeclineReasonModal = () => {
 const openBulkAddModal = () => {
     selectedBulkInterviewers.value = [];
     interviewerSearch.value = '';
-    bulkAddStage.value = '1';
+    
+    // Set default stage to first available stage
+    if (availableStages.value.length > 0) {
+        bulkAddStage.value = String(availableStages.value[0].value);
+    } else {
+        bulkAddStage.value = '1'; // Fallback
+    }
+    
     showBulkAddModal.value = true;
 };
 
@@ -633,13 +674,17 @@ const submitBulkEditSchedule = async () => {
     bulkEditingSchedule.value = true;
 
     try {
+        // ✅ Use normalizeDateTimeForSubmit to convert to PHT
+        const normalizedDate = normalizeDateTimeForSubmit(bulkEditScheduledDate.value);
+        
+        console.log('Bulk edit - Original:', bulkEditScheduledDate.value);
+        console.log('Bulk edit - Converted to PHT:', normalizedDate);
+        
         const response = await axios.post(
             `/intermediate/applications/${application.value.id}/interviews/bulk-update-schedule`,
             {
                 interview_ids: selectedInterviewers.value,
-                scheduled_date: normalizeDateTimeForSubmit(
-                    bulkEditScheduledDate.value,
-                ),
+                scheduled_date: normalizedDate, // ✅ Use normalized date
             },
         );
 
@@ -682,13 +727,19 @@ const submitBulkAdd = async () => {
     bulkAdding.value = true;
 
     try {
+        // ✅ Use normalizeDateTimeForSubmit to convert to PHT
+        const normalizedDate = normalizeDateTimeForSubmit(bulkAddPlannedDate.value);
+        
+        console.log('Original value:', bulkAddPlannedDate.value);
+        console.log('Converted to PHT:', normalizedDate);
+        
         const payload = {
             interviewer_ids: selectedBulkInterviewers.value.map((i) => i.id),
             interview_type: Number(bulkAddStage.value),
-            scheduled_date: normalizeDateTimeForSubmit(
-                bulkAddPlannedDate.value,
-            ),
+            scheduled_date: normalizedDate, // ✅ Use the normalized date here
         };
+
+        console.log('Sending payload:', payload);
 
         const response = await axios.post(
             `/intermediate/applications/${application.value.id}/interviews/bulk-add`,
@@ -727,15 +778,17 @@ const submitAcceptDecline = async () => {
 
     let hasError = false;
 
-    if (!acceptDeclineDecision.value) {
+    // For declined interviewers changing their mind, decision is implicitly "accept"
+    const effectiveDecision = acceptDeclineInterviewer.value?.status === 3
+        ? 'accept'
+        : acceptDeclineDecision.value;
+
+    if (!effectiveDecision) {
         acceptDeclineErrors.value.decision = 'This field is required.';
         hasError = true;
     }
 
-    if (
-        acceptDeclineDecision.value === 'decline' &&
-        !acceptDeclineReason.value.trim()
-    ) {
+    if (effectiveDecision === 'decline' && !acceptDeclineReason.value.trim()) {
         acceptDeclineErrors.value.reason = 'This field is required.';
         hasError = true;
     }
@@ -748,8 +801,8 @@ const submitAcceptDecline = async () => {
         await axios.post(
             `/intermediate/applications/${application.value.id}/interviews/${acceptDeclineInterviewer.value.id}/decision`,
             {
-                decision: acceptDeclineDecision.value,
-                reason: acceptDeclineReason.value,
+                decision: effectiveDecision,
+                reason: effectiveDecision === 'decline' ? acceptDeclineReason.value : null,
             },
         );
 
@@ -760,11 +813,8 @@ const submitAcceptDecline = async () => {
 
             return {
                 ...interview,
-                status: acceptDeclineDecision.value === 'accept' ? 2 : 3,
-                decline_reason:
-                    acceptDeclineDecision.value === 'decline'
-                        ? acceptDeclineReason.value
-                        : null,
+                status: effectiveDecision === 'accept' ? 2 : 3,
+                decline_reason: effectiveDecision === 'decline' ? acceptDeclineReason.value : null,
             };
         });
 
@@ -773,7 +823,7 @@ const submitAcceptDecline = async () => {
         acceptDeclineErrors.value.reason = '';
 
         showToast(
-            acceptDeclineDecision.value === 'accept'
+            effectiveDecision === 'accept'
                 ? 'Interview assignment accepted successfully!'
                 : 'Interview assignment declined.',
             'success',
@@ -785,6 +835,135 @@ const submitAcceptDecline = async () => {
         );
     } finally {
         acceptDeclineSubmitting.value = false;
+    }
+};
+
+// Check if an interview can be selected for editing
+const canSelectInterview = (interview: any): boolean => {
+    if (!interview) return false;
+    
+    // Cannot select if Done (status = 4)
+    if (Number(interview.status) === 4) {
+        return false;
+    }
+    
+    // Cannot select if already Approved (status = 2)
+    if (Number(interview.status) === 2) {
+        return false;
+    }
+    
+    // Can select for all other statuses (Pending=1, Declined=3)
+    return true;
+};
+
+// Check if schedule can be edited for a specific stage
+const canEditScheduleForStage = (stage: number): boolean => {
+    const stageInterviewers = interviews.value.filter(
+        (i: any) => i && Number(i.interview_type) === stage
+    );
+    
+    if (stageInterviewers.length === 0) return true; // No interviewers = can edit
+    
+    // Can edit ONLY if ALL interviewers for this stage have Declined (status = 3)
+    return stageInterviewers.every((i: any) => Number(i.status) === 3);
+};
+
+// Check if ANY selected interviewer's stage CANNOT be edited
+const hasApprovedInSelectedStages = computed(() => {
+    if (selectedInterviewers.value.length === 0) return false;
+
+    // Get unique stages from selected interviewers
+    const selectedInterviews = interviews.value.filter((i: any) =>
+        i && selectedInterviewers.value.includes(i.id)
+    );
+
+    const stages = [...new Set(selectedInterviews.map((i: any) => Number(i.interview_type)))];
+
+    // Cannot edit if any stage is not editable
+    return stages.some(stage => !canEditScheduleForStage(stage));
+});
+
+// Get error message for schedule editing
+const scheduleEditErrorMessage = computed(() => {
+    if (selectedInterviewers.value.length === 0) return '';
+
+    const selectedInterviews = interviews.value.filter((i: any) =>
+        i && selectedInterviewers.value.includes(i.id)
+    );
+
+    const stages = [...new Set(selectedInterviews.map((i: any) => Number(i.interview_type)))];
+    const blockedStages = stages.filter(stage => !canEditScheduleForStage(stage));
+
+    if (blockedStages.length === 0) return '';
+
+    const stageNames = blockedStages.map(s => getStageLabel(s)).join(', ');
+    
+    // Check why each stage is blocked
+    const reasons = blockedStages.map(stage => {
+        const stageInterviewers = interviews.value.filter(
+            (i: any) => i && Number(i.interview_type) === stage
+        );
+        const hasPending = stageInterviewers.some((i: any) => Number(i.status) === 1);
+        const hasApproved = stageInterviewers.some((i: any) => Number(i.status) === 2);
+        
+        if (hasApproved) return `${getStageLabel(stage)} has approved interviewer(s)`;
+        if (hasPending) return `${getStageLabel(stage)} has pending interviewer(s)`;
+        return `${getStageLabel(stage)} is not editable`;
+    });
+    
+    return `Cannot edit schedule: ${reasons.join('; ')}.`;
+});
+
+// Add this ref
+const changeMindSubmitting = ref(false);
+
+// Check if user can change mind (must be the interviewer and status = 3)
+const canChangeMind = (interview: any) => {
+    if (!interview) return false;
+    return (
+        [2, 3, 5, 6].includes(userPermissions.value) &&
+        interview.interviewer_id === page.props.user_id &&
+        Number(interview.status) === 3
+    );
+};
+
+// Change mind directly from decline modal
+const changeMindFromDeclineModal = async () => {
+    if (!selectedDeclinedInterview.value) return;
+    
+    changeMindSubmitting.value = true;
+    
+    try {
+        await axios.post(
+            `/intermediate/applications/${application.value.id}/interviews/${selectedDeclinedInterview.value.id}/decision`,
+            {
+                decision: 'accept',
+                reason: null,
+            },
+        );
+
+        // Update the local interview status
+        interviews.value = interviews.value.map((interview: any) => {
+            if (interview.id === selectedDeclinedInterview.value.id) {
+                return {
+                    ...interview,
+                    status: 2, // Approved
+                    decline_reason: null,
+                };
+            }
+            return interview;
+        });
+
+        closeDeclineReasonModal();
+        
+        showToast('Interview assignment accepted successfully!', 'success');
+    } catch (error: any) {
+        showToast(
+            error?.response?.data?.message || 'Failed to change decision',
+            'error',
+        );
+    } finally {
+        changeMindSubmitting.value = false;
     }
 };
 
@@ -982,14 +1161,177 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
     }
 };
 
+
+// Stage Schedule Update Confirmation Modal
+const showStageUpdateConfirmModal = ref(false);
+const stageUpdateConfirmDetails = ref<{
+    stage: number;
+    stageName: string;
+    interviewerCount: number;
+} | null>(null);
+
+// Update schedule for entire stage
+const submitStageScheduleUpdate = () => {
+    if (selectedInterviewers.value.length === 0) return;
+    
+    // Get the stage from the first selected interviewer (all should be same stage)
+    const firstInterview = interviews.value.find((i: any) => 
+        selectedInterviewers.value.includes(i.id)
+    );
+    
+    if (!firstInterview) return;
+    
+    const stage = Number(firstInterview.interview_type);
+    const stageName = getStageLabel(stage);
+    
+    // Count all interviewers in this stage
+    const stageInterviewers = interviews.value.filter(
+        (i: any) => Number(i.interview_type) === stage
+    );
+    
+    // Store details and show confirmation modal
+    stageUpdateConfirmDetails.value = {
+        stage: stage,
+        stageName: stageName,
+        interviewerCount: stageInterviewers.length,
+    };
+    
+    showStageUpdateConfirmModal.value = true;
+};
+
+// Execute the actual stage update after confirmation
+const executeStageScheduleUpdate = async () => {
+    if (!stageUpdateConfirmDetails.value) return;
+    
+    const { stage, stageName } = stageUpdateConfirmDetails.value;
+    
+    showStageUpdateConfirmModal.value = false;
+    bulkEditingSchedule.value = true;
+    
+    try {
+        const normalizedDate = normalizeDateTimeForSubmit(bulkEditScheduledDate.value);
+        
+        console.log('Stage update - Original:', bulkEditScheduledDate.value);
+        console.log('Stage update - Converted to PHT:', normalizedDate);
+        
+        const response = await axios.post(
+            `/intermediate/applications/${application.value.id}/interviews/stage-update-schedule`,
+            {
+                interview_type: stage,
+                scheduled_date: normalizedDate, // ✅ Use normalized date
+            },
+        );
+
+        interviews.value = response.data.interviews || interviews.value;
+        syncApplicationDatesFromInterviews();
+        
+        // Update the application's plan date
+        if (response.data.application_date) {
+            if (stage === 1) {
+                application.value.exam_plan_date = response.data.application_date;
+            } else if (stage === 2) {
+                application.value.initial_interview_plan_date = response.data.application_date;
+            } else if (stage === 3) {
+                application.value.final_interview_date = response.data.application_date;
+            }
+        }
+        
+        showBulkEditScheduleModal.value = false;
+        selectedInterviewers.value = [];
+        selectAll.value = false;
+        bulkEditScheduledDate.value = '';
+        bulkEditScheduleErrors.value.selectedInterviewers = '';
+        bulkEditScheduleErrors.value.scheduledDate = '';
+        stageUpdateConfirmDetails.value = null;
+
+        showToast(
+            response.data.message || `${stageName} schedule updated successfully!`,
+            'success',
+        );
+    } catch (error: any) {
+        showToast(
+            error?.response?.data?.error ||
+            error?.response?.data?.message ||
+            'Failed to update stage schedule',
+            'error',
+        );
+    } finally {
+        bulkEditingSchedule.value = false;
+    }
+};
+
+// Cancel stage update
+const cancelStageUpdate = () => {
+    showStageUpdateConfirmModal.value = false;
+    stageUpdateConfirmDetails.value = null;
+};
+
+const closeBulkEditModal = () => {
+    showBulkEditScheduleModal.value = false;
+    bulkEditScheduledDate.value = '';
+    bulkEditScheduleErrors.value.selectedInterviewers = '';
+    bulkEditScheduleErrors.value.scheduledDate = '';
+};
+
+// Check which stages are still available for adding interviewers
+const availableStages = computed(() => {
+    const stages = [
+        { value: 1, label: 'Exam' },
+        { value: 2, label: 'Initial Interview' },
+        { value: 3, label: 'Final Interview' },
+    ];
+    
+    return stages.filter(stage => {
+        // Check the result for each stage
+        if (stage.value === 1) {
+            // Exam stage - check exam_result
+            const examResult = Number(application.value?.exam_result);
+            // Available if not Passed (2) and not Failed (3)
+            return examResult !== 2 && examResult !== 3;
+        } else if (stage.value === 2) {
+            // Initial Interview - check initial_interview_result
+            const initialResult = Number(application.value?.initial_interview_result);
+            return initialResult !== 2 && initialResult !== 3;
+        } else if (stage.value === 3) {
+            // Final Interview - check final_interview_result
+            const finalResult = Number(application.value?.final_interview_result);
+            return finalResult !== 2 && finalResult !== 3;
+        }
+        return true;
+    });
+});
+
+// Check if a specific stage is locked
+const isStageLocked = (stageValue: number): boolean => {
+    return !availableStages.value.some(s => s.value === stageValue);
+};
+
+// Get reason why stage is locked
+const getStageLockedReason = (stageValue: number): string => {
+    if (stageValue === 1) {
+        const result = Number(application.value?.exam_result);
+        if (result === 2) return 'Exam already passed';
+        if (result === 3) return 'Exam failed';
+    } else if (stageValue === 2) {
+        const result = Number(application.value?.initial_interview_result);
+        if (result === 2) return 'Initial interview already passed';
+        if (result === 3) return 'Initial interview failed';
+    } else if (stageValue === 3) {
+        const result = Number(application.value?.final_interview_result);
+        if (result === 2) return 'Final interview already passed';
+        if (result === 3) return 'Final interview failed';
+    }
+    return '';
+};
+
 </script>
 
 <template>
     <AppLayout>
 
-        <div style="background: yellow; padding: 10px; margin: 10px;">
+        <!-- <div style="background: yellow; padding: 10px; margin: 10px;">
             DEBUG - Application: {{ application }}
-        </div>
+        </div> -->
         <div class="intermediate-application-detail">
             <!-- Toast Messages -->
             <div v-if="showSuccess" class="full-width-alert">
@@ -1463,7 +1805,7 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                                 <td class="px-4 py-3">{{
                                                     formatScore(application.exam_atpp_part1_correct) }}</td>
                                                 <td class="px-4 py-3">{{ formatScore(application.exam_atpp_part1_wrong)
-                                                }}</td>
+                                                    }}</td>
                                             </tr>
                                             <tr class="border-t border-zinc-200 dark:border-zinc-700">
                                                 <td class="px-4 py-3">
@@ -1473,7 +1815,7 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                                 <td class="px-4 py-3">{{
                                                     formatScore(application.exam_atpp_part2_correct) }}</td>
                                                 <td class="px-4 py-3">{{ formatScore(application.exam_atpp_part2_wrong)
-                                                }}</td>
+                                                    }}</td>
                                             </tr>
                                             <tr class="border-t border-zinc-200 dark:border-zinc-700">
                                                 <td class="px-4 py-3">
@@ -1483,7 +1825,7 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                                 <td class="px-4 py-3">{{
                                                     formatScore(application.exam_atpp_part3_correct) }}</td>
                                                 <td class="px-4 py-3">{{ formatScore(application.exam_atpp_part3_wrong)
-                                                }}</td>
+                                                    }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1690,16 +2032,29 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                             </div>
 
                             <div>
-                                <label
-                                    class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Stage</label>
-                                <select v-model="bulkAddStage"
-                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <option value="1">Exam</option>
-                                    <option value="2">Initial Interview</option>
-                                    <option value="3">Final Interview</option>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Stage</label>
+                                <select v-model="bulkAddStage" 
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800"
+                                    :disabled="availableStages.length === 0">
+                                    <option v-for="stage in availableStages" :key="stage.value" :value="stage.value">
+                                        {{ stage.label }}
+                                    </option>
+                                    <optgroup v-if="isStageLocked(1) || isStageLocked(2) || isStageLocked(3)" label="Locked Stages">
+                                        <option v-if="isStageLocked(1)" value="1" disabled>
+                                            Exam ({{ getStageLockedReason(1) }})
+                                        </option>
+                                        <option v-if="isStageLocked(2)" value="2" disabled>
+                                            Initial Interview ({{ getStageLockedReason(2) }})
+                                        </option>
+                                        <option v-if="isStageLocked(3)" value="3" disabled>
+                                            Final Interview ({{ getStageLockedReason(3) }})
+                                        </option>
+                                    </optgroup>
                                 </select>
+                                <p v-if="availableStages.length === 0" class="mt-1 text-xs text-amber-600">
+                                    All stages are either passed or failed. No more interviewers can be added.
+                                </p>
                             </div>
-
                             <div>
                                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled
                                     Date</label>
@@ -1733,10 +2088,10 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
                         @click="showBulkEditScheduleModal = false"></div>
                     <div class="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl dark:bg-zinc-900">
-                        <h3 class="mb-2 text-xl font-bold">Bulk Edit Schedule</h3>
-                        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
-                            Update the schedule of checked interviewers
-                        </p>
+                        <h3 class="mb-2 text-xl font-bold">
+                            {{ allSameStage ? 'Edit Stage Schedule' : 'Bulk Edit Schedule' }}
+                        </h3>
+                        
 
                         <div class="space-y-4">
                             <div>
@@ -1761,6 +2116,19 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                     </div>
                                     <div v-else class="text-sm text-gray-500">No interviewers selected.</div>
                                 </div>
+
+                                <!-- Warning message -->
+                                <div v-if="scheduleEditErrorMessage"
+                                    class="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/30">
+                                    ⚠️ {{ scheduleEditErrorMessage }}
+                                </div>
+                                
+                                <!-- Info message for same stage -->
+                                <div v-if="allSameStage && !scheduleEditErrorMessage"
+                                    class="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-900/30">
+                                    ℹ️ All  scheduled date for interviewers in this stage will be updated and their status reset to "Pending Approval".
+                                </div>
+                                
                                 <p v-if="bulkEditScheduleErrors.selectedInterviewers" class="mt-1 text-sm text-red-600">
                                     {{ bulkEditScheduleErrors.selectedInterviewers }}
                                 </p>
@@ -1783,7 +2151,8 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                 class="flex-1 rounded-lg border border-gray-300 px-4 py-2 transition hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
                                 Cancel
                             </button>
-                            <button @click="submitBulkEditSchedule" :disabled="bulkEditingSchedule"
+                            <button @click="allSameStage ? submitStageScheduleUpdate() : submitBulkEditSchedule()" 
+                                :disabled="bulkEditingSchedule"
                                 class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50">
                                 <span v-if="!bulkEditingSchedule">Update Schedule</span>
                                 <span v-else>Updating...</span>
@@ -1801,6 +2170,13 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                         <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
                             Please confirm your availability for this interview
                         </p>
+                        <!-- "Change Your Mind" Prompt - Shows only if already declined -->
+                        <div v-if="acceptDeclineInterviewer?.status === 3"
+                            class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-900/30">
+                            <p class="font-medium text-amber-800 dark:text-amber-300">Do you change your mind?</p>
+                            <p class="mt-1 text-amber-700 dark:text-amber-400">You previously declined this assignment.
+                                You can accept it now.</p>
+                        </div>
 
                         <div class="space-y-4">
                             <div>
@@ -1824,7 +2200,8 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                     class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 dark:border-zinc-700" />
                             </div>
 
-                            <div>
+                            <!-- Hide decision radios if already declined and they can just click Accept -->
+                            <div v-if="acceptDeclineInterviewer?.status !== 3">
                                 <label
                                     class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Decision</label>
                                 <div class="flex gap-4">
@@ -1839,18 +2216,29 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                         <span>Decline</span>
                                     </label>
                                 </div>
-                                <p v-if="acceptDeclineErrors.decision" class="mt-1 text-sm text-red-600">{{
-                                    acceptDeclineErrors.decision }}</p>
+                                <p v-if="acceptDeclineErrors.decision" class="mt-1 text-sm text-red-600">
+                                    {{ acceptDeclineErrors.decision }}
+                                </p>
                             </div>
-                            <div v-if="acceptDeclineDecision === 'decline'">
+
+                            <!-- For declined interviewers, only show Accept option -->
+                            <div v-else>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Click "Accept" to change your
+                                    decision.</p>
+                            </div>
+
+                            <div
+                                v-if="acceptDeclineDecision === 'decline' || (acceptDeclineInterviewer?.status === 3 && acceptDeclineDecision === 'decline')">
                                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Reason
                                     for Declining</label>
                                 <textarea v-model="acceptDeclineReason" rows="3"
                                     class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-zinc-700"
                                     placeholder="Please provide reason for declining..."></textarea>
-                                <p v-if="acceptDeclineErrors.reason" class="mt-1 text-sm text-red-600">{{
-                                    acceptDeclineErrors.reason }}</p>
+                                <p v-if="acceptDeclineErrors.reason" class="mt-1 text-sm text-red-600">
+                                    {{ acceptDeclineErrors.reason }}
+                                </p>
                             </div>
+
                             <div v-if="willTriggerApplicantAutoEmail"
                                 class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-3 text-sm text-blue-800">
                                 Accepting will send an automatic email to the applicant, informing them of their
@@ -1865,7 +2253,9 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                             </button>
                             <button @click="submitAcceptDecline" :disabled="acceptDeclineSubmitting"
                                 class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50">
-                                <span v-if="!acceptDeclineSubmitting">Submit</span>
+                                <span v-if="!acceptDeclineSubmitting">
+                                    {{ acceptDeclineInterviewer?.status === 3 ? 'Accept' : 'Submit' }}
+                                </span>
                                 <span v-else>Submitting...</span>
                             </button>
                         </div>
@@ -1877,36 +2267,36 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeDeclineReasonModal"></div>
                     <div class="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl dark:bg-zinc-900">
                         <h3 class="mb-2 text-xl font-bold">Reason for Decline</h3>
-                        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+                        <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
                             Decline details for this interview assignment
                         </p>
 
+                        <!-- "Change Your Mind" Prompt -->
+                        <div v-if="canChangeMind(selectedDeclinedInterview)"
+                            class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-900/30">
+                            <p class="font-medium text-amber-800 dark:text-amber-300">Do you change your mind?</p>
+                            <p class="mt-1 text-amber-700 dark:text-amber-400">You can accept this assignment instead.</p>
+                        </div>
+
                         <div class="space-y-4">
                             <div>
-                                <label
-                                    class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Interviewer</label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Interviewer</label>
                                 <input type="text" :value="selectedDeclinedInterview?.name || '-'" disabled
                                     class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 dark:border-zinc-700" />
                             </div>
                             <div>
-                                <label
-                                    class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Stage</label>
-                                <input type="text" :value="getStageLabel(selectedDeclinedInterview?.interview_type)"
-                                    disabled
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Stage</label>
+                                <input type="text" :value="getStageLabel(selectedDeclinedInterview?.interview_type)" disabled
                                     class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 dark:border-zinc-700" />
                             </div>
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled
-                                    Date</label>
-                                <input type="text" :value="formatDateTime(selectedDeclinedInterview?.scheduled_date)"
-                                    disabled
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled Date</label>
+                                <input type="text" :value="formatDateTime(selectedDeclinedInterview?.scheduled_date)" disabled
                                     class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 dark:border-zinc-700" />
                             </div>
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Decline
-                                    Reason</label>
-                                <div
-                                    class="w-full rounded-lg border border-gray-300 bg-zinc-50 px-3 py-3 text-sm whitespace-pre-wrap dark:border-zinc-700 dark:bg-zinc-800">
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Decline Reason</label>
+                                <div class="w-full rounded-lg border border-gray-300 bg-zinc-50 px-3 py-3 text-sm whitespace-pre-wrap dark:border-zinc-700 dark:bg-zinc-800">
                                     {{ selectedDeclinedInterview?.decline_reason || '-' }}
                                 </div>
                             </div>
@@ -1914,8 +2304,17 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
 
                         <div class="mt-6 flex gap-3">
                             <button @click="closeDeclineReasonModal"
-                                class="w-full rounded-lg border border-gray-300 px-4 py-2 transition hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
+                                class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm transition hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
                                 Close
+                            </button>
+                            
+                            <!-- Change Mind Button - Only shows if user can change mind -->
+                            <button v-if="canChangeMind(selectedDeclinedInterview)"
+                                @click="changeMindFromDeclineModal"
+                                :disabled="changeMindSubmitting"
+                                class="flex-1 rounded-lg bg-amber-600 px-4 py-2 text-sm text-white transition hover:bg-amber-700 disabled:opacity-50">
+                                <span v-if="!changeMindSubmitting">Accept Instead</span>
+                                <span v-else>Processing...</span>
                             </button>
                         </div>
                     </div>
@@ -2020,7 +2419,11 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                             </div>
 
                             <div class="flex gap-2" v-if="canManageInterviewers">
-                                <button @click="openBulkAddModal" class="btn-bulk-add">
+                                <button @click="openBulkAddModal" 
+                                    class="btn-bulk-add"
+                                    :class="{ 'opacity-50 cursor-not-allowed': availableStages.length === 0 }"
+                                    :disabled="availableStages.length === 0"
+                                    :title="availableStages.length === 0 ? 'All stages are completed' : 'Add interviewers'">
                                     <Plus class="h-4 w-4" />
                                     Add
                                 </button>
@@ -2054,9 +2457,24 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                     class="border-t border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                                     <td class="px-4 py-3" v-if="canManageInterviewers">
                                         <div class="flex items-center justify-center">
-                                            <input v-if="!lockedInterviewStatuses.includes(Number(interview.status))"
+                                            <!-- Show checkbox if selectable -->
+                                            <input v-if="canSelectInterview(interview)"
                                                 type="checkbox" v-model="selectedInterviewers" :value="interview.id"
                                                 class="rounded border-gray-300" />
+                                            
+                                            <!-- Show warning icon if stage has at least 1 Approved (status=2) -->
+                                            <div v-else-if="Number(interview.status) !== 4 && hasApprovedInStage(interview.interview_type)" 
+                                                class="flex items-center justify-center">
+                                                <span class="cursor-help text-amber-500" title="This stage has an approved interviewer">
+                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <circle cx="12" cy="12" r="10" />
+                                                        <line x1="12" y1="8" x2="12" y2="12" />
+                                                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            
+                                            <!-- Show empty space for Done (status=4) -->
                                             <div v-else class="h-4 w-4"></div>
                                         </div>
                                     </td>
@@ -2082,17 +2500,20 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="flex items-center gap-2">
+                                            <!-- For Pending (status=1) - Show Respond button -->
                                             <button v-if="canAcceptDecline(interview)"
-                                                @click="openAcceptDeclineModal(interview)"
-                                                class="inline-flex items-center justify-center rounded-md px-1 py-2 text-green-600 transition hover:bg-green-50 hover:text-green-800"
-                                                title="Accept/Decline">
+                                                    @click="openAcceptDeclineModal(interview)"
+                                                    class="inline-flex items-center justify-center rounded-md px-1 py-2 text-green-600 transition hover:bg-green-50 hover:text-green-800"
+                                                    title="Accept/Decline">
                                                 <CheckCircle class="mr-1 h-4 w-4" /> Respond
                                             </button>
+                                            
+                                            <!-- For Declined (status=3) - Show View Reason button -->
                                             <button v-if="canViewDeclineReason(interview)"
-                                                @click="openDeclineReasonModal(interview)"
-                                                class="font-sm inline-flex items-center justify-center rounded-md px-1 py-2 text-sm text-red-600 transition hover:bg-red-50 hover:text-red-800"
-                                                title="View Reason for Decline">
-                                                View Reason
+                                                    @click="openDeclineReasonModal(interview)"
+                                                    class="font-sm inline-flex items-center justify-center rounded-md px-1 py-2 text-sm text-blue-600 transition hover:bg-blue-50 hover:text-blue-800"
+                                                    title="View Decline Details">
+                                                View Details
                                             </button>
                                         </div>
                                     </td>
@@ -2105,6 +2526,111 @@ const getPaperScreeningStatusBadgeClass = (status: number) => {
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
+                    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold">
+                        <Users class="h-5 w-5 text-blue-600" /> ADDITIONAL INFORMATION
+                    </h2>
+
+                    <div class="space-y-4">
+                        <!-- General Remarks -->
+                        <div>
+                            <div class="mb-2 text-sm font-semibold">General Remarks</div>
+                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
+                                {{ application.remarks || 'No remarks' }}
+                            </div>
+                        </div>
+                        
+                        <!-- You can add more fields here if needed -->
+                        <!-- Example: Reason for Decline (if applicable) -->
+                        <div v-if="application.reason_for_decline">
+                            <div class="mb-2 text-sm font-semibold">Reason for Decline</div>
+                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
+                                {{ application.reason_for_decline }}
+                            </div>
+                        </div>
+                        
+                        <!-- Reason by Category -->
+                        <div v-if="application.reason_by_category">
+                            <div class="mb-2 text-sm font-semibold">Decline Category</div>
+                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
+                                {{ application.reason_by_category }}
+                            </div>
+                        </div>
+                        
+                        <!-- Parked To -->
+                        <div v-if="application.parked_to">
+                            <div class="mb-2 text-sm font-semibold">Parked To</div>
+                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
+                                {{ application.parked_to }}
+                            </div>
+                        </div>
+                        
+                        <!-- AWS Rank -->
+                        <div v-if="application.aws_rank">
+                            <div class="mb-2 text-sm font-semibold">AWS Rank</div>
+                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
+                                {{ application.aws_rank }}
+                            </div>
+                        </div>
+                        
+                        <!-- AWS Start Date -->
+                        <div v-if="application.aws_start_date">
+                            <div class="mb-2 text-sm font-semibold">AWS Start Date</div>
+                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
+                                {{ formatDateTime(application.aws_start_date) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage Schedule Update Confirmation Modal -->
+                <div v-if="showStageUpdateConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="cancelStageUpdate"></div>
+                    <div class="relative mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900">
+                        <div class="mb-4 flex items-center gap-3">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                                <svg class="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold">Confirm Stage Schedule Update</h3>
+                        </div>
+                        
+                        <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                            You are about to update the schedule for <strong>ALL</strong> interviewers in the 
+                            <strong>{{ stageUpdateConfirmDetails?.stageName }}</strong> stage.
+                        </p>
+                        
+                        <div class="mb-4 rounded-lg bg-amber-50 p-4 dark:bg-amber-900/20">
+                            <p class="text-sm text-amber-800 dark:text-amber-300">
+                                <strong>⚠️ This will:</strong>
+                            </p>
+                            <ul class="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-400">
+                                <li>• Update the scheduled date for <strong>{{ stageUpdateConfirmDetails?.interviewerCount }}</strong> interviewer(s)</li>
+                                <li>• Reset all interviewers' status to <strong>"Pending Approval"</strong></li>
+                                <li>• Clear any previous decline reasons</li>
+                                <li>• Update the {{ stageUpdateConfirmDetails?.stageName }} plan date</li>
+                            </ul>
+                        </div>
+                        
+                        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+                            Are you sure you want to continue?
+                        </p>
+                        
+                        <div class="flex gap-3">
+                            <button @click="cancelStageUpdate"
+                                class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm transition hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
+                                Cancel
+                            </button>
+                            <button @click="executeStageScheduleUpdate"
+                                class="flex-1 rounded-lg bg-amber-600 px-4 py-2 text-sm text-white transition hover:bg-amber-700">
+                                Yes, Update Stage
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

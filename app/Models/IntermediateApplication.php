@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 class IntermediateApplication extends Model
 {
@@ -290,5 +290,12 @@ class IntermediateApplication extends Model
     public function getProjectNameAttribute(): string
     {
         return $this->resourceSchedule?->project?->project_name ?? 'N/A';
+    }
+
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return Carbon::instance($date)
+            ->timezone('Asia/Manila')
+            ->format('Y-m-d H:i:s');
     }
 }

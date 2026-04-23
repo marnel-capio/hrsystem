@@ -87,7 +87,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/intermediate/applications/{applicationId}/initial-assignments', [IntermediateInterviewerController::class, 'initialAssignments']);
         Route::get('/intermediate/applications/{applicationId}/final-assignments', [IntermediateInterviewerController::class, 'finalAssignments']);
         Route::get('/intermediate/applications/{applicationId}/has-mixed-results/{type}', [IntermediateInterviewerController::class, 'hasMixedResults']);
+        Route::post('/intermediate/applications/{applicationId}/interviews/stage-update-schedule', [IntermediateInterviewerController::class, 'stageUpdateSchedule']);
     });
+    
 
 });
 

@@ -119,6 +119,24 @@ class IntermediateApplicationController extends Controller
             $data = $request->validated();
             // throw new \Exception("Test error");
 
+            $dateFields = [
+            'exam_plan_date',
+            'exam_actual_date',
+            'initial_interview_plan_date',
+            'initial_interview_actual_date',
+            'final_interview_date',
+            'job_offer_schedule',
+            'contacted_date',
+            'replied_date',
+            'availability_date',
+            ];
+            
+            foreach ($dateFields as $field) {
+                if (!empty($data[$field])) {
+                    $data[$field] = Carbon::parse($data[$field])->timezone('Asia/Manila');
+                }
+            }
+
             //  DEFAULT VALUES (non-null)
             $data['paper_screening_status'] = 1;  // Screening Pending
             $data['application_stage'] = 1;       // New/Screening
@@ -424,6 +442,14 @@ class IntermediateApplicationController extends Controller
                 'job_offer_schedule' => $application->job_offer_schedule,
                 'job_offer_status' => $application->job_offer_status,
                 'job_offer_remarks' => $application->job_offer_remarks,
+
+                // Additional Information fields
+                'remarks' => $application->remarks,
+                'reason_for_decline' => $application->reason_for_decline,
+                'reason_by_category' => $application->reason_by_category,
+                'parked_to' => $application->parked_to,
+                'aws_rank' => $application->aws_rank,
+                'aws_start_date' => $application->aws_start_date,
 
                 'applicant' => [
                     'first_name' => $application->intermediateApplicant->first_name ?? '',

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Carbon\Carbon;
 
 class IntermediateInterviewer extends Model
 {
@@ -106,5 +107,12 @@ class IntermediateInterviewer extends Model
         static::updating(function ($model) {
             $model->updated_by = auth()->id() ?? 1;
         });
+    }
+
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return Carbon::instance($date)
+            ->timezone('Asia/Manila')
+            ->format('Y-m-d H:i:s');
     }
 }
