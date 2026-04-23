@@ -490,7 +490,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:882
+ * @see app/Http/Controllers/ActionApplicationController.php:906
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 export const getApplicantsForBatch = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -505,7 +505,7 @@ getApplicantsForBatch.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:882
+ * @see app/Http/Controllers/ActionApplicationController.php:906
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 getApplicantsForBatch.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -533,7 +533,7 @@ getApplicantsForBatch.url = (args: { batchId: string | number } | [batchId: stri
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:882
+ * @see app/Http/Controllers/ActionApplicationController.php:906
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 getApplicantsForBatch.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -542,7 +542,7 @@ getApplicantsForBatch.get = (args: { batchId: string | number } | [batchId: stri
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:882
+ * @see app/Http/Controllers/ActionApplicationController.php:906
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -552,7 +552,7 @@ getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: str
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:882
+ * @see app/Http/Controllers/ActionApplicationController.php:906
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
     const getApplicantsForBatchForm = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -562,7 +562,7 @@ getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: str
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:882
+ * @see app/Http/Controllers/ActionApplicationController.php:906
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         getApplicantsForBatchForm.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -571,7 +571,7 @@ getApplicantsForBatch.head = (args: { batchId: string | number } | [batchId: str
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::getApplicantsForBatch
- * @see app/Http/Controllers/ActionApplicationController.php:882
+ * @see app/Http/Controllers/ActionApplicationController.php:906
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         getApplicantsForBatchForm.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -790,7 +790,7 @@ bulkDeleteInterviews.post = (args: { applicationId: string | number } | [applica
     bulkDeleteInterviews.form = bulkDeleteInterviewsForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
- * @see app/Http/Controllers/ActionApplicationController.php:799
+ * @see app/Http/Controllers/ActionApplicationController.php:823
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
 export const submitInterviewDecision = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -805,7 +805,7 @@ submitInterviewDecision.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
- * @see app/Http/Controllers/ActionApplicationController.php:799
+ * @see app/Http/Controllers/ActionApplicationController.php:823
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
 submitInterviewDecision.url = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions) => {
@@ -831,7 +831,7 @@ submitInterviewDecision.url = (args: { applicationId: string | number, interview
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
- * @see app/Http/Controllers/ActionApplicationController.php:799
+ * @see app/Http/Controllers/ActionApplicationController.php:823
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
 submitInterviewDecision.post = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -841,7 +841,7 @@ submitInterviewDecision.post = (args: { applicationId: string | number, intervie
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
- * @see app/Http/Controllers/ActionApplicationController.php:799
+ * @see app/Http/Controllers/ActionApplicationController.php:823
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
     const submitInterviewDecisionForm = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -851,7 +851,7 @@ submitInterviewDecision.post = (args: { applicationId: string | number, intervie
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::submitInterviewDecision
- * @see app/Http/Controllers/ActionApplicationController.php:799
+ * @see app/Http/Controllers/ActionApplicationController.php:823
  * @route '/action/applications/{applicationId}/interviews/{interviewId}/decision'
  */
         submitInterviewDecisionForm.post = (args: { applicationId: string | number, interviewId: string | number } | [applicationId: string | number, interviewId: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

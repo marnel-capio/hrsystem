@@ -348,8 +348,8 @@ protected static function computeInitialInterviewApplicationStatus(float $score)
     $rules = config('constants.application_score_rules.initial_interview');
 
     $passedMax = (float) ($rules['passed_min'] ?? 2.0);
-    $p2Max = (float) ($rules['p2_min'] ?? 2.5);
-    $failedMax = 5.0;
+    $p2Max = (float) ($rules['p2_min'] ?? 3.0);
+    $failedMax = (float) ($rules['failed_min'] ?? 5.0);
 
     if ($score == 0.0) {
         return 1; // Pending
@@ -537,10 +537,11 @@ public function computeFinalInterviewOverallResult(): ?int
         return null;
     }
 
-    $evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
-        config('constants.application_results.passed'),
-        config('constants.application_results.failed'),
-    ], true));
+$evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
+    config('constants.application_results.passed'), // 2
+    config('constants.application_results.failed'), // 3
+    4, // P2
+], true));
 
     if ($evaluatedRows->isEmpty()) {
         return config('constants.application_results.pending');
@@ -578,11 +579,11 @@ public function computeInitialInterviewOverallResult(): ?int
         return null;
     }
 
-    $evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
-        config('constants.application_results.passed'),
-        config('constants.application_results.failed'),
-    ], true));
-
+$evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
+    config('constants.application_results.passed'), // 2
+    config('constants.application_results.failed'), // 3
+    4, // P2
+], true));
     if ($evaluatedRows->isEmpty()) {
         return config('constants.application_results.pending');
     }
@@ -615,10 +616,11 @@ public function hasMixedInitialInterviewEvaluations(): bool
         ])
         ->get();
 
-    $evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
-        config('constants.application_results.passed'),
-        config('constants.application_results.failed'),
-    ], true));
+$evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
+    config('constants.application_results.passed'), // 2
+    config('constants.application_results.failed'), // 3
+    4, // P2
+], true));
 
     if ($evaluatedRows->count() < 2) {
         return false;
@@ -689,11 +691,11 @@ public function hasMixedFinalInterviewEvaluations(): bool
         ])
         ->get();
 
-    $evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
-        config('constants.application_results.passed'),
-        config('constants.application_results.failed'),
-    ], true));
-
+$evaluatedRows = $rows->filter(fn ($row) => in_array((int) $row->evaluation_result, [
+    config('constants.application_results.passed'), // 2
+    config('constants.application_results.failed'), // 3
+    4, // P2
+], true));
     if ($evaluatedRows->count() < 2) {
         return false;
     }
