@@ -176,7 +176,7 @@ public function getRequestTypeLabelAttribute()
 
 public function getReplacementDueToLabelAttribute()
 {
-    return config('constants.resource_requisitions.replacement_due_to.RDT_' . $this->replacement_due_to . '_NAME', 'Unknown');
+    return config('constants.resource_requisitions.replacement_due_to.RDT_' . $this->replacement_due_to . '_NAME', '-');
 }
 
     public function getLocationAssignmentLabelAttr()

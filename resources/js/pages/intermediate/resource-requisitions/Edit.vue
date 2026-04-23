@@ -236,12 +236,19 @@ watch(() => form.value.request_type, async (newRequestType) => {
   }
 });
 
+watch(
+  () => form.value.request_type,
+  (newRequestType) => {
+    if (newRequestType === '1') {  // When "New Requirement" is selected
+      form.value.replacement_due_to = '';  // Reset the field to "" (Select Reason)
+    }
+  }
+);
 
 
 watch(() => form.value.request_type, (newRequestType) => {
   if (newRequestType === '1') {  
     form.value.person_to_replace = '';  
-    form.value.replacement_due_to = '';  
   }
 });
 
@@ -322,9 +329,6 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             <option value="2">Temporary (Consultant)</option>
             <option value="3">OJT</option>
           </select>
-          <span v-if="page.props.errors?.engagement_type" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.engagement_type }}
-          </span>
         </div>
 
         <!-- Sourcing Type -->
@@ -336,9 +340,6 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             <option value="2">External</option>
             <option value="3">Either</option>
           </select>
-          <span v-if="page.props.errors?.sourcing_type" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.sourcing_type }}
-          </span>
         </div>
 
         <!-- Request Type -->
@@ -349,9 +350,6 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             <option value="1">New Requirement</option>
             <option value="2">Replacement</option>
           </select>
-          <span v-if="page.props.errors?.request_type" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.request_type }}
-          </span>
         </div>
       </div>
 
@@ -403,14 +401,16 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             <option value="5">China</option>
             <option value="6">Other</option>
           </select>
-          <span v-if="page.props.errors?.location_assignment" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.location_assignment }}
-          </span>
         </div>
 
         <!-- Custom Location Input -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1 font-bold">Custom Location <label class="text-red-500">*</label></label>
+          <!-- Custom Location Label -->
+          <label class="text-sm mb-1" 
+                :class="{'font-bold': form.location_assignment === '6'}">
+            Custom Location
+            <span v-if="form.location_assignment === '6'" class="text-red-500">*</span>
+          </label>
           <input
             v-model="form.custom_location"
             type="text"
@@ -429,9 +429,9 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         </div>
       </div>
 
-      <!-- Project Name, Business Unit -->
+      <!-- Project, Business Unit -->
       <div class="grid grid-cols-2 gap-5 mt-5">
-        <!-- Project Name (Dropdown) -->
+        <!-- Project (Dropdown) -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Project <label class="text-red-500">*</label></label>
           <input
@@ -440,9 +440,6 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
             placeholder="Enter Project Name"
           />
-          <span v-if="page.props.errors?.project_id" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.project_id }}
-          </span>
         </div>
 
         <!-- Business Unit -->
