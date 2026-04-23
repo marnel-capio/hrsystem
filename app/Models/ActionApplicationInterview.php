@@ -123,10 +123,7 @@ public function isFinalInterview(): bool
 
 public function isEvaluationComplete(): bool
 {
-    return in_array((int) $this->evaluation_result, [
-        config('constants.application_results.passed'),
-        config('constants.application_results.failed'),
-    ], true);
+    return in_array((int) $this->evaluation_result, [2, 3, 4], true);
 }
 
 }
