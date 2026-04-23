@@ -69,7 +69,7 @@ public function rules(): array
         'contact_no' => [new RequiredField, 'string', new MaxLength(20)],
 
         'school_graduated_from' => ['nullable', 'string', new MaxLength(80)],
-        'course' => ['nullable', 'string', new MaxLength(10)],
+        'course' => ['nullable', 'string', new MaxLength(80)],
         'year_attended' => ['nullable', 'string', new MaxLength(10)],
         'others' => ['nullable', 'string', new MaxLength(80)],
 
