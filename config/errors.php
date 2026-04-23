@@ -158,6 +158,10 @@ return [
         'errorMessage' => 'The selected date must be in the future.',
     ],
 
+    'start_date_after' => [
+        'errorCode' => 'START_DATE_AFTER',
+        'errorMessage' => 'The selected date must be in the future.',
+
     'TARGET_DATE_BETWEEN' => [
         'errorCode' => 'TARGET_DATE_BETWEEN',
         'errorMessage' => 'The selected date must be between the previous and next ACTION Batch.',
@@ -185,9 +189,17 @@ return [
         'errorMessage' => 'Project already exists.',
     ],
 
+
     'format_invalid' => [
         'errorCode' => 'FORMAT_INVALID',
         'errorMessage' => 'Please follow format in placeholder',
     ],
 
+
+    'start_date_custom' => [
+        'errorCode' => 'START_DATE_CUSTOM',
+        'errorMessage' => 'The selected date must be at least 2 days ahead.',
+    ],
+
+]
 ];

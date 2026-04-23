@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:21
@@ -143,64 +143,75 @@ export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 })
 
 register.definition = {
+
+* @see \App\Http\Controllers\IntermediateApplicationController::create
+ * @see app/Http/Controllers/IntermediateApplicationController.php:66
+ * @route '/intermediate/applications/register'
+ */
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
+    method: 'get',
+})
+
+create.definition = {
     methods: ["get","head"],
     url: '/intermediate/applications/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateApplicationController::register
+* @see \App\Http\Controllers\IntermediateApplicationController::create
  * @see app/Http/Controllers/IntermediateApplicationController.php:66
  * @route '/intermediate/applications/register'
  */
-register.url = (options?: RouteQueryOptions) => {
-    return register.definition.url + queryParams(options)
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateApplicationController::register
+* @see \App\Http\Controllers\IntermediateApplicationController::create
  * @see app/Http/Controllers/IntermediateApplicationController.php:66
  * @route '/intermediate/applications/register'
  */
-register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\IntermediateApplicationController::register
+* @see \App\Http\Controllers\IntermediateApplicationController::create
  * @see app/Http/Controllers/IntermediateApplicationController.php:66
  * @route '/intermediate/applications/register'
  */
-register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: register.url(options),
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateApplicationController::register
+* @see \App\Http\Controllers\IntermediateApplicationController::create
  * @see app/Http/Controllers/IntermediateApplicationController.php:66
  * @route '/intermediate/applications/register'
  */
-    const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: register.url(options),
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateApplicationController::register
+* @see \App\Http\Controllers\IntermediateApplicationController::create
  * @see app/Http/Controllers/IntermediateApplicationController.php:66
  * @route '/intermediate/applications/register'
  */
-        registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url(options),
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\IntermediateApplicationController::register
+* @see \App\Http\Controllers\IntermediateApplicationController::create
  * @see app/Http/Controllers/IntermediateApplicationController.php:66
  * @route '/intermediate/applications/register'
  */
-        registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url({
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -209,7 +220,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    register.form = registerForm
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::store
  * @see app/Http/Controllers/IntermediateApplicationController.php:112
@@ -362,12 +373,65 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
     
     show.form = showForm
+const IntermediateApplicationController = { index, create, store, show }
+========
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:517
+ * @route '/intermediate/applications/import'
+ */
+export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importMethod.url(options),
+    method: 'post',
+})
+
+importMethod.definition = {
+    methods: ["post"],
+    url: '/intermediate/applications/import',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:517
+ * @route '/intermediate/applications/import'
+ */
+importMethod.url = (options?: RouteQueryOptions) => {
+    return importMethod.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:517
+ * @route '/intermediate/applications/import'
+ */
+importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importMethod.url(options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:517
+ * @route '/intermediate/applications/import'
+ */
+    const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: importMethod.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:517
+ * @route '/intermediate/applications/import'
+ */
+        importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: importMethod.url(options),
+            method: 'post',
+        })
+    
+    importMethod.form = importMethodForm
 const applications = {
     index: Object.assign(index, index),
 import: Object.assign(importMethod, importMethod),
-register: Object.assign(register, register),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
 }
 
 export default applications

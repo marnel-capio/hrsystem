@@ -446,6 +446,7 @@ return [
             5 => 3, // Failed -> Failed
         ],
     ],
+    
 
     'application_score_rules' => [
         'exam' => [
@@ -550,12 +551,54 @@ return [
         3 => 'JLPT Certification',
     ],
 
-    'japanese_levels' => [
-        5 => 'N5',
-        4 => 'N4',
-        3 => 'N3',
-        2 => 'N2',
-        1 => 'N1',
+    'engagement_type' => [
+        'ET_PERMANENT_VALUE' => 1,
+        'ET_TEMPORARY_VALUE' => 2,
+        'ET_OJT_VALUE' => 3,
+
+        'ET_1_NAME' => 'Permanent',
+        'ET_2_NAME' => 'Temporary',
+        'ET_3_NAME' => 'OJT',
+    ],
+
+    'sourcing_type' => [
+    'ST_INTERNAL_VALUE' => 1,
+    'ST_EXTERNAL_VALUE' => 2,
+    'ST_EITHER_VALUE' => 3,
+    'ST_1_NAME' => 'Internal',
+    'ST_2_NAME' => 'External',
+    'ST_3_NAME' => 'Either',
+    ],
+
+    'request_type' => [
+        'RT_NEW_REQUIREMENT_VALUE' => 1,
+        'RT_REPLACEMENT_VALUE' => 2,
+        'RT_1_NAME' => 'New Requirement',
+        'RT_2_NAME' => 'Replacement',
+    ],
+
+    'replacement_due_to' => [
+        'RDT_PROMOTION_VALUE' => 1,
+        'RDT_ATTRITION_VALUE' => 2,
+        'RDT_BACKFILL_VALUE' => 3,
+        'RDT_TRANSFER_VALUE' => 4,
+        'RDT_1_NAME' => 'Promotion',
+        'RDT_2_NAME' => 'Attrition',
+        'RDT_3_NAME' => 'Backfill',
+        'RDT_4_NAME' => 'Transfer',
+    ],
+
+    'location_assignment' => [
+        'LA_ALABANG_VALUE' => 1,
+        'LA_MAKATI_VALUE' => 2,
+        'LA_CEBU_VALUE' => 3,
+        'LA_JAPAN_VALUE' => 4,
+        'LA_CHINA_VALUE' => 5,
+        'LA_1_NAME' => 'Alabang',
+        'LA_2_NAME' => 'Makati',
+        'LA_3_NAME' => 'Cebu',
+        'LA_4_NAME' => 'Japan',
+        'LA_5_NAME' => 'China',
     ],
 
     'exam_statuses' => [
@@ -592,5 +635,9 @@ return [
             5 => 5,
         ],
     ],
+
+
+
+
 
 ];
