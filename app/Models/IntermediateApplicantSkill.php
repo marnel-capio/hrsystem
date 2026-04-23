@@ -57,4 +57,66 @@ class IntermediateApplicantSkill extends Model
     {
         return $this->belongsTo(IntermediateApplicant::class, 'intermediate_applicant_id');
     }
-}   
+
+    public static function forApplicant($applicantId)
+{
+    return self::where('intermediate_applicant_id', $applicantId)
+        ->active()
+        ->select('id', 'skill', 'remarks')
+        ->get();
+}
+
+public static function addSkill($applicantId, array $data)
+{
+    return self::create([
+        'intermediate_applicant_id' => $applicantId,
+        'skill' => $data['skill'],
+        'remarks' => $data['remarks'] ?? null,
+        'is_deleted' => 0,
+        'created_by' => auth()->id() ?? 1,
+        'created_time' => now(),
+        'updated_by' => auth()->id() ?? 1,
+        'updated_time' => now(),
+    ]);
+}
+
+public static function updateSkill($skillId, array $data)
+{
+    $skill = self::findOrFail($skillId);
+
+    $skill->skill = $data['skill'];
+    $skill->remarks = $data['remarks'] ?? null;
+    $skill->updated_by = auth()->id() ?? 1;
+    $skill->updated_time = now();
+
+    $skill->save();
+
+    return $skill;
+}
+
+public static function deleteSkill($skillId)
+{
+    $skill = self::findOrFail($skillId);
+
+    // SOFT DELETE (since you have is_deleted)
+    $skill->is_deleted = 1;
+    $skill->updated_by = auth()->id() ?? 1;
+    $skill->updated_time = now();
+    $skill->save();
+
+    return $skill;
+}
+
+public static function bulkDeleteSkills($applicantId, array $ids)
+{
+    return self::where('intermediate_applicant_id', $applicantId)
+        ->whereIn('id', $ids)
+        ->update([
+            'is_deleted' => 1,
+            'updated_by' => auth()->id() ?? 1,
+            'updated_time' => now(),
+        ]);
+}
+
+
+}
