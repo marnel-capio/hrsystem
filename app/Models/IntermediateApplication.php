@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class IntermediateApplication extends Model
 {
@@ -181,9 +181,26 @@ class IntermediateApplication extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    /**
-     * Accessors
-     */
+    protected function statusLabels(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => [
+                'paper_screening' => $this->getStatusLabel($this->paper_screening_status),
+                'exam' => $this->getStatusLabel($this->exam_status),
+                'hr_interview' => $this->getStatusLabel($this->hr_interview_status),
+                'bu_interview' => $this->getStatusLabel($this->bu_interview_status),
+                'final_interview' => $this->getStatusLabel($this->final_interview_status),
+                'job_offer' => $this->getJobOfferLabel($this->job_offer_status),
+            ]
+        );
+    }
+
+    protected $appends = [
+        'fullApplicantName',
+        'projectName',
+        'stageLabel',
+    ];
+
     protected function fullApplicantName(): Attribute
     {
         return Attribute::make(
@@ -297,5 +314,42 @@ class IntermediateApplication extends Model
         return Carbon::instance($date)
             ->timezone('Asia/Manila')
             ->format('Y-m-d H:i:s');
+    }
+
+    public function getFullApplicantNameAttribute()
+    {
+        return $this->intermediateApplicant?->full_name ?? 'Unknown';
+    }
+
+    public function getStageLabelAttribute()
+    {
+        return $this->getStageLabel();
+    }
+
+    /**
+     * Status label helpers
+     */
+    private function getStageLabel(): string
+    {
+        return match ($this->application_stage) {
+            1 => 'New',
+            2 => 'For Exam',
+            3 => 'For Initial Interview',
+            4 => 'For Final Interview',
+            5 => 'For Job Offer',
+            default => 'Unknown'
+        };
+    }
+
+    private function getStatusLabel(int $status): string
+    {
+        return match ($status) {
+            1 => 'Pending',
+            2 => 'Done',
+            3 => 'Passed',
+            4 => 'P2',
+            5 => 'Failed',
+            default => 'N/A'
+        };
     }
 }

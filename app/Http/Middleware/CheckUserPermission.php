@@ -10,7 +10,6 @@ class CheckUserPermission
 {
     public function handle(Request $request, Closure $next): Response
     {
-
         $user = auth()->user();
 
         if (! $user) {
@@ -52,11 +51,16 @@ class CheckUserPermission
         }
 
         // Allow API routes based on path (since they might not have names)
-        if (str_contains($routePath, 'eligible-applicants') ||
+        if (
+            str_contains($routePath, 'eligible-applicants') ||
             str_contains($routePath, 'check-eligibility') ||
-            str_contains($routePath, 'check-unique')) {
-            // API routes should be accessible to HR Admin, HR Manager, and HR Recruiter
-            if (in_array($permission, [config('constants.HR_ADMIN_PERMISSION.value'), config('constants.HR_MANAGER_PERMISSION.value'), config('constants.HR_RECRUITER_PERMISSION.value')])) {
+            str_contains($routePath, 'check-unique')
+        ) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+            ])) {
                 return $next($request);
             }
 
@@ -67,7 +71,7 @@ class CheckUserPermission
         /*
         |----------------------------------------------------------------------
         | Routes: /user & /user/register
-        | Only HR Admin & HR Manager allowedintermediate.projects.lis
+        | Only HR Admin & HR Manager allowed
         |----------------------------------------------------------------------
         */
         if (in_array($routeName, [
@@ -123,7 +127,7 @@ class CheckUserPermission
 
         /*
         |--------------------------------------------------------------------------
-        | Route: /action/schedules/ and /action/batches and ACTION Applications create/process routes
+        | ACTION Applications create/process routes
         | Only HR Admin, HR Manager, and HR Recruiter allowed
         |--------------------------------------------------------------------------
         */
@@ -163,7 +167,7 @@ class CheckUserPermission
 
         /*
         |--------------------------------------------------------------------------
-        | Route: ACTION Applications List
+        | ACTION Applications List
         | HR Admin, HR Manager, HR Recruiter, BU Manager, Interviewer allowed
         |--------------------------------------------------------------------------
         */
@@ -184,7 +188,7 @@ class CheckUserPermission
 
         /*
         |--------------------------------------------------------------------------
-        | Route: ACTION Applications Detail / Edit / Print
+        | ACTION Applications Detail / Edit / Print
         | HR Admin, HR Manager, HR Recruiter, BU Manager, Interviewer allowed
         |--------------------------------------------------------------------------
         */
@@ -214,7 +218,6 @@ class CheckUserPermission
         |----------------------------------------------------------------------
         */
         if ($routeName === 'user.show') {
-            // Full access
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
                 config('constants.HR_MANAGER_PERMISSION.value'),
@@ -222,7 +225,6 @@ class CheckUserPermission
                 return $next($request);
             }
 
-            // Limited access (own profile only)
             if (in_array($permission, [
                 config('constants.HR_RECRUITER_PERMISSION.value'),
                 config('constants.HR_PERMISSION.value'),
@@ -238,7 +240,11 @@ class CheckUserPermission
             }
         }
 
-        // ACTION BATCH
+        /*
+        |----------------------------------------------------------------------
+        | ACTION BATCH
+        |----------------------------------------------------------------------
+        */
         if (in_array($routeName, ['action.batches.list', 'action.batches.show'])) {
             if (in_array($permission, [1, 2, 3])) {
                 return $next($request);
@@ -248,7 +254,12 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-        if (in_array($routeName, ['action.batches.register', 'action.batches.store', 'action.batches.edit', 'action.batches.update'])) {
+        if (in_array($routeName, [
+            'action.batches.register',
+            'action.batches.store',
+            'action.batches.edit',
+            'action.batches.update',
+        ])) {
             if (in_array($permission, [1, 2])) {
                 return $next($request);
             }
@@ -257,7 +268,11 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-        // INTERMEDIATE PROJECTS
+        /*
+        |----------------------------------------------------------------------
+        | INTERMEDIATE PROJECTS
+        |----------------------------------------------------------------------
+        */
         if (in_array($routeName, ['intermediate.projects.list', 'intermediate.projects.show'])) {
             if (in_array($permission, [1, 2, 3, 5])) {
                 return $next($request);
@@ -267,20 +282,25 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-        if (in_array($routeName, ['intermediate.projects.register', 'intermediate.projects.store', 'intermediate.projects.edit', 'intermediate.projects.update'])) {
-            // Only permission 1 or 5 are allowed for these routes
+        if (in_array($routeName, [
+            'intermediate.projects.register',
+            'intermediate.projects.store',
+            'intermediate.projects.edit',
+            'intermediate.projects.update',
+        ])) {
             if (in_array($permission, [1, 5])) {
                 return $next($request);
             }
-
-            // Fetch the error message from errors.php using the correct key
-            $errorMessage = trans('errors.unauthorized_user.errorMessage');
 
             return redirect('/dashboard')
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-        // INTERMEDIATE RREQUISITIONS
+        /*
+        |----------------------------------------------------------------------
+        | INTERMEDIATE REQUISITIONS
+        |----------------------------------------------------------------------
+        */
         if (in_array($routeName, [
             'intermediate.requisitions.index',
             'intermediate.requisitions.show',
@@ -303,6 +323,8 @@ class CheckUserPermission
             'intermediate.requisitions.store',
             'intermediate.requisitions.edit',
             'intermediate.requisitions.update',
+            'intermediate.requisitions.notify',
+            'intermediate.requisitions.destroy',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
@@ -345,7 +367,7 @@ class CheckUserPermission
 
         /*
         |----------------------------------------------------------------------
-        | Route: /action/applicants
+        | ACTION Applicants
         |----------------------------------------------------------------------
         */
         if (in_array($routeName, ['action.applicants.index'])) {
@@ -363,11 +385,6 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | ACTION Applicants → only HR Admin, HR Manager, HR Recruiter
-        |--------------------------------------------------------------------------
-        */
         if (in_array($routeName, [
             'action.applicants.register',
             'action.applicants.store',
@@ -385,11 +402,6 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-        /*
-        |----------------------------------------------------------------------
-        | Route: /action/applicants/{id}
-        |----------------------------------------------------------------------
-        */
         if ($routeName === 'action.applicants.detail') {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
@@ -405,11 +417,6 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-        /*
-        |----------------------------------------------------------------------
-        | Route: /action/applicants/{id}/edit, CRUD ProgLang, Update
-        |----------------------------------------------------------------------
-        */
         if (in_array($routeName, [
             'action.applicants.edit',
             'action.applicants.update',
@@ -426,9 +433,14 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
-        // INTERMEDIATE APPLICANTS
+        /*
+        |----------------------------------------------------------------------
+        | INTERMEDIATE APPLICANTS
+        |----------------------------------------------------------------------
+        */
         if (in_array($routeName, [
             'intermediate.applicants.index',
+            'intermediate.applicants.show',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
@@ -444,7 +456,38 @@ class CheckUserPermission
                 ->with('error', config('errors.unauthorized.errorMessage'));
         }
 
+        if (in_array($routeName, [
+            'intermediate.applicants.register',
+            'intermediate.applicants.store',
+            'intermediate.applicants.check-email',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
 
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        if (in_array($routeName, [
+            'intermediate.applicants.edit',
+            'intermediate.applicants.update',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
 
         /*
         |--------------------------------------------------------------------------

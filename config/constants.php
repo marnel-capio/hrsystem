@@ -209,47 +209,6 @@ return [
         2 => 'Cebu',
     ],
 
-    'examResults' => [
-        1 => 'Pending',
-        2 => 'Passed',
-        3 => 'Failed',
-    ],
-
-    'examApplicationStatuses' => [
-        1 => 'Pending',
-        3 => '2nd Priority (P2)',
-        4 => 'Done',
-        5 => 'Passed',
-        6 => 'Failed',
-    ],
-
-    'interviewResults' => [
-        1 => 'Pending',
-        2 => 'Passed',
-        3 => 'Failed',
-    ],
-
-    'applicationStatuses' => [
-        1 => 'Pending',
-        2 => 'Done',
-        3 => 'Passed',
-        4 => 'P2',
-        5 => 'Failed',
-    ],
-
-    'jobOfferStatuses' => [
-        1 => 'Pending',
-        2 => 'Done',
-        3 => 'Accept',
-        4 => 'Decline',
-        5 => 'Withdraw',
-        6 => 'Retracted',
-    ],
-
-    'traineesFrom' => [
-        1 => 'Manila',
-        2 => 'Cebu',
-    ],
 
     'source' => [
         'MYNIMO_VALUE' => 1,
@@ -273,6 +232,12 @@ return [
             'exam_plan_date',
             'exam_actual_date',
             'exam_venue',
+            'exam_atpp_part1_correct',
+'exam_atpp_part1_wrong',
+'exam_atpp_part2_correct',
+'exam_atpp_part2_wrong',
+'exam_atpp_part3_correct',
+'exam_atpp_part3_wrong',
             'exam_atpp_result',
             'exam_git_result',
             'exam_prg_result',
@@ -420,23 +385,7 @@ return [
         3 => 'Final Interview',
     ],
 
-    'application_result_map' => [
-        'exam' => [
-            1 => 1, // Pending  -> Pending
-            2 => 2, // 1st Priority (Passed) -> Passed
-            3 => 2, // 2nd Priority (P2) -> Passed
-            4 => 1, // Done -> Pending
-            5 => 2, // Passed -> Passed
-            6 => 3, // Failed -> Failed
-        ],
 
-        'initial_interview' => [
-            1 => 1, // Pending -> Pending
-            2 => 1, // Done -> Pending
-            3 => 2, // Passed -> Passed
-            4 => 2, // P2 -> Passed
-            5 => 3, // Failed -> Failed
-        ],
 
         'final_interview' => [
             1 => 1, // Pending -> Pending
@@ -445,8 +394,8 @@ return [
             4 => 2, // P2 -> Passed
             5 => 3, // Failed -> Failed
         ],
-    ],
-    
+
+
 
     'application_score_rules' => [
         'exam' => [
@@ -465,7 +414,7 @@ return [
 
         'initial_interview' => [
             'passed_min' => 2.0,
-            'p2_min' => 2.5,
+            'p2_min' => 3.0,
             'failed_min' => 4.0,
         ],
 
@@ -516,11 +465,40 @@ return [
 
         'initial_interview' => [
             'passed_min' => 2.0,
-            'p2_min' => 2.5,
+            'p2_min' => 3.0,
             'failed_min' => 4.0,
         ],
 
     ],
+'resource_requisitions' => [
+    'engagement_type' => [
+        'ET_1_NAME' => 'Permanent',
+        'ET_2_NAME' => 'Temporary',
+        'ET_3_NAME' => 'OJT',
+    ],
+    'sourcing_type' => [
+        'ST_1_NAME' => 'Internal',
+        'ST_2_NAME' => 'External',
+        'ST_3_NAME' => 'Either',
+    ],
+    'request_type' => [
+        'RT_1_NAME' => 'New Requirement',
+        'RT_2_NAME' => 'Replacement',
+    ],
+    'replacement_due_to' => [
+        'RDT_1_NAME' => 'Promotion',
+        'RDT_2_NAME' => 'Attrition',
+        'RDT_3_NAME' => 'Backfill',
+        'RDT_4_NAME' => 'Transfer',
+    ],
+    'location_assignment' => [
+        'LA_1_NAME' => 'Alabang',
+        'LA_2_NAME' => 'Makati',
+        'LA_3_NAME' => 'Cebu',
+        'LA_4_NAME' => 'Japan',
+        'LA_5_NAME' => 'China',
+    ],
+],
 
     'source_maps' => [
         'type1' => [
@@ -551,6 +529,14 @@ return [
         3 => 'JLPT Certification',
     ],
 
+
+    'japanese_levels' => [
+        5 => 'N5',
+        4 => 'N4',
+        3 => 'N3',
+        2 => 'N2',
+        1 => 'N1',
+    ],
     'engagement_type' => [
         'ET_PERMANENT_VALUE' => 1,
         'ET_TEMPORARY_VALUE' => 2,
@@ -626,17 +612,27 @@ return [
         6 => 'Retracted',
     ],
 
-    'application_result_map' => [
-        'exam' => [
-            1 => 1,
-            2 => 2,
-            3 => 3,
-            4 => 4,
-            5 => 5,
-        ],
-    ],
+    'intermediateSourceTypes' => [
+    1 => 'SP (Service Provider)',
+    2 => 'Recruitment Portals',
+    3 => 'Employee Referral',
+    4 => 'Walk-in',
+],
 
-
+'intermediateSources' => [
+    1 => 'Mynimo',
+    2 => 'Indeed',
+    3 => 'Kalibrr',
+    4 => 'FoundIt',
+    5 => 'LinkedIn',
+    6 => 'Facebook',
+    7 => 'Jobstreet',
+    8 => 'AAISI',
+    9 => 'Primover',
+    10 => 'Pan Asia',
+    11 => 'Nityo',
+    12 => 'CPS',
+],
 
 
 

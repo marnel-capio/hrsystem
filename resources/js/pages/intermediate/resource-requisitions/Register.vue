@@ -371,7 +371,9 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Custom Location Input -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Custom Location</label>
+          <label class="text-sm mb-1" :class="{'font-bold': form.location_assignment === '6'}">Custom Location
+            <span v-if="form.location_assignment === '6'" class="text-red-500">*</span>
+          </label>
           <input
             v-model="form.custom_location"
             type="text"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import debounce from 'lodash/debounce'
@@ -80,10 +80,46 @@ const canCreateRR = computed(() => {
   return [1, 5].includes(userPermissions.value);
 })
 
+const successMessage = computed(() => (page.props.flash as any)?.success || '');
+const errorMessage = computed(() => (page.props.flash as any)?.error || '');
+
+const showSuccess = ref(successMessage.value);
+const showError = ref(false);
+
+onMounted(() => {
+  if (successMessage.value) {
+    showSuccess.value = true;
+
+    setTimeout(() => {
+      showSuccess.value = false;
+    }, 3000); 
+  }
+
+  if (errorMessage.value) {
+    showError.value = true;
+  }
+});
+
+onMounted(() => {
+  console.log('Requisition data:', requisitions.value);
+});
+
 </script>
 
 <template>
   <AppLayout>
+    <div v-if="showSuccess" class="full-width-alert">
+      <div class="alert-banner alert-success-banner">
+        <div class="alert-body">{{ successMessage }}</div>
+        <button class="close-btn" @click="showSuccess = false">×</button>
+      </div>
+    </div>
+    <div v-if="showError" class="full-width-alert">
+      <div class="alert-banner alert-error-banner">
+        <div class="alert-body">{{ errorMessage }}</div>
+        <button class="close-btn" @click="showError = false">×</button>
+      </div>
+    </div>
     <div class="page-content">
 
       <!-- PAGE HEADER -->
@@ -157,7 +193,11 @@ const canCreateRR = computed(() => {
                     </span>
                   </div>
                 </td>
-                <td class="border px-3 py-2">{{ locationMap[requisition.location_assignment] }}</td>
+                <td class="border px-3 py-2">
+                  {{ (requisition.location_assignment === '6' || requisition.location_assignment === 6) && requisition.custom_location
+                    ? requisition.custom_location 
+                    : locationMap[Number(requisition.location_assignment)] || 'No location specified' }}
+                </td>
                 <td class="border px-3 py-2">{{ formatDate(requisition.start_date) }}</td>
                 <td class="border px-3 py-2">{{ formatDate(requisition.created_time) }}</td>
                 <td class="border px-3 py-2">

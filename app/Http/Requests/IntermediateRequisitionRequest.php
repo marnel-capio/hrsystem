@@ -37,10 +37,10 @@ class IntermediateRequisitionRequest extends FormRequest
         'expected_salary_range' => ['nullable','string',new MaxLength(1024)],
         'remarks' => ['nullable','string',new MaxLength(1024)],
         'start_date' => [
-            'required', 
+            new RequiredField, 
             'date', 
             function ($attribute, $value, $fail) {
-                $twoDaysAhead = Carbon::now()->addDays(2);  
+                $twoDaysAhead = Carbon::now()->addDays(1);  
                 $startDate = Carbon::parse($value);  
 
                 if ($startDate->lt($twoDaysAhead)) {

@@ -702,14 +702,14 @@ function clampAtppPair(
     if (Number.isNaN(correct)) correct = 0;
     if (Number.isNaN(wrong)) wrong = 0;
 
-    // ? NEW: clamp individually
+    // NEW: clamp individually
     if (correct < 0) correct = 0;
     if (wrong < 0) wrong = 0;
 
     if (correct > max) correct = max;
     if (wrong > max) wrong = max;
 
-    // ? EXISTING: clamp total
+    // EXISTING: clamp total
     if (correct + wrong > max) {
         const excess = correct + wrong - max;
 
@@ -1661,7 +1661,7 @@ onUnmounted(() => {
                     class="close-btn"
                     @click="showSuccess = false"
                 >
-                     
+                    ×
                 </button>
             </div>
         </div>
@@ -1674,7 +1674,7 @@ onUnmounted(() => {
                     class="close-btn"
                     @click="showError = false"
                 >
-                     
+                    ×
                 </button>
             </div>
         </div>
@@ -1856,7 +1856,7 @@ onUnmounted(() => {
                                             class="remove-file"
                                             title="Remove file"
                                         >
-                                             
+                                            ×
                                         </button>
                                     </div>
                                     <span
@@ -1904,7 +1904,7 @@ onUnmounted(() => {
                                             class="remove-file"
                                             title="Remove file"
                                         >
-                                             
+                                            ×
                                         </button>
                                     </div>
                                     <span
@@ -1965,7 +1965,7 @@ onUnmounted(() => {
                                             class="remove-file"
                                             title="Remove file"
                                         >
-                                             
+                                            ×
                                         </button>
                                     </div>
                                     <span
