@@ -45,16 +45,10 @@ class IntermediateProjectModel extends Model
     //TO BE USED IN RESOURCE REQS
     public static function getProjects()
     {
-        $requisitionIds = IntermediateRequisitionModel::pluck('project_id')->toArray();
-        $query = DB::table('projects')->select('id', 'project_name', 'project_description');
-
-        $query->whereIn('id', $requisitionIds);
-
-        $projects = $query->get();
-
-        Log::debug('Fetched Projects:', $projects->toArray());
-
-        return $projects;
+        return DB::table('projects')
+            ->select('id', 'project_name', 'project_description')
+            ->orderBy('project_name')
+            ->get();
     }
 
 

@@ -134,12 +134,4 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 const TwoFactorAuthenticatedSessionController = { create, store }
 
-export default TwoFactorAuthenticatedSessionControllerrmDefinition<'post'> => ({
-            action: store.url(options),
-            method: 'post',
-        })
-    
-    store.form = storeForm
-const TwoFactorAuthenticatedSessionController = { create, store }
-
 export default TwoFactorAuthenticatedSessionController

@@ -121,13 +121,4 @@ destroy.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     destroy.form = destroyForm
 const TwoFactorAuthenticationController = { store, destroy }
 
-export default TwoFactorAuthenticationControllerons?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'post',
-        })
-    
-    destroy.form = destroyForm
-const TwoFactorAuthenticationController = { store, destroy }
-
 export default TwoFactorAuthenticationController

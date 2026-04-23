@@ -1,22 +1,24 @@
 <?php
 
-use App\Http\Controllers\ActionBatchController;
 use App\Http\Controllers\ActionApplicantController;
+use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
+use App\Http\Controllers\ActionApplicantSkillController;
+use App\Http\Controllers\ActionApplicationController;
+use App\Http\Controllers\ActionBatchController;
+use App\Http\Controllers\ApplicationImportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\IntermediateApplicantController;
+use App\Http\Controllers\IntermediateApplicantSkillController;
+use App\Http\Controllers\IntermediateApplicantWorkExperienceController;
+use App\Http\Controllers\IntermediateApplicationController;
 use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\IntermediateRequisitionController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ActionApplicationController;
-use App\Http\Controllers\ApplicationImportController;
-use App\Http\Controllers\IntermediateApplicationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ActionApplicantProgrammingLanguageController;
-use App\Http\Controllers\IntermediateApplicantController;
-use App\Http\Controllers\ActionApplicantSkillController;
 
 
 /**
@@ -251,9 +253,34 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'destroy'])->name('intermediate.requisitions.destroy');
     });
 
+
+    // ------------------------
+// Intermediate Applications
+// ------------------------
+
     Route::middleware(['check.permission'])->group(function () {
         Route::get('/intermediate/applications', [IntermediateApplicationController::class, 'index'])
             ->name('intermediate.applications.index');
+
+                    // Import intermediate applicants (matches your Vue router.post)
+        Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
+            ->name('intermediate.applications.import');
+
+                    // Import intermediate applicants (matches your Vue router.post)
+        Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
+            ->name('intermediate.applications.import');
+
+        Route::get('/intermediate/applications/register', [IntermediateApplicationController::class, 'create'])
+            ->name('intermediate.applications.register');
+
+        Route::post('/intermediate/applications', [IntermediateApplicationController::class, 'store'])
+            ->name('intermediate.applications.store');
+
+        Route::get('/intermediate/applications/{id}', [IntermediateApplicationController::class, 'show'])
+            ->name('intermediate.applications.show');
+    });
+
+
 
     // ------------------------
 // Intermediate Applicants
@@ -273,20 +300,32 @@ Route::middleware(['auth', 'check.permission'])->group(function () {
 
     Route::get('/intermediate/applicants/{id}', [IntermediateApplicantController::class, 'show'])
         ->name('intermediate.applicants.show');
+
+    Route::get('/intermediate/applicants/{id}/edit', [IntermediateApplicantController::class, 'edit'])
+    ->name('intermediate.applicants.edit');
+
+Route::put('/intermediate/applicants/{id}/update', [IntermediateApplicantController::class, 'update'])
+    ->name('intermediate.applicants.update');
 });
-        // Import intermediate applicants (matches your Vue router.post)
-        Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
-            ->name('intermediate.applications.import');
-        
-        Route::get('/intermediate/applications/register', [IntermediateApplicationController::class, 'create'])
-            ->name('intermediate.applications.register');
-        
-        Route::post('/intermediate/applications', [IntermediateApplicationController::class, 'store'])
-            ->name('intermediate.applications.store');
-        
-        Route::get('/intermediate/applications/{id}', [IntermediateApplicationController::class, 'show'])
-            ->name('intermediate.applications.show');
-    });
+
+    Route::prefix('intermediate/applicants/{applicantId}/skills')->group(function () {
+    Route::get('/', [IntermediateApplicantSkillController::class, 'index']);
+    Route::post('/', [IntermediateApplicantSkillController::class, 'store']);
+    Route::put('/{skillId}', [IntermediateApplicantSkillController::class, 'update']);
+    Route::delete('/{skillId}', [IntermediateApplicantSkillController::class, 'destroy']);
+    Route::post('/bulk-delete', [IntermediateApplicantSkillController::class, 'bulkDelete']);
+
+});
+
+Route::prefix('intermediate/applicants/{applicantId}/work-experiences')->group(function () {
+    Route::get('/', [IntermediateApplicantWorkExperienceController::class, 'index']);
+    Route::post('/', [IntermediateApplicantWorkExperienceController::class, 'store']);
+    Route::put('/{workId}', [IntermediateApplicantWorkExperienceController::class, 'update']);
+    Route::delete('/{workId}', [IntermediateApplicantWorkExperienceController::class, 'destroy']);
+    Route::post('/bulk-delete', [IntermediateApplicantWorkExperienceController::class, 'bulkDelete']);
+});
+
+
 
 // ------------------------
 // Include additional routes

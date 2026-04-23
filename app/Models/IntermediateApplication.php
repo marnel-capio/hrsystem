@@ -179,9 +179,26 @@ class IntermediateApplication extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    /**
-     * Accessors
-     */
+    protected function statusLabels(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => [
+                'paper_screening' => $this->getStatusLabel($this->paper_screening_status),
+                'exam' => $this->getStatusLabel($this->exam_status),
+                'hr_interview' => $this->getStatusLabel($this->hr_interview_status),
+                'bu_interview' => $this->getStatusLabel($this->bu_interview_status),
+                'final_interview' => $this->getStatusLabel($this->final_interview_status),
+                'job_offer' => $this->getJobOfferLabel($this->job_offer_status),
+            ]
+        );
+    }
+
+    protected $appends = [
+    'fullApplicantName',
+    'projectName',
+    'stageLabel'
+];
+
     protected function fullApplicantName(): Attribute
     {
         return Attribute::make(
@@ -280,4 +297,20 @@ class IntermediateApplication extends Model
             $model->updated_by = auth()->id() ?? 1;
         });
     }
+
+public function getFullApplicantNameAttribute()
+{
+    return $this->intermediateApplicant?->full_name ?? 'Unknown';
+}
+
+public function getProjectNameAttribute()
+{
+    return $this->project?->project_name;
+}
+
+public function getStageLabelAttribute()
+{
+    return $this->getStageLabel();
+}
+
 }

@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import { Head, usePage, Link } from '@inertiajs/vue3'
-import { ref, computed, watch, onMounted } from 'vue'
-import axios from 'axios'
+import { Head, usePage, Link } from '@inertiajs/vue3';
+import { ref, computed, watch, onMounted } from 'vue';
+import axios from 'axios';
 import { Pen, Trash, Eye } from '@lucide/vue';
-import AppLayout from '@/layouts/AppLayout.vue'
+import AppLayout from '@/layouts/AppLayout.vue';
 
 // Inertia page props
-const page = usePage<any>()
-const applicant = computed(() => page.props.applicant)
-const userPermissions = computed(() => Number(page.props.user_permissions))
+const page = usePage<any>();
+const applicant = computed(() => page.props.applicant);
+const userPermissions = computed(() => Number(page.props.user_permissions));
 const languages = ref<any[]>(page.props.languages || []);
 
 // Toast state
-const showToast = ref(false)
-const toastMessage = ref<string | null>(null)
-const toastType = ref<'success' | 'error'>('success')
+const showToast = ref(false);
+const toastMessage = ref<string | null>(null);
+const toastType = ref<'success' | 'error'>('success');
 
 // Format dates
 const formatDate = (dateString: string | null) => {
-    if (!dateString) return ''
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-}
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
 
 const formatDateTime = (dateString: string | null) => {
-    if (!dateString) return ''
-    const date = new Date(dateString)
+    if (!dateString) return '';
+    const date = new Date(dateString);
     return date.toLocaleString('en-US', {
         month: 'long',
         day: 'numeric',
@@ -33,21 +33,27 @@ const formatDateTime = (dateString: string | null) => {
         hour: 'numeric',
         minute: 'numeric',
         hour12: true,
-    })
-}
+    });
+};
 
 // Watch flash messages
-const successMessage = computed(() => page.props.flash?.success)
-const closeToast = () => { showToast.value = false }
+const successMessage = computed(() => page.props.flash?.success);
+const closeToast = () => {
+    showToast.value = false;
+};
 
-watch(successMessage, (val) => {
-    if (val) {
-        toastMessage.value = val
-        toastType.value = 'success'
-        showToast.value = true
-        setTimeout(() => (showToast.value = false), 5000)
-    }
-}, { immediate: true })
+watch(
+    successMessage,
+    (val) => {
+        if (val) {
+            toastMessage.value = val;
+            toastType.value = 'success';
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 5000);
+        }
+    },
+    { immediate: true },
+);
 
 const messages = {
     record_created_successfully: {
@@ -64,47 +70,58 @@ const messages = {
     },
     transaction_failed: {
         errorCode: 'TRANSACTION_FAILED',
-        errorMessage: 'An error occurred while creating the record. Please try again.',
+        errorMessage:
+            'An error occurred while creating the record. Please try again.',
     },
     update_failed: {
         errorCode: 'UPDATE_FAILED',
-        errorMessage: 'An error occurred while saving the record. Please try again.',
+        errorMessage:
+            'An error occurred while saving the record. Please try again.',
     },
     record_deleted_failed: {
         errorCode: 'RECORD_DELETED_FAILED',
-        errorMessage: 'An error occurred while deleting the record. Please try again.',
+        errorMessage:
+            'An error occurred while deleting the record. Please try again.',
     },
-}
+};
 const showToastMessage = (message: string, type: 'success' | 'error') => {
-    toastMessage.value = message
-    toastType.value = type
-    showToast.value = true
-    setTimeout(() => (showToast.value = false), 5000)
-}
+    toastMessage.value = message;
+    toastType.value = type;
+    showToast.value = true;
+    setTimeout(() => (showToast.value = false), 5000);
+};
 
 // Map gender
-const genderLabel = (gender: number) => gender === 1 ? 'Male' : 'Female'
+const genderLabel = (gender: number) => (gender === 1 ? 'Male' : 'Female');
 
 // Map source type
 const sourceTypeLabel = (type: number) => {
     switch (type) {
-        case 1: return 'Campus Recruitment'
-        case 2: return 'Academe Partner'
-        case 3: return 'Recruitment Portal'
-        case 4: return 'Employee Referral'
-        case 5: return 'Walk-in'
-        default: return 'Other'
+        case 1:
+            return 'Campus Recruitment';
+        case 2:
+            return 'Academe Partner';
+        case 3:
+            return 'Recruitment Portal';
+        case 4:
+            return 'Employee Referral';
+        case 5:
+            return 'Walk-in';
+        default:
+            return 'Other';
     }
-}
+};
 
-const selectedLanguages = ref<number[]>([])
-const newLanguage = ref('')
+const selectedLanguages = ref<number[]>([]);
+const newLanguage = ref('');
 
 // Fetch languages for this applicant
 const fetchLanguages = async () => {
-    const res = await axios.get(`/action/applicants/${applicant.value.id}/languages`)
-    languages.value = res.data
-}
+    const res = await axios.get(
+        `/action/applicants/${applicant.value.id}/languages`,
+    );
+    languages.value = res.data;
+};
 
 // Add new language
 const addLanguage = async () => {
@@ -112,7 +129,7 @@ const addLanguage = async () => {
 
     try {
         await axios.post(`/action/applicants/${applicant.value.id}/languages`, {
-            program_language: newLanguage.value.trim()
+            program_language: newLanguage.value.trim(),
         });
 
         newLanguage.value = '';
@@ -121,24 +138,30 @@ const addLanguage = async () => {
         console.error('Add language failed', error);
         alert('Failed to add language. Check console for details.');
     }
-}
+};
 
 // Edit language
 const editLanguage = (lang: any) => {
-    const updated = prompt('Edit language', lang.program_language)
+    const updated = prompt('Edit language', lang.program_language);
     if (updated && updated.trim() !== lang.program_language) {
-        axios.put(`/action/applicants/${applicant.value.id}/languages/${lang.id}`, {
-            program_language: updated.trim()
-        }).then(fetchLanguages)
+        axios
+            .put(
+                `/action/applicants/${applicant.value.id}/languages/${lang.id}`,
+                {
+                    program_language: updated.trim(),
+                },
+            )
+            .then(fetchLanguages);
     }
-}
+};
 
 // Delete single
 const deleteLanguage = async (id: number) => {
-    if (!confirm('Delete this language?')) return
-    await axios.delete(`/action/applicants/${applicant.value.id}/languages/${id}`)
-        .then(fetchLanguages)
-}
+    if (!confirm('Delete this language?')) return;
+    await axios
+        .delete(`/action/applicants/${applicant.value.id}/languages/${id}`)
+        .then(fetchLanguages);
+};
 
 // Bulk delete
 const bulkDelete = async () => {
@@ -147,9 +170,12 @@ const bulkDelete = async () => {
     if (!confirm('Delete selected languages?')) return;
 
     try {
-        await axios.post(`/action/applicants/${applicant.value.id}/languages/bulk-delete`, {
-            ids: selectedLanguages.value
-        });
+        await axios.post(
+            `/action/applicants/${applicant.value.id}/languages/bulk-delete`,
+            {
+                ids: selectedLanguages.value,
+            },
+        );
 
         // Clear selected checkboxes
         selectedLanguages.value = [];
@@ -158,309 +184,366 @@ const bulkDelete = async () => {
         fetchLanguages();
     } catch (error) {
         console.error('Bulk delete failed', error);
-        alert('Failed to delete selected languages. Check console for details.');
+        alert(
+            'Failed to delete selected languages. Check console for details.',
+        );
     }
-}
+};
 
 // Toggle all checkboxes
 const toggleAllLanguages = (e: Event) => {
-    const target = e.target as HTMLInputElement
-    selectedLanguages.value = target.checked ? languages.value.map(l => l.id) : []
-}
+    const target = e.target as HTMLInputElement;
+    selectedLanguages.value = target.checked
+        ? languages.value.map((l) => l.id)
+        : [];
+};
 
 // Modal state
-const editModalVisible = ref(false)
-const languageBeingEdited = ref<{ id: number, program_language: string, remarks: string | null } | null>(null)
-const editedLanguage = ref('')
-const editedRemarks = ref('') // <-- new state for remarks
+const editModalVisible = ref(false);
+const languageBeingEdited = ref<{
+    id: number;
+    program_language: string;
+    remarks: string | null;
+} | null>(null);
+const editedLanguage = ref('');
+const editedRemarks = ref(''); // <-- new state for remarks
 
 // Open modal
 const openEditModal = (lang: any) => {
-    languageBeingEdited.value = { ...lang }
-    editedLanguage.value = lang.program_language
-    editedRemarks.value = lang.remarks || ''
-    editModalVisible.value = true
-}
+    languageBeingEdited.value = { ...lang };
+    editedLanguage.value = lang.program_language;
+    editedRemarks.value = lang.remarks || '';
+    editModalVisible.value = true;
+};
 
 // Save changes
 const saveLanguageEdit = async () => {
-    if (!languageBeingEdited.value) return
+    if (!languageBeingEdited.value) return;
 
-    editLanguageError.value = null
-    editRemarksError.value = null
+    editLanguageError.value = null;
+    editRemarksError.value = null;
 
     if (!editedLanguage.value.trim()) {
-        editLanguageError.value = "This is a required field."
-        return
+        editLanguageError.value = 'This is a required field.';
+        return;
     }
 
     try {
-        await axios.put(`/action/applicants/${applicant.value.id}/languages/${languageBeingEdited.value.id}`, {
-            program_language: editedLanguage.value.trim(),
-            remarks: editedRemarks.value.trim() || null
-        })
-        fetchLanguages()
-        closeEditModal()
+        await axios.put(
+            `/action/applicants/${applicant.value.id}/languages/${languageBeingEdited.value.id}`,
+            {
+                program_language: editedLanguage.value.trim(),
+                remarks: editedRemarks.value.trim() || null,
+            },
+        );
+        fetchLanguages();
+        closeEditModal();
 
         // Show success toast
-        toastMessage.value = messages.record_updated_successfully.errorMessage
-        toastType.value = 'success'
-        showToast.value = true
-        setTimeout(() => (showToast.value = false), 5000)
-
+        toastMessage.value = messages.record_updated_successfully.errorMessage;
+        toastType.value = 'success';
+        showToast.value = true;
+        setTimeout(() => (showToast.value = false), 5000);
     } catch (error: any) {
         if (error.response?.data?.errors) {
-            editLanguageError.value = error.response.data.errors.program_language?.[0] || null
-            editRemarksError.value = error.response.data.errors.remarks?.[0] || null
+            editLanguageError.value =
+                error.response.data.errors.program_language?.[0] || null;
+            editRemarksError.value =
+                error.response.data.errors.remarks?.[0] || null;
         } else {
-            toastMessage.value = messages.update_failed.errorMessage
-            toastType.value = 'error'
-            showToast.value = true
-            setTimeout(() => (showToast.value = false), 5000)
+            toastMessage.value = messages.update_failed.errorMessage;
+            toastType.value = 'error';
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 5000);
         }
     }
-}
+};
 
 // Close modal
 const closeEditModal = () => {
-    editModalVisible.value = false
-    languageBeingEdited.value = null
-    editedLanguage.value = ''
-    editedRemarks.value = ''
-    editLanguageError.value = null
-    editRemarksError.value = null
-}
+    editModalVisible.value = false;
+    languageBeingEdited.value = null;
+    editedLanguage.value = '';
+    editedRemarks.value = '';
+    editLanguageError.value = null;
+    editRemarksError.value = null;
+};
 
 // Add Modal state
-const addModalVisible = ref(false)
-const newLanguageName = ref('')
-const newLanguageRemarks = ref('')
+const addModalVisible = ref(false);
+const newLanguageName = ref('');
+const newLanguageRemarks = ref('');
 
 // Open add modal
 const openAddModal = () => {
-    newLanguageName.value = ''
-    newLanguageRemarks.value = ''
-    addModalVisible.value = true
-}
+    newLanguageName.value = '';
+    newLanguageRemarks.value = '';
+    addModalVisible.value = true;
+};
 
 // Close add modal
 const closeAddModal = () => {
-    addModalVisible.value = false
-    newLanguageName.value = ''
-    newLanguageRemarks.value = ''
-    addLanguageError.value = null
-    addRemarksError.value = null
-}
+    addModalVisible.value = false;
+    newLanguageName.value = '';
+    newLanguageRemarks.value = '';
+    addLanguageError.value = null;
+    addRemarksError.value = null;
+};
 
 // Save new language
 const saveNewLanguage = async () => {
-    addLanguageError.value = null
-    addRemarksError.value = null
+    addLanguageError.value = null;
+    addRemarksError.value = null;
 
     if (!newLanguageName.value.trim()) {
-        addLanguageError.value = "This is a required field"
-        return
+        addLanguageError.value = 'This is a required field';
+        return;
     }
 
     try {
         await axios.post(`/action/applicants/${applicant.value.id}/languages`, {
             program_language: newLanguageName.value.trim(),
-            remarks: newLanguageRemarks.value.trim() || null
-        })
+            remarks: newLanguageRemarks.value.trim() || null,
+        });
 
-        fetchLanguages()
-        closeAddModal()
+        fetchLanguages();
+        closeAddModal();
 
         // Show success toast
-        toastMessage.value = messages.record_created_successfully.errorMessage
-        toastType.value = 'success'
-        showToast.value = true
-        setTimeout(() => (showToast.value = false), 5000)
-
+        toastMessage.value = messages.record_created_successfully.errorMessage;
+        toastType.value = 'success';
+        showToast.value = true;
+        setTimeout(() => (showToast.value = false), 5000);
     } catch (error: any) {
         if (error.response?.data?.errors) {
-            addLanguageError.value = error.response.data.errors.program_language?.[0] || null
-            addRemarksError.value = error.response.data.errors.remarks?.[0] || null
+            addLanguageError.value =
+                error.response.data.errors.program_language?.[0] || null;
+            addRemarksError.value =
+                error.response.data.errors.remarks?.[0] || null;
         } else {
-            toastMessage.value = messages.transaction_failed.errorMessage
-            toastType.value = 'error'
-            showToast.value = true
-            setTimeout(() => (showToast.value = false), 5000)
+            toastMessage.value = messages.transaction_failed.errorMessage;
+            toastType.value = 'error';
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 5000);
         }
     }
-}
+};
 
 // Delete confirmation modal
-const deleteModalVisible = ref(false)
-const deleteTargetId = ref<number | null>(null) // for single delete
-const isBulkDelete = ref(false)
+const deleteModalVisible = ref(false);
+const deleteTargetId = ref<number | null>(null); // for single delete
+const isBulkDelete = ref(false);
 
 // Single delete
 const confirmDeleteLanguage = (id: number) => {
-    deleteTargetId.value = id
-    isBulkDelete.value = false
-    deleteModalVisible.value = true
-}
+    deleteTargetId.value = id;
+    isBulkDelete.value = false;
+    deleteModalVisible.value = true;
+};
 
 // Bulk delete
 const confirmBulkDelete = () => {
     if (!selectedLanguages.value.length) return;
-    isBulkDelete.value = true
-    deleteTargetId.value = null
-    deleteModalVisible.value = true
-}
+    isBulkDelete.value = true;
+    deleteTargetId.value = null;
+    deleteModalVisible.value = true;
+};
 
-const addLanguageError = ref<string | null>(null)
-const addRemarksError = ref<string | null>(null)
+const addLanguageError = ref<string | null>(null);
+const addRemarksError = ref<string | null>(null);
 
-const editLanguageError = ref<string | null>(null)
-const editRemarksError = ref<string | null>(null)
-
+const editLanguageError = ref<string | null>(null);
+const editRemarksError = ref<string | null>(null);
 
 const performDelete = async () => {
     try {
         if (isBulkDelete.value) {
-            await axios.post(`/action/applicants/${applicant.value.id}/languages/bulk-delete`, {
-                ids: selectedLanguages.value
-            });
-            selectedLanguages.value = []
+            await axios.post(
+                `/action/applicants/${applicant.value.id}/languages/bulk-delete`,
+                {
+                    ids: selectedLanguages.value,
+                },
+            );
+            selectedLanguages.value = [];
         } else if (deleteTargetId.value !== null) {
-            await axios.delete(`/action/applicants/${applicant.value.id}/languages/${deleteTargetId.value}`)
+            await axios.delete(
+                `/action/applicants/${applicant.value.id}/languages/${deleteTargetId.value}`,
+            );
         }
 
-        fetchLanguages()
+        fetchLanguages();
 
         // Success toast
-        toastMessage.value = messages.record_deleted_successfully.errorMessage
-        toastType.value = 'success'
-        showToast.value = true
-        setTimeout(() => (showToast.value = false), 5000)
-
+        toastMessage.value = messages.record_deleted_successfully.errorMessage;
+        toastType.value = 'success';
+        showToast.value = true;
+        setTimeout(() => (showToast.value = false), 5000);
     } catch (error) {
-        console.error('Delete failed', error)
+        console.error('Delete failed', error);
 
-        toastMessage.value = messages.record_deleted_failed.errorMessage
-        toastType.value = 'error'
-        showToast.value = true
-        setTimeout(() => (showToast.value = false), 5000)
+        toastMessage.value = messages.record_deleted_failed.errorMessage;
+        toastType.value = 'error';
+        showToast.value = true;
+        setTimeout(() => (showToast.value = false), 5000);
     } finally {
-        closeDeleteModal()
+        closeDeleteModal();
     }
-}
+};
 
 // Close modal
 const closeDeleteModal = () => {
-    deleteModalVisible.value = false
-    deleteTargetId.value = null
-    isBulkDelete.value = false
-}
+    deleteModalVisible.value = false;
+    deleteTargetId.value = null;
+    isBulkDelete.value = false;
+};
 
 const applications = computed(() => applicant.value.applications || []);
 
 // Keep these mapping functions for overall exam, interviews, and job offer
 const examStatusLabel = (val: number | null) => {
     switch (val) {
-        case 1: return 'Pending'
-        case 2: return '1st Priority (Passed)'
-        case 3: return '2nd Priority (P2)'
-        case 4: return 'Done'
-        case 5: return 'Passed'
-        case 6: return 'Failed'
-        default: return '-'
+        case 1:
+            return 'Pending';
+        case 2:
+            return '1st Priority (Passed)';
+        case 3:
+            return '2nd Priority (P2)';
+        case 4:
+            return 'Done';
+        case 5:
+            return 'Passed';
+        case 6:
+            return 'Failed';
+        default:
+            return '-';
     }
-}
+};
 
 const examResultLabel = (val: number | null) => {
     switch (val) {
-        case 1: return 'Pending'
-        case 2: return 'Passed'
-        case 3: return 'Failed'
-        default: return '-'
+        case 1:
+            return 'Pending';
+        case 2:
+            return 'Passed';
+        case 3:
+            return 'Failed';
+        default:
+            return '-';
     }
-}
+};
 
 const initialInterviewResultLabel = (val: number | null) => {
     switch (val) {
-        case 1: return 'Pending'
-        case 2: return 'Passed'
-        case 3: return 'Failed'
-        default: return '-'
+        case 1:
+            return 'Pending';
+        case 2:
+            return 'Passed';
+        case 3:
+            return 'Failed';
+        default:
+            return '-';
     }
-}
+};
 
 const initialInterviewStatusLabel = (val: number | null) => {
     switch (val) {
-        case 1: return 'Pending'
-        case 2: return 'Done'
-        case 3: return 'Passed'
-        case 4: return 'P2'
-        case 5: return 'Failed'
-        default: return '-'
+        case 1:
+            return 'Pending';
+        case 2:
+            return 'Done';
+        case 3:
+            return 'Passed';
+        case 4:
+            return 'P2';
+        case 5:
+            return 'Failed';
+        default:
+            return '-';
     }
-}
+};
 
 const finalInterviewResultLabel = (val: number | null) => {
     switch (val) {
-        case 1: return 'Pending'
-        case 2: return 'Passed'
-        case 3: return 'Failed'
-        default: return '-'
+        case 1:
+            return 'Pending';
+        case 2:
+            return 'Passed';
+        case 3:
+            return 'Failed';
+        default:
+            return '-';
     }
-}
+};
 
 const finalInterviewStatusLabel = (val: number | null) => {
     switch (val) {
-        case 1: return 'Pending'
-        case 2: return 'Done'
-        case 3: return 'Passed'
-        case 4: return 'P2'
-        case 5: return 'Failed'
-        default: return '-'
+        case 1:
+            return 'Pending';
+        case 2:
+            return 'Done';
+        case 3:
+            return 'Passed';
+        case 4:
+            return 'P2';
+        case 5:
+            return 'Failed';
+        default:
+            return '-';
     }
-}
+};
 
 const jobOfferStatusLabel = (val: number | null) => {
     switch (val) {
-        case 1: return 'Pending'
-        case 2: return 'Done'
-        case 3: return 'Accept'
-        case 4: return 'Decline'
-        case 5: return 'Withdraw'
-        case 6: return 'Retracted'
-        default: return '-'
+        case 1:
+            return 'Pending';
+        case 2:
+            return 'Done';
+        case 3:
+            return 'Accept';
+        case 4:
+            return 'Decline';
+        case 5:
+            return 'Withdraw';
+        case 6:
+            return 'Retracted';
+        default:
+            return '-';
     }
-}
+};
 
-const statusBadgeColor = (type: 'examResult' | 'interviewResult' | 'jobOffer', value: number | null) => {
-    if (value === null) return 'bg-gray-200 text-gray-700'
+const statusBadgeColor = (
+    type: 'examResult' | 'interviewResult' | 'jobOffer',
+    value: number | null,
+) => {
+    if (value === null) return 'bg-gray-200 text-gray-700';
 
     switch (type) {
         case 'examResult':
         case 'interviewResult':
             // 1-Pending, 2-Passed, 3-Failed
-            if (value === 1) return 'bg-yellow-100 text-yellow-800'
-            if (value === 2) return 'bg-green-100 text-green-800'
-            if (value === 3) return 'bg-red-100 text-red-800'
-            return 'bg-gray-200 text-gray-700'
+            if (value === 1) return 'bg-yellow-100 text-yellow-800';
+            if (value === 2) return 'bg-green-100 text-green-800';
+            if (value === 3) return 'bg-red-100 text-red-800';
+            return 'bg-gray-200 text-gray-700';
         case 'jobOffer':
             // 1-Pending, 2-Done, 3-Accept, 4-Decline, 5-Withdraw, 6-Retracted
-            if (value === 1) return 'bg-yellow-100 text-yellow-800'
-            if (value === 2) return 'bg-blue-100 text-blue-800'
-            if (value === 3) return 'bg-green-100 text-green-800'
-            if ([4, 5, 6].includes(value)) return 'bg-red-100 text-red-800'
-            return 'bg-gray-200 text-gray-700'
+            if (value === 1) return 'bg-yellow-100 text-yellow-800';
+            if (value === 2) return 'bg-blue-100 text-blue-800';
+            if (value === 3) return 'bg-green-100 text-green-800';
+            if ([4, 5, 6].includes(value)) return 'bg-red-100 text-red-800';
+            return 'bg-gray-200 text-gray-700';
     }
-}
+};
 
 const awardsDisplay = computed(() => {
-    if (!applicant.value.awards_recognition) return ''
+    if (!applicant.value.awards_recognition) return '';
 
     return applicant.value.other_examination_certificate
         ? `${applicant.value.awards_recognition} (${applicant.value.other_examination_certificate})`
-        : applicant.value.awards_recognition
-})
+        : applicant.value.awards_recognition;
+});
 
-const canSeeRemarks = computed(() => [1, 2, 3].includes(userPermissions.value))
+const canSeeRemarks = computed(() => [1, 2, 3].includes(userPermissions.value));
 
 // Map source ID to readable label
 const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
@@ -472,24 +555,24 @@ const sourceLabel = (sourceId: any, otherSource: string | null = null) => {
         5: 'Referral',
         6: 'Facebook',
         7: 'Jobstreet',
-    }
+    };
 
-    const id = parseInt(sourceId)
+    const id = parseInt(sourceId);
     if (!isNaN(id) && sources[id]) {
-        return sources[id]
+        return sources[id];
     }
 
     // fallback to other_source if present
-    if (otherSource && otherSource.trim()) return otherSource
+    if (otherSource && otherSource.trim()) return otherSource;
 
-    return '-'
-}
+    return '-';
+};
 
 const japaneseBackgroundMap: Record<number, string> = {
     1: 'None',
     2: 'Self Study / University Level',
     3: 'JLPT Certification',
-}
+};
 
 const japaneseLevelMap: Record<number, string> = {
     5: 'N5',
@@ -497,252 +580,264 @@ const japaneseLevelMap: Record<number, string> = {
     3: 'N3',
     2: 'N2',
     1: 'N1',
-}
+};
 
 const getJapaneseBackgroundLabel = (id: number | null) => {
-    if (id == null) return 'N/A'
-    return japaneseBackgroundMap[id] ?? 'N/A'
-}
+    if (id == null) return 'N/A';
+    return japaneseBackgroundMap[id] ?? 'N/A';
+};
 
 const getJapaneseLevelLabel = (id: number | null) => {
-    if (id == null) return 'N/A'
-    return japaneseLevelMap[id] ?? 'N/A'
-}
+    if (id == null) return 'N/A';
+    return japaneseLevelMap[id] ?? 'N/A';
+};
 
-const skills = ref<any[]>([])
-const selectedSkills = ref<number[]>([])
-const newSkillName = ref('')
-const newSkillRemarks = ref('')
+const skills = ref<any[]>([]);
+const selectedSkills = ref<number[]>([]);
+const newSkillName = ref('');
+const newSkillRemarks = ref('');
 
 const fetchSkills = async () => {
-    const res = await axios.get(`/action/applicants/${applicant.value.id}/skills`)
-    skills.value = res.data
-}
+    const res = await axios.get(
+        `/action/applicants/${applicant.value.id}/skills`,
+    );
+    skills.value = res.data;
+};
 
 onMounted(() => {
-    fetchLanguages()
-    fetchSkills()
-})
-
+    fetchLanguages();
+    fetchSkills();
+});
 
 const deleteSkill = async (id: number) => {
-    await axios.delete(`/action/applicants/${applicant.value.id}/skills/${id}`)
-    fetchSkills()
-}
+    await axios.delete(`/action/applicants/${applicant.value.id}/skills/${id}`);
+    fetchSkills();
+};
 
 const bulkDeleteSkills = async () => {
-    await axios.post(`/action/applicants/${applicant.value.id}/skills/bulk-delete`, {
-        ids: selectedSkills.value
-    })
+    await axios.post(
+        `/action/applicants/${applicant.value.id}/skills/bulk-delete`,
+        {
+            ids: selectedSkills.value,
+        },
+    );
 
-    selectedSkills.value = []
-    fetchSkills()
-}
+    selectedSkills.value = [];
+    fetchSkills();
+};
 
 // =======================
 // SKILLS MODAL STATE
 // =======================
-const addSkillModalVisible = ref(false)
+const addSkillModalVisible = ref(false);
 
-const editSkillModalVisible = ref(false)
-const skillBeingEdited = ref<{ id: number, skill_name: string, remarks: string | null } | null>(null)
-const editedSkillName = ref('')
-const editedSkillRemarks = ref('')
+const editSkillModalVisible = ref(false);
+const skillBeingEdited = ref<{
+    id: number;
+    skill_name: string;
+    remarks: string | null;
+} | null>(null);
+const editedSkillName = ref('');
+const editedSkillRemarks = ref('');
 
-const deleteSkillModalVisible = ref(false)
-const deleteSkillTargetId = ref<number | null>(null)
-const isBulkDeleteSkillsModal = ref(false)
+const deleteSkillModalVisible = ref(false);
+const deleteSkillTargetId = ref<number | null>(null);
+const isBulkDeleteSkillsModal = ref(false);
 
-const addSkillNameError = ref<string | null>(null)
-const addSkillRemarksError = ref<string | null>(null)
+const addSkillNameError = ref<string | null>(null);
+const addSkillRemarksError = ref<string | null>(null);
 
-const editSkillNameError = ref<string | null>(null)
-const editSkillRemarksError = ref<string | null>(null)
+const editSkillNameError = ref<string | null>(null);
+const editSkillRemarksError = ref<string | null>(null);
 
 const openEditSkillModal = (skill: any) => {
-    skillBeingEdited.value = skill
-    editedSkillName.value = skill.skill
-    editedSkillRemarks.value = skill.remarks || ''
-    editSkillModalVisible.value = true
-}
+    skillBeingEdited.value = skill;
+    editedSkillName.value = skill.skill;
+    editedSkillRemarks.value = skill.remarks || '';
+    editSkillModalVisible.value = true;
+};
 
 const closeEditSkillModal = () => {
-    editSkillModalVisible.value = false
-    skillBeingEdited.value = null
-    editedSkillName.value = ''
-    editedSkillRemarks.value = ''
-    editSkillNameError.value = null
-    editSkillRemarksError.value = null
-}
+    editSkillModalVisible.value = false;
+    skillBeingEdited.value = null;
+    editedSkillName.value = '';
+    editedSkillRemarks.value = '';
+    editSkillNameError.value = null;
+    editSkillRemarksError.value = null;
+};
 
 const openAddSkillModal = () => {
-    newSkillName.value = ''
-    newSkillRemarks.value = ''
-    addSkillModalVisible.value = true
-}
+    newSkillName.value = '';
+    newSkillRemarks.value = '';
+    addSkillModalVisible.value = true;
+};
 
 const closeAddSkillModal = () => {
-    addSkillModalVisible.value = false
-    newSkillName.value = ''
-    newSkillRemarks.value = ''
-    addSkillNameError.value = null
-    addSkillRemarksError.value = null
-}
+    addSkillModalVisible.value = false;
+    newSkillName.value = '';
+    newSkillRemarks.value = '';
+    addSkillNameError.value = null;
+    addSkillRemarksError.value = null;
+};
 
 const saveSkillEdit = async () => {
-    if (!skillBeingEdited.value) return
+    if (!skillBeingEdited.value) return;
 
-    editSkillNameError.value = null
-    editSkillRemarksError.value = null
+    editSkillNameError.value = null;
+    editSkillRemarksError.value = null;
 
     if (!editedSkillName.value.trim()) {
-        editSkillNameError.value = "Skill name is required"
-        return
+        editSkillNameError.value = 'This is a required field.';
+        return;
     }
 
     try {
-        await axios.put(`/action/applicants/${applicant.value.id}/skills/${skillBeingEdited.value.id}`, {
-            skill: editedSkillName.value.trim(),
-            remarks: editedSkillRemarks.value.trim() || null
-        })
-        fetchSkills()
-        closeEditSkillModal()
+        await axios.put(
+            `/action/applicants/${applicant.value.id}/skills/${skillBeingEdited.value.id}`,
+            {
+                skill: editedSkillName.value.trim(),
+                remarks: editedSkillRemarks.value.trim() || null,
+            },
+        );
+        fetchSkills();
+        closeEditSkillModal();
 
-        toastMessage.value = messages.record_updated_successfully.errorMessage
-        toastType.value = 'success'
-        showToast.value = true
-        setTimeout(() => (showToast.value = false), 5000)
-
+        toastMessage.value = messages.record_updated_successfully.errorMessage;
+        toastType.value = 'success';
+        showToast.value = true;
+        setTimeout(() => (showToast.value = false), 5000);
     } catch (error: any) {
         if (error.response?.data?.errors) {
-            editSkillNameError.value = error.response.data.errors.skill?.[0] || null
-            editSkillRemarksError.value = error.response.data.errors.remarks?.[0] || null
+            editSkillNameError.value =
+                error.response.data.errors.skill?.[0] || null;
+            editSkillRemarksError.value =
+                error.response.data.errors.remarks?.[0] || null;
         } else {
-            toastMessage.value = messages.update_failed.errorMessage
-            toastType.value = 'error'
-            showToast.value = true
-            setTimeout(() => (showToast.value = false), 5000)
+            toastMessage.value = messages.update_failed.errorMessage;
+            toastType.value = 'error';
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 5000);
         }
     }
-}
+};
 
 const confirmDeleteSkill = (id: number) => {
-    deleteSkillTargetId.value = id
-    isBulkDeleteSkillsModal.value = false
-    deleteSkillModalVisible.value = true
-}
+    deleteSkillTargetId.value = id;
+    isBulkDeleteSkillsModal.value = false;
+    deleteSkillModalVisible.value = true;
+};
 
 const confirmBulkDeleteSkills = () => {
-    if (!selectedSkills.value.length) return
-    isBulkDeleteSkillsModal.value = true
-    deleteSkillTargetId.value = null
-    deleteSkillModalVisible.value = true
-}
+    if (!selectedSkills.value.length) return;
+    isBulkDeleteSkillsModal.value = true;
+    deleteSkillTargetId.value = null;
+    deleteSkillModalVisible.value = true;
+};
 
 const performSkillDelete = async () => {
     try {
         if (isBulkDeleteSkillsModal.value) {
-            await axios.post(`/action/applicants/${applicant.value.id}/skills/bulk-delete`, {
-                ids: selectedSkills.value
-            })
-            selectedSkills.value = []
+            await axios.post(
+                `/action/applicants/${applicant.value.id}/skills/bulk-delete`,
+                {
+                    ids: selectedSkills.value,
+                },
+            );
+            selectedSkills.value = [];
         } else if (deleteSkillTargetId.value !== null) {
-            await axios.delete(`/action/applicants/${applicant.value.id}/skills/${deleteSkillTargetId.value}`)
+            await axios.delete(
+                `/action/applicants/${applicant.value.id}/skills/${deleteSkillTargetId.value}`,
+            );
         }
 
-        fetchSkills()
+        fetchSkills();
 
         showToastMessage(
             messages.record_deleted_successfully.errorMessage,
-            'success'
-        )
-
+            'success',
+        );
     } catch (error) {
-        showToastMessage(
-            messages.record_deleted_failed.errorMessage,
-            'error'
-        )
+        showToastMessage(messages.record_deleted_failed.errorMessage, 'error');
     } finally {
-        closeSkillDeleteModal()
+        closeSkillDeleteModal();
     }
-}
+};
 
 const closeSkillDeleteModal = () => {
-    deleteSkillModalVisible.value = false
-    deleteSkillTargetId.value = null
-    isBulkDeleteSkillsModal.value = false
-}
+    deleteSkillModalVisible.value = false;
+    deleteSkillTargetId.value = null;
+    isBulkDeleteSkillsModal.value = false;
+};
 
 const saveNewSkill = async () => {
-    addSkillNameError.value = null
-    addSkillRemarksError.value = null
+    addSkillNameError.value = null;
+    addSkillRemarksError.value = null;
 
     if (!newSkillName.value.trim()) {
-        addSkillNameError.value = "Skill name is required"
-        return
+        addSkillNameError.value = 'This is a required field.';
+        return;
     }
 
     try {
         await axios.post(`/action/applicants/${applicant.value.id}/skills`, {
             skill: newSkillName.value.trim(),
-            remarks: newSkillRemarks.value.trim() || null
-        })
+            remarks: newSkillRemarks.value.trim() || null,
+        });
 
-        fetchSkills()
-        closeAddSkillModal()
+        fetchSkills();
+        closeAddSkillModal();
         // Show success toast
-        toastMessage.value = messages.record_created_successfully.errorMessage
-        toastType.value = 'success'
-        showToast.value = true
-        setTimeout(() => (showToast.value = false), 5000)
-
+        toastMessage.value = messages.record_created_successfully.errorMessage;
+        toastType.value = 'success';
+        showToast.value = true;
+        setTimeout(() => (showToast.value = false), 5000);
     } catch (error: any) {
         if (error.response?.data?.errors) {
-            addSkillNameError.value = error.response.data.errors.skill?.[0] || null
-            addSkillRemarksError.value = error.response.data.errors.remarks?.[0] || null
+            addSkillNameError.value =
+                error.response.data.errors.skill?.[0] || null;
+            addSkillRemarksError.value =
+                error.response.data.errors.remarks?.[0] || null;
         } else {
-            toastMessage.value = messages.transaction_failed.errorMessage
-            toastType.value = 'error'
-            showToast.value = true
-            setTimeout(() => (showToast.value = false), 5000)
+            toastMessage.value = messages.transaction_failed.errorMessage;
+            toastType.value = 'error';
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 5000);
         }
     }
-}
+};
 
 const toggleAllSkills = (e: Event) => {
-    const target = e.target as HTMLInputElement
-    selectedSkills.value = target.checked
-        ? skills.value.map(s => s.id)
-        : []
-}
+    const target = e.target as HTMLInputElement;
+    selectedSkills.value = target.checked ? skills.value.map((s) => s.id) : [];
+};
 
 const getResultBadgeClass = (value: number | null | undefined) => {
     switch (value) {
         case 2:
-            return 'bg-green-100 text-green-700 border-green-300'
+            return 'bg-green-100 text-green-700 border-green-300';
         case 3:
-            return 'bg-red-100 text-red-700 border-red-300'
+            return 'bg-red-100 text-red-700 border-red-300';
         default:
-            return 'bg-gray-100 text-gray-700 border-gray-300'
+            return 'bg-gray-100 text-gray-700 border-gray-300';
     }
-}
+};
 
 const getJobOfferStatusClass = (value: number | null | undefined) => {
     switch (value) {
         case 2: // Done
-            return 'bg-blue-100 text-blue-700 border-blue-300'
+            return 'bg-blue-100 text-blue-700 border-blue-300';
         case 3: // Accept
-            return 'bg-green-100 text-green-700 border-green-300'
+            return 'bg-green-100 text-green-700 border-green-300';
         case 4: // Decline
-            return 'bg-red-100 text-red-700 border-red-300'
+            return 'bg-red-100 text-red-700 border-red-300';
         case 5: // Withdraw
-            return 'bg-yellow-100 text-yellow-700 border-yellow-300'
+            return 'bg-yellow-100 text-yellow-700 border-yellow-300';
         case 6: // Retracted
-            return 'bg-purple-100 text-purple-700 border-purple-300'
+            return 'bg-purple-100 text-purple-700 border-purple-300';
         default: // Pending (1)
-            return 'bg-gray-100 text-gray-700 border-gray-300'
+            return 'bg-gray-100 text-gray-700 border-gray-300';
     }
-}
+};
 
 const jobOfferStatusMap: Record<number, string> = {
     1: 'Pending',
@@ -751,23 +846,30 @@ const jobOfferStatusMap: Record<number, string> = {
     4: 'Declined',
     5: 'Withdrawn',
     6: 'Retracted',
-}
+};
 
 const getJobOfferStatusLabel = (value: number | null | undefined) => {
-    return jobOfferStatusMap[value ?? 1] ?? 'Pending'
-}
-
+    return jobOfferStatusMap[value ?? 1] ?? 'Pending';
+};
 </script>
 
 <template>
-
     <Head title="ACTION Applicant Detail" />
     <AppLayout>
         <!-- Toast -->
         <div v-if="showToast" class="full-width-alert">
-            <div :class="['alert-banner', toastType === 'success' ? 'alert-success-banner' : 'alert-error-banner']">
+            <div
+                :class="[
+                    'alert-banner',
+                    toastType === 'success'
+                        ? 'alert-success-banner'
+                        : 'alert-error-banner',
+                ]"
+            >
                 <div class="alert-body">{{ toastMessage }}</div>
-                <button type="button" class="close-btn" @click="closeToast">×</button>
+                <button type="button" class="close-btn" @click="closeToast">
+                    ×
+                </button>
             </div>
         </div>
 
@@ -778,22 +880,39 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
 
                 <!-- Language Input -->
                 <div class="modal-field">
-                    <label style="font-weight: bold;">Programming Language Name *</label>
-                    <input v-model="newLanguageName" class="modal-input" placeholder="Programming Language" />
-                    <span v-if="addLanguageError" class="modal-error">{{ addLanguageError }}</span>
+                    <label style="font-weight: bold"
+                        >Programming Language Name *</label
+                    >
+                    <input
+                        v-model="newLanguageName"
+                        class="modal-input"
+                        placeholder="Programming Language"
+                    />
+                    <span v-if="addLanguageError" class="modal-error">{{
+                        addLanguageError
+                    }}</span>
                 </div>
 
                 <!-- Remarks Textarea -->
                 <div class="modal-field">
                     <label>Remarks</label>
-                    <textarea v-model="newLanguageRemarks" class="modal-textarea"
-                        placeholder="Remarks (optional)"></textarea>
-                    <span v-if="addRemarksError" class="modal-error">{{ addRemarksError }}</span>
+                    <textarea
+                        v-model="newLanguageRemarks"
+                        class="modal-textarea"
+                        placeholder="Remarks (optional)"
+                    ></textarea>
+                    <span v-if="addRemarksError" class="modal-error">{{
+                        addRemarksError
+                    }}</span>
                 </div>
 
                 <div class="modal-actions">
-                    <button class="btn-red" @click="closeAddModal">Cancel</button>
-                    <button class="btn-primary" @click="saveNewLanguage">Add</button>
+                    <button class="btn-red" @click="closeAddModal">
+                        Cancel
+                    </button>
+                    <button class="btn-primary" @click="saveNewLanguage">
+                        Add
+                    </button>
                 </div>
             </div>
         </div>
@@ -805,22 +924,39 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
 
                 <!-- Language Input -->
                 <div class="modal-field">
-                    <label style="font-weight: bold;">Programming Language Name *</label>
-                    <input v-model="editedLanguage" class="modal-input" placeholder="Programming Language" />
-                    <span v-if="editLanguageError" class="modal-error">{{ editLanguageError }}</span>
+                    <label style="font-weight: bold"
+                        >Programming Language Name *</label
+                    >
+                    <input
+                        v-model="editedLanguage"
+                        class="modal-input"
+                        placeholder="Programming Language"
+                    />
+                    <span v-if="editLanguageError" class="modal-error">{{
+                        editLanguageError
+                    }}</span>
                 </div>
 
                 <!-- Remarks Textarea -->
                 <div class="modal-field">
                     <label>Remarks</label>
-                    <textarea v-model="editedRemarks" class="modal-textarea"
-                        placeholder="Remarks (optional)"></textarea>
-                    <span v-if="editRemarksError" class="modal-error">{{ editRemarksError }}</span>
+                    <textarea
+                        v-model="editedRemarks"
+                        class="modal-textarea"
+                        placeholder="Remarks (optional)"
+                    ></textarea>
+                    <span v-if="editRemarksError" class="modal-error">{{
+                        editRemarksError
+                    }}</span>
                 </div>
 
                 <div class="modal-actions">
-                    <button class="btn-red" @click="closeEditModal">Cancel</button>
-                    <button class="btn-primary" @click="saveLanguageEdit">Save</button>
+                    <button class="btn-red" @click="closeEditModal">
+                        Cancel
+                    </button>
+                    <button class="btn-primary" @click="saveLanguageEdit">
+                        Save
+                    </button>
                 </div>
             </div>
         </div>
@@ -828,27 +964,37 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
         <!-- Delete Confirmation Modal -->
         <div v-if="deleteModalVisible" class="modal-overlay">
             <div class="modal-content">
-                <h3 class="modal-title text-red-500">
-                    Confirm Deletion
-                </h3>
-                <p class="text-center mb-4">
+                <h3 class="modal-title text-red-500">Confirm Deletion</h3>
+                <p class="mb-4 text-center">
                     Are you sure you want to delete
                     <strong>
-                        {{ isBulkDelete ? selectedLanguages.length + ' selected language(s)' : 'this language' }}
-                    </strong>?
+                        {{
+                            isBulkDelete
+                                ? selectedLanguages.length +
+                                  ' selected language(s)'
+                                : 'this language'
+                        }} </strong
+                    >?
                 </p>
                 <div class="modal-actions">
-                    <button class="btn-red" @click="closeDeleteModal">Cancel</button>
-                    <button class="btn-primary" @click="performDelete">Delete</button>
+                    <button class="btn-red" @click="closeDeleteModal">
+                        Cancel
+                    </button>
+                    <button class="btn-primary" @click="performDelete">
+                        Delete
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Header -->
-        <div class="flex justify-between mx-5 mb-3">
+        <div class="mx-5 mb-3 flex justify-between">
             <h2 class="text-xl font-bold">ACTION Applicant's Details</h2>
-            <Link v-if="![5, 6].includes(userPermissions)" :href="`/action/applicants/${applicant.id}/edit`"
-                class="btn-primary !bg-[#1C7BA5]">
+            <Link
+                v-if="![5, 6].includes(userPermissions)"
+                :href="`/action/applicants/${applicant.id}/edit`"
+                class="btn-primary !bg-[#1C7BA5]"
+            >
                 Edit ACTION Applicant
             </Link>
         </div>
@@ -858,41 +1004,94 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
             <!-- LEFT: Personal & Academic Info -->
             <div class="col-span-1 space-y-4">
                 <!-- Name Card -->
-                <div v-if="applicant.last_name || applicant.first_name || applicant.middle_name"
-                    class="bg-[#2F359E] text-white rounded-xl p-6 shadow">
-                    <h3 class="text-lg font-bold text-center">{{ applicant.last_name }}, {{ applicant.first_name }} {{
-                        applicant.middle_name }}</h3>
-                    <p class="text-xs opacity-80 text-center">Full Name</p>
+                <div
+                    v-if="
+                        applicant.last_name ||
+                        applicant.first_name ||
+                        applicant.middle_name
+                    "
+                    class="rounded-xl bg-[#2F359E] p-6 text-white shadow"
+                >
+                    <h3 class="text-center text-lg font-bold">
+                        {{ applicant.last_name }}, {{ applicant.first_name }}
+                        {{ applicant.middle_name }}
+                    </h3>
+                    <p class="text-center text-xs opacity-80">Full Name</p>
                 </div>
 
                 <!-- Basic Info Table -->
-                <div class="bg-white rounded-xl p-4 shadow border">
+                <div class="rounded-xl border bg-white p-4 shadow">
                     <table class="min-w-full table-auto text-xs">
                         <tbody>
                             <tr v-if="applicant.email_address">
-                                <th class="px-2 py-2 font-semibold text-gray-600 w-40 text-right">Email</th>
-                                <td class="px-2">{{ applicant.email_address }}</td>
+                                <th
+                                    class="w-40 px-2 py-2 text-right font-semibold text-gray-600"
+                                >
+                                    Email
+                                </th>
+                                <td class="px-2">
+                                    {{ applicant.email_address }}
+                                </td>
                             </tr>
-                            <tr v-if="applicant.gender !== null && applicant.gender !== undefined">
-                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">Gender</th>
-                                <td class="px-2">{{ genderLabel(applicant.gender) }}</td>
+                            <tr
+                                v-if="
+                                    applicant.gender !== null &&
+                                    applicant.gender !== undefined
+                                "
+                            >
+                                <th
+                                    class="px-2 py-2 text-right font-semibold text-gray-600"
+                                >
+                                    Gender
+                                </th>
+                                <td class="px-2">
+                                    {{ genderLabel(applicant.gender) }}
+                                </td>
                             </tr>
                             <tr v-if="applicant.age">
-                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">Age</th>
+                                <th
+                                    class="px-2 py-2 text-right font-semibold text-gray-600"
+                                >
+                                    Age
+                                </th>
                                 <td class="px-2">{{ applicant.age }}</td>
                             </tr>
                             <tr v-if="applicant.school">
-                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">School</th>
+                                <th
+                                    class="px-2 py-2 text-right font-semibold text-gray-600"
+                                >
+                                    School
+                                </th>
                                 <td class="px-2">{{ applicant.school }}</td>
                             </tr>
-                            <tr v-if="applicant.degree || applicant.others_degree">
-                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">Degree</th>
-                                <td class="px-2">{{ applicant.degree }} {{
-                                    applicant.others_degree ? `(${applicant.others_degree})` : '' }}</td>
+                            <tr
+                                v-if="
+                                    applicant.degree || applicant.others_degree
+                                "
+                            >
+                                <th
+                                    class="px-2 py-2 text-right font-semibold text-gray-600"
+                                >
+                                    Degree
+                                </th>
+                                <td class="px-2">
+                                    {{ applicant.degree }}
+                                    {{
+                                        applicant.others_degree
+                                            ? `(${applicant.others_degree})`
+                                            : ''
+                                    }}
+                                </td>
                             </tr>
                             <tr v-if="applicant.expected_graduation">
-                                <th class="px-2 py-2 font-semibold text-gray-600 text-right">Expected Graduation</th>
-                                <td class="px-2">{{ applicant.expected_graduation }}</td>
+                                <th
+                                    class="px-2 py-2 text-right font-semibold text-gray-600"
+                                >
+                                    Expected Graduation
+                                </th>
+                                <td class="px-2">
+                                    {{ applicant.expected_graduation }}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -900,59 +1099,88 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
             </div>
 
             <!-- RIGHT: Remarks, Awards, Thesis, Extra Curricular -->
-            <div class="col-span-2 bg-white rounded-xl shadow border p-6 space-y-4">
+            <div
+                class="col-span-2 space-y-4 rounded-xl border bg-white p-6 shadow"
+            >
                 <!-- Source Information -->
-                <div v-if="applicant.source_type || applicant.source || applicant.other_source"
-                    class="bg-white rounded-xl shadow border p-4 mb-4">
-                    <h4 class="text-xs font-bold mb-2">SOURCE INFORMATION</h4>
+                <div
+                    v-if="
+                        applicant.source_type ||
+                        applicant.source ||
+                        applicant.other_source
+                    "
+                    class="mb-4 rounded-xl border bg-white p-4 shadow"
+                >
+                    <h4 class="mb-2 text-xs font-bold">SOURCE INFORMATION</h4>
                     <p class="text-xs break-words">
-                        <strong>Source Type:</strong> {{ sourceTypeLabel(applicant.source_type) || '-' }}<br>
+                        <strong>Source Type:</strong>
+                        {{ sourceTypeLabel(applicant.source_type) || '-'
+                        }}<br />
                         <strong>Source:</strong>
-                        {{ applicant.source
-                            ? sourceLabel(applicant.source)
-                            : applicant.other_source
-                                ? applicant.other_source
-                                : '-'
+                        {{
+                            applicant.source
+                                ? sourceLabel(applicant.source)
+                                : applicant.other_source
+                                  ? applicant.other_source
+                                  : '-'
                         }}
                     </p>
                 </div>
                 <div v-if="applicant.awards_recognition">
-                    <h4 class="text-xs font-bold mb-2 text-left">AWARDS / RECOGNITION</h4>
+                    <h4 class="mb-2 text-left text-xs font-bold">
+                        AWARDS / RECOGNITION
+                    </h4>
                     <p class="text-xs break-words">{{ awardsDisplay }}</p>
                 </div>
                 <div v-if="applicant.thesis_project">
-                    <h4 class="text-xs font-bold mb-2 text-left">THESIS / PROJECT</h4>
-                    <p class="text-xs break-words">{{ applicant.thesis_project }}</p>
+                    <h4 class="mb-2 text-left text-xs font-bold">
+                        THESIS / PROJECT
+                    </h4>
+                    <p class="text-xs break-words">
+                        {{ applicant.thesis_project }}
+                    </p>
                 </div>
                 <div v-if="applicant.extra_curricular">
-                    <h4 class="text-xs font-bold mb-2 text-left">EXTRA CURRICULAR</h4>
-                    <p class="text-xs break-words">{{ applicant.extra_curricular }}</p>
+                    <h4 class="mb-2 text-left text-xs font-bold">
+                        EXTRA CURRICULAR
+                    </h4>
+                    <p class="text-xs break-words">
+                        {{ applicant.extra_curricular }}
+                    </p>
                 </div>
                 <div v-if="applicant.remarks">
-                    <h4 class="text-xs font-bold mb-2 text-left">REMARKS</h4>
+                    <h4 class="mb-2 text-left text-xs font-bold">REMARKS</h4>
                     <p class="text-xs break-words">{{ applicant.remarks }}</p>
                 </div>
             </div>
         </div>
 
         <!-- JPLT Section -->
-        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6">
-            <h3 class="text-lg font-semibold mb-4">Japanese Language Background</h3>
+        <div class="mx-5 mt-6 rounded-xl border bg-white p-6 shadow">
+            <h3 class="mb-4 text-lg font-semibold">
+                Japanese Language Background
+            </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                    <p class="text-sm text-gray-500">Japanese Language Background</p>
+                    <p class="text-sm text-gray-500">
+                        Japanese Language Background
+                    </p>
                     <p class="font-medium">
-                        {{ getJapaneseBackgroundLabel(applicant.japanese_background) }}
+                        {{
+                            getJapaneseBackgroundLabel(
+                                applicant.japanese_background,
+                            )
+                        }}
                     </p>
                 </div>
 
                 <div>
-                    <p class="text-sm text-gray-500">Japanese Language Background Remarks</p>
+                    <p class="text-sm text-gray-500">
+                        Japanese Language Background Remarks
+                    </p>
                     <p class="font-medium">
                         {{ applicant.background_remarks ?? 'N/A' }}
-
                     </p>
                 </div>
 
@@ -962,43 +1190,65 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
                         {{ getJapaneseLevelLabel(applicant.japanese_level) }}
                     </p>
                 </div>
-
             </div>
         </div>
 
         <!-- Application Details Table -->
-        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6">
-            <h3 class="text-lg font-semibold mb-4">Application Details</h3>
+        <div class="mx-5 mt-6 rounded-xl border bg-white p-6 shadow">
+            <h3 class="mb-4 text-lg font-semibold">Application Details</h3>
 
             <table class="w-full table-fixed border-collapse border text-sm">
                 <thead class="bg-gray-100">
                     <tr>
-                        <th class="px-2 py-2 font-semibold text-gray-600">No.</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Exam Result</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Exam Status</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            No.
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Exam Result
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Exam Status
+                        </th>
                         <th v-if="canSeeRemarks">Exam Remarks</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Initial Interview Result</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Initial Interview Status</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Initial Interview Result
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Initial Interview Status
+                        </th>
                         <th v-if="canSeeRemarks">Initial Interview Remarks</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Final Interview Result</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Final Interview Status</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Final Interview Result
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Final Interview Status
+                        </th>
                         <th v-if="canSeeRemarks">Final Interview Remarks</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Job Offer Status</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Job Offer Status
+                        </th>
                         <th v-if="canSeeRemarks">Job Offer Remarks</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Remarks</th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">Action</th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Remarks
+                        </th>
+                        <th class="px-2 py-2 font-semibold text-gray-600">
+                            Action
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(app, index) in applications" :key="app.id">
-
-                        <td class="px-2 py-2 text-center font-medium text-gray-700">
+                        <td
+                            class="px-2 py-2 text-center font-medium text-gray-700"
+                        >
                             {{ Number(index) + 1 }}
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs border"
-                                :class="getResultBadgeClass(app.exam_result)">
+                            <span
+                                class="rounded-full border px-2 py-1 text-xs"
+                                :class="getResultBadgeClass(app.exam_result)"
+                            >
                                 {{ examResultLabel(app.exam_result) }}
                             </span>
                         </td>
@@ -1007,83 +1257,157 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
                             {{ examStatusLabel(app.exam_application_status) }}
                         </td>
 
-                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
-                            <div class="truncate w-full mx-auto" :title="app.exam_remarks || '-'">
+                        <td
+                            v-if="canSeeRemarks"
+                            class="max-w-[200px] px-2 py-2 text-center"
+                        >
+                            <div
+                                class="mx-auto w-full truncate"
+                                :title="app.exam_remarks || '-'"
+                            >
                                 {{ app.exam_remarks || '-' }}
                             </div>
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs border"
-                                :class="getResultBadgeClass(app.initial_interview_result)">
-                                {{ initialInterviewResultLabel(app.initial_interview_result) }}
+                            <span
+                                class="rounded-full border px-2 py-1 text-xs"
+                                :class="
+                                    getResultBadgeClass(
+                                        app.initial_interview_result,
+                                    )
+                                "
+                            >
+                                {{
+                                    initialInterviewResultLabel(
+                                        app.initial_interview_result,
+                                    )
+                                }}
                             </span>
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            {{ initialInterviewStatusLabel(app.initial_interview_application_status) }}
+                            {{
+                                initialInterviewStatusLabel(
+                                    app.initial_interview_application_status,
+                                )
+                            }}
                         </td>
 
-                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
-                            <div class="truncate w-full mx-auto" :title="app.initial_interview_remarks || '-'">
+                        <td
+                            v-if="canSeeRemarks"
+                            class="max-w-[200px] px-2 py-2 text-center"
+                        >
+                            <div
+                                class="mx-auto w-full truncate"
+                                :title="app.initial_interview_remarks || '-'"
+                            >
                                 {{ app.initial_interview_remarks || '-' }}
                             </div>
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs border"
-                                :class="getResultBadgeClass(app.final_interview_result)">
-                                {{ finalInterviewResultLabel(app.final_interview_result) }}
+                            <span
+                                class="rounded-full border px-2 py-1 text-xs"
+                                :class="
+                                    getResultBadgeClass(
+                                        app.final_interview_result,
+                                    )
+                                "
+                            >
+                                {{
+                                    finalInterviewResultLabel(
+                                        app.final_interview_result,
+                                    )
+                                }}
                             </span>
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            {{ finalInterviewStatusLabel(app.final_interview_application_status) }}
+                            {{
+                                finalInterviewStatusLabel(
+                                    app.final_interview_application_status,
+                                )
+                            }}
                         </td>
 
-                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
-                            <div class="truncate w-full mx-auto" :title="app.final_interview_remarks || '-'">
+                        <td
+                            v-if="canSeeRemarks"
+                            class="max-w-[200px] px-2 py-2 text-center"
+                        >
+                            <div
+                                class="mx-auto w-full truncate"
+                                :title="app.final_interview_remarks || '-'"
+                            >
                                 {{ app.final_interview_remarks || '-' }}
                             </div>
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs border"
-                                :class="getJobOfferStatusClass(app.job_offer_status)">
-                                {{ getJobOfferStatusLabel(app.job_offer_status) }}
+                            <span
+                                class="rounded-full border px-2 py-1 text-xs"
+                                :class="
+                                    getJobOfferStatusClass(app.job_offer_status)
+                                "
+                            >
+                                {{
+                                    getJobOfferStatusLabel(app.job_offer_status)
+                                }}
                             </span>
                         </td>
 
-                        <td v-if="canSeeRemarks" class="px-2 py-2 max-w-[200px] text-center">
-                            <div class="truncate w-full mx-auto" :title="app.job_offer_remarks || '-'">
+                        <td
+                            v-if="canSeeRemarks"
+                            class="max-w-[200px] px-2 py-2 text-center"
+                        >
+                            <div
+                                class="mx-auto w-full truncate"
+                                :title="app.job_offer_remarks || '-'"
+                            >
                                 {{ app.job_offer_remarks || '-' }}
                             </div>
                         </td>
 
-                        <td class="px-2 py-2 max-w-[250px] text-center">
-                            <div class="truncate w-full mx-auto" :title="app.remarks || '-'">
+                        <td class="max-w-[250px] px-2 py-2 text-center">
+                            <div
+                                class="mx-auto w-full truncate"
+                                :title="app.remarks || '-'"
+                            >
                                 {{ app.remarks || '-' }}
                             </div>
                         </td>
 
                         <td class="px-2 py-2 text-center">
-                            <Link :href="`/action/applications/${app.id}`" class="inline-flex justify-center">
-                                <Eye class="w-5 h-5 text-green-500 hover:text-green-600" />
+                            <Link
+                                :href="`/action/applications/${app.id}`"
+                                class="inline-flex justify-center"
+                            >
+                                <Eye
+                                    class="h-5 w-5 text-green-500 hover:text-green-600"
+                                />
                             </Link>
                         </td>
-
                     </tr>
                 </tbody>
             </table>
         </div>
 
         <!-- Programming Languages Section -->
-        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6" v-if="![5, 6].includes(userPermissions)">
-            <div class="flex justify-between items-center mb-4">
+        <div
+            class="mx-5 mt-6 rounded-xl border bg-white p-6 shadow"
+            v-if="![5, 6].includes(userPermissions)"
+        >
+            <div class="mb-4 flex items-center justify-between">
                 <h3 class="text-lg font-semibold">Programming Languages</h3>
                 <div class="flex gap-2">
-                    <button @click="openAddModal" class="btn-primary btn-small">Add</button>
-                    <button @click="confirmBulkDelete" class="btn-red btn-small" :disabled="!selectedLanguages.length">
+                    <button @click="openAddModal" class="btn-primary btn-small">
+                        Add
+                    </button>
+                    <button
+                        @click="confirmBulkDelete"
+                        class="btn-red btn-small"
+                        :disabled="!selectedLanguages.length"
+                    >
                         Delete Selected
                     </button>
                 </div>
@@ -1094,7 +1418,10 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
                 <thead>
                     <tr>
                         <th class="col-checkbox">
-                            <input type="checkbox" @change="toggleAllLanguages($event)" />
+                            <input
+                                type="checkbox"
+                                @change="toggleAllLanguages($event)"
+                            />
                         </th>
                         <th class="col-main">Language</th>
                         <th class="col-remarks">Remarks</th>
@@ -1105,7 +1432,11 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
                 <tbody>
                     <tr v-for="lang in languages" :key="lang.id">
                         <td class="col-checkbox">
-                            <input type="checkbox" :value="lang.id" v-model="selectedLanguages" />
+                            <input
+                                type="checkbox"
+                                :value="lang.id"
+                                v-model="selectedLanguages"
+                            />
                         </td>
 
                         <td>{{ lang.program_language }}</td>
@@ -1113,9 +1444,14 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
 
                         <td class="text-center">
                             <div class="flex items-center justify-center gap-2">
-                                <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditModal(lang)" />
-                                <Trash class="w-5 h-5 text-red-500 cursor-pointer"
-                                    @click="confirmDeleteLanguage(lang.id)" />
+                                <Pen
+                                    class="h-5 w-5 cursor-pointer text-blue-500"
+                                    @click="openEditModal(lang)"
+                                />
+                                <Trash
+                                    class="h-5 w-5 cursor-pointer text-red-500"
+                                    @click="confirmDeleteLanguage(lang.id)"
+                                />
                             </div>
                         </td>
                     </tr>
@@ -1130,16 +1466,25 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
         </div>
 
         <!-- Skills Section -->
-        <div class="mx-5 mt-6 bg-white rounded-xl shadow border p-6" v-if="![5, 6].includes(userPermissions)">
-            <div class="flex justify-between items-center mb-4">
+        <div
+            class="mx-5 mt-6 rounded-xl border bg-white p-6 shadow"
+            v-if="![5, 6].includes(userPermissions)"
+        >
+            <div class="mb-4 flex items-center justify-between">
                 <h3 class="text-lg font-semibold">Technical Skills</h3>
 
                 <div class="flex gap-2">
-                    <button @click="openAddSkillModal" class="btn-primary btn-small">
+                    <button
+                        @click="openAddSkillModal"
+                        class="btn-primary btn-small"
+                    >
                         Add
                     </button>
-                    <button @click="confirmBulkDeleteSkills" class="btn-red btn-small"
-                        :disabled="!selectedSkills.length">
+                    <button
+                        @click="confirmBulkDeleteSkills"
+                        class="btn-red btn-small"
+                        :disabled="!selectedSkills.length"
+                    >
                         Delete Selected
                     </button>
                 </div>
@@ -1160,7 +1505,11 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
                 <tbody>
                     <tr v-for="skill in skills" :key="skill.id">
                         <td class="col-checkbox">
-                            <input type="checkbox" :value="skill.id" v-model="selectedSkills" />
+                            <input
+                                type="checkbox"
+                                :value="skill.id"
+                                v-model="selectedSkills"
+                            />
                         </td>
 
                         <td>{{ skill.skill }}</td>
@@ -1168,9 +1517,14 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
 
                         <td class="text-center">
                             <div class="flex items-center justify-center gap-2">
-                                <Pen class="w-5 h-5 text-blue-500 cursor-pointer" @click="openEditSkillModal(skill)" />
-                                <Trash class="w-5 h-5 text-red-500 cursor-pointer"
-                                    @click="confirmDeleteSkill(skill.id)" />
+                                <Pen
+                                    class="h-5 w-5 cursor-pointer text-blue-500"
+                                    @click="openEditSkillModal(skill)"
+                                />
+                                <Trash
+                                    class="h-5 w-5 cursor-pointer text-red-500"
+                                    @click="confirmDeleteSkill(skill.id)"
+                                />
                             </div>
                         </td>
                     </tr>
@@ -1191,8 +1545,12 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
 
                 <!-- Skill Name -->
                 <div class="modal-field">
-                    <label style="font-weight: bold;">Skill Name *</label>
-                    <input v-model="newSkillName" class="modal-input" placeholder="Technical Skills or Other Skills" />
+                    <label style="font-weight: bold">Skill Name *</label>
+                    <input
+                        v-model="newSkillName"
+                        class="modal-input"
+                        placeholder="Technical Skills or Other Skills"
+                    />
                     <span v-if="addSkillNameError" class="modal-error">
                         {{ addSkillNameError }}
                     </span>
@@ -1201,7 +1559,11 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
                 <!-- Remarks -->
                 <div class="modal-field">
                     <label>Remarks</label>
-                    <textarea v-model="newSkillRemarks" class="modal-textarea" placeholder="Optional"></textarea>
+                    <textarea
+                        v-model="newSkillRemarks"
+                        class="modal-textarea"
+                        placeholder="Optional"
+                    ></textarea>
                     <span v-if="addSkillRemarksError" class="modal-error">
                         {{ addSkillRemarksError }}
                     </span>
@@ -1230,13 +1592,20 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
 
                 <div class="modal-field">
                     <label>Remarks</label>
-                    <textarea v-model="editedSkillRemarks" class="modal-textarea"></textarea>
+                    <textarea
+                        v-model="editedSkillRemarks"
+                        class="modal-textarea"
+                    ></textarea>
                     <span class="modal-error">{{ editSkillRemarksError }}</span>
                 </div>
 
                 <div class="modal-actions">
-                    <button class="btn-red" @click="closeEditSkillModal">Cancel</button>
-                    <button class="btn-primary" @click="saveSkillEdit">Save</button>
+                    <button class="btn-red" @click="closeEditSkillModal">
+                        Cancel
+                    </button>
+                    <button class="btn-primary" @click="saveSkillEdit">
+                        Save
+                    </button>
                 </div>
             </div>
         </div>
@@ -1245,18 +1614,24 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
             <div class="modal-content">
                 <h3 class="modal-title text-red-500">Confirm Delete</h3>
 
-                <p class="text-center mb-4">
+                <p class="mb-4 text-center">
                     Are you sure you want to delete
                     <strong>
-                        {{ isBulkDeleteSkillsModal
-                            ? selectedSkills.length + ' selected skill(s)'
-                            : 'this skill' }}
-                    </strong>?
+                        {{
+                            isBulkDeleteSkillsModal
+                                ? selectedSkills.length + ' selected skill(s)'
+                                : 'this skill'
+                        }} </strong
+                    >?
                 </p>
 
                 <div class="modal-actions">
-                    <button class="btn-red" @click="closeSkillDeleteModal">Cancel</button>
-                    <button class="btn-primary" @click="performSkillDelete">Delete</button>
+                    <button class="btn-red" @click="closeSkillDeleteModal">
+                        Cancel
+                    </button>
+                    <button class="btn-primary" @click="performSkillDelete">
+                        Delete
+                    </button>
                 </div>
             </div>
         </div>
@@ -1267,7 +1642,7 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
 /* =========================
    UNIFIED TABLE STYLE
    ========================= */
-.unified-table input[type="checkbox"] {
+.unified-table input[type='checkbox'] {
     margin: 0;
     vertical-align: middle;
 }
@@ -1383,7 +1758,7 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
 .modal-actions button {
     width: 20%;
     /* remove 100% width from global CSS */
-    padding: 0.50rem 0.75rem;
+    padding: 0.5rem 0.75rem;
     /* tight padding around text */
     font-size: 0.875rem;
     /* adjust font size */
@@ -1395,12 +1770,12 @@ const getJobOfferStatusLabel = (value: number | null | undefined) => {
 
 /* Keep original colors */
 .modal-actions .btn-primary {
-    background-color: #1C7BA5;
+    background-color: #1c7ba5;
     color: white;
 }
 
 .modal-actions .btn-red {
-    background-color: #E53E3E;
+    background-color: #e53e3e;
     color: white;
 }
 
@@ -1445,7 +1820,6 @@ span.text-red-500 {
     margin-bottom: 1.5rem;
     /* more space below title */
 }
-
 
 .modal-input,
 .modal-textarea {
@@ -1585,7 +1959,6 @@ span.text-red-500 {
     margin: 0 auto;
     padding: 0 1.5rem;
 }
-
 
 .languages-header {
     display: flex;

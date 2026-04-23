@@ -134,12 +134,4 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 const ConfirmablePasswordController = { show, store }
 
-export default ConfirmablePasswordControllerQueryOptions): RouteFormDefinition<'post'> => ({
-            action: store.url(options),
-            method: 'post',
-        })
-    
-    store.form = storeForm
-const ConfirmablePasswordController = { show, store }
-
 export default ConfirmablePasswordController

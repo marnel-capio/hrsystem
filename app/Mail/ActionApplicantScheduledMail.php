@@ -25,7 +25,7 @@ class ActionApplicantScheduledMail extends Mailable
     public function build()
     {
         return $this->subject('【HR System】AWS ACTION Application Schedule')
-            ->view('emails.action-applicant-scheduled')
+            ->view('emails.ATS-0005')
             ->with([
                 'application' => $this->application,
                 'approvedInterviews' => $this->approvedInterviews,

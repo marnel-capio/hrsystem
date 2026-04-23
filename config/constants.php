@@ -232,6 +232,12 @@ return [
             'exam_plan_date',
             'exam_actual_date',
             'exam_venue',
+            'exam_atpp_part1_correct',
+'exam_atpp_part1_wrong',
+'exam_atpp_part2_correct',
+'exam_atpp_part2_wrong',
+'exam_atpp_part3_correct',
+'exam_atpp_part3_wrong',
             'exam_atpp_result',
             'exam_git_result',
             'exam_prg_result',
@@ -408,7 +414,7 @@ return [
 
         'initial_interview' => [
             'passed_min' => 2.0,
-            'p2_min' => 2.5,
+            'p2_min' => 3.0,
             'failed_min' => 4.0,
         ],
 
@@ -459,7 +465,7 @@ return [
 
         'initial_interview' => [
             'passed_min' => 2.0,
-            'p2_min' => 2.5,
+            'p2_min' => 3.0,
             'failed_min' => 4.0,
         ],
 
