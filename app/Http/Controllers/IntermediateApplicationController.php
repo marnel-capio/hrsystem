@@ -356,6 +356,9 @@ class IntermediateApplicationController extends Controller
                     'status' => $interview->interview_status,
                     'decline_reason' => $interview->decline_reason,
                     'pending_approval_notified_at' => $interview->pending_approval_notified_at,
+                    'evaluation_score' => $interview->evaluation_score,
+                    'evaluation_results' => $interview->evaluation_results,
+                    'evaluation_remarks' => $interview->evaluation_remarks,
                 ];
             });
 
@@ -460,7 +463,10 @@ class IntermediateApplicationController extends Controller
                 ],
             ],
 
-            // ✅ These should only appear ONCE
+            'userPermissions' => auth()->user()->permissions ?? 0,
+            'userId' => auth()->id(),
+
+            //  These should only appear ONCE
             'interviews' => $interviews,
             'availableInterviewers' => $availableInterviewers,
             'initialInterviewAssignments' => [],
@@ -596,7 +602,29 @@ class IntermediateApplicationController extends Controller
             $projectName = $application->resourceSchedule->project->project_name;
         }
 
-        // Get available requisitions for project selection
+        // ✅ GET INTERVIEWS FOR THIS APPLICATION
+        $interviews = IntermediateInterviewer::with('interviewer')
+            ->where('intermediate_application_id', $id)
+            ->get()
+            ->map(function ($interview) {
+                return [
+                    'id' => $interview->id,
+                    'interviewer_id' => $interview->interviewer_id,
+                    'name' => $interview->interviewer->full_name ?? 'Unknown',
+                    'email_address' => $interview->interviewer->email_address ?? '',
+                    'role_label' => $interview->interviewer->role_label ?? 'Interviewer',
+                    'interview_type' => $interview->interview_type,
+                    'scheduled_date' => $interview->scheduled_date,
+                    'interview_status' => $interview->interview_status,
+                    'decline_reason' => $interview->decline_reason,
+                    'pending_approval_notified_at' => $interview->pending_approval_notified_at,
+                    'evaluation_score' => $interview->evaluation_score,
+                    'evaluation_results' => $interview->evaluation_results,
+                    'evaluation_remarks' => $interview->evaluation_remarks,
+                ];
+            });
+
+        // Get available requisitions
         $sourceProjects = IntermediateRequisitionModel::query()
             ->whereHas('project')
             ->with('project')
@@ -617,17 +645,30 @@ class IntermediateApplicationController extends Controller
                 'resource_schedule_id' => $application->resource_schedule_id,
                 'position' => $application->position,
                 'project_name' => $projectName,
-
-                // Files
                 'upload_resume' => $application->upload_resume,
                 'upload_pic' => $application->upload_pic,
+                'paper_screening_status' => $application->paper_screening_status,
 
                 // Screening
                 'answer_q1' => $application->answer_q1,
                 'answer_q2' => $application->answer_q2,
                 'answer_q3' => $application->answer_q3,
                 'answer_q4' => $application->answer_q4,
-                'paper_screening_status' => $application->paper_screening_status,
+
+                // Availability & Preferences
+                'availability_date' => $application->availability_date,
+                'desired_salary_range' => $application->desired_salary_range,
+                'work_preference' => $application->work_preference,
+
+                // Compensation
+                'basic_pay' => $application->basic_pay,
+                'bonuses' => $application->bonuses,
+                'hmo' => $application->hmo,
+                'leaves' => $application->leaves,
+                'allowances' => $application->allowances,
+                'other_benefits' => $application->other_benefits,
+                'targeted_company' => $application->targeted_company,
+                'industry_experience' => $application->industry_experience,
 
                 // Exam
                 'exam_plan_date' => $application->exam_plan_date,
@@ -666,27 +707,10 @@ class IntermediateApplicationController extends Controller
                 'job_offer_status' => $application->job_offer_status,
                 'job_offer_remarks' => $application->job_offer_remarks,
 
-                // Compensation & Preferences
-                'availability_date' => $application->availability_date,
-                'desired_salary_range' => $application->desired_salary_range,
-                'work_preference' => $application->work_preference,
-                'basic_pay' => $application->basic_pay,
-                'bonuses' => $application->bonuses,
-                'hmo' => $application->hmo,
-                'leaves' => $application->leaves,
-                'allowances' => $application->allowances,
-                'other_benefits' => $application->other_benefits,
-                'targeted_company' => $application->targeted_company,
-                'industry_experience' => $application->industry_experience,
-                'current_employer' => $application->current_employer,
-                'asking_rate' => $application->asking_rate,
-                'site_assignment' => $application->site_assignment,
-
                 // Other
                 'remarks' => $application->remarks,
 
                 'applicant' => [
-                    'id' => $application->intermediateApplicant->id ?? null,
                     'first_name' => $application->intermediateApplicant->first_name ?? '',
                     'last_name' => $application->intermediateApplicant->last_name ?? '',
                     'middle_name' => $application->intermediateApplicant->middle_name ?? '',
@@ -701,27 +725,21 @@ class IntermediateApplicationController extends Controller
                 3 => 'USJ-R Basak',
                 4 => 'AdDU',
             ],
-            'examResults' => [
-                1 => 'Pending',
-                2 => 'Passed',
-                3 => 'Failed',
-            ],
-            'examStatuses' => [
+            'examStatuses' => config('constants.exam_statuses') ?? [
                 1 => 'Pending',
                 2 => 'Done',
                 3 => 'Passed',
                 4 => '2nd Priority (P2)',
                 5 => 'Failed',
-                6 => 'No Show',
             ],
-            'interviewStatuses' => [
+            'interviewStatuses' => config('constants.interview_statuses') ?? [
                 1 => 'Pending',
                 2 => 'Done',
                 3 => 'Passed',
                 4 => 'P2',
                 5 => 'Failed',
             ],
-            'jobOfferStatuses' => [
+            'jobOfferStatuses' => config('constants.job_offer_statuses') ?? [
                 1 => 'Pending',
                 2 => 'Done',
                 3 => 'Accept',
@@ -730,6 +748,8 @@ class IntermediateApplicationController extends Controller
                 6 => 'Retracted',
             ],
             'userPermissions' => auth()->user()->permissions ?? 0,
+            'userId' => auth()->id(),  // ✅ ADD THIS
+            'interviews' => $interviews,  // ✅ ADD THIS
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),
@@ -743,7 +763,7 @@ class IntermediateApplicationController extends Controller
 
         // Validation rules
         $rules = [
-            'resource_schedule_id' => 'nullable|exists:intermediate_requisitions,id',
+            'resource_schedule_id' => 'nullable|exists:resource_requisitions,id',
             'position' => 'nullable|string|max:80',
 
             // Exam
@@ -756,6 +776,7 @@ class IntermediateApplicationController extends Controller
             'exam_atpp_part2_wrong' => 'nullable|integer|min:0',
             'exam_atpp_part3_correct' => 'nullable|integer|min:0',
             'exam_atpp_part3_wrong' => 'nullable|integer|min:0',
+            'exam_atpp_result' => 'nullable|numeric',
             'exam_tech_result' => 'nullable|numeric|min:0',
             'exam_result' => 'nullable|integer',
             'exam_application_status' => 'nullable|integer',
@@ -825,6 +846,68 @@ class IntermediateApplicationController extends Controller
                     ->find($validated['resource_schedule_id']);
                 $validated['source_project_id'] = $requisition?->project_id;
             }
+            if ($request->has('initial_interview_id') && $request->initial_interview_id) {
+                $initialInterview = IntermediateInterviewer::where('id', $request->initial_interview_id)
+                    ->where('interviewer_id', auth()->id())
+                    ->first();
+
+                if ($initialInterview) {
+                    $initialInterview->update([
+                        'evaluation_score' => $request->initial_evaluation_score,
+                        'evaluation_results' => $request->initial_evaluation_result,
+                        'evaluation_remarks' => $request->initial_evaluation_remarks,
+                    ]);
+                }
+                $this->recalculateInitialInterviewAverage($application);
+            }
+
+            if ($request->has('final_interview_id') && $request->final_interview_id) {
+                $finalInterview = IntermediateInterviewer::where('id', $request->final_interview_id)
+                    ->where('interviewer_id', auth()->id())
+                    ->first();
+
+                if ($finalInterview) {
+                    $finalInterview->update([
+                        'evaluation_score' => $request->final_evaluation_score,
+                        'evaluation_results' => $request->final_evaluation_result,
+                        'evaluation_remarks' => $request->final_evaluation_remarks,
+                    ]);
+                }
+
+                $this->recalculateFinalInterviewAverage($application);
+            }
+
+            $newStage = $application->application_stage;
+
+            // Check if any Final Interview fields have data
+            $hasFinalInterviewData =
+                ! empty($request->final_interview_date) ||
+                ! empty($request->final_interview_final) ||
+                ! empty($request->final_interview_result) ||
+                ! empty($request->final_interview_application_status) ||
+                ! empty($request->final_interview_remarks);
+
+            if ($hasFinalInterviewData) {
+                $newStage = 4; // For Final Interview
+                \Log::info('Final Interview data detected - setting application_stage to 4');
+            }
+
+            // Check if any Job Offer fields have data (higher priority)
+            $hasJobOfferData =
+                ! empty($request->job_offer_schedule) ||
+                ! empty($request->job_offer_status) ||
+                ! empty($request->job_offer_remarks);
+
+            if ($hasJobOfferData) {
+                $newStage = 5; // For Job Offer
+                \Log::info('Job Offer data detected - setting application_stage to 5');
+            }
+
+            // Update the application stage if it changed
+            if ($newStage != $application->application_stage) {
+                $validated['application_stage'] = $newStage;
+                \Log::info('Application stage updated from '.$application->application_stage.' to '.$newStage);
+            }
 
             $application->update($validated);
 
@@ -851,5 +934,212 @@ class IntermediateApplicationController extends Controller
                 ->withInput()
                 ->with('error', 'Failed to update application. Please try again.');
         }
+    }
+
+    /**
+     * Recalculate initial interview average from all interviewer evaluations
+     */
+    private function recalculateInitialInterviewAverage($application): void
+    {
+        \Log::info('=== RECALCULATING INITIAL INTERVIEW AVERAGE ===');
+
+        $allEvaluations = IntermediateInterviewer::where('intermediate_application_id', $application->id)
+            ->where('interview_type', 2)
+            ->get();
+
+        \Log::info('Total initial interviewers: '.$allEvaluations->count());
+
+        $scores = [];
+        foreach ($allEvaluations as $eval) {
+            \Log::info('Interviewer ID: '.$eval->interviewer_id.
+                       ' | Score: '.($eval->evaluation_score ?? 'NULL').
+                       ' | Result: '.($eval->evaluation_results ?? 'NULL'));
+            if (! is_null($eval->evaluation_score)) {
+                $scores[] = $eval->evaluation_score;
+            }
+        }
+
+        \Log::info('Valid scores found: '.count($scores));
+        \Log::info('Scores array: '.json_encode($scores));
+
+        if (count($scores) > 0) {
+            $sum = array_sum($scores);
+            $average = $sum / count($scores);
+
+            \Log::info('Sum: '.$sum);
+            \Log::info('Count: '.count($scores));
+            \Log::info('Calculated Average: '.$average);
+            \Log::info('Rounded Average: '.round($average, 2));
+
+            $application->initial_interview_final = round($average, 2);
+
+            // Apply the score mapping logic
+            $result = $this->mapInterviewScore($average);
+
+            \Log::info('Mapped Result: '.$result['result']);
+            \Log::info('Mapped Status: '.$result['status']);
+
+            $application->initial_interview_result = $result['result'];
+            $application->initial_interview_application_status = $result['status'];
+
+            $application->save();
+
+            \Log::info('✅ Application updated with new initial interview average');
+        } else {
+            \Log::info('⚠️ No valid scores found - application not updated');
+        }
+    }
+
+    /**
+     * Recalculate final interview average from all interviewer evaluations
+     */
+    private function recalculateFinalInterviewAverage($application): void
+    {
+        \Log::info('=== RECALCULATING FINAL INTERVIEW AVERAGE ===');
+
+        $allEvaluations = IntermediateInterviewer::where('intermediate_application_id', $application->id)
+            ->where('interview_type', 3)
+            ->get();
+
+        \Log::info('Total final interviewers: '.$allEvaluations->count());
+
+        $scores = [];
+        foreach ($allEvaluations as $eval) {
+            \Log::info('Interviewer ID: '.$eval->interviewer_id.
+                       ' | Score: '.($eval->evaluation_score ?? 'NULL').
+                       ' | Result: '.($eval->evaluation_results ?? 'NULL'));
+            if (! is_null($eval->evaluation_score)) {
+                $scores[] = $eval->evaluation_score;
+            }
+        }
+
+        \Log::info('Valid scores found: '.count($scores));
+        \Log::info('Scores array: '.json_encode($scores));
+
+        if (count($scores) > 0) {
+            $sum = array_sum($scores);
+            $average = $sum / count($scores);
+
+            \Log::info('Sum: '.$sum);
+            \Log::info('Count: '.count($scores));
+            \Log::info('Calculated Average: '.$average);
+            \Log::info('Rounded Average: '.round($average, 2));
+
+            $application->final_interview_final = round($average, 2);
+
+            // Apply the score mapping logic
+            $result = $this->mapInterviewScore($average);
+
+            \Log::info('Mapped Result: '.$result['result']);
+            \Log::info('Mapped Status: '.$result['status']);
+
+            $application->final_interview_result = $result['result'];
+            $application->final_interview_application_status = $result['status'];
+
+            $application->save();
+
+            \Log::info('✅ Application updated with new final interview average');
+        } else {
+            \Log::info('⚠️ No valid scores found - application not updated');
+        }
+    }
+
+    /**
+     * Map interview score to result and status
+     */
+    private function mapInterviewScore($score): array
+    {
+        $num = floatval($score);
+
+        \Log::info('Mapping score: '.$num);
+
+        if ($num == 0) {
+            \Log::info('→ Score is 0: Pending');
+
+            return ['result' => 1, 'status' => '1'];
+        }
+
+        if ($num >= 1.00 && $num <= 2.00) {
+            \Log::info('→ Score 1.00-2.00: Passed (2), Status Passed (3)');
+
+            return ['result' => 2, 'status' => '3'];
+        }
+
+        if ($num >= 2.01 && $num <= 3.00) {
+            \Log::info('→ Score 2.01-3.00: Passed (2), Status P2 (4)');
+
+            return ['result' => 2, 'status' => '4'];
+        }
+
+        if ($num >= 3.01 && $num <= 5.00) {
+            \Log::info('→ Score 3.01-5.00: Failed (3), Status Failed (5)');
+
+            return ['result' => 3, 'status' => '5'];
+        }
+
+        \Log::info('→ Default: Pending');
+
+        return ['result' => 1, 'status' => '1'];
+    }
+
+    public function print($id)
+    {
+        $application = IntermediateApplication::with([
+            'intermediateApplicant',
+            'resourceSchedule.project',
+        ])->findOrFail($id);
+
+        // Get project name
+        $projectName = null;
+        if ($application->resourceSchedule && $application->resourceSchedule->project) {
+            $projectName = $application->resourceSchedule->project->project_name;
+        }
+
+        // Get work experiences (excluding deleted)
+        $workExperiences = $application->intermediateApplicant?->workExperiences()
+            ->where('is_deleted', '!=', 1)
+            ->orWhereNull('is_deleted')
+            ->get() ?? collect([]);
+
+        // Get skills (excluding deleted)
+        $skills = $application->intermediateApplicant?->skills()
+            ->where('is_deleted', '!=', 1)
+            ->orWhereNull('is_deleted')
+            ->get() ?? collect([]);
+
+        // Get interviews
+        $interviews = IntermediateInterviewer::with('interviewer')
+            ->where('intermediate_application_id', $id)
+            ->get()
+            ->map(function ($interview) {
+                return [
+                    'id' => $interview->id,
+                    'name' => $interview->interviewer->full_name ?? 'Unknown',
+                    'role_label' => $interview->interviewer->role_label ?? 'Interviewer',
+                    'interview_type' => $interview->interview_type,
+                    'scheduled_date' => $interview->scheduled_date,
+                    'status' => $interview->interview_status,
+                    'decline_reason' => $interview->decline_reason,
+                    'evaluation_score' => $interview->evaluation_score,
+                    'evaluation_results' => $interview->evaluation_results,
+                    'evaluation_remarks' => $interview->evaluation_remarks,
+                ];
+            });
+
+        $examVenues = [
+            1 => 'Gmeet',
+            2 => 'Zoom',
+            3 => 'USJ-R Basak',
+            4 => 'AdDU',
+        ];
+
+        return view('intermediate.intermprint', compact(
+            'application',
+            'projectName',
+            'workExperiences',
+            'skills',
+            'interviews',
+            'examVenues'
+        ));
     }
 }

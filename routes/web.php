@@ -96,6 +96,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/intermediate/applications/{id}', [IntermediateApplicationController::class, 'update'])
         ->name('intermediate.applications.update');
 
+    Route::get('/intermediate/applications/{id}/print', [IntermediateApplicationController::class, 'print'])
+    ->name('intermediate.applications.print');
+
 });
 
 // Update user
