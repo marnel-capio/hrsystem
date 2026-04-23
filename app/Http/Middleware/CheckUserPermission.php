@@ -303,6 +303,8 @@ class CheckUserPermission
             'intermediate.requisitions.store',
             'intermediate.requisitions.edit',
             'intermediate.requisitions.update',
+            'intermediate.requisitions.notify',
+            'intermediate.requisitions.destroy',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),

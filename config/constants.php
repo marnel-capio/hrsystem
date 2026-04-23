@@ -442,6 +442,57 @@ return [
         ],
     ],
 
+    'application_score_rules' => [
+        'exam' => [
+            'young_it' => [
+                'passed' => ['attp' => 60, 'git' => 6, 'prg' => 30],
+                'p2' => ['attp' => 55, 'git' => 5, 'prg' => 20],
+            ],
+            'young_other' => [
+                'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+                'p2' => ['attp' => 55, 'git' => 5, 'prg' => 20],
+            ],
+            'adult' => [
+                'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+            ],
+        ],
+
+        'initial_interview' => [
+            'passed_min' => 2.0,
+            'p2_min' => 2.5,
+            'failed_min' => 4.0,
+        ],
+
+    ],
+'resource_requisitions' => [
+    'engagement_type' => [
+        'ET_1_NAME' => 'Permanent',
+        'ET_2_NAME' => 'Temporary',
+        'ET_3_NAME' => 'OJT',
+    ],
+    'sourcing_type' => [
+        'ST_1_NAME' => 'Internal',
+        'ST_2_NAME' => 'External',
+        'ST_3_NAME' => 'Either',
+    ],
+    'request_type' => [
+        'RT_1_NAME' => 'New Requirement',
+        'RT_2_NAME' => 'Replacement',
+    ],
+    'replacement_due_to' => [
+        'RDT_1_NAME' => 'Promotion',
+        'RDT_2_NAME' => 'Attrition',
+        'RDT_3_NAME' => 'Backfill',
+        'RDT_4_NAME' => 'Transfer',
+    ],
+    'location_assignment' => [
+        'LA_1_NAME' => 'Alabang',
+        'LA_2_NAME' => 'Makati',
+        'LA_3_NAME' => 'Cebu',
+        'LA_4_NAME' => 'Japan',
+        'LA_5_NAME' => 'China',
+    ],
+],
 
     'source_maps' => [
         'type1' => [
@@ -576,7 +627,6 @@ return [
     11 => 'Nityo',
     12 => 'CPS',
 ],
-
 
 
 

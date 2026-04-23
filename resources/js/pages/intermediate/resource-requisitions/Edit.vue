@@ -1,40 +1,60 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, watch, computed, nextTick  } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
+
+
 
 const page = usePage<any>()
 const loading = ref(false)
 const props = defineProps<{
+  requisition: any;
   errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
-  newProjects: { id: number; project_name: string; project_description: string; }[];
+  newProjects: { id: number; project_name: string; project_description: string }[];
   custom_location_name: string | null;
 }>();
 const today = new Date().toISOString().slice(0, 10)  
 
-
+const projectName = computed(() => {
+  const project = props.newProjects.find(p => p.id === form.value.project_id);
+  return project ? project.project_name : '';
+});
 
 const form = ref({
-  engagement_type: '',
-  sourcing_type: '',
-  request_type: '',
-  replacement_due_to:'',
-  person_to_replace: '',
-  location_assignment: '',
-  custom_location: '', 
-  project_id: '',
-  business_unit: '',
-  resource: '',
-  practice: '',
-  no_resources_needed: '',
-  start_date: '',
-  duration_project_engagement: '',
-  required_skills: '',
-  preferred_skills: '',
-  role: '',
-  expected_salary_range: '',
-  remarks: '',
-  project_description: '', 
+  id: props.requisition?.id || null,
+
+  engagement_type: props.requisition?.engagement_type || '',
+  sourcing_type: props.requisition?.sourcing_type || '',
+  request_type: props.requisition?.request_type || '',
+  replacement_due_to: props.requisition?.replacement_due_to || '',
+  person_to_replace: props.requisition?.person_to_replace || '',
+
+  location_assignment: props.requisition?.location_assignment?.toString() || '',
+  custom_location: props.requisition?.custom_location || '',
+
+  project_id: props.requisition?.project_id
+  ? Number(props.requisition.project_id)
+  : '',
+  business_unit: props.requisition?.business_unit || '',
+
+  resource: props.requisition?.resource || '',
+  practice: props.requisition?.practice || '',
+  no_resources_needed: props.requisition?.no_resources_needed || '',
+
+  start_date: props.requisition?.start_date
+  ? props.requisition.start_date.slice(0, 10)
+  : '',
+  duration_project_engagement: props.requisition?.duration_project_engagement || '',
+
+  required_skills: props.requisition?.required_skills || '',
+  preferred_skills: props.requisition?.preferred_skills || '',
+  role: props.requisition?.role || '',
+
+  expected_salary_range: props.requisition?.expected_salary_range || '',
+  remarks: props.requisition?.remarks || '',
+
+  project_description: '',
+
   processing: false,
 });
 
@@ -66,7 +86,10 @@ const maxexpected_salary_range = 80
 const maxremarks = 1024  
 const maxcustom_location = 1024  
 
-
+console.log({
+  project_id: form.value.project_id,
+  projects: props.newProjects
+})
 const validateperson_to_replace = () => {
   person_to_replaceError.value = form.value.person_to_replace.length > maxperson_to_replace
     ? `This field exceeds the maximum allowed length.`
@@ -155,17 +178,6 @@ const validateStartDate = () => {
     : '';
 }
 
-
-
-const updateProjectDescription = (projectId: string) => {
-  const project = props.newProjects.find((p: any) => p.id === Number(projectId)); 
-  if (project) {
-    form.value.project_description = project.project_description;
-  } else {
-    form.value.project_description = '';
-  }
-};
-
 watch(() => form.value.project_id, (newId) => {
   const project = props.newProjects.find(p => p.id === Number(newId));
 
@@ -238,10 +250,17 @@ const submit = () => {
   remarksError.value = ''
   start_dateError.value = ''
 
+  if (form.value.location_assignment === '6' && !form.value.custom_location) {
+    custom_locationError.value = 'This is a required field.';
+    form.value.processing = false;
+    loading.value = false;
+    return;
+  }
+
   form.value.processing = true
   loading.value = true
 
-  router.post('/intermediate/resource-requisitions', form.value, {
+  router.post(`/intermediate/resource-requisitions/${form.value.id}/update`, form.value, {
     onSuccess: () => {
     },
     onFinish: () => {
@@ -251,6 +270,78 @@ const submit = () => {
   })
 }
 
+console.log('project_id:', form.value.project_id)
+console.log('projects:', props.newProjects)
+
+
+watch(() => form.value.request_type, async (newRequestType) => {
+  if (newRequestType === '1') {
+    form.value.replacement_due_to = '';
+    await nextTick(); 
+    console.log('Dropdown should reset now.');
+  }
+});
+
+watch(
+  () => form.value.request_type,
+  (newRequestType) => {
+    if (newRequestType === '1') {  // When "New Requirement" is selected
+      form.value.replacement_due_to = '';  // Reset the field to "" (Select Reason)
+    }
+  }
+);
+
+
+watch(() => form.value.request_type, (newRequestType) => {
+  if (newRequestType === '1') {  
+    form.value.person_to_replace = '';  
+  }
+});
+
+watch(() => form.value.engagement_type, (newEngagementType) => {
+  if (newEngagementType === '3') {  
+    form.value.expected_salary_range = '';  
+  }
+});
+
+watch(
+  () => form.value.location_assignment,
+  (val) => {
+    if (val !== '6') {
+      form.value.custom_location = ''
+    }
+  },
+  { immediate: true }
+)
+
+
+onMounted(() => {
+  if (form.value.project_id) {
+    const project = props.newProjects.find(
+      p => p.id === Number(form.value.project_id)
+    )
+
+    if (project) {
+      form.value.project_description = project.project_description
+    }
+  }
+})
+
+onMounted(() => {
+  if (form.value.engagement_type === '3') {
+    form.value.expected_salary_range = '';  
+  }
+
+  if (form.value.project_id) {
+    const project = props.newProjects.find(
+      p => p.id === Number(form.value.project_id)
+    )
+
+    if (project) {
+      form.value.project_description = project.project_description
+    }
+  }
+})
 
 
 const tomorrow = new Date();
@@ -266,12 +357,12 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
   <div class="w-3/4 mx-auto">
 
     <div class="mb-3">
-      <h2 class="text-xl font-bold">Create Resource Requisition</h2>
+      <h2 class="text-xl font-bold">Edit Resource Requisition</h2>
     </div>
 
     <!-- Form container -->
     <div class="text-xs overflow-x-auto mt-6 p-6 bg-white shadow-lg rounded-lg border">
-      <p class="text-red-500 mb-10 mt-4"><b>Note:</b> Resource Requisition must already be approved by SR Manager.</p>
+      <p class="text-red-500 mb-10 mt-4"><b>Note:</b> This Resource Requisition is already approved by SR Manager.</p>
       <!-- Engagement Type, Sourcing Type, Request Type -->
       <div class="grid grid-cols-3 gap-5">
         <!-- Engagement Type -->
@@ -283,9 +374,6 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             <option value="2">Temporary (Consultant)</option>
             <option value="3">OJT</option>
           </select>
-          <span v-if="page.props.errors?.engagement_type" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.engagement_type }}
-          </span>
         </div>
 
         <!-- Sourcing Type -->
@@ -297,9 +385,6 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             <option value="2">External</option>
             <option value="3">Either</option>
           </select>
-          <span v-if="page.props.errors?.sourcing_type" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.sourcing_type }}
-          </span>
         </div>
 
         <!-- Request Type -->
@@ -310,9 +395,6 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             <option value="1">New Requirement</option>
             <option value="2">Replacement</option>
           </select>
-          <span v-if="page.props.errors?.request_type" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.request_type }}
-          </span>
         </div>
       </div>
 
@@ -320,10 +402,10 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-4 gap-5 mt-5 w-full">
         <!-- If Replacement, Due To -->
         <div class="flex flex-col w-full">
-          <label class="text-sm mb-1">If Replacement, Due To</label>
+          <label class="text-sm mb-1 text-gray-500">If Replacement, Due To</label>
           <select v-model="form.replacement_due_to" class="border p-2 rounded w-full" 
-          :disabled="form.request_type !== '2'" 
-          :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}">
+          :disabled="form.request_type == '1'"
+          :class="{'bg-gray-200 cursor-not-allowed': form.request_type == '1'}">
             <option disabled value="">Select Reason</option>
             <option value="1">Promotion</option>
             <option value="2">Attrition</option>
@@ -334,15 +416,15 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Person to Replace -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Person to Replace</label>
+          <label class="text-sm mb-1 text-gray-500">Person to Replace</label>
           <input
             v-model="form.person_to_replace"
             @input="validateperson_to_replace"
             type="text"
             placeholder="Person to Replace"
             class="border p-2 rounded w-full"
-            :disabled="form.request_type !== '2'"
-            :class="{'bg-gray-200 cursor-not-allowed': form.request_type !== '2'}"
+            :disabled="form.request_type == '1'"
+            :class="{'bg-gray-200 cursor-not-allowed': form.request_type == '1'}"
           />
           <span v-if="page.props.errors?.person_to_replace" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.person_to_replace }}
@@ -354,7 +436,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Location Assignment -->
         <div class="flex flex-col">
-          <label class="text-sm font-semibold mb-1 text-bold">Location Assignment <label class="text-red-500">*</label></label>
+          <label class="text-sm font-semibold mb-1 font-bold">Location Assignment <label class="text-red-500">*</label></label>
           <select v-model="form.location_assignment" class="border p-2 rounded w-full">
             <option disabled value="">Select Location</option>
             <option value="1">Alabang</option>
@@ -364,22 +446,24 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             <option value="5">China</option>
             <option value="6">Other</option>
           </select>
-          <span v-if="page.props.errors?.location_assignment" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.location_assignment }}
-          </span>
         </div>
 
         <!-- Custom Location Input -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Custom Location</label>
+          <!-- Custom Location Label -->
+          <label class="text-sm mb-1" 
+                :class="{'font-bold': form.location_assignment === '6'}">
+            Custom Location
+            <span v-if="form.location_assignment === '6'" class="text-red-500">*</span>
+          </label>
           <input
             v-model="form.custom_location"
             type="text"
             @input="validatecustom_location"
-            :class="{'bg-gray-200 cursor-not-allowed': form.location_assignment !== '6'}"
             class="border p-2 rounded w-full"
             placeholder="Specify location"
             :disabled="form.location_assignment !== '6'"
+            :class="{'bg-gray-200 cursor-not-allowed': form.location_assignment !== '6'}"
           />
           <span v-if="page.props.errors?.custom_location" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.custom_location }}
@@ -390,25 +474,22 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         </div>
       </div>
 
-      <!-- Project Name, Business Unit -->
+      <!-- Project, Business Unit -->
       <div class="grid grid-cols-2 gap-5 mt-5">
-        <!-- Project Name (Dropdown) -->
+        <!-- Project (Dropdown) -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Project <label class="text-red-500">*</label></label>
-          <select v-model="form.project_id" class="border p-2 rounded w-full" @change="updateProjectDescription(form.project_id)">
-            <option disabled value="">Select Project</option>
-            <option v-for="project in props.newProjects" :key="project.id" :value="project.id">
-              {{ project.project_name }}
-            </option>
-          </select>
-          <span v-if="page.props.errors?.project_id" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.project_id }}
-          </span>
+          <input
+            v-model="requisition.project_name"
+            type="text"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
+            placeholder="Enter Project Name"
+          />
         </div>
 
         <!-- Business Unit -->
         <div class="flex flex-col">
-          <label class="text-sm font-bold mb-1">Business Unit<label class="text-red-500">*</label></label>
+          <label class="text-sm font-bold mb-1">Business Unit <label class="text-red-500">*</label></label>
           <input
             v-model="form.business_unit"
             @input="validatebusiness_unit"
@@ -428,7 +509,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="flex flex-col mt-5">
         <label class="text-sm mb-1">Project Description</label>
         <textarea
-          v-model="form.project_description"
+          v-model="requisition.project_description"
           placeholder="Project description will auto-fill based on Project selection"
           class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed"
           readonly
@@ -439,7 +520,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-2 gap-5 mt-5">
         <!-- Resource -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Resource</label>
+          <label class="text-sm mb-1 text-gray-500">Resource</label>
           <input
             v-model="form.resource"
             @input="validateresource"
@@ -457,7 +538,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         
         <!-- Practice -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Practice</label>
+          <label class="text-sm mb-1 text-gray-500">Practice</label>
           <input
             v-model="form.practice"
             @input="validatepractice"
@@ -478,7 +559,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-3 gap-5 mt-5">
         <!-- No. of Resources Needed -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">No. of Resources Needed</label>
+          <label class="text-sm mb-1 text-gray-500">No. of Resources Needed</label>
           <input
             v-model="form.no_resources_needed"
             @input="validateno_resources_needed"
@@ -515,7 +596,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Duration -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Duration of Project Engagement</label>
+          <label class="text-sm mb-1 text-gray-500">Duration of Project Engagement</label>
           <input
             v-model="form.duration_project_engagement"
             @input="validateduration_project_engagement"
@@ -535,7 +616,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Required Skills/Experience -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Required Skills/Experience</label>
+          <label class="text-sm mb-1 text-gray-500">Required Skills/Experience</label>
           <textarea v-model="form.required_skills" rows="6" @input="validaterequired_skills" class="border p-2 rounded w-full" placeholder="Required Skills/Experience"></textarea>
           <span v-if="required_skillsError" class="text-red-600 text-xs mt-1">
             {{ required_skillsError }}
@@ -549,7 +630,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Preferred Skills/Experience -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Preferred Skills/Experience</label>
+          <label class="text-sm mb-1 text-gray-500">Preferred Skills/Experience</label>
           <textarea v-model="form.preferred_skills" rows="6" @input="validatepreferred_skills" class="border p-2 rounded w-full" placeholder="Preferred Skills/Experience"></textarea>
           <span v-if="preferred_skillsError" class="text-red-600 text-xs mt-1">
             {{ preferred_skillsError }}
@@ -563,7 +644,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Role/Job Description -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Role/Job Description</label>
+          <label class="text-sm mb-1 text-gray-500">Role/Job Description</label>
           <textarea v-model="form.role" rows="6" @input="validaterole" class="border p-2 rounded w-full" placeholder="Role/Job Description"></textarea>
           <span v-if="roleError" class="text-red-600 text-xs mt-1">
             {{ roleError }}
@@ -577,15 +658,15 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Expected Salary/Billing Range-->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Expected Salary/Billing Range</label>
+          <label class="text-sm mb-1 text-gray-500">Expected Salary/Billing Range</label>
           <input
             v-model="form.expected_salary_range"
             @input="validateexpected_salary_range"
             rows="6"
             class="border p-2 rounded w-full"
             placeholder="Expected Salary/Billing Range"
-            :disabled="form.engagement_type !== '1' && form.engagement_type !== '2'"
-            :class="{'bg-gray-200 cursor-not-allowed': form.engagement_type !== '1' && form.engagement_type !== '2'}"
+            :disabled="form.engagement_type == '3'"
+            :class="{'bg-gray-200 cursor-not-allowed': form.engagement_type == '3'}"
           />
           <span v-if="expected_salary_rangeError" class="text-red-600 text-xs mt-1">
             {{ expected_salary_rangeError }}
@@ -599,7 +680,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Remarks -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Remarks</label>
+          <label class="text-sm mb-1 text-gray-500">Remarks</label>
           <textarea
             v-model="form.remarks"
             @input="validateremarks"
@@ -620,7 +701,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="form-actions">
         <button
           class="btn btn-secondary cursor-pointer"
-          @click="$inertia.get('/intermediate/resource-requisitions')"
+          @click.prevent="router.get(`/intermediate/resource-requisitions/${form.id}`)"
         >Cancel</button>
 
         <button
@@ -629,7 +710,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
           @click="submit"
           :disabled="form.processing"
         >
-          {{ form.processing ? 'Creating…' : 'Create' }}
+          {{ form.processing ? 'Updating…' : 'Update' }}
         </button>
       </div>
     </div>

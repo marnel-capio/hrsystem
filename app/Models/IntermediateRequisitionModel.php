@@ -17,6 +17,7 @@ class IntermediateRequisitionModel extends Model
         'replacement_due_to',
         'person_to_replace',
         'location_assignment',
+        'custom_location',
         'project_id',
         'business_unit',
         'resource',
@@ -82,6 +83,7 @@ class IntermediateRequisitionModel extends Model
                     $q3->where('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%");
                 });
+                $q->orWhere('custom_location', 'like', "%{$searchLower}%");
 
                 foreach ($locationMap as $key => $value) {
                     if (stripos($key, $searchLower) !== false) {
@@ -136,6 +138,7 @@ class IntermediateRequisitionModel extends Model
                 'project_id',
                 'resource',
                 'location_assignment',
+                'custom_location',
                 'start_date',
                 'created_by',
                 'created_time',
@@ -167,6 +170,49 @@ class IntermediateRequisitionModel extends Model
 
         return $locationMap[$this->location_assignment] ?? 'Not Assigned';
     }
+
+    protected $appends = [
+    'engagement_type_label',
+    'sourcing_type_label',
+    'request_type_label',
+    'replacement_due_to_label',
+    'location_assignment_label',
+    'project_name',
+    'project_description',
+];
+
+public function getEngagementTypeLabelAttribute()
+{
+    return config('constants.resource_requisitions.engagement_type.ET_' . $this->engagement_type . '_NAME', 'Unknown');
+}
+
+public function getSourcingTypeLabelAttribute()
+{
+    return config('constants.resource_requisitions.sourcing_type.ST_' . $this->sourcing_type . '_NAME', 'Unknown');
+}
+
+public function getRequestTypeLabelAttribute()
+{
+    return config('constants.resource_requisitions.request_type.RT_' . $this->request_type . '_NAME', 'Unknown');
+}
+
+public function getReplacementDueToLabelAttribute()
+{
+    return config('constants.resource_requisitions.replacement_due_to.RDT_' . $this->replacement_due_to . '_NAME', '-');
+}
+
+    public function getLocationAssignmentLabelAttr()
+    {
+        return config('constants.location_assignment.LA_' . $this->location_assignment . '_NAME');
+    }
+     public function getProjectNameAttribute()
+{
+    return $this->project?->project_name;
+}
+public function getProjectDescAttribute()
+{
+    return $this->project?->project_description;
+}
 
     const CREATED_AT = 'created_time';
 
