@@ -59,9 +59,7 @@ class IntermediateRequisitionController extends Controller
 {
     try {
         DB::beginTransaction();
-        
-        Log::debug('Creating requisition with data: ', $request->validated());
-        
+                
         $requisition = $this->intermediateRequisitionService->create($request->validated(), $request);
         
         DB::commit();

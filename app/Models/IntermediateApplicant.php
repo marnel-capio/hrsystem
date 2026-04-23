@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\IntermediateApplication;
 
 class IntermediateApplicant extends Model
 {
@@ -36,6 +38,9 @@ class IntermediateApplicant extends Model
         'course',
         'year_attended',
         'others',
+            'japanese_background',
+    'japanese_level',
+    'background_remarks',
         'spouse_details',
         'children',
         'father_details',
@@ -68,7 +73,7 @@ class IntermediateApplicant extends Model
     /**
      * RELATIONSHIPS
      */
-    
+
     // Applications this applicant applied to
     public function applications(): HasMany
     {
@@ -119,6 +124,12 @@ class IntermediateApplicant extends Model
             4 => 'Walk-in'
         ];
         return $labels[$this->source_type] ?? 'Unknown';
+    }
+
+    public function latestApplication()
+    {
+        return $this->hasOne(IntermediateApplication::class)
+            ->latestOfMany('created_time');
     }
 
     // Source label
@@ -211,5 +222,88 @@ class IntermediateApplicant extends Model
     public function skills()
     {
         return $this->hasMany(IntermediateApplicantSkill::class, 'intermediate_applicant_id');
+    }
+
+    public static function getAllIntermediateApplicants()
+    {
+        $genders = config('constants.genders');
+        $sourceTypes = config('constants.intermediateSourceTypes', []);
+        $sources = config('constants.intermediateSources', []);
+
+        return self::with('skills')
+            ->orderBy('created_time', 'desc')
+            ->get()
+            ->map(function ($a) use ($genders, $sourceTypes, $sources) {
+                return [
+                    'id' => $a->id,
+                    'registered_date' => $a->registered_date,
+                    'registered_by' => $a->registered_by,
+                    'source_type' => $sourceTypes[$a->source_type] ?? $a->source_type,
+                    'source' => $sources[$a->source] ?? $a->source,
+                    'other_source' => $a->other_source,
+                    'last_name' => $a->last_name,
+                    'first_name' => $a->first_name,
+                    'middle_name' => $a->middle_name,
+                    'gender' => $genders[$a->gender] ?? '',
+                    'age' => $a->age,
+                    'address' => $a->address,
+                    'birthdate' => $a->birthdate,
+                    'email_address' => $a->email_address,
+                    'contact_no' => $a->contact_no,
+                    'school_graduated_from' => $a->school_graduated_from,
+                    'course' => $a->course,
+                    'year_attended' => $a->year_attended,
+                    'others' => $a->others,
+                    'spouse_details' => $a->spouse_details,
+                    'children' => $a->children,
+                    'father_details' => $a->father_details,
+                    'mother_details' => $a->mother_details,
+                    'sibling_details' => $a->sibling_details,
+                    'emergency_contact_name' => $a->emergency_contact_name,
+                    'emergency_contact_number' => $a->emergency_contact_number,
+                    'emergency_contact_address' => $a->emergency_contact_address,
+                    'remarks' => $a->remarks,
+                    'skills' => $a->skills,
+                ];
+            });
+    }
+
+    public static function createApplicant(array $data)
+    {
+        $data['registered_date'] = now();
+        $data['registered_by'] = Auth::id();
+        $data['created_by'] = Auth::id();
+        $data['created_time'] = now();
+        $data['updated_by'] = Auth::id();
+        $data['updated_time'] = now();
+
+        return self::create($data);
+    }
+
+    public function updateApplicant(array $data)
+    {
+        $data['updated_by'] = Auth::id();
+        $data['updated_time'] = now();
+
+        $this->update($data);
+
+        return $this;
+    }
+
+    public static function upsertByEmail(array $data)
+    {
+        $email = $data['email_address'] ?? null;
+
+        if (! $email) {
+            throw new \Exception('Email address is required for upsert.');
+        }
+
+        $applicant = self::where('email_address', $email)->first();
+
+        if ($applicant) {
+            return $applicant->updateApplicant($data);
+        }
+
+        return self::createApplicant($data);
     }
 }

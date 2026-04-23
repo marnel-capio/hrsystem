@@ -28,7 +28,6 @@ class ActionApplicationController extends Controller
     public function index()
     {
         $search = request('search', '');
-        $user = Auth::user();
 
         $applications = ActionApplication::listPageData($search);
         $actionBatches = ActionBatchModel::getWithTargetLocationAndApplications();
@@ -37,7 +36,7 @@ class ActionApplicationController extends Controller
             'applications'    => $applications,
             'actionBatches'   => $actionBatches,
             'filters'         => ['search' => $search],
-            'user_permissions' => $user->permissions,
+            'userPermissions' => auth()->user()->permissions,
         ]);
     }
 
@@ -299,12 +298,18 @@ $validated['final_interview_assignments'] = $application->finalInterviewAssignme
 
         $application->clearBlockedStages();
         $application->refresh();
+        // Only sync if there's no manual status being set
+        if (!$request->has('initial_interview_application_status') ||
+            empty($request->input('initial_interview_application_status'))) {
+            $this->syncInitialInterviewOutcomeOnApplication($application, $validated);
+        }
 
-        // Sync derived application outcomes from assignment rows
-        $this->syncInitialInterviewOutcomeOnApplication($application, $validated);
-        $application->refresh();
+        // Also for final interview
+        if (!$request->has('final_interview_application_status') ||
+            empty($request->input('final_interview_application_status'))) {
+            $this->syncFinalInterviewOutcomeOnApplication($application, $validated);
+        }
 
-        $this->syncFinalInterviewOutcomeOnApplication($application, $validated);
         $application->refresh();
 
         $application->syncInterviewStatusesFromStageResults();
@@ -995,10 +1000,6 @@ private function visibleFinalInterviewAssignments(ActionApplication $application
             config('constants.interview_assignment_status.approved'),
             config('constants.interview_assignment_status.completed'),
         ]);
-
-    if ($this->canOnlySeeOwnFinalInterviewEvaluation()) {
-        $query->where('interviewer_id', auth()->id());
-    }
 
     return $query->orderBy('id')->get();
 }

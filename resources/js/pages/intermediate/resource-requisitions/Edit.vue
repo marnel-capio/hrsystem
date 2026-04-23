@@ -189,6 +189,52 @@ watch(() => form.value.project_id, (newId) => {
 });
 
 
+watch(() => form.value.request_type, async (newRequestType) => {
+  if (newRequestType === '1') {
+    form.value.replacement_due_to = '';
+    await nextTick(); 
+    console.log('Dropdown should reset now.');
+  }
+});
+
+
+watch(() => form.value.request_type, (newRequestType) => {
+  if (newRequestType === '1') {  
+    form.value.person_to_replace = '';  
+    form.value.replacement_due_to = '';  
+  }
+});
+
+watch(() => form.value.engagement_type, (newEngagementType) => {
+  if (newEngagementType === '3') {  
+    form.value.expected_salary_range = '';  
+  }
+});
+
+watch(
+  () => form.value.location_assignment,
+  (val) => {
+    if (val !== '6') {
+      form.value.custom_location = ''
+    }
+  },
+  { immediate: true }
+)
+
+
+onMounted(() => {
+  if (form.value.project_id) {
+    const project = props.newProjects.find(
+      p => p.id === Number(form.value.project_id)
+    )
+
+    if (project) {
+      form.value.project_description = project.project_description
+    }
+  }
+})
+
+
 const submit = () => {
   person_to_replaceError.value = ''
   custom_locationError.value = ''
@@ -301,7 +347,6 @@ onMounted(() => {
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 2); 
 const tomorrowISOString = tomorrow.toISOString().slice(0, 10); 
-
 </script>
 
 <template>

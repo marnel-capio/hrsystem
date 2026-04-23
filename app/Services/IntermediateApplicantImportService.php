@@ -135,14 +135,14 @@ class IntermediateApplicantImportService
     private function handleExpiredApplicant(IntermediateApplicant $applicant, array $row, string $fullName): array
     {
         $latestApp = $applicant->applications()->latest('created_time')->first();
-        
+
         if (! $latestApp) {
             return $this->createAppWithSync($applicant, $row, $fullName, 1, 'No existing application found. Created new application.');
         }
 
         // HIERARCHICAL STATUS CHECK → REMARKS + NEW APP
         $result = $this->getExpiredHandlingResult($latestApp);
-        
+
         return $this->createAppWithSync($applicant, $row, $fullName, 1, $result['remarks']);
     }
 
@@ -164,53 +164,43 @@ class IntermediateApplicantImportService
         // paper_screening_status = 3 or 4 → Check exam
         if (in_array($latestApp->paper_screening_status ?? 0, [3, 4])) {
             // exam_status = 1 or 2 OR 5
-            if (in_array($latestApp->exam_status ?? 0, [1, 2, 5])) {
-                $remarks = $latestApp->exam_status === 5 
+            if (in_array($latestApp->exam_application_status ?? 0, [1, 2, 5])) {
+                $remarks = ($latestApp->exam_application_status ?? 0) === 5
                     ? 'Most recent application exam failed and is expired.'
                     : 'Most recent application exam expired.';
+
                 return ['remarks' => $remarks];
             }
 
-            // exam_status = 3 or 4 → Check HR interview
-            if (in_array($latestApp->exam_status ?? 0, [3, 4])) {
-                // hr_interview_status = 1,2,5
-                if (in_array($latestApp->hr_interview_status ?? 0, [1, 2, 5])) {
-                    $remarks = $latestApp->hr_interview_status === 5
-                        ? 'Most recent application hr interview failed and is expired.'
-                        : 'Most recent application hr interview expired.';
+            // exam passed → Check INITIAL interview
+            if (in_array($latestApp->exam_application_status ?? 0, [3, 4])) {
+                // initial_interview_application_status = 1,2,5
+                if (in_array($latestApp->initial_interview_application_status ?? 0, [1, 2, 5])) {
+                    $remarks = ($latestApp->initial_interview_application_status ?? 0) === 5
+                        ? 'Most recent application initial interview failed and is expired.'
+                        : 'Most recent application initial interview expired.';
+
                     return ['remarks' => $remarks];
                 }
 
-                // hr_interview_status = 3 or 4 → Check BU interview
-                if (in_array($latestApp->hr_interview_status ?? 0, [3, 4])) {
-                    // bu_interview_status = 1,2,5
-                    if (in_array($latestApp->bu_interview_status ?? 0, [1, 2, 5])) {
-                        $remarks = $latestApp->bu_interview_status === 5
-                            ? 'Most recent application bu interview failed and is expired.'
-                            : 'Most recent application bu interview expired.';
-                        return ['remarks' => $remarks];
+                // initial interview passed → Check final interview
+                if (in_array($latestApp->final_interview_application_status ?? 0, [1, 2, 5])) {
+                    $remarks = ($latestApp->final_interview_application_status ?? 0) === 5
+                        ? 'Most recent application final interview failed and is expired.'
+                        : 'Most recent application final interview expired.';
+
+                    return ['remarks' => $remarks];
+                }
+
+                // final_interview passed → Check job offer
+                if (in_array($latestApp->final_interview_application_status ?? 0, [3, 4])) {
+                    // job_offer_status = 1 or 2
+                    if (in_array($latestApp->job_offer_status ?? 0, [1, 2])) {
+                        return ['remarks' => 'Most recent application job offer expired.'];
                     }
 
-                    // bu_interview_status = 3 or 4 → Check final interview
-                    if (in_array($latestApp->bu_interview_status ?? 0, [3, 4])) {
-                        // final_interview_status = 1,2,5
-                        if (in_array($latestApp->final_interview_status ?? 0, [1, 2, 5])) {
-                            $remarks = $latestApp->final_interview_status === 5
-                                ? 'Most recent application final interview failed and is expired.'
-                                : 'Most recent application final interview expired.';
-                            return ['remarks' => $remarks];
-                        }
-
-                        // final_interview_status = 3 or 4 → Check job offer
-                        if (in_array($latestApp->final_interview_status ?? 0, [3, 4])) {
-                            // job_offer_status = 1 or 2
-                            if (in_array($latestApp->job_offer_status ?? 0, [1, 2])) {
-                                return ['remarks' => 'Most recent application job offer expired.'];
-                            }
-                            // job_offer_status = 3,4,5,6 → OUTSIDE SCOPE
-                            return ['remarks' => 'Most recent application reached job offer stage. Outside import scope.'];
-                        }
-                    }
+                    // job_offer_status = 3,4,5,6 → OUTSIDE SCOPE
+                    return ['remarks' => 'Most recent application reached job offer stage. Outside import scope.'];
                 }
             }
         }
@@ -229,12 +219,12 @@ class IntermediateApplicantImportService
 
         // HIERARCHICAL STATUS CHECK → STAGE + REMARKS
         $handling = $this->getValidHandlingResult($latestApp);
-        
+
         $data = array_merge(
             $this->buildApplicationData($row, $handling['stage'], true),
             [
                 'application_stage' => $handling['stage'],
-                'remarks' => $handling['remarks']
+                'remarks' => $handling['remarks'],
             ]
         );
 
@@ -248,96 +238,83 @@ class IntermediateApplicantImportService
 
     private function getValidHandlingResult($latestApp): array
     {
-        // paper_screening_status = 1
-        if (in_array($latestApp->paper_screening_status ?? 0, [1])) {
+        // paper_screening_status = 1 X
+        if (($latestApp->paper_screening_status ?? 0) === 1) {
             return [
                 'stage' => 1,
-                'remarks' => 'Application still on screening.'
+                'remarks' => 'Application still on screening.',
             ];
         }
 
-        // paper_screening_status = 5 (failed)
+        // paper_screening_status = 5 (failed) X
         if (($latestApp->paper_screening_status ?? 0) === 5) {
             return [
-                'stage' => 7,
-                'remarks' => 'Failed paper screening.'
+                'stage' => 6,
+                'remarks' => 'Failed paper screening.',
             ];
         }
 
-        // paper_screening_status = 2 or 3 or 4 → Check exam
+        // paper_screening_status = 2 or 3 or 4 → Check exam X
         if (in_array($latestApp->paper_screening_status ?? 0, [2, 3, 4])) {
-            // exam_status = 1,5
-            if (in_array($latestApp->exam_status ?? 0, [1, 5])) {
-                $remarks = $latestApp->exam_status === 5 
+            // exam_application_status = 1,5 X
+            if (in_array($latestApp->exam_application_status ?? 0, [1, 5])) {
+                $remarks = ($latestApp->exam_application_status ?? 0) === 5
                     ? 'Failed exam.'
                     : 'Application passed screening, now for exam.';
+
                 return [
-                    'stage' => $latestApp->exam_status === 5 ? 7 : 2,
-                    'remarks' => $remarks
+                    'stage' => ($latestApp->exam_application_status ?? 0) === 5 ? 6 : 2,
+                    'remarks' => $remarks,
                 ];
             }
 
-            // exam_status = 2 or 3 or 4 → Check HR interview
-            if (in_array($latestApp->exam_status ?? 0, [2, 3, 4])) {
-                // hr_interview_status = 1,5
-                if (in_array($latestApp->hr_interview_status ?? 0, [1, 5])) {
-                    $remarks = $latestApp->hr_interview_status === 5
-                        ? 'Failed hr interview.'
-                        : 'Application passed exam, now for hr interview.';
+            // exam passed → Check INITIAL interview
+            if (in_array($latestApp->exam_application_status ?? 0, [2, 3, 4])) {
+                // initial_interview_application_status = 1,5
+                if (in_array($latestApp->initial_interview_application_status ?? 0, [1, 5])) {
+                    $remarks = ($latestApp->initial_interview_application_status ?? 0) === 5
+                        ? 'Failed initial interview.'
+                        : 'Application passed exam, now for initial interview.';
+
                     return [
-                        'stage' => $latestApp->hr_interview_status === 5 ? 7 : 3,
-                        'remarks' => $remarks
+                        'stage' => ($latestApp->initial_interview_application_status ?? 0) === 5 ? 6 : 3,
+                        'remarks' => $remarks,
                     ];
                 }
 
-                // hr_interview_status = 2 or 3 or 4 → Check BU interview
-                if (in_array($latestApp->hr_interview_status ?? 0, [2, 3, 4])) {
-                    // bu_interview_status = 1,5
-                    if (in_array($latestApp->bu_interview_status ?? 0, [1, 5])) {
-                        $remarks = $latestApp->bu_interview_status === 5
-                            ? 'Failed bu interview.'
-                            : 'Application passed hr interview, now for bu interview.';
+                // initial interview passed → Check final interview
+                if (in_array($latestApp->final_interview_application_status ?? 0, [1, 5])) {
+                    $remarks = ($latestApp->final_interview_application_status ?? 0) === 5
+                        ? 'Failed final interview.'
+                        : 'Application passed initial interview, now for final interview.';
+
+                    return [
+                        'stage' => ($latestApp->final_interview_application_status ?? 0) === 5 ? 6 : 4,
+                        'remarks' => $remarks,
+                    ];
+                }
+
+                // final_interview passed → Check job offer
+                if (in_array($latestApp->final_interview_application_status ?? 0, [2, 3, 4])) {
+                    // job_offer_status = 1,2
+                    if (in_array($latestApp->job_offer_status ?? 0, [1, 2])) {
                         return [
-                            'stage' => $latestApp->bu_interview_status === 5 ? 7 : 4,
-                            'remarks' => $remarks
+                            'stage' => 5,
+                            'remarks' => 'Application passed final interview, now for job offer.',
                         ];
                     }
+                    // job_offer_status = 3,4,5,6
+                    $statusMap = [
+                        3 => 'Job offer accepted',
+                        4 => 'Job offer rejected',
+                        5 => 'Job offer pending',
+                        6 => 'Job offer withdrawn',
+                    ];
 
-                    // bu_interview_status = 2 or 3 or 4 → Check final interview
-                    if (in_array($latestApp->bu_interview_status ?? 0, [2, 3, 4])) {
-                        // final_interview_status = 1,5
-                        if (in_array($latestApp->final_interview_status ?? 0, [1, 5])) {
-                            $remarks = $latestApp->final_interview_status === 5
-                                ? 'Failed final interview.'
-                                : 'Application passed bu interview, now for final interview.';
-                            return [
-                                'stage' => $latestApp->final_interview_status === 5 ? 7 : 5,
-                                'remarks' => $remarks
-                            ];
-                        }
-
-                        // final_interview_status = 2 or 3 or 4 → Check job offer
-                        if (in_array($latestApp->final_interview_status ?? 0, [2, 3, 4])) {
-                            // job_offer_status = 1,2
-                            if (in_array($latestApp->job_offer_status ?? 0, [1, 2])) {
-                                return [
-                                    'stage' => 6,
-                                    'remarks' => 'Application passed final interview, now for job offer.'
-                                ];
-                            }
-                            // job_offer_status = 3,4,5,6
-                            $statusMap = [
-                                3 => 'Job offer accepted',
-                                4 => 'Job offer rejected',
-                                5 => 'Job offer pending',
-                                6 => 'Job offer withdrawn'
-                            ];
-                            return [
-                                'stage' => 6,
-                                'remarks' => $statusMap[$latestApp->job_offer_status] ?? 'Job offer stage.'
-                            ];
-                        }
-                    }
+                    return [
+                        'stage' => 5,
+                        'remarks' => $statusMap[$latestApp->job_offer_status] ?? 'Job offer stage.',
+                    ];
                 }
             }
         }
@@ -345,7 +322,7 @@ class IntermediateApplicantImportService
         // Fallback
         return [
             'stage' => 1,
-            'remarks' => 'Application updated - valid registration.'
+            'remarks' => 'Application updated - valid registration.',
         ];
     }
 
