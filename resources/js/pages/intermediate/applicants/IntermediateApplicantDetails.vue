@@ -369,7 +369,7 @@ const saveNewSkill = async () => {
     addSkillRemarksError.value = null;
 
     if (!newSkillName.value.trim()) {
-        addSkillNameError.value = 'Skill name is required';
+        addSkillNameError.value = 'This is a required field.';
         return;
     }
 
@@ -425,7 +425,7 @@ const saveSkillEdit = async () => {
     editSkillRemarksError.value = null;
 
     if (!editedSkillName.value.trim()) {
-        editSkillNameError.value = 'Skill name is required';
+        editSkillNameError.value = 'This is a required field.';
         return;
     }
 
@@ -797,7 +797,7 @@ onMounted(() => {
 
             <div class="modal-grid">
                 <div class="modal-field">
-                    <label>Employer</label>
+                    <label class="font-semibold">Employer *</label>
                     <input v-model="newWork.employer" class="modal-input" />
                     <span v-if="workErrors.employer" class="modal-error">{{
                         workErrors.employer
@@ -818,7 +818,7 @@ onMounted(() => {
                 </div>
 
                 <div class="modal-field">
-                    <label>Job Title</label>
+                    <label class="font-semibold">Job Title *</label>
                     <input v-model="newWork.job_title" class="modal-input" />
                     <span v-if="workErrors.job_title" class="modal-error">{{
                         workErrors.job_title
@@ -910,7 +910,7 @@ onMounted(() => {
 
             <div class="modal-grid">
                 <div class="modal-field">
-                    <label>Employer</label>
+                    <label>Employer *</label>
                     <input v-model="editedWork.employer" class="modal-input" />
                     <span v-if="editWorkErrors.employer" class="modal-error">{{
                         editWorkErrors.employer
@@ -1325,7 +1325,9 @@ onMounted(() => {
                 </div>
 
                 <div>
-                    <h4 class="mb-2 text-left text-xs font-bold">CHILDREN</h4>
+                    <h4 class="mb-2 text-left text-xs font-bold">
+                        NUMBER OF CHILDREN
+                    </h4>
                     <p class="text-xs break-words">
                         {{ applicant.children ?? '-' }}
                     </p>

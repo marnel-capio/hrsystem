@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\MaxLength;
+use App\Rules\RequiredField;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IntermediateApplicantWorkExperienceRequest extends FormRequest
@@ -15,9 +16,9 @@ class IntermediateApplicantWorkExperienceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employer' => ['nullable', 'string', new MaxLength(80)],
+            'employer' => [new RequiredField, 'string', new MaxLength(80)],
             'company_address' => ['nullable', 'string', new MaxLength(80)],
-            'job_title' => ['nullable', 'string', new MaxLength(80)],
+            'job_title' => [new RequiredField, 'string', new MaxLength(80)],
             'date_employed' => ['nullable', 'string', new MaxLength(40)],
             'work_description' => ['nullable', 'string', new MaxLength(1024)],
             'salary' => ['nullable', 'string', new MaxLength(40)],
