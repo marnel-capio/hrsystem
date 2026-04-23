@@ -27,7 +27,7 @@ public $senderRole;
     public function build()
     {
         return $this->subject('【HR System】Scheduled Job Offer')
-            ->view('emails.action-job-offer-scheduled')
+            ->view('emails.ATS-0007')
             ->with([
                 'application' => $this->application,
                 'link' => $this->link,
