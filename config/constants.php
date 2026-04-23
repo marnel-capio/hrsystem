@@ -280,16 +280,16 @@ return [
             'exam_application_status',
             'exam_remarks',
         ],
-'initial_interview' => [
-    'initial_interview_plan_date',
-    'initial_interview_actual_date',
-    'initial_interview_venue',
-    'initial_interview_assignments',
-    'initial_interview_final',
-    'initial_interview_result',
-    'initial_interview_application_status',
-    'initial_interview_remarks',
-],
+        'initial_interview' => [
+            'initial_interview_plan_date',
+            'initial_interview_actual_date',
+            'initial_interview_venue',
+            'initial_interview_assignments',
+            'initial_interview_final',
+            'initial_interview_result',
+            'initial_interview_application_status',
+            'initial_interview_remarks',
+        ],
         'final_interview' => [
             'final_interview_date',
             'final_interview_score_1',
@@ -601,6 +601,40 @@ return [
         'LA_5_NAME' => 'China',
     ],
 
+    'exam_statuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Passed',
+        4 => 'P2',
+        5 => 'Failed',
+    ],
+
+    'interview_statuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Passed',
+        4 => 'P2',
+        5 => 'Failed',
+    ],
+
+    'job_offer_statuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Accept',
+        4 => 'Decline',
+        5 => 'Withdraw',
+        6 => 'Retracted',
+    ],
+
+    'application_result_map' => [
+        'exam' => [
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            4 => 4,
+            5 => 5,
+        ],
+    ],
 
 
 

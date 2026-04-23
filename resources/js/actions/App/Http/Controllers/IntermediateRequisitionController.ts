@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::index
  * @see app/Http/Controllers/IntermediateRequisitionController.php:26
@@ -78,74 +78,74 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     index.form = indexForm
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
+* @see \App\Http\Controllers\IntermediateRequisitionController::create
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
-export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 
-register.definition = {
+create.definition = {
     methods: ["get","head"],
     url: '/intermediate/resource-requisitions/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
+* @see \App\Http\Controllers\IntermediateRequisitionController::create
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
-register.url = (options?: RouteQueryOptions) => {
-    return register.definition.url + queryParams(options)
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
+* @see \App\Http\Controllers\IntermediateRequisitionController::create
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
-register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
+* @see \App\Http\Controllers\IntermediateRequisitionController::create
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
-register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: register.url(options),
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
+* @see \App\Http\Controllers\IntermediateRequisitionController::create
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
-    const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: register.url(options),
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
+* @see \App\Http\Controllers\IntermediateRequisitionController::create
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
-        registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url(options),
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
+* @see \App\Http\Controllers\IntermediateRequisitionController::create
  * @see app/Http/Controllers/IntermediateRequisitionController.php:44
  * @route '/intermediate/resource-requisitions/register'
  */
-        registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url({
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -154,7 +154,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    register.form = registerForm
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::store
  * @see app/Http/Controllers/IntermediateRequisitionController.php:53
@@ -478,13 +478,6 @@ update.post = (args: { id: string | number } | [id: string | number ] | string |
         })
     
     update.form = updateForm
-const requisitions = {
-    index: Object.assign(index, index),
-register: Object.assign(register, register),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-}
+const IntermediateRequisitionController = { index, create, store, show, edit, update }
 
-export default requisitions
+export default IntermediateRequisitionController

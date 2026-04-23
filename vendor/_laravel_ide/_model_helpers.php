@@ -1067,10 +1067,6 @@ namespace App\Models {
      * @property bool|null $final_interview_application_status
      * @property bool|null $final_interview_result
      * @property float|null $final_interview_final
-     * @property float|null $final_interview_ma
-     * @property float|null $final_interview_rv
-     * @property float|null $final_interview_ib
-     * @property float|null $final_interview_sf
      * @property string|null $final_interview_date
      * @property string|null $initial_interview_remarks
      * @property bool|null $initial_interview_application_status
@@ -1139,10 +1135,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereInitialInterviewApplicationStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereInitialInterviewRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewDate($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewSf($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewIb($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewRv($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewMa($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewFinal($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewResult($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplication>|ActionApplication whereFinalInterviewApplicationStatus($value)
@@ -2533,7 +2525,7 @@ namespace App\Models {
      * @property mixed $created_by
      * @property string|null $remarks
      * @property string|null $emergency_contact_address
-     * @property string|null $emergency_contact_number
+     * @property string $emergency_contact_number
      * @property string|null $emergency_contact_name
      * @property string|null $sibling_details
      * @property string|null $mother_details
@@ -2548,8 +2540,8 @@ namespace App\Models {
      * @property string $email_address
      * @property string|null $address
      * @property integer $age
+     * @property integer|null $gender
      * @property string $birthdate
-     * @property integer $gender
      * @property string|null $middle_name
      * @property string $first_name
      * @property string $last_name
@@ -2569,6 +2561,7 @@ namespace App\Models {
      * @property-read \App\Models\User $registeredBy
      * @property-read \App\Models\User $createdBy
      * @property-read \App\Models\User $updatedBy
+     * @property-read \App\Models\IntermediateApplication $latestApplication
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermediateApplicationWorkExperience> $workExperiences
      * @property-read int|null $work_experiences_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermediateApplicantSkill> $skills
@@ -2582,8 +2575,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereLastName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereFirstName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereMiddleName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereGender($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereBirthdate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereGender($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereAge($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereEmailAddress($value)
@@ -2930,6 +2923,7 @@ namespace App\Models {
      * @property mixed $updated_by
      * @property \Illuminate\Support\Carbon $created_time
      * @property mixed $created_by
+     * @property integer $is_deleted
      * @property string|null $remarks
      * @property string $skill
      * @property mixed $intermediate_applicant_id
@@ -2939,6 +2933,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicantSkill>|IntermediateApplicantSkill whereIntermediateApplicantId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicantSkill>|IntermediateApplicantSkill whereSkill($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicantSkill>|IntermediateApplicantSkill whereRemarks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicantSkill>|IntermediateApplicantSkill whereIsDeleted($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicantSkill>|IntermediateApplicantSkill whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicantSkill>|IntermediateApplicantSkill whereCreatedTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicantSkill>|IntermediateApplicantSkill whereUpdatedBy($value)
@@ -3275,20 +3270,34 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $aws_start_date
      * @property string|null $job_offer_remarks
      * @property integer|null $job_offer_status
-     * @property integer|null $final_interview_status
-     * @property integer|null $bu_interview_status
-     * @property integer|null $hr_interview_status
-     * @property integer|null $exam_status
-     * @property integer|null $paper_screening_status
-     * @property string|null $final_interview_week
-     * @property \Illuminate\Support\Carbon|null $final_interview_datetime
-     * @property string|null $bu_interview_week
-     * @property \Illuminate\Support\Carbon|null $bu_interview_datetime
-     * @property string|null $hr_interview_week
-     * @property \Illuminate\Support\Carbon|null $hr_interview_datetime
-     * @property float|null $tech_exam
-     * @property float|null $atpp
-     * @property \Illuminate\Support\Carbon|null $testing_datetime
+     * @property \Illuminate\Support\Carbon|null $job_offer_schedule
+     * @property string|null $final_interview_remarks
+     * @property integer|null $final_interview_application_status
+     * @property integer|null $final_interview_result
+     * @property float|null $final_interview_final
+     * @property \Illuminate\Support\Carbon|null $final_interview_date
+     * @property string|null $initial_interview_remarks
+     * @property integer|null $initial_interview_application_status
+     * @property integer|null $initial_interview_result
+     * @property float|null $initial_interview_final
+     * @property bool|null $initial_interview_venue
+     * @property \Illuminate\Support\Carbon|null $initial_interview_actual_date
+     * @property \Illuminate\Support\Carbon|null $initial_interview_plan_date
+     * @property string|null $exam_remarks
+     * @property integer|null $exam_application_status
+     * @property integer|null $exam_result
+     * @property float|null $exam_tech_result
+     * @property float|null $exam_atpp_result
+     * @property mixed $exam_atpp_part3_wrong
+     * @property mixed $exam_atpp_part3_correct
+     * @property mixed $exam_atpp_part2_wrong
+     * @property mixed $exam_atpp_part2_correct
+     * @property mixed $exam_atpp_part1_wrong
+     * @property mixed $exam_atpp_part1_correct
+     * @property bool|null $exam_venue
+     * @property \Illuminate\Support\Carbon|null $exam_actual_date
+     * @property \Illuminate\Support\Carbon|null $exam_plan_date
+     * @property integer $paper_screening_status
      * @property string|null $site_assignment
      * @property string|null $asking_rate
      * @property string|null $current_employer
@@ -3307,13 +3316,12 @@ namespace App\Models {
      * @property string|null $work_preference
      * @property string|null $desired_salary_range
      * @property string|null $availability_date
-     * @property integer|null $answer_q7
-     * @property integer|null $answer_q6
-     * @property integer|null $answer_q5
-     * @property integer|null $answer_q4
-     * @property integer|null $answer_q3
-     * @property integer|null $answer_q2
-     * @property integer|null $answer_q1
+     * @property boolean|null $answer_q4
+     * @property boolean|null $answer_q3
+     * @property boolean|null $answer_q2
+     * @property boolean|null $answer_q1
+     * @property string|null $upload_pic
+     * @property string|null $upload_resume
      * @property mixed $source_project_id
      * @property string|null $position
      * @property string $fy_week
@@ -3336,13 +3344,12 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereFyWeek($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication wherePosition($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereSourceProjectId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereUploadResume($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereUploadPic($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ1($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ2($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ3($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ4($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ5($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ6($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAnswerQ7($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAvailabilityDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereDesiredSalaryRange($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereWorkPreference($value)
@@ -4417,8 +4424,6 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
-     * @property string|null $custom_location
-     * @property string|null $expected_salary_range
      * @property string|null $role
      * @property string|null $preferred_skills
      * @property string|null $required_skills
@@ -4437,6 +4442,7 @@ namespace App\Models {
      * @property bool $engagement_type
      * @property int $id
      * @property-read mixed $project_description
+     * @property-read mixed $custom_location_name
      * @property-read mixed $location_assignment_label
      * @property-read \App\Models\IntermediateProjectModel $project
      * @property-read \App\Models\User $requestedBy
@@ -4457,8 +4463,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRequiredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRole($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereExpectedSalaryRange($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCustomLocation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedTime($value)
@@ -5493,7 +5497,7 @@ namespace App\Models {
      * @property mixed $created_by
      * @property boolean $active_status
      * @property mixed $permissions
-     * @property string $position
+     * @property bool $position
      * @property string $email_address
      * @property string $contact_no
      * @property string $address

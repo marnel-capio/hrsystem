@@ -1,8 +1,8 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::index
- * @see app/Http/Controllers/IntermediateRequisitionController.php:26
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::index
+ * @see app/Http/Controllers/IntermediateProjectController.php:23
+ * @route '/intermediate/projects'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -11,31 +11,31 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/intermediate/resource-requisitions',
+    url: '/intermediate/projects',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::index
- * @see app/Http/Controllers/IntermediateRequisitionController.php:26
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::index
+ * @see app/Http/Controllers/IntermediateProjectController.php:23
+ * @route '/intermediate/projects'
  */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::index
- * @see app/Http/Controllers/IntermediateRequisitionController.php:26
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::index
+ * @see app/Http/Controllers/IntermediateProjectController.php:23
+ * @route '/intermediate/projects'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::index
- * @see app/Http/Controllers/IntermediateRequisitionController.php:26
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::index
+ * @see app/Http/Controllers/IntermediateProjectController.php:23
+ * @route '/intermediate/projects'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
@@ -43,9 +43,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::index
- * @see app/Http/Controllers/IntermediateRequisitionController.php:26
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::index
+ * @see app/Http/Controllers/IntermediateProjectController.php:23
+ * @route '/intermediate/projects'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: index.url(options),
@@ -53,18 +53,18 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::index
- * @see app/Http/Controllers/IntermediateRequisitionController.php:26
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::index
+ * @see app/Http/Controllers/IntermediateProjectController.php:23
+ * @route '/intermediate/projects'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::index
- * @see app/Http/Controllers/IntermediateRequisitionController.php:26
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::index
+ * @see app/Http/Controllers/IntermediateProjectController.php:23
+ * @route '/intermediate/projects'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url({
@@ -78,74 +78,74 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     index.form = indexForm
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:44
- * @route '/intermediate/resource-requisitions/register'
+* @see \App\Http\Controllers\IntermediateProjectController::create
+ * @see app/Http/Controllers/IntermediateProjectController.php:42
+ * @route '/intermediate/projects/register'
  */
-export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 
-register.definition = {
+create.definition = {
     methods: ["get","head"],
-    url: '/intermediate/resource-requisitions/register',
+    url: '/intermediate/projects/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:44
- * @route '/intermediate/resource-requisitions/register'
+* @see \App\Http\Controllers\IntermediateProjectController::create
+ * @see app/Http/Controllers/IntermediateProjectController.php:42
+ * @route '/intermediate/projects/register'
  */
-register.url = (options?: RouteQueryOptions) => {
-    return register.definition.url + queryParams(options)
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:44
- * @route '/intermediate/resource-requisitions/register'
+* @see \App\Http\Controllers\IntermediateProjectController::create
+ * @see app/Http/Controllers/IntermediateProjectController.php:42
+ * @route '/intermediate/projects/register'
  */
-register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:44
- * @route '/intermediate/resource-requisitions/register'
+* @see \App\Http\Controllers\IntermediateProjectController::create
+ * @see app/Http/Controllers/IntermediateProjectController.php:42
+ * @route '/intermediate/projects/register'
  */
-register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: register.url(options),
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:44
- * @route '/intermediate/resource-requisitions/register'
+* @see \App\Http\Controllers\IntermediateProjectController::create
+ * @see app/Http/Controllers/IntermediateProjectController.php:42
+ * @route '/intermediate/projects/register'
  */
-    const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: register.url(options),
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:44
- * @route '/intermediate/resource-requisitions/register'
+* @see \App\Http\Controllers\IntermediateProjectController::create
+ * @see app/Http/Controllers/IntermediateProjectController.php:42
+ * @route '/intermediate/projects/register'
  */
-        registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url(options),
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::register
- * @see app/Http/Controllers/IntermediateRequisitionController.php:44
- * @route '/intermediate/resource-requisitions/register'
+* @see \App\Http\Controllers\IntermediateProjectController::create
+ * @see app/Http/Controllers/IntermediateProjectController.php:42
+ * @route '/intermediate/projects/register'
  */
-        registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: register.url({
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -154,11 +154,11 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    register.form = registerForm
+    create.form = createForm
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::store
- * @see app/Http/Controllers/IntermediateRequisitionController.php:53
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::store
+ * @see app/Http/Controllers/IntermediateProjectController.php:47
+ * @route '/intermediate/projects'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
@@ -167,22 +167,22 @@ export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 store.definition = {
     methods: ["post"],
-    url: '/intermediate/resource-requisitions',
+    url: '/intermediate/projects',
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::store
- * @see app/Http/Controllers/IntermediateRequisitionController.php:53
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::store
+ * @see app/Http/Controllers/IntermediateProjectController.php:47
+ * @route '/intermediate/projects'
  */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::store
- * @see app/Http/Controllers/IntermediateRequisitionController.php:53
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::store
+ * @see app/Http/Controllers/IntermediateProjectController.php:47
+ * @route '/intermediate/projects'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
@@ -190,9 +190,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::store
- * @see app/Http/Controllers/IntermediateRequisitionController.php:53
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::store
+ * @see app/Http/Controllers/IntermediateProjectController.php:47
+ * @route '/intermediate/projects'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: store.url(options),
@@ -200,9 +200,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::store
- * @see app/Http/Controllers/IntermediateRequisitionController.php:53
- * @route '/intermediate/resource-requisitions'
+* @see \App\Http\Controllers\IntermediateProjectController::store
+ * @see app/Http/Controllers/IntermediateProjectController.php:47
+ * @route '/intermediate/projects'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: store.url(options),
@@ -211,9 +211,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     
     store.form = storeForm
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:78
- * @route '/intermediate/resource-requisitions/{id}'
+* @see \App\Http\Controllers\IntermediateProjectController::show
+ * @see app/Http/Controllers/IntermediateProjectController.php:74
+ * @route '/intermediate/projects/{id}'
  */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
@@ -222,13 +222,13 @@ export const show = (args: { id: string | number } | [id: string | number ] | st
 
 show.definition = {
     methods: ["get","head"],
-    url: '/intermediate/resource-requisitions/{id}',
+    url: '/intermediate/projects/{id}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:78
- * @route '/intermediate/resource-requisitions/{id}'
+* @see \App\Http\Controllers\IntermediateProjectController::show
+ * @see app/Http/Controllers/IntermediateProjectController.php:74
+ * @route '/intermediate/projects/{id}'
  */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -254,18 +254,18 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:78
- * @route '/intermediate/resource-requisitions/{id}'
+* @see \App\Http\Controllers\IntermediateProjectController::show
+ * @see app/Http/Controllers/IntermediateProjectController.php:74
+ * @route '/intermediate/projects/{id}'
  */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:78
- * @route '/intermediate/resource-requisitions/{id}'
+* @see \App\Http\Controllers\IntermediateProjectController::show
+ * @see app/Http/Controllers/IntermediateProjectController.php:74
+ * @route '/intermediate/projects/{id}'
  */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
@@ -273,9 +273,9 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:78
- * @route '/intermediate/resource-requisitions/{id}'
+* @see \App\Http\Controllers\IntermediateProjectController::show
+ * @see app/Http/Controllers/IntermediateProjectController.php:74
+ * @route '/intermediate/projects/{id}'
  */
     const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: show.url(args, options),
@@ -283,18 +283,18 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:78
- * @route '/intermediate/resource-requisitions/{id}'
+* @see \App\Http\Controllers\IntermediateProjectController::show
+ * @see app/Http/Controllers/IntermediateProjectController.php:74
+ * @route '/intermediate/projects/{id}'
  */
         showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::show
- * @see app/Http/Controllers/IntermediateRequisitionController.php:78
- * @route '/intermediate/resource-requisitions/{id}'
+* @see \App\Http\Controllers\IntermediateProjectController::show
+ * @see app/Http/Controllers/IntermediateProjectController.php:74
+ * @route '/intermediate/projects/{id}'
  */
         showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, {
@@ -308,9 +308,9 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     
     show.form = showForm
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::edit
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/edit'
+* @see \App\Http\Controllers\IntermediateProjectController::edit
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
+ * @route '/intermediate/projects/{id}/edit'
  */
 export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
@@ -319,13 +319,13 @@ export const edit = (args: { id: string | number } | [id: string | number ] | st
 
 edit.definition = {
     methods: ["get","head"],
-    url: '/intermediate/resource-requisitions/{id}/edit',
+    url: '/intermediate/projects/{id}/edit',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::edit
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/edit'
+* @see \App\Http\Controllers\IntermediateProjectController::edit
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
+ * @route '/intermediate/projects/{id}/edit'
  */
 edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -351,18 +351,18 @@ edit.url = (args: { id: string | number } | [id: string | number ] | string | nu
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::edit
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/edit'
+* @see \App\Http\Controllers\IntermediateProjectController::edit
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
+ * @route '/intermediate/projects/{id}/edit'
  */
 edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::edit
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/edit'
+* @see \App\Http\Controllers\IntermediateProjectController::edit
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
+ * @route '/intermediate/projects/{id}/edit'
  */
 edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
@@ -370,9 +370,9 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::edit
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/edit'
+* @see \App\Http\Controllers\IntermediateProjectController::edit
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
+ * @route '/intermediate/projects/{id}/edit'
  */
     const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: edit.url(args, options),
@@ -380,18 +380,18 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::edit
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/edit'
+* @see \App\Http\Controllers\IntermediateProjectController::edit
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
+ * @route '/intermediate/projects/{id}/edit'
  */
         editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::edit
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/edit'
+* @see \App\Http\Controllers\IntermediateProjectController::edit
+ * @see app/Http/Controllers/IntermediateProjectController.php:91
+ * @route '/intermediate/projects/{id}/edit'
  */
         editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, {
@@ -405,9 +405,9 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
     
     edit.form = editForm
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/update'
+* @see \App\Http\Controllers\IntermediateProjectController::update
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
+ * @route '/intermediate/projects/{id}/update'
  */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: update.url(args, options),
@@ -416,13 +416,13 @@ export const update = (args: { id: string | number } | [id: string | number ] | 
 
 update.definition = {
     methods: ["post"],
-    url: '/intermediate/resource-requisitions/{id}/update',
+    url: '/intermediate/projects/{id}/update',
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/update'
+* @see \App\Http\Controllers\IntermediateProjectController::update
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
+ * @route '/intermediate/projects/{id}/update'
  */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -448,9 +448,9 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/update'
+* @see \App\Http\Controllers\IntermediateProjectController::update
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
+ * @route '/intermediate/projects/{id}/update'
  */
 update.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: update.url(args, options),
@@ -458,9 +458,9 @@ update.post = (args: { id: string | number } | [id: string | number ] | string |
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/update'
+* @see \App\Http\Controllers\IntermediateProjectController::update
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
+ * @route '/intermediate/projects/{id}/update'
  */
     const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: update.url(args, options),
@@ -468,9 +468,9 @@ update.post = (args: { id: string | number } | [id: string | number ] | string |
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:0
- * @route '/intermediate/resource-requisitions/{id}/update'
+* @see \App\Http\Controllers\IntermediateProjectController::update
+ * @see app/Http/Controllers/IntermediateProjectController.php:102
+ * @route '/intermediate/projects/{id}/update'
  */
         updateForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, options),
@@ -478,13 +478,6 @@ update.post = (args: { id: string | number } | [id: string | number ] | string |
         })
     
     update.form = updateForm
-const requisitions = {
-    index: Object.assign(index, index),
-register: Object.assign(register, register),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-}
+const IntermediateProjectController = { index, create, store, show, edit, update }
 
-export default requisitions
+export default IntermediateProjectController
