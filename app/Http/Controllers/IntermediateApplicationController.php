@@ -120,19 +120,19 @@ class IntermediateApplicationController extends Controller
             // throw new \Exception("Test error");
 
             $dateFields = [
-            'exam_plan_date',
-            'exam_actual_date',
-            'initial_interview_plan_date',
-            'initial_interview_actual_date',
-            'final_interview_date',
-            'job_offer_schedule',
-            'contacted_date',
-            'replied_date',
-            'availability_date',
+                'exam_plan_date',
+                'exam_actual_date',
+                'initial_interview_plan_date',
+                'initial_interview_actual_date',
+                'final_interview_date',
+                'job_offer_schedule',
+                'contacted_date',
+                'replied_date',
+                'availability_date',
             ];
-            
+
             foreach ($dateFields as $field) {
-                if (!empty($data[$field])) {
+                if (! empty($data[$field])) {
                     $data[$field] = Carbon::parse($data[$field])->timezone('Asia/Manila');
                 }
             }
@@ -581,5 +581,275 @@ class IntermediateApplicationController extends Controller
             });
 
         return response()->json(['interviewers' => $interviewers]);
+    }
+
+    public function edit($id)
+    {
+        $application = IntermediateApplication::with([
+            'intermediateApplicant',
+            'resourceSchedule.project',
+        ])->findOrFail($id);
+
+        // Get project name
+        $projectName = null;
+        if ($application->resourceSchedule && $application->resourceSchedule->project) {
+            $projectName = $application->resourceSchedule->project->project_name;
+        }
+
+        // Get available requisitions for project selection
+        $sourceProjects = IntermediateRequisitionModel::query()
+            ->whereHas('project')
+            ->with('project')
+            ->orderBy('created_time', 'desc')
+            ->get()
+            ->map(fn ($requisition) => [
+                'value' => $requisition->id,
+                'label' => $requisition->resource.' - '.
+                    ($requisition->project->project_name ?? 'No Project').' ('.
+                    $requisition->getLocationAssignmentLabelAttribute().')',
+            ])
+            ->toArray();
+
+        return Inertia::render('intermediate/applications/Edit', [
+            'application' => [
+                'id' => $application->id,
+                'intermediate_applicant_id' => $application->intermediate_applicant_id,
+                'resource_schedule_id' => $application->resource_schedule_id,
+                'position' => $application->position,
+                'project_name' => $projectName,
+
+                // Files
+                'upload_resume' => $application->upload_resume,
+                'upload_pic' => $application->upload_pic,
+
+                // Screening
+                'answer_q1' => $application->answer_q1,
+                'answer_q2' => $application->answer_q2,
+                'answer_q3' => $application->answer_q3,
+                'answer_q4' => $application->answer_q4,
+                'paper_screening_status' => $application->paper_screening_status,
+
+                // Exam
+                'exam_plan_date' => $application->exam_plan_date,
+                'exam_actual_date' => $application->exam_actual_date,
+                'exam_venue' => $application->exam_venue,
+                'exam_atpp_part1_correct' => $application->exam_atpp_part1_correct,
+                'exam_atpp_part1_wrong' => $application->exam_atpp_part1_wrong,
+                'exam_atpp_part2_correct' => $application->exam_atpp_part2_correct,
+                'exam_atpp_part2_wrong' => $application->exam_atpp_part2_wrong,
+                'exam_atpp_part3_correct' => $application->exam_atpp_part3_correct,
+                'exam_atpp_part3_wrong' => $application->exam_atpp_part3_wrong,
+                'exam_atpp_result' => $application->exam_atpp_result,
+                'exam_tech_result' => $application->exam_tech_result,
+                'exam_result' => $application->exam_result,
+                'exam_application_status' => $application->exam_application_status,
+                'exam_remarks' => $application->exam_remarks,
+
+                // Initial Interview
+                'initial_interview_plan_date' => $application->initial_interview_plan_date,
+                'initial_interview_actual_date' => $application->initial_interview_actual_date,
+                'initial_interview_venue' => $application->initial_interview_venue,
+                'initial_interview_final' => $application->initial_interview_final,
+                'initial_interview_result' => $application->initial_interview_result,
+                'initial_interview_application_status' => $application->initial_interview_application_status,
+                'initial_interview_remarks' => $application->initial_interview_remarks,
+
+                // Final Interview
+                'final_interview_date' => $application->final_interview_date,
+                'final_interview_final' => $application->final_interview_final,
+                'final_interview_result' => $application->final_interview_result,
+                'final_interview_application_status' => $application->final_interview_application_status,
+                'final_interview_remarks' => $application->final_interview_remarks,
+
+                // Job Offer
+                'job_offer_schedule' => $application->job_offer_schedule,
+                'job_offer_status' => $application->job_offer_status,
+                'job_offer_remarks' => $application->job_offer_remarks,
+
+                // Compensation & Preferences
+                'availability_date' => $application->availability_date,
+                'desired_salary_range' => $application->desired_salary_range,
+                'work_preference' => $application->work_preference,
+                'basic_pay' => $application->basic_pay,
+                'bonuses' => $application->bonuses,
+                'hmo' => $application->hmo,
+                'leaves' => $application->leaves,
+                'allowances' => $application->allowances,
+                'other_benefits' => $application->other_benefits,
+                'targeted_company' => $application->targeted_company,
+                'industry_experience' => $application->industry_experience,
+                'current_employer' => $application->current_employer,
+                'asking_rate' => $application->asking_rate,
+                'site_assignment' => $application->site_assignment,
+
+                // Other
+                'remarks' => $application->remarks,
+
+                'applicant' => [
+                    'id' => $application->intermediateApplicant->id ?? null,
+                    'first_name' => $application->intermediateApplicant->first_name ?? '',
+                    'last_name' => $application->intermediateApplicant->last_name ?? '',
+                    'middle_name' => $application->intermediateApplicant->middle_name ?? '',
+                    'email_address' => $application->intermediateApplicant->email_address ?? '',
+                    'contact_no' => $application->intermediateApplicant->contact_no ?? '',
+                ],
+            ],
+            'sourceProjects' => $sourceProjects,
+            'examVenues' => [
+                1 => 'Gmeet',
+                2 => 'Zoom',
+                3 => 'USJ-R Basak',
+                4 => 'AdDU',
+            ],
+            'examResults' => [
+                1 => 'Pending',
+                2 => 'Passed',
+                3 => 'Failed',
+            ],
+            'examStatuses' => [
+                1 => 'Pending',
+                2 => 'Done',
+                3 => 'Passed',
+                4 => '2nd Priority (P2)',
+                5 => 'Failed',
+                6 => 'No Show',
+            ],
+            'interviewStatuses' => [
+                1 => 'Pending',
+                2 => 'Done',
+                3 => 'Passed',
+                4 => 'P2',
+                5 => 'Failed',
+            ],
+            'jobOfferStatuses' => [
+                1 => 'Pending',
+                2 => 'Done',
+                3 => 'Accept',
+                4 => 'Decline',
+                5 => 'Withdraw',
+                6 => 'Retracted',
+            ],
+            'userPermissions' => auth()->user()->permissions ?? 0,
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+            ],
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $application = IntermediateApplication::findOrFail($id);
+
+        // Validation rules
+        $rules = [
+            'resource_schedule_id' => 'nullable|exists:intermediate_requisitions,id',
+            'position' => 'nullable|string|max:80',
+
+            // Exam
+            'exam_plan_date' => 'nullable|date',
+            'exam_actual_date' => 'nullable|date',
+            'exam_venue' => 'nullable|integer',
+            'exam_atpp_part1_correct' => 'nullable|integer|min:0',
+            'exam_atpp_part1_wrong' => 'nullable|integer|min:0',
+            'exam_atpp_part2_correct' => 'nullable|integer|min:0',
+            'exam_atpp_part2_wrong' => 'nullable|integer|min:0',
+            'exam_atpp_part3_correct' => 'nullable|integer|min:0',
+            'exam_atpp_part3_wrong' => 'nullable|integer|min:0',
+            'exam_tech_result' => 'nullable|numeric|min:0',
+            'exam_result' => 'nullable|integer',
+            'exam_application_status' => 'nullable|integer',
+            'exam_remarks' => 'nullable|string',
+
+            // Initial Interview
+            'initial_interview_plan_date' => 'nullable|date',
+            'initial_interview_actual_date' => 'nullable|date',
+            'initial_interview_venue' => 'nullable|integer',
+            'initial_interview_final' => 'nullable|numeric|min:0|max:5',
+            'initial_interview_result' => 'nullable|integer',
+            'initial_interview_application_status' => 'nullable|integer',
+            'initial_interview_remarks' => 'nullable|string',
+
+            // Final Interview
+            'final_interview_date' => 'nullable|date',
+            'final_interview_final' => 'nullable|numeric|min:0|max:5',
+            'final_interview_result' => 'nullable|integer',
+            'final_interview_application_status' => 'nullable|integer',
+            'final_interview_remarks' => 'nullable|string',
+
+            // Job Offer
+            'job_offer_schedule' => 'nullable|date',
+            'job_offer_status' => 'nullable|integer',
+            'job_offer_remarks' => 'nullable|string',
+
+            // Files
+            'upload_resume' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'upload_pic' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+
+            // Other
+            'remarks' => 'nullable|string',
+        ];
+
+        $validated = $request->validate($rules);
+
+        DB::beginTransaction();
+
+        try {
+            // Handle date fields with timezone
+            $dateFields = [
+                'exam_plan_date', 'exam_actual_date',
+                'initial_interview_plan_date', 'initial_interview_actual_date',
+                'final_interview_date', 'job_offer_schedule',
+            ];
+
+            foreach ($dateFields as $field) {
+                if (! empty($validated[$field])) {
+                    $validated[$field] = Carbon::parse($validated[$field])->timezone('Asia/Manila');
+                }
+            }
+
+            // Handle file uploads
+            if ($request->hasFile('upload_resume')) {
+                $resumePath = $request->file('upload_resume')->store('resumes', 'public');
+                $validated['upload_resume'] = basename($resumePath);
+            }
+
+            if ($request->hasFile('upload_pic')) {
+                $picPath = $request->file('upload_pic')->store('pictures', 'public');
+                $validated['upload_pic'] = basename($picPath);
+            }
+
+            // Update source_project_id from requisition
+            if (! empty($validated['resource_schedule_id'])) {
+                $requisition = IntermediateRequisitionModel::with('project')
+                    ->find($validated['resource_schedule_id']);
+                $validated['source_project_id'] = $requisition?->project_id;
+            }
+
+            $application->update($validated);
+
+            // Log the action
+            Log::createLog(
+                'Intermediate',
+                "Application #{$application->id} updated successfully.",
+                $application->intermediate_applicant_id
+            );
+
+            DB::commit();
+
+            return redirect()
+                ->route('intermediate.applications.show', $application->id)
+                ->with('success', 'Application updated successfully.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('Failed to update application: '.$e->getMessage());
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to update application. Please try again.');
+        }
     }
 }
