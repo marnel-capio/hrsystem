@@ -4798,6 +4798,7 @@ namespace App\Models {
      * @property bool $engagement_type
      * @property int $id
      * @property-read mixed $project_description
+     * @property-read mixed $custom_location_name
      * @property-read mixed $location_assignment_label
      * @property-read \App\Models\IntermediateProjectModel $project
      * @property-read \App\Models\User $requestedBy
