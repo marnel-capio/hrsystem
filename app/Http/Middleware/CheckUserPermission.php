@@ -300,6 +300,9 @@ class CheckUserPermission
 
         if (in_array($routeName, [
             'intermediate.requisitions.register',
+            'intermediate.requisitions.store',
+            'intermediate.requisitions.edit',
+            'intermediate.requisitions.update',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),
@@ -459,14 +462,53 @@ class CheckUserPermission
 
 
         /*
-|--------------------------------------------------------------------------
-| INTERMEDIATE APPLICATIONS
-| Only HR Admin, HR Manager, HR Recruiter, BU Manager, Interviewer allowed
-|--------------------------------------------------------------------------
-*/
+        |--------------------------------------------------------------------------
+        | INTERMEDIATE APPLICATIONS List
+        | Only HR Admin, HR Manager, HR Recruiter, BU Manager, Interviewer allowed
+        |--------------------------------------------------------------------------
+        */
         if (in_array($routeName, [
             'intermediate.applications.index',
             'intermediate.applications.import',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+                config('constants.BU_MANAGER_PERMISSION.value'),
+                config('constants.INTERVIEWER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | INTERMEDIATE APPLICATIONS Register
+        | Only HR Admin, HR Manager, HR Recruiter allowed
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($routeName, [
+            'intermediate.applications.register',
+            'intermediate.applications.store',
+        ])) {
+            if (in_array($permission, [
+                config('constants.HR_ADMIN_PERMISSION.value'),
+                config('constants.HR_MANAGER_PERMISSION.value'),
+                config('constants.HR_RECRUITER_PERMISSION.value'),
+            ])) {
+                return $next($request);
+            }
+
+            return redirect('/dashboard')
+                ->with('error', config('errors.unauthorized.errorMessage'));
+        }
+
+        if (in_array($routeName, [
+            'intermediate.applications.show',
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),

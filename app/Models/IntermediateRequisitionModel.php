@@ -25,8 +25,10 @@ class IntermediateRequisitionModel extends Model
         'start_date',
         'duration_project_engagement',
         'required_skills',
-        'preferred_skilss',
+        'preferred_skilLs',
         'role',
+        'custom?_location',
+        'expected_salary_range',
         'remarks',
         'created_by',
         'created_time',
@@ -92,7 +94,6 @@ class IntermediateRequisitionModel extends Model
         }
     }
 
-
     public function project()
     {
         return $this->belongsTo(IntermediateProjectModel::class, 'project_id');
@@ -109,17 +110,22 @@ class IntermediateRequisitionModel extends Model
             ->select('id', 'first_name', 'last_name');
     }
 
-    public function getLocationAssignmentLabelAttribute()
+    public function getCustomLocationNameAttribute()
     {
-        return match ((int) $this->location_assignment) {
+        if ($this->location_assignment == 6) {
+            return $this->custom_location;
+        }
+
+        $locationMap = [
             1 => 'Alabang',
             2 => 'Makati',
             3 => 'Cebu',
             4 => 'Japan',
             5 => 'China',
             6 => 'Other',
-            default => 'Unknown',
-        };
+        ];
+
+        return $locationMap[$this->location_assignment] ?? 'Unknown';
     }
 
     public static function getPaginated($search = null, $perPage = 20)
@@ -144,7 +150,25 @@ class IntermediateRequisitionModel extends Model
             ->withQueryString();
     }
 
+    public function getLocationAssignmentLabelAttribute()
+    {
+        if ($this->location_assignment == 6) {
+            return $this->custom_location;
+        }
+
+        $locationMap = [
+            1 => 'Alabang',
+            2 => 'Makati',
+            3 => 'Cebu',
+            4 => 'Japan',
+            5 => 'China',
+            6 => 'Other',
+        ];
+
+        return $locationMap[$this->location_assignment] ?? 'Not Assigned';
+    }
 
     const CREATED_AT = 'created_time';
+
     const UPDATED_AT = 'updated_time';
 }

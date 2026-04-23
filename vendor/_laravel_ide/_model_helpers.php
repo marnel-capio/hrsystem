@@ -2561,6 +2561,7 @@ namespace App\Models {
      * @property-read \App\Models\User $registeredBy
      * @property-read \App\Models\User $createdBy
      * @property-read \App\Models\User $updatedBy
+     * @property-read \App\Models\IntermediateApplication $latestApplication
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermediateApplicationWorkExperience> $workExperiences
      * @property-read int|null $work_experiences_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermediateApplicantSkill> $skills
@@ -3267,8 +3268,9 @@ namespace App\Models {
      * @property string|null $parked_to
      * @property string|null $aws_rank
      * @property \Illuminate\Support\Carbon|null $aws_start_date
-     * @property \Illuminate\Support\Carbon|null $job_offer_accepted_date
+     * @property string|null $job_offer_remarks
      * @property integer|null $job_offer_status
+<<<<<<< HEAD
      * @property integer|null $final_interview_status
      * @property integer|null $bu_interview_status
      * @property integer|null $hr_interview_status
@@ -3283,6 +3285,36 @@ namespace App\Models {
      * @property float|null $tech_exam
      * @property float|null $atpp
      * @property \Illuminate\Support\Carbon|null $testing_datetime
+=======
+     * @property \Illuminate\Support\Carbon|null $job_offer_schedule
+     * @property string|null $final_interview_remarks
+     * @property integer|null $final_interview_application_status
+     * @property integer|null $final_interview_result
+     * @property float|null $final_interview_final
+     * @property \Illuminate\Support\Carbon|null $final_interview_date
+     * @property string|null $initial_interview_remarks
+     * @property integer|null $initial_interview_application_status
+     * @property integer|null $initial_interview_result
+     * @property float|null $initial_interview_final
+     * @property bool|null $initial_interview_venue
+     * @property \Illuminate\Support\Carbon|null $initial_interview_actual_date
+     * @property \Illuminate\Support\Carbon|null $initial_interview_plan_date
+     * @property string|null $exam_remarks
+     * @property integer|null $exam_application_status
+     * @property integer|null $exam_result
+     * @property float|null $exam_tech_result
+     * @property float|null $exam_atpp_result
+     * @property mixed $exam_atpp_part3_wrong
+     * @property mixed $exam_atpp_part3_correct
+     * @property mixed $exam_atpp_part2_wrong
+     * @property mixed $exam_atpp_part2_correct
+     * @property mixed $exam_atpp_part1_wrong
+     * @property mixed $exam_atpp_part1_correct
+     * @property bool|null $exam_venue
+     * @property \Illuminate\Support\Carbon|null $exam_actual_date
+     * @property \Illuminate\Support\Carbon|null $exam_plan_date
+     * @property integer $paper_screening_status
+>>>>>>> develop
      * @property string|null $site_assignment
      * @property string|null $asking_rate
      * @property string|null $current_employer
@@ -3301,10 +3333,17 @@ namespace App\Models {
      * @property string|null $work_preference
      * @property string|null $desired_salary_range
      * @property string|null $availability_date
+<<<<<<< HEAD
      * @property integer|null $answer_q4
      * @property integer|null $answer_q3
      * @property integer|null $answer_q2
      * @property integer|null $answer_q1
+=======
+     * @property boolean|null $answer_q4
+     * @property boolean|null $answer_q3
+     * @property boolean|null $answer_q2
+     * @property boolean|null $answer_q1
+>>>>>>> develop
      * @property string|null $upload_pic
      * @property string|null $upload_resume
      * @property mixed $source_project_id
@@ -3314,10 +3353,9 @@ namespace App\Models {
      * @property mixed $intermediate_applicant_id
      * @property integer $application_stage
      * @property int $id
-     * @property-read mixed $stage_label
-     * @property-read mixed $status_labels
      * @property-read mixed $full_applicant_name
      * @property-read mixed $project_name
+     * @property-read mixed $stage_label
      * @property-read \App\Models\IntermediateApplicant $intermediateApplicant
      * @property-read \App\Models\IntermediateProjectModel $project
      * @property-read \App\Models\User $contactedBy
@@ -3354,22 +3392,36 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereCurrentEmployer($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAskingRate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereSiteAssignment($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereTestingDatetime($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAtpp($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereTechExam($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereHrInterviewDatetime($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereHrInterviewWeek($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereBuInterviewDatetime($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereBuInterviewWeek($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereFinalInterviewDatetime($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereFinalInterviewWeek($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication wherePaperScreeningStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereHrInterviewStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereBuInterviewStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereFinalInterviewStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamPlanDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamActualDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamVenue($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamAtppPart1Correct($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamAtppPart1Wrong($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamAtppPart2Correct($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamAtppPart2Wrong($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamAtppPart3Correct($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamAtppPart3Wrong($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamAtppResult($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamTechResult($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamResult($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamApplicationStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamRemarks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereInitialInterviewPlanDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereInitialInterviewActualDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereInitialInterviewVenue($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereInitialInterviewFinal($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereInitialInterviewResult($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereInitialInterviewApplicationStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereInitialInterviewRemarks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereFinalInterviewDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereFinalInterviewFinal($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereFinalInterviewResult($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereFinalInterviewApplicationStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereFinalInterviewRemarks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereJobOfferSchedule($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereJobOfferStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereJobOfferAcceptedDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereJobOfferRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAwsStartDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAwsRank($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereParkedTo($value)
@@ -4414,6 +4466,7 @@ namespace App\Models {
      * @property bool $engagement_type
      * @property int $id
      * @property-read mixed $project_description
+     * @property-read mixed $custom_location_name
      * @property-read mixed $location_assignment_label
      * @property-read \App\Models\IntermediateProjectModel $project
      * @property-read \App\Models\User $requestedBy

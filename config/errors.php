@@ -2,10 +2,10 @@
 
 return [
 
-    //UNIVERSAL ERROR MESSAGES
+    // UNIVERSAL ERROR MESSAGES
 
     // field max length exceeded
-        'max_length_exceeded' => [
+    'max_length_exceeded' => [
         'errorCode' => 'MAX_LENGTH_EXCEEDED',
         'errorMessage' => 'This field exceeds the maximum allowed length.',
     ],
@@ -63,8 +63,8 @@ return [
 
     // email address registered
     'email_taken' => [
-    'errorCode' => 'EMAIL_TAKEN',
-    'errorMessage' => 'This email address is already registered.',
+        'errorCode' => 'EMAIL_TAKEN',
+        'errorMessage' => 'This email address is already registered.',
     ],
 
     // passwords do not match
@@ -79,8 +79,7 @@ return [
         'errorMessage' => 'Email/s sent successfully',
     ],
 
-
-     // email sent failed
+    // email sent failed
     'email_sent_failed' => [
         'errorCode' => 'EMAIL_FAILED',
         'errorMessage' => 'An error occurred while sending the email/s. Please try again.',
@@ -88,23 +87,20 @@ return [
 
     // account is inactive
     'account_inactive' => [
-    'errorCode' => 'ACCOUNT_INACTIVE',
-    'errorMessage' => 'Your account is no longer active. Please check with your manager or admin.',
+        'errorCode' => 'ACCOUNT_INACTIVE',
+        'errorMessage' => 'Your account is no longer active. Please check with your manager or admin.',
     ],
 
     // upload exceeds 10mb
     'file_too_large' => [
-    'errorCode' => 'FILE_TOO_LARGE',
-    'errorMessage' => 'The uploaded file exceeds the maximum size of 10MB.',
-],
-
-//upload corrupt
-'corrupted_file' => [
-        'errorMessage' => 'Invalid file type. File may be corrupted.'
+        'errorCode' => 'FILE_TOO_LARGE',
+        'errorMessage' => 'The uploaded file exceeds the maximum size of 10MB.',
     ],
 
-
-
+    // upload corrupt
+    'corrupted_file' => [
+        'errorMessage' => 'Invalid file type. File may be corrupted.',
+    ],
 
     // FOR RESOURCE SCHEDULE
     'wbs_end_before_start' => [
@@ -112,25 +108,21 @@ return [
         'errorMessage' => 'Start week cannot be after end week.',
     ],
 
-    //FOR ACTION APPLICATIONS
-        'successful_action_application_import' => [
+    // FOR ACTION APPLICATIONS
+    'successful_action_application_import' => [
         'errorCode' => 'SUCCESSFUL_ACTION_APPLICATION_IMPORT',
         'errorMessage' => 'The following applicants have been successfully uploaded:',
     ],
 
-        'failed_action_application_import' => [
-            'errorCode' => 'FAILED_ACTION_APPLICATION_IMPORT',
-            'errorMessage' => 'An error occurred while uploading the following applicants:',
+    'failed_action_application_import' => [
+        'errorCode' => 'FAILED_ACTION_APPLICATION_IMPORT',
+        'errorMessage' => 'An error occurred while uploading the following applicants:',
     ],
 
     'ineligible_applicant' => [
         'errorCode' => 'INELIGIBLE_APPLICANT',
         'errorMessage' => 'This applicant cannot apply at this time. A previous application from the last 6 months shows a failed status.',
     ],
-
-
-
-
 
     // FOR USER REGISTRATION
     'password_complexity_failed' => [
@@ -158,13 +150,17 @@ return [
         'errorMessage' => 'The contact number must be exactly 11 digits.',
     ],
 
-    //ACTION BATCH
+    // ACTION BATCH
 
     // TARGET DATE
     'target_date_after_or_equal' => [
         'errorCode' => 'TARGET_DATE_AFTER_OR_EQUAL',
         'errorMessage' => 'The selected date must be in the future.',
     ],
+
+    'start_date_after' => [
+        'errorCode' => 'START_DATE_AFTER',
+        'errorMessage' => 'The selected date must be in the future.',
 
     'TARGET_DATE_BETWEEN' => [
         'errorCode' => 'TARGET_DATE_BETWEEN',
@@ -175,7 +171,6 @@ return [
         'errorCode' => 'TARGET_DATE_MIN_ONLY',
         'errorMessage' => 'The selected date must be after the previous ACTION Batch.',
     ],
-
 
     'age_numeric' => [
         'errorCode' => 'AGE_NUMERIC_INVALID',
@@ -188,11 +183,23 @@ return [
         'message' => 'Record created successfully.',
     ],
 
-    //INTERMEDIATE
-    'project_name_unique'=>[
+    // INTERMEDIATE
+    'project_name_unique' => [
         'errorCode' => 'PROJECT_NAME_UNIQUE',
         'errorMessage' => 'Project already exists.',
-    ]
+    ],
 
+
+    'format_invalid' => [
+        'errorCode' => 'FORMAT_INVALID',
+        'errorMessage' => 'Please follow format in placeholder',
+    ],
+
+
+    'start_date_custom' => [
+        'errorCode' => 'START_DATE_CUSTOM',
+        'errorMessage' => 'The selected date must be at least 2 days ahead.',
+    ],
+
+]
 ];
-

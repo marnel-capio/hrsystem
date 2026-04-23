@@ -275,6 +275,15 @@ Route::middleware(['auth', 'check.permission'])->group(function () {
         // Import intermediate applicants (matches your Vue router.post)
         Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
             ->name('intermediate.applications.import');
+        
+        Route::get('/intermediate/applications/register', [IntermediateApplicationController::class, 'create'])
+            ->name('intermediate.applications.register');
+        
+        Route::post('/intermediate/applications', [IntermediateApplicationController::class, 'store'])
+            ->name('intermediate.applications.store');
+        
+        Route::get('/intermediate/applications/{id}', [IntermediateApplicationController::class, 'show'])
+            ->name('intermediate.applications.show');
     });
 
 // ------------------------
