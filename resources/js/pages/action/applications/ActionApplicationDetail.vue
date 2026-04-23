@@ -300,6 +300,7 @@ const getEvaluationResultLabel = (result: number | null) => {
         1: 'Pending',
         2: 'Passed',
         3: 'Failed',
+        4: 'P2',
     };
 
     if (!result) return '-';
@@ -311,6 +312,7 @@ const getEvaluationBadgeClass = (result: number | null) => {
         1: 'bg-yellow-100 text-yellow-800',
         2: 'bg-green-100 text-green-800',
         3: 'bg-red-100 text-red-800',
+        4: 'bg-purple-100 text-purple-800',
     };
 
     if (!result) return 'bg-gray-100 text-gray-800';
@@ -325,13 +327,13 @@ const formatScore = (score: number | null) => {
 const getFileUrl = (filename: string | null) => {
     if (!filename) return null;
 
-    // If it's already a full URL (like Google Drive), return as-is
     if (filename.startsWith('http://') || filename.startsWith('https://')) {
         return filename;
     }
 
-    // Otherwise treat it as local storage
-    return `/storage/${filename}`;
+    const baseUrl = (window as any).location?.origin?.replace(/\/$/, '') || '';
+
+    return `${baseUrl}/storage/${String(filename).replace(/^\/+/, '')}`;
 };
 
 const getExamApplicationStatusLabel = (status: number) => {
@@ -430,6 +432,56 @@ function getExamStatusBadgeClass(status: number | null | undefined) {
     }
 }
 
+function isStageFinished(stage: number): boolean {
+    if (stage === 1) {
+        return [2, 3].includes(Number(application.value?.exam_result));
+    }
+
+    if (stage === 2) {
+        return [2, 3].includes(
+            Number(application.value?.initial_interview_result),
+        );
+    }
+
+    if (stage === 3) {
+        return [2, 3].includes(
+            Number(application.value?.final_interview_result),
+        );
+    }
+
+    return false;
+}
+
+function isStageBlockedForBulkAdd(stage: number): boolean {
+    const examFailed = Number(application.value?.exam_result) === 3;
+    const initialFailed =
+        Number(application.value?.initial_interview_result) === 3;
+    const finalFailed = Number(application.value?.final_interview_result) === 3;
+
+    if (stage === 1) return false;
+    if (stage === 2) return examFailed;
+    if (stage === 3) return examFailed || initialFailed;
+
+    return finalFailed;
+}
+
+const availableBulkAddStages = computed(() => {
+    const stages = [
+        { value: '1', label: 'Exam' },
+        { value: '2', label: 'Initial Interview' },
+        { value: '3', label: 'Final Interview' },
+    ];
+
+    return stages.filter((stage) => {
+        const numericStage = Number(stage.value);
+
+        if (isStageFinished(numericStage)) return false;
+        if (isStageBlockedForBulkAdd(numericStage)) return false;
+
+        return true;
+    });
+});
+
 const getOverallStatus = () => {
     const examResult = Number(application.value.exam_result);
     const initialResult = Number(application.value.initial_interview_result);
@@ -505,7 +557,15 @@ const searchInterviewers = () => {
 const openBulkAddModal = () => {
     selectedBulkInterviewers.value = [];
     interviewerSearch.value = '';
-    bulkAddStage.value = '1';
+
+    const firstAvailableStage = availableBulkAddStages.value[0]?.value || '';
+    bulkAddStage.value = firstAvailableStage;
+
+    if (!firstAvailableStage) {
+        showToast('No available stages left to assign.', 'error');
+        return;
+    }
+
     showBulkAddModal.value = true;
 };
 
@@ -1442,17 +1502,32 @@ watch(
                             deliberation.
                         </div>
 
-                        <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-4">
                             <div
                                 class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800"
                             >
                                 <div class="mb-1 text-xs text-zinc-500">
-                                    Interview Date
+                                    Plan Date
                                 </div>
                                 <div class="text-sm font-medium">
                                     {{
                                         formatDateTime(
                                             application.initial_interview_plan_date,
+                                        )
+                                    }}
+                                </div>
+                            </div>
+
+                            <div
+                                class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800"
+                            >
+                                <div class="mb-1 text-xs text-zinc-500">
+                                    Actual Date
+                                </div>
+                                <div class="text-sm font-medium">
+                                    {{
+                                        formatDateTime(
+                                            application.initial_interview_actual_date,
                                         )
                                     }}
                                 </div>
@@ -2500,9 +2575,14 @@ watch(
                                 v-model="bulkAddStage"
                                 class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800"
                             >
-                                <option value="1">Exam</option>
-                                <option value="2">Initial Interview</option>
-                                <option value="3">Final Interview</option>
+                                <option value="">Select Stage</option>
+                                <option
+                                    v-for="stage in availableBulkAddStages"
+                                    :key="stage.value"
+                                    :value="stage.value"
+                                >
+                                    {{ stage.label }}
+                                </option>
                             </select>
                         </div>
 

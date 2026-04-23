@@ -257,7 +257,8 @@ function getInterviewerEvaluationResultFromScore(
 
     if (num === 0) return '1'; // Pending
     if (num > 0 && num <= 2.0) return '2'; // Passed
-    if (num > 2.0 && num <= 5.0) return '3'; // Failed
+    if (num > 2.0 && num <= 3.0) return '4'; // P2
+    if (num > 3.0 && num <= 5.0) return '3'; // Failed
 
     return '';
 }
@@ -268,6 +269,28 @@ function handleFinalScoreManualInput() {
 
 function handleInitialScoreManualInput() {
     initialScoreManuallyEdited.value = true;
+}
+
+function getEligibleStageRows(rows: any[]) {
+    return (rows || []).filter((row: any) =>
+        [2, 4].includes(Number(row.status ?? 2)),
+    );
+}
+
+function isStageResultSubmitted(value: any): boolean {
+    return [2, 3, 4].includes(Number(value)); // Passed, Failed, P2
+}
+
+function haveAllEligibleRowsSubmitted(rows: any[]): boolean {
+    const eligibleRows = getEligibleStageRows(rows);
+
+    if (eligibleRows.length === 0) {
+        return false;
+    }
+
+    return eligibleRows.every((row: any) =>
+        isStageResultSubmitted(row.evaluation_result),
+    );
 }
 
 const form = useForm({
@@ -358,9 +381,9 @@ const visibleInitialInterviewAssignments = computed(() => {
 });
 
 const initialInterviewEvaluatedRows = computed(() => {
-    return (form.initial_interview_assignments || []).filter((row: any) =>
-        [2, 3].includes(Number(row.evaluation_result)),
-    );
+    return getEligibleStageRows(
+        form.initial_interview_assignments || [],
+    ).filter((row: any) => isStageResultSubmitted(row.evaluation_result));
 });
 
 const allInitialInterviewersPassed = computed(() => {
@@ -440,8 +463,8 @@ const visibleFinalInterviewAssignments = computed(() => {
 });
 
 const finalInterviewEvaluatedRows = computed(() => {
-    return (form.final_interview_assignments || []).filter((row: any) =>
-        [2, 3].includes(Number(row.evaluation_result)),
+    return getEligibleStageRows(form.final_interview_assignments || []).filter(
+        (row: any) => isStageResultSubmitted(row.evaluation_result),
     );
 });
 
@@ -611,9 +634,11 @@ watch(
     () => form.initial_interview_assignments,
     (rows) => {
         if (initialStatusManuallyEdited.value) return;
-        const list = rows || [];
 
-        const numericScores = list
+        const list = rows || [];
+        const eligibleRows = getEligibleStageRows(list);
+
+        const numericScores = eligibleRows
             .map((row: any) => Number(row.score))
             .filter((value: number) => !Number.isNaN(value));
 
@@ -631,7 +656,7 @@ watch(
             form.initial_interview_final = average.toFixed(2);
         }
 
-        (list || []).forEach((row: any, index: number) => {
+        list.forEach((row: any, index: number) => {
             validateScoreField(
                 `initial_interview_assignments.${index}.score`,
                 `${row.name || 'Interviewer'} Score`,
@@ -639,31 +664,57 @@ watch(
             );
         });
 
-        if (allInitialInterviewersPassed.value) {
-            form.initial_interview_result = '2';
-            form.initial_interview_application_status = '3';
-            return;
-        }
-
-        if (allInitialInterviewersFailed.value) {
-            form.initial_interview_result = '3';
-            form.initial_interview_application_status = '5';
-            return;
-        }
-
-        if (hasMixedInitialInterviewResults.value) {
-            form.initial_interview_application_status = '1';
-            form.initial_interview_result = '1';
-            return;
-        }
-
-        if (form.initial_interview_plan_date) {
-            form.initial_interview_application_status = '1';
-            form.initial_interview_result = '1';
-        } else {
+        if (!form.initial_interview_plan_date) {
             form.initial_interview_application_status = '';
             form.initial_interview_result = '';
+            return;
         }
+
+        // IMPORTANT:
+        // stay Pending until ALL eligible interviewers submitted a result
+        if (!haveAllEligibleRowsSubmitted(list)) {
+            form.initial_interview_application_status = '1';
+            form.initial_interview_result = '1';
+            return;
+        }
+
+        const submittedRows = eligibleRows.filter((row: any) =>
+            isStageResultSubmitted(row.evaluation_result),
+        );
+
+        const allPassed = submittedRows.every(
+            (row: any) => Number(row.evaluation_result) === 2,
+        );
+
+        const allFailed = submittedRows.every(
+            (row: any) => Number(row.evaluation_result) === 3,
+        );
+
+        const hasP2 = submittedRows.some(
+            (row: any) => Number(row.evaluation_result) === 4,
+        );
+
+        if (allPassed) {
+            form.initial_interview_application_status = '3';
+            form.initial_interview_result = '2';
+            return;
+        }
+
+        if (allFailed) {
+            form.initial_interview_application_status = '5';
+            form.initial_interview_result = '3';
+            return;
+        }
+
+        if (hasP2) {
+            form.initial_interview_application_status = '4';
+            form.initial_interview_result = '2';
+            return;
+        }
+
+        // Mixed outcomes or for deliberation fallback
+        form.initial_interview_application_status = '1';
+        form.initial_interview_result = '1';
     },
     { deep: true },
 );
@@ -707,6 +758,25 @@ function normalizeDegree(degree: string): string {
         .trim()
         .replace(/[^a-z0-9\s]/g, ' ')
         .replace(/\s+/g, ' ');
+}
+
+function isEvaluatedResult(value: any): boolean {
+    return [2, 3].includes(Number(value));
+}
+
+function getApprovedOrCompletedRows(rows: any[]) {
+    return (rows || []).filter((row: any) =>
+        [2, 4].includes(Number(row.status ?? 2)),
+    );
+}
+
+function areAllStageRowsEvaluated(rows: any[]): boolean {
+    const eligibleRows = getApprovedOrCompletedRows(rows);
+    if (eligibleRows.length === 0) return false;
+
+    return eligibleRows.every((row: any) =>
+        isEvaluatedResult(row.evaluation_result),
+    );
 }
 
 function isTechDegree(degree: string): boolean {
@@ -816,8 +886,8 @@ function getInitialInterviewApplicationStatus(score: number): string {
     const rules = props.applicationScoreRules?.initial_interview;
 
     const passedMax = Number(rules?.passed_min ?? 2.0);
-    const p2Max = Number(rules?.p2_min ?? 2.5);
-    const failedMax = 5.0;
+    const p2Max = Number(rules?.p2_min ?? 3.0);
+    const failedMax = Number(rules?.failed_min ?? 5.0);
 
     if (score === 0) return '1';
     if (score > 0 && score <= passedMax) return '3';
@@ -899,8 +969,9 @@ watch(
     () => form.final_interview_assignments,
     (rows) => {
         const list = rows || [];
+        const eligibleRows = getEligibleStageRows(list);
 
-        const numericScores = list
+        const numericScores = eligibleRows
             .map((row: any) => Number(row.score))
             .filter((value: number) => !Number.isNaN(value));
 
@@ -918,7 +989,7 @@ watch(
             form.final_interview_final = average.toFixed(2);
         }
 
-        (list || []).forEach((row: any, index: number) => {
+        list.forEach((row: any, index: number) => {
             validateScoreField(
                 `final_interview_assignments.${index}.score`,
                 `${row.name || 'Interviewer'} Score`,
@@ -926,31 +997,56 @@ watch(
             );
         });
 
-        if (allFinalInterviewersPassed.value) {
-            form.final_interview_result = '2';
-            form.final_interview_application_status = '3';
-            return;
-        }
-
-        if (allFinalInterviewersFailed.value) {
-            form.final_interview_result = '3';
-            form.final_interview_application_status = '5';
-            return;
-        }
-
-        if (hasMixedFinalInterviewResults.value) {
-            form.final_interview_application_status = '1';
-            form.final_interview_result = '1';
-            return;
-        }
-
-        if (form.final_interview_date) {
-            form.final_interview_application_status = '1';
-            form.final_interview_result = '1';
-        } else {
+        if (!form.final_interview_date) {
             form.final_interview_application_status = '';
             form.final_interview_result = '';
+            return;
         }
+
+        // IMPORTANT:
+        // stay Pending until ALL eligible interviewers submitted a result
+        if (!haveAllEligibleRowsSubmitted(list)) {
+            form.final_interview_application_status = '1';
+            form.final_interview_result = '1';
+            return;
+        }
+
+        const submittedRows = eligibleRows.filter((row: any) =>
+            isStageResultSubmitted(row.evaluation_result),
+        );
+
+        const allPassed = submittedRows.every(
+            (row: any) => Number(row.evaluation_result) === 2,
+        );
+
+        const allFailed = submittedRows.every(
+            (row: any) => Number(row.evaluation_result) === 3,
+        );
+
+        const hasP2 = submittedRows.some(
+            (row: any) => Number(row.evaluation_result) === 4,
+        );
+
+        if (allPassed) {
+            form.final_interview_application_status = '3';
+            form.final_interview_result = '2';
+            return;
+        }
+
+        if (allFailed) {
+            form.final_interview_application_status = '5';
+            form.final_interview_result = '3';
+            return;
+        }
+
+        if (hasP2) {
+            form.final_interview_application_status = '4';
+            form.final_interview_result = '2';
+            return;
+        }
+
+        form.final_interview_application_status = '1';
+        form.final_interview_result = '1';
     },
     { deep: true },
 );
@@ -1473,8 +1569,8 @@ function getFinalInterviewApplicationStatus(score: number): string {
     const rules = props.applicationScoreRules?.initial_interview;
 
     const passedMax = Number(rules?.passed_min ?? 2.0);
-    const p2Max = Number(rules?.p2_min ?? 2.5);
-    const failedMax = 5.0;
+    const p2Max = Number(rules?.p2_min ?? 3.0);
+    const failedMax = Number(rules?.failed_min ?? 5.0);
 
     if (score === 0) return '1';
     if (score > 0 && score <= passedMax) return '3';
@@ -2758,7 +2854,7 @@ const examCriteriaDisplay = computed(() => {
                                                 <div class="form-field">
                                                     <label class="field-label"
                                                         >Evaluation
-                                                        Result</label
+                                                        Status</label
                                                     >
                                                     <select
                                                         v-model="
@@ -2771,13 +2867,16 @@ const examCriteriaDisplay = computed(() => {
                                                         "
                                                     >
                                                         <option value="">
-                                                            Select Result
+                                                            Select Status
                                                         </option>
                                                         <option value="1">
                                                             Pending
                                                         </option>
                                                         <option value="2">
                                                             Passed
+                                                        </option>
+                                                        <option value="4">
+                                                            P2
                                                         </option>
                                                         <option value="3">
                                                             Failed
@@ -2990,7 +3089,7 @@ const examCriteriaDisplay = computed(() => {
                                     v-model="form.final_interview_date"
                                     class="form-input"
                                     :min="finalInterviewMin || undefined"
-                                    :disabled="!editableStages.final_interview"
+                                    :disabled="!canEditFinalInterviewPlanDate"
                                 />
                                 <span
                                     v-if="
@@ -3060,7 +3159,8 @@ const examCriteriaDisplay = computed(() => {
 
                                                 <div class="form-field">
                                                     <label class="field-label"
-                                                        >Result</label
+                                                        >Evaluation
+                                                        Status</label
                                                     >
                                                     <select
                                                         v-model="
@@ -3072,13 +3172,16 @@ const examCriteriaDisplay = computed(() => {
                                                         "
                                                     >
                                                         <option value="">
-                                                            Select Result
+                                                            Select Status
                                                         </option>
                                                         <option value="1">
                                                             Pending
                                                         </option>
                                                         <option value="2">
                                                             Passed
+                                                        </option>
+                                                        <option value="4">
+                                                            P2
                                                         </option>
                                                         <option value="3">
                                                             Failed

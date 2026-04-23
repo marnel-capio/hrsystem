@@ -686,6 +686,30 @@ if (
 
 
         $application = ActionApplication::findOrFail($id);
+
+        if (
+    ((int) $request->interview_type === config('constants.interview_types.exam') &&
+        in_array((int) $application->exam_result, [
+            config('constants.application_results.passed'),
+            config('constants.application_results.failed'),
+        ], true))
+    ||
+    ((int) $request->interview_type === config('constants.interview_types.initial') &&
+        in_array((int) $application->initial_interview_result, [
+            config('constants.application_results.passed'),
+            config('constants.application_results.failed'),
+        ], true))
+    ||
+    ((int) $request->interview_type === config('constants.interview_types.final') &&
+        in_array((int) $application->final_interview_result, [
+            config('constants.application_results.passed'),
+            config('constants.application_results.failed'),
+        ], true))
+) {
+    return response()->json([
+        'message' => 'Cannot assign interviewers. This stage is already completed.',
+    ], 422);
+}
 if (
     ($request->interview_type == config('constants.interview_types.initial') && $application->isStageBlocked('initial')) ||
     ($request->interview_type == config('constants.interview_types.final') && $application->isStageBlocked('final'))

@@ -34,7 +34,7 @@ class UpdateActionApplicationRequest extends FormRequest
             'initial_interview_assignments' => 'nullable|array',
             'initial_interview_assignments.*.id' => 'required|integer|exists:action_application_interviews,id',
             'initial_interview_assignments.*.score' => 'nullable|numeric|between:0,5',
-            'initial_interview_assignments.*.evaluation_result' => 'nullable|integer|in:1,2,3',
+            'initial_interview_assignments.*.evaluation_result' => 'nullable|integer|in:1,2,3,4',
             'initial_interview_assignments.*.evaluation_remarks' => ['nullable', 'string', new MaxLength(1024)],
 
             'initial_interview_plan_date' => 'nullable|date|after:exam_plan_date',
@@ -54,7 +54,7 @@ class UpdateActionApplicationRequest extends FormRequest
             'final_interview_assignments' => 'nullable|array',
             'final_interview_assignments.*.id' => 'required|integer|exists:action_application_interviews,id',
             'final_interview_assignments.*.score' => 'nullable|numeric|between:0,5',
-            'final_interview_assignments.*.evaluation_result' => 'nullable|integer|in:1,2,3',
+'final_interview_assignments.*.evaluation_result' => 'nullable|integer|in:1,2,3,4',
             'final_interview_assignments.*.evaluation_remarks' => ['nullable', 'string', new MaxLength(1024)],
 
             'job_offer_schedule' => 'nullable|date|after_or_equal:final_interview_date',
