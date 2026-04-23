@@ -1694,7 +1694,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                             <Link :href="`/intermediate/applications/${application.id}`" class="btn btn-secondary">
                                 Cancel</Link>
                             <button type="submit" :disabled="form.processing" class="btn btn-primary">
-                                {{ form.processing ? 'Updating…' : 'Update Application' }}
+                                {{ form.processing ? 'Updating…' : 'Update' }}
                             </button>
                         </div>
                     </form>
@@ -2021,15 +2021,16 @@ const isInitialInterviewPlanDateLocked = computed(() => {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    min-height: 40px;
-    padding: 0.5rem 1.2rem;
-    font-size: 0.875rem;
+    padding: 0.7rem 1.75rem;  /* ✅ Bigger padding */
+    font-size: 0.9375rem;      /* ✅ Slightly larger font */
     font-weight: 500;
-    line-height: 1;
+    line-height: 1.25;
     text-decoration: none;
     border-radius: 0.5rem;
     transition: all 0.2s ease;
     cursor: pointer;
+    width: auto;
+    min-height: auto;
 }
 
 .btn-primary {

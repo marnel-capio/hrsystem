@@ -256,7 +256,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1085
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1084
  * @route '/intermediate/applications/{id}/print'
  */
 export const print = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -271,7 +271,7 @@ print.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1085
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1084
  * @route '/intermediate/applications/{id}/print'
  */
 print.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -299,7 +299,7 @@ print.url = (args: { id: string | number } | [id: string | number ] | string | n
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1085
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1084
  * @route '/intermediate/applications/{id}/print'
  */
 print.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -308,7 +308,7 @@ print.get = (args: { id: string | number } | [id: string | number ] | string | n
 })
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1085
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1084
  * @route '/intermediate/applications/{id}/print'
  */
 print.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -318,7 +318,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1085
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1084
  * @route '/intermediate/applications/{id}/print'
  */
     const printForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -328,7 +328,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1085
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1084
  * @route '/intermediate/applications/{id}/print'
  */
         printForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -337,7 +337,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
         })
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1085
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1084
  * @route '/intermediate/applications/{id}/print'
  */
         printForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -879,34 +879,33 @@ class IntermediateApplicationController extends Controller
 
             $newStage = $application->application_stage;
 
-            // Check if any Final Interview fields have data
-            $hasFinalInterviewData =
-                ! empty($request->final_interview_date) ||
-                ! empty($request->final_interview_final) ||
-                ! empty($request->final_interview_result) ||
-                ! empty($request->final_interview_application_status) ||
-                ! empty($request->final_interview_remarks);
+            // Priority 1: Job Offer
+            if ($this->hasJobOfferDataFromRequest($request)) {
+                $newStage = 5;
+            }
+            // Priority 2: Final Interview
+            elseif ($this->hasFinalInterviewDataFromRequest($request)) {
+                $newStage = 4;
+            }
+            // Priority 3: Initial Interview or Exam (interchangeable)
+            else {
+                $hasInitial = $this->hasInitialInterviewDataFromRequest($request);
+                $hasExam = $this->hasExamDataFromRequest($request);
 
-            if ($hasFinalInterviewData) {
-                $newStage = 4; // For Final Interview
-                \Log::info('Final Interview data detected - setting application_stage to 4');
+                if ($hasInitial) {
+                    // Check if Exam ALSO has data
+                    if ($hasExam) {
+                        $newStage = 2; // Exam takes priority when both exist
+                    } else {
+                        $newStage = 3; // Only Initial Interview
+                    }
+                } elseif ($hasExam) {
+                    $newStage = 2; // Only Exam
+                }
             }
 
-            // Check if any Job Offer fields have data (higher priority)
-            $hasJobOfferData =
-                ! empty($request->job_offer_schedule) ||
-                ! empty($request->job_offer_status) ||
-                ! empty($request->job_offer_remarks);
-
-            if ($hasJobOfferData) {
-                $newStage = 5; // For Job Offer
-                \Log::info('Job Offer data detected - setting application_stage to 5');
-            }
-
-            // Update the application stage if it changed
             if ($newStage != $application->application_stage) {
                 $validated['application_stage'] = $newStage;
-                \Log::info('Application stage updated from '.$application->application_stage.' to '.$newStage);
             }
 
             $application->update($validated);
@@ -1141,5 +1140,57 @@ class IntermediateApplicationController extends Controller
             'interviews',
             'examVenues'
         ));
+    }
+
+    /**
+     * Check if Exam fields have data from request
+     */
+    private function hasExamDataFromRequest(Request $request): bool
+    {
+        return ! empty($request->exam_plan_date) ||
+               ! empty($request->exam_actual_date) ||
+               ! empty($request->exam_venue) ||
+               ! empty($request->exam_atpp_part1_correct) ||
+               ! empty($request->exam_atpp_part1_wrong) ||
+               ! empty($request->exam_atpp_part2_correct) ||
+               ! empty($request->exam_atpp_part2_wrong) ||
+               ! empty($request->exam_atpp_part3_correct) ||
+               ! empty($request->exam_atpp_part3_wrong) ||
+               ! empty($request->exam_atpp_result) ||
+               ! empty($request->exam_tech_result) ||
+               ! empty($request->exam_application_status) ||
+               ! empty($request->exam_remarks);
+    }
+
+    /**
+     * Check if Initial Interview fields have data from request
+     */
+    private function hasInitialInterviewDataFromRequest(Request $request): bool
+    {
+        return ! empty($request->initial_interview_plan_date) ||
+               ! empty($request->initial_interview_actual_date) ||
+               ! empty($request->initial_interview_venue) ||
+               ! empty($request->initial_interview_final) ||
+               ! empty($request->initial_interview_remarks);
+    }
+
+    /**
+     * Check if Final Interview fields have data from request
+     */
+    private function hasFinalInterviewDataFromRequest(Request $request): bool
+    {
+        return ! empty($request->final_interview_date) ||
+               ! empty($request->final_interview_final) ||
+               ! empty($request->final_interview_remarks);
+    }
+
+    /**
+     * Check if Job Offer fields have data from request
+     */
+    private function hasJobOfferDataFromRequest(Request $request): bool
+    {
+        return ! empty($request->job_offer_schedule) ||
+               ! empty($request->job_offer_status) ||
+               ! empty($request->job_offer_remarks);
     }
 }
