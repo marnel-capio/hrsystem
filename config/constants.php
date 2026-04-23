@@ -209,47 +209,6 @@ return [
         2 => 'Cebu',
     ],
 
-    'examResults' => [
-        1 => 'Pending',
-        2 => 'Passed',
-        3 => 'Failed',
-    ],
-
-    'examApplicationStatuses' => [
-        1 => 'Pending',
-        3 => '2nd Priority (P2)',
-        4 => 'Done',
-        5 => 'Passed',
-        6 => 'Failed',
-    ],
-
-    'interviewResults' => [
-        1 => 'Pending',
-        2 => 'Passed',
-        3 => 'Failed',
-    ],
-
-    'applicationStatuses' => [
-        1 => 'Pending',
-        2 => 'Done',
-        3 => 'Passed',
-        4 => 'P2',
-        5 => 'Failed',
-    ],
-
-    'jobOfferStatuses' => [
-        1 => 'Pending',
-        2 => 'Done',
-        3 => 'Accept',
-        4 => 'Decline',
-        5 => 'Withdraw',
-        6 => 'Retracted',
-    ],
-
-    'traineesFrom' => [
-        1 => 'Manila',
-        2 => 'Cebu',
-    ],
 
     'source' => [
         'MYNIMO_VALUE' => 1,
@@ -280,16 +239,16 @@ return [
             'exam_application_status',
             'exam_remarks',
         ],
-'initial_interview' => [
-    'initial_interview_plan_date',
-    'initial_interview_actual_date',
-    'initial_interview_venue',
-    'initial_interview_assignments',
-    'initial_interview_final',
-    'initial_interview_result',
-    'initial_interview_application_status',
-    'initial_interview_remarks',
-],
+        'initial_interview' => [
+            'initial_interview_plan_date',
+            'initial_interview_actual_date',
+            'initial_interview_venue',
+            'initial_interview_assignments',
+            'initial_interview_final',
+            'initial_interview_result',
+            'initial_interview_application_status',
+            'initial_interview_remarks',
+        ],
         'final_interview' => [
             'final_interview_date',
             'final_interview_score_1',
@@ -422,6 +381,38 @@ return [
 
 
 
+        'final_interview' => [
+            1 => 1, // Pending -> Pending
+            2 => 1, // Done -> Pending
+            3 => 2, // Passed -> Passed
+            4 => 2, // P2 -> Passed
+            5 => 3, // Failed -> Failed
+        ],
+
+
+
+    'application_score_rules' => [
+        'exam' => [
+            'young_it' => [
+                'passed' => ['attp' => 60, 'git' => 6, 'prg' => 30],
+                'p2' => ['attp' => 55, 'git' => 5, 'prg' => 20],
+            ],
+            'young_other' => [
+                'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+                'p2' => ['attp' => 55, 'git' => 5, 'prg' => 20],
+            ],
+            'adult' => [
+                'passed' => ['attp' => 70, 'git' => 6, 'prg' => 30],
+            ],
+        ],
+
+        'initial_interview' => [
+            'passed_min' => 2.0,
+            'p2_min' => 2.5,
+            'failed_min' => 4.0,
+        ],
+
+    ],
 
     'application_result_map' => [
 
@@ -468,11 +459,40 @@ return [
 
         'initial_interview' => [
             'passed_min' => 2.0,
-            'p2_min' => 3.0,
+            'p2_min' => 2.5,
             'failed_min' => 4.0,
         ],
 
     ],
+'resource_requisitions' => [
+    'engagement_type' => [
+        'ET_1_NAME' => 'Permanent',
+        'ET_2_NAME' => 'Temporary',
+        'ET_3_NAME' => 'OJT',
+    ],
+    'sourcing_type' => [
+        'ST_1_NAME' => 'Internal',
+        'ST_2_NAME' => 'External',
+        'ST_3_NAME' => 'Either',
+    ],
+    'request_type' => [
+        'RT_1_NAME' => 'New Requirement',
+        'RT_2_NAME' => 'Replacement',
+    ],
+    'replacement_due_to' => [
+        'RDT_1_NAME' => 'Promotion',
+        'RDT_2_NAME' => 'Attrition',
+        'RDT_3_NAME' => 'Backfill',
+        'RDT_4_NAME' => 'Transfer',
+    ],
+    'location_assignment' => [
+        'LA_1_NAME' => 'Alabang',
+        'LA_2_NAME' => 'Makati',
+        'LA_3_NAME' => 'Cebu',
+        'LA_4_NAME' => 'Japan',
+        'LA_5_NAME' => 'China',
+    ],
+],
 
     'source_maps' => [
         'type1' => [
@@ -511,6 +531,80 @@ return [
         2 => 'N2',
         1 => 'N1',
     ],
+    'engagement_type' => [
+        'ET_PERMANENT_VALUE' => 1,
+        'ET_TEMPORARY_VALUE' => 2,
+        'ET_OJT_VALUE' => 3,
+
+        'ET_1_NAME' => 'Permanent',
+        'ET_2_NAME' => 'Temporary',
+        'ET_3_NAME' => 'OJT',
+    ],
+
+    'sourcing_type' => [
+    'ST_INTERNAL_VALUE' => 1,
+    'ST_EXTERNAL_VALUE' => 2,
+    'ST_EITHER_VALUE' => 3,
+    'ST_1_NAME' => 'Internal',
+    'ST_2_NAME' => 'External',
+    'ST_3_NAME' => 'Either',
+    ],
+
+    'request_type' => [
+        'RT_NEW_REQUIREMENT_VALUE' => 1,
+        'RT_REPLACEMENT_VALUE' => 2,
+        'RT_1_NAME' => 'New Requirement',
+        'RT_2_NAME' => 'Replacement',
+    ],
+
+    'replacement_due_to' => [
+        'RDT_PROMOTION_VALUE' => 1,
+        'RDT_ATTRITION_VALUE' => 2,
+        'RDT_BACKFILL_VALUE' => 3,
+        'RDT_TRANSFER_VALUE' => 4,
+        'RDT_1_NAME' => 'Promotion',
+        'RDT_2_NAME' => 'Attrition',
+        'RDT_3_NAME' => 'Backfill',
+        'RDT_4_NAME' => 'Transfer',
+    ],
+
+    'location_assignment' => [
+        'LA_ALABANG_VALUE' => 1,
+        'LA_MAKATI_VALUE' => 2,
+        'LA_CEBU_VALUE' => 3,
+        'LA_JAPAN_VALUE' => 4,
+        'LA_CHINA_VALUE' => 5,
+        'LA_1_NAME' => 'Alabang',
+        'LA_2_NAME' => 'Makati',
+        'LA_3_NAME' => 'Cebu',
+        'LA_4_NAME' => 'Japan',
+        'LA_5_NAME' => 'China',
+    ],
+
+    'exam_statuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Passed',
+        4 => 'P2',
+        5 => 'Failed',
+    ],
+
+    'interview_statuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Passed',
+        4 => 'P2',
+        5 => 'Failed',
+    ],
+
+    'job_offer_statuses' => [
+        1 => 'Pending',
+        2 => 'Done',
+        3 => 'Accept',
+        4 => 'Decline',
+        5 => 'Withdraw',
+        6 => 'Retracted',
+    ],
 
     'intermediateSourceTypes' => [
     1 => 'SP (Service Provider)',
@@ -533,5 +627,7 @@ return [
     11 => 'Nityo',
     12 => 'CPS',
 ],
+
+
 
 ];

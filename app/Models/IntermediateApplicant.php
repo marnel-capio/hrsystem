@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\IntermediateApplication;
 
 class IntermediateApplicant extends Model
 {
@@ -123,6 +124,12 @@ class IntermediateApplicant extends Model
             4 => 'Walk-in'
         ];
         return $labels[$this->source_type] ?? 'Unknown';
+    }
+
+    public function latestApplication()
+    {
+        return $this->hasOne(IntermediateApplication::class)
+            ->latestOfMany('created_time');
     }
 
     // Source label

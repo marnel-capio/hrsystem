@@ -249,6 +249,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'show'])->name('intermediate.requisitions.show');
         Route::get('/intermediate/resource-requisitions/{id}/edit', [IntermediateRequisitionController::class, 'edit'])->name('intermediate.requisitions.edit');
         Route::post('/intermediate/resource-requisitions/{id}/update', [IntermediateRequisitionController::class, 'update'])->name('intermediate.requisitions.update');
+        Route::post('/intermediate/resource-requisitions/{id}/send-notification', [IntermediateRequisitionController::class, 'sendResourceRequisitionNotification'])->name('intermediate.requisitions.notify');
+        Route::delete('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'destroy'])->name('intermediate.requisitions.destroy');
     });
 
 
@@ -263,7 +265,22 @@ Route::middleware(['auth'])->group(function () {
                     // Import intermediate applicants (matches your Vue router.post)
         Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
             ->name('intermediate.applications.import');
+
+                    // Import intermediate applicants (matches your Vue router.post)
+        Route::post('/intermediate/applications/import', [ApplicationImportController::class, 'importIntermediateApplicants'])
+            ->name('intermediate.applications.import');
+
+        Route::get('/intermediate/applications/register', [IntermediateApplicationController::class, 'create'])
+            ->name('intermediate.applications.register');
+
+        Route::post('/intermediate/applications', [IntermediateApplicationController::class, 'store'])
+            ->name('intermediate.applications.store');
+
+        Route::get('/intermediate/applications/{id}', [IntermediateApplicationController::class, 'show'])
+            ->name('intermediate.applications.show');
     });
+
+
 
     // ------------------------
 // Intermediate Applicants
