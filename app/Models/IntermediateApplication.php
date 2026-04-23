@@ -313,4 +313,32 @@ public function getStageLabelAttribute()
     return $this->getStageLabel();
 }
 
+    /**
+     * Status label helpers
+     */
+    private function getStageLabel(): string
+    {
+        return match ($this->application_stage) {
+            1 => 'New',
+            2 => 'For Exam',
+            3 => 'For Initial Interview',
+            4 => 'For Final Interview',
+            5 => 'For Job Offer',
+            default => 'Unknown'
+        };
+    }
+
+    private function getStatusLabel(int $status): string
+    {
+        return match ($status) {
+            1 => 'Pending',
+            2 => 'Done',
+            3 => 'Passed',
+            4 => 'P2',
+            5 => 'Failed',
+            default => 'N/A'
+        };
+    }
+
+
 }
