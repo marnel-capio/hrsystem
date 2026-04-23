@@ -14,6 +14,7 @@ class IntermediateRequisitionService
     $requisition = new IntermediateRequisitionModel();
 
     $project = IntermediateProjectModel::find($data['project_id']);
+    $requisition->project_id = $data['project_id'];
 
     $requisition->engagement_type = $data['engagement_type'];
     $requisition->sourcing_type = $data['sourcing_type'];
@@ -31,7 +32,7 @@ class IntermediateRequisitionService
     $requisition->required_skills = $data['required_skills']?? null;
     $requisition->preferred_skills = $data['preferred_skills'] ?? null;
     $requisition->role = $data['role']?? null;
-    $requisition->custom_location = $data['custom_location'];
+    $requisition->custom_location = $data['custom_location'] ?? null;
     $requisition->expected_salary_range = $data['expected_salary_range']?? null;
     $requisition->remarks = $data['remarks'] ?? null;
 
