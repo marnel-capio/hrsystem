@@ -253,32 +253,10 @@ const lastPage = computed(() => totalPages.value);
 
 console.log('Received batches:', props.actionBatches);
 
-
-const successMessage = ref((page.props.flash as any)?.success || '');
-const showSuccess = ref(!!successMessage.value);
-watch(
-  successMessage,
-  (newVal) => {
-    if (newVal) {
-      showSuccess.value = true;
-      setTimeout(() => {
-        showSuccess.value = false;
-        successMessage.value = '';
-      }, 5000);
-    }
-  },
-  { immediate: true }
-);
 </script>
 
 <template>
   <AppLayout>
-    <div v-if="showSuccess" class="full-width-alert">
-      <div class="alert-banner alert-success-banner">
-        <div class="alert-body">{{ successMessage }}</div>
-        <button class="close-btn" @click="showSuccess = false">×</button>
-      </div>
-    </div>
 <!-- TOP-RIGHT TOASTS - Smooth animations -->
 <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full sm:w-96">
   <!-- SUCCESS TOAST -->
@@ -449,19 +427,19 @@ watch(
           <tbody>
             <tr v-for="app in paginatedSchedules" :key="app.id">
               <!-- Application ID as clickable link -->
-            <td class="border px-3 py-2">
-              <Link :href="`/action/applications/${app.id}`" class="text-blue-600 hover:underline">
-                {{ app.first_name }} {{ app.middle_name ? app.middle_name + ' ' : '' }}{{ app.last_name }}
-              </Link>
-            </td>
+<td class="border px-3 py-2">
+  <Link :href="`/action/applications/${app.id}`" class="text-blue-600 hover:underline">
+    {{ app.first_name }} {{ app.middle_name ? app.middle_name + ' ' : '' }}{{ app.last_name }}
+  </Link>
+</td>
 
               <!-- Batch Name -->
               <td class="border px-3 py-2">{{ app.action_batch }}</td>
 
               <!-- Trainee From -->
-            <td class="border px-3 py-2">
-              {{ app.target_location !== null ? formatLocation(app.target_location) : 'Unknown' }}
-            </td>
+<td class="border px-3 py-2">
+  {{ app.target_location !== null ? formatLocation(app.target_location) : 'Unknown' }}
+</td>
             </tr>
 
             <tr v-if="paginatedSchedules.length === 0">

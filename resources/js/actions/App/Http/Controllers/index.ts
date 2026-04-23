@@ -12,6 +12,7 @@ import ActionApplicantController from './ActionApplicantController'
 import IntermediateProjectController from './IntermediateProjectController'
 import IntermediateRequisitionController from './IntermediateRequisitionController'
 import IntermediateApplicationController from './IntermediateApplicationController'
+import IntermediateApplicantController from './IntermediateApplicantController'
 import Settings from './Settings'
 const Controllers = {
     AuthController: Object.assign(AuthController, AuthController),
@@ -28,6 +29,7 @@ ActionApplicantController: Object.assign(ActionApplicantController, ActionApplic
 IntermediateProjectController: Object.assign(IntermediateProjectController, IntermediateProjectController),
 IntermediateRequisitionController: Object.assign(IntermediateRequisitionController, IntermediateRequisitionController),
 IntermediateApplicationController: Object.assign(IntermediateApplicationController, IntermediateApplicationController),
+IntermediateApplicantController: Object.assign(IntermediateApplicantController, IntermediateApplicantController),
 Settings: Object.assign(Settings, Settings),
 }
 
