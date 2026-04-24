@@ -304,7 +304,6 @@ Route::middleware(['check.permission'])->group(function () {
         Route::delete('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'destroy'])->name('intermediate.requisitions.destroy');
     });
 
-
     // ------------------------
 // Intermediate Applications
 // ------------------------

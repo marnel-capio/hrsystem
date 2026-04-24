@@ -311,7 +311,11 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     show.form = showForm
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
+<<<<<<< feature/intermediate/application/edit-detail
  * @see app/Http/Controllers/ApplicationImportController.php:52
+=======
+ * @see app/Http/Controllers/ApplicationImportController.php:57
+>>>>>>> develop
  * @route '/action/applications/import'
  */
 export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -326,7 +330,11 @@ importMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
+<<<<<<< feature/intermediate/application/edit-detail
  * @see app/Http/Controllers/ApplicationImportController.php:52
+=======
+ * @see app/Http/Controllers/ApplicationImportController.php:57
+>>>>>>> develop
  * @route '/action/applications/import'
  */
 importMethod.url = (options?: RouteQueryOptions) => {
@@ -335,7 +343,11 @@ importMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
+<<<<<<< feature/intermediate/application/edit-detail
  * @see app/Http/Controllers/ApplicationImportController.php:52
+=======
+ * @see app/Http/Controllers/ApplicationImportController.php:57
+>>>>>>> develop
  * @route '/action/applications/import'
  */
 importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -345,7 +357,11 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
+<<<<<<< feature/intermediate/application/edit-detail
  * @see app/Http/Controllers/ApplicationImportController.php:52
+=======
+ * @see app/Http/Controllers/ApplicationImportController.php:57
+>>>>>>> develop
  * @route '/action/applications/import'
  */
     const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -355,7 +371,11 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
+<<<<<<< feature/intermediate/application/edit-detail
  * @see app/Http/Controllers/ApplicationImportController.php:52
+=======
+ * @see app/Http/Controllers/ApplicationImportController.php:57
+>>>>>>> develop
  * @route '/action/applications/import'
  */
         importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -17,6 +17,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+<<<<<<< feature/intermediate/application/edit-detail
+=======
+use App\Http\Requests\ImportIntermediateApplicationRequest;
+use Inertia\Inertia;
+use Inertia\Response;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\IntermediateUploadStatusMail;
+use App\Models\User;
+
+
+>>>>>>> develop
 
 class ApplicationImportController extends Controller
 {
@@ -437,13 +448,14 @@ class ApplicationImportController extends Controller
         $user = Auth::user();
 
         $logMessage =
-            'Imported Intermediate Applications and Applicants. '.
-            "Total rows: {$totalRows}. ".
-            'Success: '.count($importedApplicants).', '.
-            'Failed: '.count($allFailed);
+            'Imported Intermediate Applications and Applicants. ' .
+            "Total rows: {$totalRows}. " .
+            'Success: ' . count($importedApplicants) . ', ' .
+            'Failed: ' . count($allFailed);
 
         Log::createLog('Intermediate', $logMessage, $user->id);
 
+<<<<<<< feature/intermediate/application/edit-detail
         if (! empty($emails)) {
             try {
                 Mail::to($emails)->send(
@@ -459,6 +471,23 @@ class ApplicationImportController extends Controller
                 \Log::error('Intermediate upload email failed: '.$e->getMessage());
             }
         }
+=======
+        if (!empty($emails)) {
+        try {
+            Mail::to($emails)->send(
+                new IntermediateUploadStatusMail(
+                    uploadName: 'Intermediate Applicant Upload',
+                    newApplicants: count($importedApplicants),
+                    existingApplicants: 0,
+                    failedUploads: count($allFailed),
+                    failedList: $allFailed
+                )
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Intermediate upload email failed: ' . $e->getMessage());
+        }
+    }
+>>>>>>> develop
 
         return back()->with([
             'email_success' => config('errors.email_sent_success.errorMessage'),
@@ -474,6 +503,7 @@ class ApplicationImportController extends Controller
 
     private function getUploadStatusEmails(): array
     {
+<<<<<<< feature/intermediate/application/edit-detail
         $emails = User::query()
             ->where('permissions', 2) // HR Manager
             ->whereNotNull('email_address')
@@ -488,6 +518,24 @@ class ApplicationImportController extends Controller
         }
 
         return array_values($emails);
+=======
+        $permissionIds = [
+            config('constants.HR_ADMIN_PERMISSION.value'),
+            config('constants.HR_MANAGER_PERMISSION.value'),
+            config('constants.HR_RECRUITER_PERMISSION.value'),
+            config('constants.BU_MANAGER_PERMISSION.value'),
+            config('constants.INTERVIEWER_PERMISSION.value'),
+        ];
+
+        return User::query()
+            ->whereIn('permissions', $permissionIds)
+            ->whereNotNull('email_address')
+            ->pluck('email_address')
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+>>>>>>> develop
     }
 
     private function formatSuccessMessage(array $items): string
