@@ -17,6 +17,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Inertia\Inertia;
+use Inertia\Response;
+use App\Mail\ActionUploadStatusMail;
+
+use App\Models\User;
+
+
 
 class ApplicationImportController extends Controller
 {
@@ -49,8 +56,45 @@ class ApplicationImportController extends Controller
         ]);
     }
 
+
+public function getTotalApplicants(int $batchId): int
+    {
+        $existingApplicantsCount = ActionApplication::where('action_batch_id', $batchId)->count();
+
+        return $existingApplicantsCount;
+    }
+    public function getNewApplicants(array $importedApplicants): int
+    {
+        return count($importedApplicants);
+    }
+    
+    public function getExistingApplicants(int $batchId, array $importedApplicants): int
+    {
+        $totalApplicants = $this->getTotalApplicants($batchId);
+        
+        $newApplicants = $this->getNewApplicants($importedApplicants);
+
+        return $totalApplicants - $newApplicants;
+    }
+
+    public function getFailedUploads(array $failedApplicants, array $skippedApplicants): int
+    {
+        return count($failedApplicants) + count($skippedApplicants);
+    }
+
+    public function getLoggedUserName()
+{
+    $user = Auth::user(); 
+    return $user ? $user->name : 'Unknown User';
+}
+
+    
+
     public function import(ImportApplicationsRequest $request)
     {
+        $user = Auth::user();
+        $userName = $this->getLoggedUserName();
+
         $validated = $request->validated();
 
         $batch = ActionBatchModel::with('resourceSchedule')
@@ -341,6 +385,11 @@ class ApplicationImportController extends Controller
                 $failedApplicants[] = "{$name} - ".$e->getMessage();
             }
         }
+        //UPLOAD STATUS MAIL
+        $totalApplicants = $this->getTotalApplicants($request->batch_id);
+        $newApplicants = $this->getNewApplicants($importedApplicants);
+        $existingApplicants = $this->getExistingApplicants($request->batch_id, $importedApplicants);
+        $failedUploads = $this->getFailedUploads($failedApplicants, $skippedApplicants); 
 
         // -------------------------
         // Prepare messages that show on screen & logging
@@ -376,13 +425,63 @@ class ApplicationImportController extends Controller
         $logMessage = "Imported ACTION applications and applicants. Total rows: {$totalRows}, Success: ".count($importedApplicants).
             ', Failed: '.count($allFailed);
 
-        Log::createLog('ACTION', $logMessage, $user->id);
+       Log::createLog('ACTION', $logMessage, $user->id);
+        $userEmail = Auth::user()->email_address;
+        $emails = $this->getHrAdminEmails();
+        if (!in_array($userEmail, $emails)) {
+            $emails[] = $userEmail;
+        }
+
+        $batchName = ActionBatchModel::where('id', $request->batch_id)
+            ->value('action_batch');
+
+        if (!empty($emails)) {
+            try {
+                Mail::to($emails)->send(
+                    new ActionUploadStatusMail(
+                        $batchName, 
+                        [
+                            'senderName' => $userName, 
+                            'senderRole' => '$', 
+                        ], 
+                        $totalApplicants,
+                        $newApplicants,
+                        $existingApplicants,
+                        $failedUploads,
+                        $skippedApplicants 
+                    )
+                );
+            } catch (\Exception $e) {
+                \Log::error('Upload status report email failed', [
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return back()->with([
             'success' => $successMsg ?: null,
             'error' => $errorMsg ?: null,
+            'userPermissions' => auth()->user()->permissions
         ]);
     }
+
+
+private function getHrAdminEmails(): array
+{
+    $permissionIds = [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+    ];
+
+    return User::query()
+        ->whereIn('permissions', $permissionIds)
+        ->whereNotNull('email_address')
+        ->pluck('email_address')
+        ->unique()
+        ->values()
+        ->toArray();
+}
+
+
 
     private function parseFile($file)
     {
