@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 class IntermediateApplication extends Model
 {
@@ -16,7 +16,9 @@ class IntermediateApplication extends Model
     protected $table = 'intermediate_applicants_applications';
 
     public $timestamps = true;
+
     const CREATED_AT = 'created_time';
+
     const UPDATED_AT = 'updated_time';
 
     /**
@@ -110,7 +112,7 @@ class IntermediateApplication extends Model
         'replied_date',
 
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     /**
@@ -194,16 +196,15 @@ class IntermediateApplication extends Model
     }
 
     protected $appends = [
-    'fullApplicantName',
-    'projectName',
-    'stageLabel'
-];
+        'fullApplicantName',
+        'projectName',
+        'stageLabel',
+    ];
 
     protected function fullApplicantName(): Attribute
     {
         return Attribute::make(
-            get: fn () =>
-                $this->applicant
+            get: fn () => $this->applicant
                     ? "{$this->applicant->first_name} {$this->applicant->last_name}"
                     : 'Unknown'
         );
@@ -252,10 +253,9 @@ class IntermediateApplication extends Model
                 $sub->whereRaw("CONCAT(first_name,' ',last_name) LIKE ?", ["%{$search}%"])
                     ->orWhere('email_address', 'like', "%{$search}%");
             })
-            ->orWhere('position', 'like', "%{$search}%")
-            ->orWhereHas('project', fn ($p) =>
-                $p->where('project_name', 'like', "%{$search}%")
-            );
+                ->orWhere('position', 'like', "%{$search}%")
+                ->orWhereHas('project', fn ($p) => $p->where('project_name', 'like', "%{$search}%")
+                );
         });
     }
 
@@ -298,20 +298,33 @@ class IntermediateApplication extends Model
         });
     }
 
-public function getFullApplicantNameAttribute()
-{
-    return $this->intermediateApplicant?->full_name ?? 'Unknown';
-}
+    public function resourceSchedule(): BelongsTo
+    {
+        return $this->belongsTo(IntermediateRequisitionModel::class, 'resource_schedule_id');
+    }
 
-public function getProjectNameAttribute()
-{
-    return $this->project?->project_name;
-}
+    // Then access project through requisition
+    public function getProjectNameAttribute(): string
+    {
+        return $this->resourceSchedule?->project?->project_name ?? 'N/A';
+    }
 
-public function getStageLabelAttribute()
-{
-    return $this->getStageLabel();
-}
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return Carbon::instance($date)
+            ->timezone('Asia/Manila')
+            ->format('Y-m-d H:i:s');
+    }
+
+    public function getFullApplicantNameAttribute()
+    {
+        return $this->intermediateApplicant?->full_name ?? 'Unknown';
+    }
+
+    public function getStageLabelAttribute()
+    {
+        return $this->getStageLabel();
+    }
 
     /**
      * Status label helpers
@@ -339,6 +352,4 @@ public function getStageLabelAttribute()
             default => 'N/A'
         };
     }
-
-
 }
