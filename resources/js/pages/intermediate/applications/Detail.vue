@@ -1474,7 +1474,7 @@ const finalInterviewersList = computed(() => {
                 </div>
             </div>
 
-            <div v-if="showToastMessage" class="full-width-alert">
+            <div v-if="showToastMessage" class="full-width-alert">Project / Status
                 <div class="alert-banner" :class="toastType === 'success'
                     ? 'alert-success-banner'
                     : 'alert-error-banner'
@@ -1595,6 +1595,9 @@ const finalInterviewersList = computed(() => {
                             <CheckCircle class="h-5 w-5 text-blue-600" />
                             SCREENING DETAILS
                         </h2>
+                        <span class="text-sm text-zinc-600 dark:text-zinc-400">
+                            Position applying for: <strong class="text-zinc-900 dark:text-zinc-100">{{ application.position || 'Not specified' }}</strong>
+                        </span>
 
                         <!-- Paper Screening Status - Top Right -->
                         <div class="flex items-center gap-2">
