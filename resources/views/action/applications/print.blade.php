@@ -410,6 +410,44 @@
                     <td class="label">Extra-curricular Activities</td>
                     <td colspan="3">{{ $applicant->extra_curricular ?: '-' }}</td>
                 </tr>
+
+<tr>
+    <td class="label">Programming Languages</td>
+    <td colspan="3">
+        @if($applicant->programmingLanguages && $applicant->programmingLanguages->count())
+            {{ $applicant->programmingLanguages->pluck('program_language')->join(', ') }}
+        @else
+            -
+        @endif
+    </td>
+</tr>
+
+<tr>
+    <td class="label">Technical Skills</td>
+    <td colspan="3">
+        @if($applicant->skills && $applicant->skills->count())
+            {{ $applicant->skills->pluck('skill')->join(', ') }}
+        @else
+            -
+        @endif
+    </td>
+</tr>
+
+<tr>
+    <td class="label">Japanese Language Background</td>
+    <td colspan="3">
+        @php
+            $jpBackground = config('constants.japanese_backgrounds')[$applicant->japanese_background ?? 0] ?? '-';
+            $jpLevel = config('constants.japanese_levels')[$applicant->japanese_level ?? 0] ?? null;
+        @endphp
+
+        {{ $jpBackground }}@if($jpLevel) / {{ $jpLevel }}@endif
+
+        @if(!empty($applicant->background_remarks))
+            — {{ $applicant->background_remarks }}
+        @endif
+    </td>
+</tr>
                 <tr>
                     <td class="label">General Remarks</td>
                     <td colspan="3">{{ $application->remarks ?: '-' }}</td>
