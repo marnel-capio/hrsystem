@@ -27,13 +27,14 @@ interface Props {
 const props = defineProps<Props>();
 
 // FLASH MESSAGES
-const flashMessages = ref({ success: '', error: '', info: '' });
+const flashMessages = ref({ success: '', error: '', info: '', email_success: '' });
 
 const hasFlash = computed(
     () =>
         !!flashMessages.value.success ||
         !!flashMessages.value.error ||
-        !!flashMessages.value.info,
+        !!flashMessages.value.info ||
+        !!flashMessages.value.email_success,
 );
 
 watch(
@@ -44,6 +45,7 @@ watch(
                 success: flash?.success || '',
                 error: flash?.error || '',
                 info: flash?.info || '',
+                email_success: flash?.email_success || '',
             };
         }
     },
@@ -51,14 +53,23 @@ watch(
 );
 
 const clearFlash = () =>
-    (flashMessages.value = { success: '', error: '', info: '' });
+    (flashMessages.value = { success: '', error: '', info: '',  email_success: '' });
 
 const closeSuccess = () => (flashMessages.value.success = '');
+
+
 const closeError = () => (flashMessages.value.error = '');
 
 onMounted(() => {
     if (hasFlash.value) setTimeout(clearFlash, 10000);
 });
+
+const closeEmailSuccess = () => {
+    flashMessages.value.email_success = '';  
+    setTimeout(() => {
+        flashMessages.value.email_success = '';  
+    }, 3000); 
+};
 
 // ------------------- IMPORT MODAL -------------------
 const showImportModal = ref(false);
@@ -177,7 +188,7 @@ const filteredApplications = computed(() => {
             (app.position?.toLowerCase().includes(q) ?? false) ||
             (app.project_name?.toLowerCase().includes(q) ?? false) ||
             (app.remarks?.toLowerCase().includes(q) ?? false) ||
-            stageLabel.includes(q) // ✅ ADDED THIS
+            stageLabel.includes(q)
         );
     });
 });
@@ -249,9 +260,28 @@ const getStageLabel = (stage: number) => {
 const canCreateOrImport = computed(() => {
     return ![5, 6].includes(props.userPermissions);
 });
+
+const successMessage = computed(() => (page.props.flash as any)?.email_success || '');
+const showSuccess = ref(successMessage.value);
+
+
+onMounted(() => {
+    if (flashMessages.value.email_success || flashMessages.value.email_success) {
+        setTimeout(() => {
+            flashMessages.value.email_success = '';
+            flashMessages.value.email_success = ''; 
+        }, 3000); 
+    }
+});
 </script>
 <template>
     <AppLayout>
+        <div v-if="flashMessages.email_success" class="full-width-alert">
+        <div class="alert-banner alert-success-banner">
+            <div class="alert-body">{{ successMessage }}</div>
+            <button class="close-btn" @click="closeEmailSuccess">×</button>
+        </div>
+        </div>
         <!-- TOASTS (MATCHED FRIEND STYLE) -->
         <div
             class="fixed top-4 right-4 z-50 flex w-full max-w-sm flex-col gap-2 sm:w-96"
