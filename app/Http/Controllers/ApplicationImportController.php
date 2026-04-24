@@ -56,6 +56,9 @@ class ApplicationImportController extends Controller
 
     public function import(ImportApplicationsRequest $request)
     {
+        $user = Auth::user();
+        $userName = $this->getLoggedUserName();
+
         $validated = $request->validated();
 
         $batch = ActionBatchModel::with('resourceSchedule')
@@ -339,6 +342,11 @@ class ApplicationImportController extends Controller
                 $failedApplicants[] = "{$name} - " . $e->getMessage();
             }
         }
+        //UPLOAD STATUS MAIL
+        $totalApplicants = $this->getTotalApplicants($request->batch_id);
+        $newApplicants = $this->getNewApplicants($importedApplicants);
+        $existingApplicants = $this->getExistingApplicants($request->batch_id, $importedApplicants);
+        $failedUploads = $this->getFailedUploads($failedApplicants, $skippedApplicants); 
 
         // -------------------------
         // Prepare messages that show on screen & logging
