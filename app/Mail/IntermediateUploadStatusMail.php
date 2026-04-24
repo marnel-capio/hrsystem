@@ -7,19 +7,17 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 
-class UploadStatusReportMail extends Mailable
+class IntermediateUploadStatusMail extends Mailable
 {
     use Queueable, SerializesModels;
     
     public string $senderName;
     public string $senderRole;
-    public string $batchName;
     public string $date;
 
     public function __construct(
-    string $batchName,
-    array $reportData = [], 
-    public int $totalApplicants,
+
+    public string $uploadName,
     public int $newApplicants,
     public int $existingApplicants,
     public int $failedUploads,
@@ -28,13 +26,13 @@ class UploadStatusReportMail extends Mailable
 {
     $this->senderName = Auth::user()?->full_name ?? 'AWS HR';
     $this->senderRole = Auth::user()?->role_label ?? 'HR';
-    $this->batchName = $batchName;
+    $this->uploadName = $uploadName;
     $this->date = now()->format('F j, Y');
 }
 
     public function build()
     {
-        return $this->subject("【HR System】Upload Status Report ({$this->batchName}) as of {$this->date}")
+        return $this->subject("【HR System】{$this->uploadName} as of {$this->date}")
             ->html($this->buildHtml());
     }
 
@@ -75,12 +73,12 @@ class UploadStatusReportMail extends Mailable
             <div style="background:#ffffff;  overflow:hidden;">
                 <div style="padding:25px; color:#333;">
                     <h5 style="margin-top:0;">
-                        Upload Status Report (<b  style="color: #2F359E;">' . e($this->batchName) . '</b>) as of ' . e($this->date) . '
+                     ' . e($this->uploadName) . ' as of (' . e($this->date) . ')
                     </h5>
-                    <p>Total Number of Applicants: ' . e($this->totalApplicants) . '<br>
+                    <p>
                     Number of Successful Uploads: ' . e($this->newApplicants) . '<br>
                     Number of failed uploads: ' . e($this->failedUploads) . '
-                    <p>Failed Uploads:</p>
+                    <p>Failed Uploads:
                     ' . $failedListHtml . '</p>
                     <br>
 
