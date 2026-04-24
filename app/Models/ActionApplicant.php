@@ -199,15 +199,15 @@ class ActionApplicant extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function programmingLanguages()
-    {
-        return $this->hasMany(ActionApplicantProgrammingLanguage::class, 'action_applicant_id', 'id');
-    }
+public function programmingLanguages()
+{
+    return $this->hasMany(ActionApplicantProgrammingLanguage::class, 'action_applicant_id', 'id');
+}
 
-    public function skills()
-    {
-        return $this->hasMany(ActionApplicantSkill::class, 'action_applicant_id', 'id');
-    }
+public function skills()
+{
+    return $this->hasMany(ActionApplicantSkill::class, 'action_applicant_id', 'id');
+}
 
     public function updateWithRequest(array $data, ?int $userId = null)
     {
