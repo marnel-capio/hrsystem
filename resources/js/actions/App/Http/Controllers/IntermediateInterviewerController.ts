@@ -395,80 +395,6 @@ decision.post = (args: { applicationId: string | number, interviewId: string | n
     
     decision.form = decisionForm
 /**
-* @see \App\Http\Controllers\IntermediateInterviewerController::sendNotification
- * @see app/Http/Controllers/IntermediateInterviewerController.php:297
- * @route '/intermediate/applications/{applicationId}/send-notification'
- */
-export const sendNotification = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: sendNotification.url(args, options),
-    method: 'post',
-})
-
-sendNotification.definition = {
-    methods: ["post"],
-    url: '/intermediate/applications/{applicationId}/send-notification',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\IntermediateInterviewerController::sendNotification
- * @see app/Http/Controllers/IntermediateInterviewerController.php:297
- * @route '/intermediate/applications/{applicationId}/send-notification'
- */
-sendNotification.url = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { applicationId: args }
-    }
-
-    
-    if (Array.isArray(args)) {
-        args = {
-                    applicationId: args[0],
-                }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-                        applicationId: args.applicationId,
-                }
-
-    return sendNotification.definition.url
-            .replace('{applicationId}', parsedArgs.applicationId.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\IntermediateInterviewerController::sendNotification
- * @see app/Http/Controllers/IntermediateInterviewerController.php:297
- * @route '/intermediate/applications/{applicationId}/send-notification'
- */
-sendNotification.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: sendNotification.url(args, options),
-    method: 'post',
-})
-
-    /**
-* @see \App\Http\Controllers\IntermediateInterviewerController::sendNotification
- * @see app/Http/Controllers/IntermediateInterviewerController.php:297
- * @route '/intermediate/applications/{applicationId}/send-notification'
- */
-    const sendNotificationForm = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: sendNotification.url(args, options),
-        method: 'post',
-    })
-
-            /**
-* @see \App\Http\Controllers\IntermediateInterviewerController::sendNotification
- * @see app/Http/Controllers/IntermediateInterviewerController.php:297
- * @route '/intermediate/applications/{applicationId}/send-notification'
- */
-        sendNotificationForm.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: sendNotification.url(args, options),
-            method: 'post',
-        })
-    
-    sendNotification.form = sendNotificationForm
-/**
 * @see \App\Http\Controllers\IntermediateInterviewerController::initialAssignments
  * @see app/Http/Controllers/IntermediateInterviewerController.php:329
  * @route '/intermediate/applications/{applicationId}/initial-assignments'
@@ -831,6 +757,6 @@ stageUpdateSchedule.post = (args: { applicationId: string | number } | [applicat
         })
     
     stageUpdateSchedule.form = stageUpdateScheduleForm
-const IntermediateInterviewerController = { index, available, bulkAdd, bulkUpdateSchedule, decision, sendNotification, initialAssignments, finalAssignments, hasMixedResults, stageUpdateSchedule }
+const IntermediateInterviewerController = { index, available, bulkAdd, bulkUpdateSchedule, decision, initialAssignments, finalAssignments, hasMixedResults, stageUpdateSchedule }
 
 export default IntermediateInterviewerController

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreIntermediateApplicationRequest;
+use App\Mail\ATS0004Mail;
 use App\Models\IntermediateApplicant;
 use App\Models\IntermediateApplication;
 use App\Models\IntermediateInterviewer;
@@ -12,6 +13,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -1192,5 +1194,186 @@ class IntermediateApplicationController extends Controller
         return ! empty($request->job_offer_schedule) ||
                ! empty($request->job_offer_status) ||
                ! empty($request->job_offer_remarks);
+    }
+
+    /**
+     * Send email notifications for application
+     */
+    public function sendNotification(Request $request, $id)
+    {
+        \Log::info('sendNotification() was called', [
+            'id' => $id,
+            'type' => $request->type,
+        ]);
+
+        $request->validate([
+            'type' => 'required|string|in:interviewer_pending_approval,applicant_failed,hr_recruiters_job_offer',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $application = IntermediateApplication::with(['intermediateApplicant'])->findOrFail($id);
+
+            switch ($request->type) {
+                case 'interviewer_pending_approval':
+                    $this->sendPendingApprovalToInterviewers($application);
+                    break;
+
+                case 'applicant_failed':
+                    $this->sendApplicantFailedNotification($application);
+                    break;
+
+                case 'hr_recruiters_job_offer':
+                    $this->sendJobOfferNotification($application);
+                    break;
+
+                default:
+                    throw new \Exception('Invalid notification type');
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Notification sent successfully.',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            \Log::error('Failed to send notification: '.$e->getMessage(), [
+                'application_id' => $id,
+                'type' => $request->type,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to send notification: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Send pending approval emails to interviewers
+     */
+    private function sendPendingApprovalToInterviewers($application)
+    {
+        $pendingInterviews = IntermediateInterviewer::with('interviewer')
+            ->where('intermediate_application_id', $application->id)
+            ->where('interview_status', 1)
+            ->whereNull('pending_approval_notified_at')
+            ->get();
+
+        if ($pendingInterviews->isEmpty()) {
+            throw new \Exception('No pending approval interviewers found.');
+        }
+
+        $sentCount = 0;
+        $approvalLink = route('intermediate.applications.show', $application->id);
+
+        $application->load('intermediateApplicant');
+
+        foreach ($pendingInterviews as $interview) {
+            if (! $interview->interviewer || empty($interview->interviewer->email_address)) {
+                \Log::warning("Interviewer {$interview->interviewer_id} has no email address");
+
+                continue;
+            }
+
+            $applicantName = trim(
+                ($application->intermediateApplicant->first_name ?? '').' '.
+                ($application->intermediateApplicant->last_name ?? '')
+            ) ?: 'Applicant';
+
+            Mail::to($interview->interviewer->email_address)
+                ->send(new ATS0004Mail(
+                    $application,
+                    $interview,
+                    $approvalLink,
+                    $applicantName
+                ));
+
+            //  Wait 500ms to stay under Mailtrap’s 2‑5 emails/10s limit
+            sleep(10);
+
+            $interview->pending_approval_notified_at = now();
+            $interview->save();
+            $sentCount++;
+
+            \Log::info("Email sent to: {$interview->interviewer->email_address} for application {$application->id}");
+        }
+
+        if ($sentCount === 0) {
+            throw new \Exception('No valid email addresses found for pending interviewers.');
+        }
+    }
+
+    /**
+     * Send applicant failed notification
+     */
+    private function sendApplicantFailedNotification($application)
+    {
+        $applicant = $application->intermediateApplicant;
+
+        if (! $applicant || empty($applicant->email_address)) {
+            throw new \Exception('Applicant has no email address.');
+        }
+
+        // Determine which stage they failed
+        $failedStage = null;
+        if ($application->final_interview_result == 3) {
+            $failedStage = 'Final Interview';
+        } elseif ($application->initial_interview_result == 3) {
+            $failedStage = 'Initial Interview';
+        } elseif ($application->exam_result == 3) {
+            $failedStage = 'Exam';
+        } else {
+            throw new \Exception('No failed stage found for this application.');
+        }
+
+        // Send email (you'll need to create this Mailable)
+        Mail::to($applicant->email_address)
+            ->send(new ApplicantFailedMail(
+                applicantName: $applicant->first_name.' '.$applicant->last_name,
+                position: $application->position ?? 'the position',
+                failedStage: $failedStage
+            ));
+
+        \Log::info("Failed notification sent to applicant {$applicant->email_address} for application {$application->id}");
+    }
+
+    /**
+     * Send job offer notification to HR recruiters
+     */
+    private function sendJobOfferNotification($application)
+    {
+        if (! $application->job_offer_schedule) {
+            throw new \Exception('No job offer schedule set for this application.');
+        }
+
+        // Get all HR recruiters (permissions 1, 2, 3 = HR/Admin)
+        $hrRecruiters = User::whereIn('permissions', [1, 2, 3])
+            ->where('active_status', 1)
+            ->whereNotNull('email_address')
+            ->get();
+
+        if ($hrRecruiters->isEmpty()) {
+            throw new \Exception('No HR recruiters found.');
+        }
+
+        $scheduledDate = Carbon::parse($application->job_offer_schedule)->format('F j, Y g:i A');
+
+        foreach ($hrRecruiters as $recruiter) {
+            Mail::to($recruiter->email_address)
+                ->send(new JobOfferScheduledMail(
+                    recruiterName: $recruiter->full_name ?? 'HR Recruiter',
+                    applicantName: $application->intermediateApplicant->first_name.' '.$application->intermediateApplicant->last_name,
+                    position: $application->position ?? 'the position',
+                    scheduledDate: $scheduledDate,
+                    applicationUrl: route('intermediate.applications.show', $application->id)
+                ));
+        }
+
+        \Log::info('Job offer notification sent to '.$hrRecruiters->count().' HR recruiters');
     }
 }

@@ -14,15 +14,12 @@ use App\Http\Controllers\IntermediateInterviewerController;
 use App\Http\Controllers\IntermediateApplicantController;
 use App\Http\Controllers\IntermediateApplicantSkillController;
 use App\Http\Controllers\IntermediateApplicantWorkExperienceController;
-use App\Http\Controllers\IntermediateApplicationController;
 use App\Http\Controllers\IntermediateProjectController;
 use App\Http\Controllers\IntermediateRequisitionController;
 use App\Http\Controllers\ResourceScheduleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
->>>>>>> develop
 
 /**
  * Web Routes
@@ -90,7 +87,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/intermediate/applications/{applicationId}/interviews/bulk-add', [IntermediateInterviewerController::class, 'bulkAdd']);
         Route::post('/intermediate/applications/{applicationId}/interviews/bulk-update-schedule', [IntermediateInterviewerController::class, 'bulkUpdateSchedule']);
         Route::post('/intermediate/applications/{applicationId}/interviews/{interviewId}/decision', [IntermediateInterviewerController::class, 'decision']);
-        Route::post('/intermediate/applications/{applicationId}/send-notification', [IntermediateInterviewerController::class, 'sendNotification']);
+        Route::post('/intermediate/applications/{applicationId}/send-notification', [IntermediateApplicationController::class, 'sendNotification'])
+                ->name('intermediate.applications.send-notification');
         Route::get('/intermediate/applications/{applicationId}/initial-assignments', [IntermediateInterviewerController::class, 'initialAssignments']);
         Route::get('/intermediate/applications/{applicationId}/final-assignments', [IntermediateInterviewerController::class, 'finalAssignments']);
         Route::get('/intermediate/applications/{applicationId}/has-mixed-results/{type}', [IntermediateInterviewerController::class, 'hasMixedResults']);
@@ -196,6 +194,10 @@ Route::middleware(['auth', 'check.permission'])->group(function () {
 
         Route::get('/batches/{batchId}/resource-schedule', [ActionApplicationController::class, 'getBatchResourceSchedule'])
             ->name('batch-resource-schedule');
+
+            Route::post('/intermediate/applications/{application}/send-notification', 
+    [IntermediateApplicationController::class, 'sendNotification'])
+    ->name('intermediate.applications.send-notification');
 
     });
 });

@@ -79,8 +79,4 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     show.form = showForm
 const TwoFactorAuthenticationController = { show }
 
-export default TwoFactorAuthenticationController   
-    show.form = showForm
-const TwoFactorAuthenticationController = { show }
-
 export default TwoFactorAuthenticationController
