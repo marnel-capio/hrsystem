@@ -133,7 +133,6 @@ class IntermediateApplicationController extends Controller
                 'job_offer_schedule',
                 'contacted_date',
                 'replied_date',
-                'availability_date',
             ];
 
             foreach ($dateFields as $field) {
