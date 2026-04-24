@@ -401,7 +401,7 @@ class IntermediateApplicationController extends Controller
                 'application_stage' => $application->application_stage,
                 'project_name' => $projectName,
                 'paper_screening_status' => $application->paper_screening_status,
-
+                'location_assignment' => $application->resourceSchedule->location_assignment ?? null,
                 // Screening Questions
                 'answer_q1' => $application->answer_q1,
                 'answer_q2' => $application->answer_q2,

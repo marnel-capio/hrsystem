@@ -1450,6 +1450,17 @@ const finalInterviewersList = computed(() => {
         }));
 });
 
+const getLocationLabel = (location: number | null) => {
+    const locations: Record<number, string> = {
+        1: 'Alabang',
+        2: 'Makati',
+        3: 'Cebu',
+        4: 'Japan',
+        5: 'China',
+    };
+    return locations[location ?? 0] || '-';
+};
+
 </script>
 
 <template>
@@ -1542,6 +1553,10 @@ const finalInterviewersList = computed(() => {
                                     class="flex items-center justify-between rounded-lg bg-zinc-100 px-4 py-2 dark:bg-zinc-800">
                                     <span class="font-semibold">Project:</span>
                                     <span class="font-extrabold text-blue-600">{{ application.project_name }}</span>
+                                </div>
+                                <div class="flex items-center justify-between rounded-lg bg-zinc-100 px-4 py-2 dark:bg-zinc-800">
+                                    <span class="font-semibold">Location:</span>
+                                    <span class="font-extrabold text-blue-600">{{ getLocationLabel(application.location_assignment) }}</span>
                                 </div>
                                 <div
                                     class="flex items-center justify-between rounded-lg bg-zinc-100 px-4 py-2 dark:bg-zinc-800">

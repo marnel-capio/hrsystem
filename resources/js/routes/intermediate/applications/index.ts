@@ -1,6 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
-<<<<<<< HEAD
 * @see \App\Http\Controllers\IntermediateApplicationController::updatePaperScreening
  * @see app/Http/Controllers/IntermediateApplicationController.php:532
  * @route '/intermediate/applications/{id}/update-paper-screening'
@@ -427,8 +426,6 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
     
     print.form = printForm
 /**
-=======
->>>>>>> develop
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:28
  * @route '/intermediate/applications'
@@ -792,7 +789,12 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     
     show.form = showForm
 const applications = {
-    index: Object.assign(index, index),
+    updatePaperScreening: Object.assign(updatePaperScreening, updatePaperScreening),
+sendNotification: Object.assign(sendNotification, sendNotification),
+edit: Object.assign(edit, edit),
+update: Object.assign(update, update),
+print: Object.assign(print, print),
+index: Object.assign(index, index),
 import: Object.assign(importMethod, importMethod),
 register: Object.assign(register, register),
 store: Object.assign(store, store),
