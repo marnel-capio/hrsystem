@@ -629,8 +629,12 @@ const paperScreeningLabel = (value: number | null | undefined) => {
         case 1:
             return 'Pending';
         case 2:
-            return 'Passed';
+            return 'Done';
         case 3:
+            return 'Passed';
+        case 4:
+            return 'P2';
+        case 5:
             return 'Failed';
         default:
             return '-';
@@ -699,16 +703,22 @@ const canManageChildRecords = computed(
 const getPaperScreeningBadgeClass = (value: number | null | undefined) => {
     switch (Number(value)) {
         case 1: // Pending
-            return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
+            return 'bg-yellow-100 text-yellow-700';
 
-        case 2: // Passed
-            return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
+        case 2: // Done
+            return 'bg-blue-100 text-blue-700';
 
-        case 3: // Failed
-            return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+        case 3: // Passed
+            return 'bg-green-100 text-green-700';
+
+        case 4: // P2
+            return 'bg-purple-100 text-purple-700';
+
+        case 5: // Failed
+            return 'bg-red-100 text-red-700';
 
         default:
-            return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300';
+            return 'bg-gray-100 text-gray-600';
     }
 };
 
@@ -1430,7 +1440,7 @@ onMounted(() => {
                             No.
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
-                            Exam Result
+                            Paper Screening Status
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
                             Exam Status
@@ -1439,16 +1449,10 @@ onMounted(() => {
                             Exam Remarks
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
-                            Initial Interview Result
-                        </th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">
                             Initial Interview Status
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
                             Initial Interview Remarks
-                        </th>
-                        <th class="px-2 py-2 font-semibold text-gray-600">
-                            Final Interview Result
                         </th>
                         <th class="px-2 py-2 font-semibold text-gray-600">
                             Final Interview Status
@@ -1483,10 +1487,16 @@ onMounted(() => {
                             <span
                                 class="rounded-full border px-2 py-1 text-xs"
                                 :class="
-                                    getPaperScreeningBadgeClass(app.exam_result)
+                                    getPaperScreeningBadgeClass(
+                                        app.paper_screening_status,
+                                    )
                                 "
                             >
-                                {{ examResultLabel(app.exam_result) }}
+                                {{
+                                    paperScreeningLabel(
+                                        app.paper_screening_status,
+                                    )
+                                }}
                             </span>
                         </td>
 
@@ -1528,23 +1538,6 @@ onMounted(() => {
                             <span
                                 class="rounded-full border px-2 py-1 text-xs"
                                 :class="
-                                    getPaperScreeningBadgeClass(
-                                        app.initial_interview_result,
-                                    )
-                                "
-                            >
-                                {{
-                                    interviewResultLabel(
-                                        app.initial_interview_result,
-                                    )
-                                }}
-                            </span>
-                        </td>
-
-                        <td class="px-2 py-2 text-center">
-                            <span
-                                class="rounded-full border px-2 py-1 text-xs"
-                                :class="
                                     getResultBadgeClass(
                                         app.initial_interview_application_status,
                                     )
@@ -1573,23 +1566,6 @@ onMounted(() => {
                                         : '-'
                                 }}
                             </div>
-                        </td>
-
-                        <td class="px-2 py-2 text-center">
-                            <span
-                                class="rounded-full border px-2 py-1 text-xs"
-                                :class="
-                                    getPaperScreeningBadgeClass(
-                                        app.final_interview_result,
-                                    )
-                                "
-                            >
-                                {{
-                                    interviewResultLabel(
-                                        app.final_interview_result,
-                                    )
-                                }}
-                            </span>
                         </td>
 
                         <td class="px-2 py-2 text-center">
@@ -1679,7 +1655,7 @@ onMounted(() => {
 
                     <tr v-if="!applications.length">
                         <td
-                            colspan="14"
+                            colspan="12"
                             class="py-4 text-center text-gray-500 italic"
                         >
                             No application records found.

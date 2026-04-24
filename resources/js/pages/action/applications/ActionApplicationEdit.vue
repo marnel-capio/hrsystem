@@ -140,6 +140,9 @@ function validateScheduleField(field: keyof typeof scheduleFieldMap) {
 
     clearScheduleValidationError(field);
 
+    // only show warning if user edited this field in the current session
+    if (!touchedScheduleFields.value[field]) return;
+
     if (!value || !currentBatchWbs.value) return;
 
     const activityWindow = currentBatchWbs.value[config.activity];
@@ -158,12 +161,31 @@ function validateScheduleField(field: keyof typeof scheduleFieldMap) {
         );
     }
 }
-
 function validateAllScheduleFields() {
-    validateScheduleField('exam_plan_date');
-    validateScheduleField('initial_interview_plan_date');
-    validateScheduleField('final_interview_date');
-    validateScheduleField('job_offer_schedule');
+    (
+        Object.keys(scheduleFieldMap) as Array<keyof typeof scheduleFieldMap>
+    ).forEach((field) => {
+        if (touchedScheduleFields.value[field]) {
+            validateScheduleField(field);
+        } else {
+            clearScheduleValidationError(field);
+        }
+    });
+}
+
+function markScheduleFieldTouched(field: keyof typeof scheduleFieldMap) {
+    touchedScheduleFields.value[field] = true;
+    validateScheduleField(field);
+}
+
+function resetScheduleWarnings() {
+    Object.keys(scheduleValidationErrors.value).forEach((field) => {
+        clearScheduleValidationError(field);
+    });
+
+    Object.keys(touchedScheduleFields.value).forEach((field) => {
+        touchedScheduleFields.value[field] = false;
+    });
 }
 
 const canEditAnything = computed(() =>
@@ -542,6 +564,13 @@ const getFileUrl = (filename: string | null) => {
     // Otherwise treat it as local storage
     return `/storage/${filename}`;
 };
+
+const touchedScheduleFields = ref<Record<string, boolean>>({
+    exam_plan_date: false,
+    initial_interview_plan_date: false,
+    final_interview_date: false,
+    job_offer_schedule: false,
+});
 
 const existingResumeUrl = computed(() =>
     getFileUrl(props.application.upload_resume || null),
@@ -1604,24 +1633,43 @@ watch(
 
 watch(
     () => form.exam_plan_date,
-    () => validateScheduleField('exam_plan_date'),
+    (newVal, oldVal) => {
+        if (newVal !== oldVal && oldVal !== undefined) {
+            markScheduleFieldTouched('exam_plan_date');
+        }
+    },
 );
+
 watch(
     () => form.initial_interview_plan_date,
-    () => validateScheduleField('initial_interview_plan_date'),
+    (newVal, oldVal) => {
+        if (newVal !== oldVal && oldVal !== undefined) {
+            markScheduleFieldTouched('initial_interview_plan_date');
+        }
+    },
 );
+
 watch(
     () => form.final_interview_date,
-    () => validateScheduleField('final_interview_date'),
+    (newVal, oldVal) => {
+        if (newVal !== oldVal && oldVal !== undefined) {
+            markScheduleFieldTouched('final_interview_date');
+        }
+    },
 );
+
 watch(
     () => form.job_offer_schedule,
-    () => validateScheduleField('job_offer_schedule'),
+    (newVal, oldVal) => {
+        if (newVal !== oldVal && oldVal !== undefined) {
+            markScheduleFieldTouched('job_offer_schedule');
+        }
+    },
 );
+
 watch(
     () => props.currentBatchWbs,
     () => validateAllScheduleFields(),
-    { immediate: true },
 );
 
 function submit() {
@@ -1740,7 +1788,10 @@ function submit() {
         preserveState: true,
         preserveScroll: true,
         onStart: () => console.log('form.post started'),
-        onSuccess: () => console.log('form.post success'),
+        onSuccess: () => {
+            resetScheduleWarnings();
+            console.log('form.post success');
+        },
         onError: (errors) => console.log('form.post errors', errors),
         onFinish: () => console.log('form.post finished'),
     });

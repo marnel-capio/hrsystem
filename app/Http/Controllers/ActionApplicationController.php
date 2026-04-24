@@ -106,11 +106,12 @@ class ActionApplicationController extends Controller
 
 public function show($id)
 {
-    $application = ActionApplication::with([
-        'applicant',
-        'batch',
-        'interviews.interviewer',
-    ])->findOrFail($id);
+$application = ActionApplication::with([
+    'applicant.programmingLanguages',
+    'applicant.skills',
+    'batch',
+    'interviews.interviewer',
+])->findOrFail($id);
 
     $interviews = $application->interviews
         ->map(fn ($interview) => $interview->toDisplayArray())

@@ -1172,8 +1172,22 @@ watch(() => form.initial_interview_remarks, (newValue) => {
                             <div class="section-header">
                                 <h3>Basic Information</h3>
                             </div>
+                            
                             <!-- Applicant + Requisitions - SIDE BY SIDE -->
                             <div class="form-grid grid-2 mb-6">
+
+                                <!-- RIGHT: Request Requisitions -->
+                                <div class="form-field">
+                                    <label class="field-label">Request Requisition Forms</label>
+                                    <select v-model="form.resource_schedule_id" class="form-select">
+                                        <option value="">Select Requisition Form</option>
+                                        <option v-for="schedule in sourceProjects" :key="schedule.value"
+                                            :value="schedule.value">
+                                            {{ schedule.label }}
+                                        </option>
+                                    </select>
+                                </div>
+
                                 <!-- LEFT: Intermediate Applicant -->
                                 <div class="form-field">
                                     <label class="field-label-required required">Intermediate Applicant</label>
@@ -1208,18 +1222,7 @@ watch(() => form.initial_interview_remarks, (newValue) => {
                                         form.errors.intermediate_applicant_id }}</span>
                                 </div>
 
-                                <!-- RIGHT: Request Requisitions -->
-                                <div class="form-field">
-                                    <label class="field-label">Request Requisition Forms</label>
-                                    <select v-model="form.resource_schedule_id" class="form-select"
-                                        :disabled="isFormFieldDisabled">
-                                        <option value="">Select Requisition Form</option>
-                                        <option v-for="schedule in sourceProjects" :key="schedule.value"
-                                            :value="schedule.value">
-                                            {{ schedule.label }}
-                                        </option>
-                                    </select>
-                                </div>
+                                
                             </div>
                         </div>
 
