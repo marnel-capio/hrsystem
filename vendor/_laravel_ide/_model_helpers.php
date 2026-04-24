@@ -2523,9 +2523,12 @@ namespace App\Models {
      * @property mixed $updated_by
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
+     * @property string|null $background_remarks
+     * @property string|null $japanese_level
+     * @property string|null $japanese_background
      * @property string|null $remarks
      * @property string|null $emergency_contact_address
-     * @property string $emergency_contact_number
+     * @property string|null $emergency_contact_number
      * @property string|null $emergency_contact_name
      * @property string|null $sibling_details
      * @property string|null $mother_details
@@ -2594,6 +2597,9 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereEmergencyContactNumber($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereEmergencyContactAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereRemarks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereJapaneseBackground($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereJapaneseLevel($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereBackgroundRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereCreatedTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplicant>|IntermediateApplicant whereUpdatedBy($value)
@@ -5133,6 +5139,8 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
+     * @property string|null $expected_salary_range
+     * @property string|null $custom_location
      * @property string|null $role
      * @property string|null $preferred_skills
      * @property string|null $required_skills
@@ -5178,6 +5186,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRequiredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRole($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCustomLocation($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereExpectedSalaryRange($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedTime($value)
