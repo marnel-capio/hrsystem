@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::updatePaperScreening
- * @see app/Http/Controllers/IntermediateApplicationController.php:518
+ * @see app/Http/Controllers/IntermediateApplicationController.php:532
  * @route '/intermediate/applications/{id}/update-paper-screening'
  */
 export const updatePaperScreening = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ updatePaperScreening.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::updatePaperScreening
- * @see app/Http/Controllers/IntermediateApplicationController.php:518
+ * @see app/Http/Controllers/IntermediateApplicationController.php:532
  * @route '/intermediate/applications/{id}/update-paper-screening'
  */
 updatePaperScreening.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ updatePaperScreening.url = (args: { id: string | number } | [id: string | number
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::updatePaperScreening
- * @see app/Http/Controllers/IntermediateApplicationController.php:518
+ * @see app/Http/Controllers/IntermediateApplicationController.php:532
  * @route '/intermediate/applications/{id}/update-paper-screening'
  */
 updatePaperScreening.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -54,7 +54,7 @@ updatePaperScreening.post = (args: { id: string | number } | [id: string | numbe
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::updatePaperScreening
- * @see app/Http/Controllers/IntermediateApplicationController.php:518
+ * @see app/Http/Controllers/IntermediateApplicationController.php:532
  * @route '/intermediate/applications/{id}/update-paper-screening'
  */
     const updatePaperScreeningForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -64,7 +64,7 @@ updatePaperScreening.post = (args: { id: string | number } | [id: string | numbe
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::updatePaperScreening
- * @see app/Http/Controllers/IntermediateApplicationController.php:518
+ * @see app/Http/Controllers/IntermediateApplicationController.php:532
  * @route '/intermediate/applications/{id}/update-paper-screening'
  */
         updatePaperScreeningForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -75,7 +75,7 @@ updatePaperScreening.post = (args: { id: string | number } | [id: string | numbe
     updatePaperScreening.form = updatePaperScreeningForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
 const sendNotification4a5ed434e69f8bcc138aae6258fd6124 = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -90,7 +90,7 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
 sendNotification4a5ed434e69f8bcc138aae6258fd6124.url = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -118,7 +118,7 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.url = (args: { applicationId: s
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
 sendNotification4a5ed434e69f8bcc138aae6258fd6124.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -128,7 +128,7 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.post = (args: { applicationId: 
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
     const sendNotification4a5ed434e69f8bcc138aae6258fd6124Form = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.post = (args: { applicationId: 
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
         sendNotification4a5ed434e69f8bcc138aae6258fd6124Form.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -149,7 +149,7 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.post = (args: { applicationId: 
     sendNotification4a5ed434e69f8bcc138aae6258fd6124.form = sendNotification4a5ed434e69f8bcc138aae6258fd6124Form
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
 const sendNotificationc561e80030fec4da681fb894f2fd4fa2 = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -164,7 +164,7 @@ sendNotificationc561e80030fec4da681fb894f2fd4fa2.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
 sendNotificationc561e80030fec4da681fb894f2fd4fa2.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -192,7 +192,7 @@ sendNotificationc561e80030fec4da681fb894f2fd4fa2.url = (args: { application: str
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
 sendNotificationc561e80030fec4da681fb894f2fd4fa2.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -202,7 +202,7 @@ sendNotificationc561e80030fec4da681fb894f2fd4fa2.post = (args: { application: st
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
     const sendNotificationc561e80030fec4da681fb894f2fd4fa2Form = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +212,7 @@ sendNotificationc561e80030fec4da681fb894f2fd4fa2.post = (args: { application: st
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1424
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1438
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
         sendNotificationc561e80030fec4da681fb894f2fd4fa2Form.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -229,7 +229,7 @@ export const sendNotification = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:594
+ * @see app/Http/Controllers/IntermediateApplicationController.php:608
  * @route '/intermediate/applications/{id}/edit'
  */
 export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -244,7 +244,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:594
+ * @see app/Http/Controllers/IntermediateApplicationController.php:608
  * @route '/intermediate/applications/{id}/edit'
  */
 edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -272,7 +272,7 @@ edit.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:594
+ * @see app/Http/Controllers/IntermediateApplicationController.php:608
  * @route '/intermediate/applications/{id}/edit'
  */
 edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -281,7 +281,7 @@ edit.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:594
+ * @see app/Http/Controllers/IntermediateApplicationController.php:608
  * @route '/intermediate/applications/{id}/edit'
  */
 edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -291,7 +291,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:594
+ * @see app/Http/Controllers/IntermediateApplicationController.php:608
  * @route '/intermediate/applications/{id}/edit'
  */
     const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -301,7 +301,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:594
+ * @see app/Http/Controllers/IntermediateApplicationController.php:608
  * @route '/intermediate/applications/{id}/edit'
  */
         editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -310,7 +310,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:594
+ * @see app/Http/Controllers/IntermediateApplicationController.php:608
  * @route '/intermediate/applications/{id}/edit'
  */
         editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -326,7 +326,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::update
- * @see app/Http/Controllers/IntermediateApplicationController.php:768
+ * @see app/Http/Controllers/IntermediateApplicationController.php:782
  * @route '/intermediate/applications/{id}'
  */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -341,7 +341,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::update
- * @see app/Http/Controllers/IntermediateApplicationController.php:768
+ * @see app/Http/Controllers/IntermediateApplicationController.php:782
  * @route '/intermediate/applications/{id}'
  */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -369,7 +369,7 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::update
- * @see app/Http/Controllers/IntermediateApplicationController.php:768
+ * @see app/Http/Controllers/IntermediateApplicationController.php:782
  * @route '/intermediate/applications/{id}'
  */
 update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -379,7 +379,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::update
- * @see app/Http/Controllers/IntermediateApplicationController.php:768
+ * @see app/Http/Controllers/IntermediateApplicationController.php:782
  * @route '/intermediate/applications/{id}'
  */
     const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -394,7 +394,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::update
- * @see app/Http/Controllers/IntermediateApplicationController.php:768
+ * @see app/Http/Controllers/IntermediateApplicationController.php:782
  * @route '/intermediate/applications/{id}'
  */
         updateForm.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -410,7 +410,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1310
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1324
  * @route '/intermediate/applications/{id}/print'
  */
 export const print = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -425,7 +425,7 @@ print.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1310
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1324
  * @route '/intermediate/applications/{id}/print'
  */
 print.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -453,7 +453,7 @@ print.url = (args: { id: string | number } | [id: string | number ] | string | n
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1310
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1324
  * @route '/intermediate/applications/{id}/print'
  */
 print.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -462,7 +462,7 @@ print.get = (args: { id: string | number } | [id: string | number ] | string | n
 })
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1310
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1324
  * @route '/intermediate/applications/{id}/print'
  */
 print.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -472,7 +472,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1310
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1324
  * @route '/intermediate/applications/{id}/print'
  */
     const printForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -482,7 +482,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1310
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1324
  * @route '/intermediate/applications/{id}/print'
  */
         printForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -491,7 +491,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
         })
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::print
- * @see app/Http/Controllers/IntermediateApplicationController.php:1310
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1324
  * @route '/intermediate/applications/{id}/print'
  */
         printForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -663,7 +663,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::store
- * @see app/Http/Controllers/IntermediateApplicationController.php:119
+ * @see app/Http/Controllers/IntermediateApplicationController.php:133
  * @route '/intermediate/applications'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -678,7 +678,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::store
- * @see app/Http/Controllers/IntermediateApplicationController.php:119
+ * @see app/Http/Controllers/IntermediateApplicationController.php:133
  * @route '/intermediate/applications'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -687,7 +687,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::store
- * @see app/Http/Controllers/IntermediateApplicationController.php:119
+ * @see app/Http/Controllers/IntermediateApplicationController.php:133
  * @route '/intermediate/applications'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -697,7 +697,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::store
- * @see app/Http/Controllers/IntermediateApplicationController.php:119
+ * @see app/Http/Controllers/IntermediateApplicationController.php:133
  * @route '/intermediate/applications'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -707,7 +707,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::store
- * @see app/Http/Controllers/IntermediateApplicationController.php:119
+ * @see app/Http/Controllers/IntermediateApplicationController.php:133
  * @route '/intermediate/applications'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -718,7 +718,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::show
- * @see app/Http/Controllers/IntermediateApplicationController.php:324
+ * @see app/Http/Controllers/IntermediateApplicationController.php:338
  * @route '/intermediate/applications/{id}'
  */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -733,7 +733,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::show
- * @see app/Http/Controllers/IntermediateApplicationController.php:324
+ * @see app/Http/Controllers/IntermediateApplicationController.php:338
  * @route '/intermediate/applications/{id}'
  */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -761,7 +761,7 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::show
- * @see app/Http/Controllers/IntermediateApplicationController.php:324
+ * @see app/Http/Controllers/IntermediateApplicationController.php:338
  * @route '/intermediate/applications/{id}'
  */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -770,7 +770,7 @@ show.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::show
- * @see app/Http/Controllers/IntermediateApplicationController.php:324
+ * @see app/Http/Controllers/IntermediateApplicationController.php:338
  * @route '/intermediate/applications/{id}'
  */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -780,7 +780,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::show
- * @see app/Http/Controllers/IntermediateApplicationController.php:324
+ * @see app/Http/Controllers/IntermediateApplicationController.php:338
  * @route '/intermediate/applications/{id}'
  */
     const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -790,7 +790,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::show
- * @see app/Http/Controllers/IntermediateApplicationController.php:324
+ * @see app/Http/Controllers/IntermediateApplicationController.php:338
  * @route '/intermediate/applications/{id}'
  */
         showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -799,7 +799,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::show
- * @see app/Http/Controllers/IntermediateApplicationController.php:324
+ * @see app/Http/Controllers/IntermediateApplicationController.php:338
  * @route '/intermediate/applications/{id}'
  */
         showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
