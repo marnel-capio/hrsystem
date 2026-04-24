@@ -374,13 +374,63 @@ class ApplicationImportController extends Controller
         $logMessage = "Imported ACTION applications and applicants. Total rows: {$totalRows}, Success: " . count($importedApplicants) .
             ", Failed: " . count($allFailed);
 
-        Log::createLog('ACTION', $logMessage, $user->id);
+       Log::createLog('ACTION', $logMessage, $user->id);
+        $userEmail = Auth::user()->email_address;
+        $emails = $this->getHrAdminEmails();
+        if (!in_array($userEmail, $emails)) {
+            $emails[] = $userEmail;
+        }
+
+        $batchName = ActionBatchModel::where('id', $request->batch_id)
+            ->value('action_batch');
+
+        if (!empty($emails)) {
+            try {
+                Mail::to($emails)->send(
+                    new UploadStatusReportMail(
+                        $batchName, 
+                        [
+                            'senderName' => $userName, 
+                            'senderRole' => '$', 
+                        ], 
+                        $totalApplicants,
+                        $newApplicants,
+                        $existingApplicants,
+                        $failedUploads,
+                        $skippedApplicants 
+                    )
+                );
+            } catch (\Exception $e) {
+                \Log::error('Upload status report email failed', [
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return back()->with([
             'success' => $successMsg ?: null,
             'error' => $errorMsg ?: null,
+            'userPermissions' => auth()->user()->permissions
         ]);
     }
+
+
+private function getHrAdminEmails(): array
+{
+    $permissionIds = [
+        config('constants.HR_ADMIN_PERMISSION.value'),
+    ];
+
+    return User::query()
+        ->whereIn('permissions', $permissionIds)
+        ->whereNotNull('email_address')
+        ->pluck('email_address')
+        ->unique()
+        ->values()
+        ->toArray();
+}
+
+
 
     private function parseFile($file)
     {
