@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreIntermediateApplicationRequest;
 use App\Mail\ATS0004Mail;
+use App\Mail\ATS0007Mail;
+use App\Mail\ATS0008Mail;
+use App\Mail\ATS0009Mail;
 use App\Models\IntermediateApplicant;
 use App\Models\IntermediateApplication;
 use App\Models\IntermediateInterviewer;
@@ -494,10 +497,8 @@ class IntermediateApplicationController extends Controller
             })->toArray(),
 
             'examVenues' => [
-                1 => 'Gmeet',
-                2 => 'Zoom',
-                3 => 'USJ-R Basak',
-                4 => 'AdDU',
+                1 => 'Online',
+                2 => 'Face to Face',
             ],
 
             // Permissions and flash messages
@@ -673,8 +674,8 @@ class IntermediateApplicationController extends Controller
                 'industry_experience' => $application->industry_experience,
 
                 // Exam
-                'exam_plan_date' => $application->exam_plan_date,
-                'exam_actual_date' => $application->exam_actual_date,
+                'exam_plan_date' => $application->exam_plan_date ? Carbon::parse($application->exam_plan_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s') : null,
+                'exam_actual_date' => $application->exam_actual_date ? Carbon::parse($application->exam_actual_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s') : null,
                 'exam_venue' => $application->exam_venue,
                 'exam_atpp_part1_correct' => $application->exam_atpp_part1_correct,
                 'exam_atpp_part1_wrong' => $application->exam_atpp_part1_wrong,
@@ -689,8 +690,12 @@ class IntermediateApplicationController extends Controller
                 'exam_remarks' => $application->exam_remarks,
 
                 // Initial Interview
-                'initial_interview_plan_date' => $application->initial_interview_plan_date,
-                'initial_interview_actual_date' => $application->initial_interview_actual_date,
+                'initial_interview_plan_date' => $application->initial_interview_plan_date
+                ? Carbon::parse($application->initial_interview_plan_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                : null,
+                'initial_interview_actual_date' => $application->initial_interview_actual_date
+                ? Carbon::parse($application->initial_interview_actual_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                : null,
                 'initial_interview_venue' => $application->initial_interview_venue,
                 'initial_interview_final' => $application->initial_interview_final,
                 'initial_interview_result' => $application->initial_interview_result,
@@ -698,14 +703,18 @@ class IntermediateApplicationController extends Controller
                 'initial_interview_remarks' => $application->initial_interview_remarks,
 
                 // Final Interview
-                'final_interview_date' => $application->final_interview_date,
+                'final_interview_date' => $application->final_interview_date
+                ? Carbon::parse($application->final_interview_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                : null,
                 'final_interview_final' => $application->final_interview_final,
                 'final_interview_result' => $application->final_interview_result,
                 'final_interview_application_status' => $application->final_interview_application_status,
                 'final_interview_remarks' => $application->final_interview_remarks,
 
                 // Job Offer
-                'job_offer_schedule' => $application->job_offer_schedule,
+                'job_offer_schedule' => $application->job_offer_schedule
+                ? Carbon::parse($application->job_offer_schedule)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                : null,
                 'job_offer_status' => $application->job_offer_status,
                 'job_offer_remarks' => $application->job_offer_remarks,
 
@@ -722,10 +731,8 @@ class IntermediateApplicationController extends Controller
             ],
             'sourceProjects' => $sourceProjects,
             'examVenues' => [
-                1 => 'Gmeet',
-                2 => 'Zoom',
-                3 => 'USJ-R Basak',
-                4 => 'AdDU',
+                1 => 'Online',
+                2 => 'Face to Face',
             ],
             'examStatuses' => config('constants.exam_statuses') ?? [
                 1 => 'Pending',
@@ -771,7 +778,7 @@ class IntermediateApplicationController extends Controller
             // Exam
             'exam_plan_date' => 'nullable|date',
             'exam_actual_date' => 'nullable|date',
-            'exam_venue' => 'nullable|integer',
+            'exam_venue' => 'nullable|integer|in:1,2',
             'exam_atpp_part1_correct' => 'nullable|integer|min:0',
             'exam_atpp_part1_wrong' => 'nullable|integer|min:0',
             'exam_atpp_part2_correct' => 'nullable|integer|min:0',
@@ -787,7 +794,7 @@ class IntermediateApplicationController extends Controller
             // Initial Interview
             'initial_interview_plan_date' => 'nullable|date',
             'initial_interview_actual_date' => 'nullable|date',
-            'initial_interview_venue' => 'nullable|integer',
+            'initial_interview_venue' => 'nullable|integer|in:1,2',
             'initial_interview_final' => 'nullable|numeric|min:0|max:5',
             'initial_interview_result' => 'nullable|integer',
             'initial_interview_application_status' => 'nullable|integer',
@@ -848,6 +855,12 @@ class IntermediateApplicationController extends Controller
                     ->find($validated['resource_schedule_id']);
                 $validated['source_project_id'] = $requisition?->project_id;
             }
+
+            // ============================================
+            // INITIAL INTERVIEW HANDLING
+            // ============================================
+
+            // Handle individual interviewer evaluation
             if ($request->has('initial_interview_id') && $request->initial_interview_id) {
                 $initialInterview = IntermediateInterviewer::where('id', $request->initial_interview_id)
                     ->where('interviewer_id', auth()->id())
@@ -860,9 +873,58 @@ class IntermediateApplicationController extends Controller
                         'evaluation_remarks' => $request->initial_evaluation_remarks,
                     ]);
                 }
-                $this->recalculateInitialInterviewAverage($application);
             }
 
+            // Always recalculate the average
+            $this->recalculateInitialInterviewAverage($application);
+            $application->refresh();
+
+            // Check if ALL approved interviewers have submitted scores
+            $approvedInitialInterviewers = IntermediateInterviewer::where('intermediate_application_id', $application->id)
+                ->where('interview_type', 2)
+                ->where('interview_status', 2)
+                ->get();
+
+            $totalApprovedInitial = $approvedInitialInterviewers->count();
+            $submittedInitialScores = $approvedInitialInterviewers->filter(fn ($i) => ! is_null($i->evaluation_score) && $i->evaluation_score !== '')->count();
+
+            if ($totalApprovedInitial > 0 && $submittedInitialScores === $totalApprovedInitial) {
+                // All interviewers submitted - use auto-calculated score and result
+                $validated['initial_interview_final'] = $application->initial_interview_final;
+                $validated['initial_interview_result'] = $application->initial_interview_result;
+
+                // ✅ KEY FIX: Check if status was manually changed by comparing with auto-calculated
+                $autoCalculatedStatus = $application->initial_interview_application_status;
+                $requestStatus = $request->input('initial_interview_application_status');
+
+                // If the request status is different from auto-calculated, HR manually changed it
+                if ($requestStatus !== null && $requestStatus != $autoCalculatedStatus) {
+                    \Log::info('HR manually changed initial interview status', [
+                        'auto_calculated' => $autoCalculatedStatus,
+                        'manual' => $requestStatus,
+                    ]);
+                    $validated['initial_interview_application_status'] = $requestStatus;
+                } else {
+                    \Log::info('Using auto-calculated initial interview status', [
+                        'status' => $autoCalculatedStatus,
+                    ]);
+                    $validated['initial_interview_application_status'] = $autoCalculatedStatus;
+                }
+
+                \Log::info('Initial interview values set', [
+                    'final' => $validated['initial_interview_final'] ?? 'not set',
+                    'result' => $validated['initial_interview_result'] ?? 'not set',
+                    'status' => $validated['initial_interview_application_status'] ?? 'not set',
+                ]);
+            } else {
+                \Log::info('Keeping manual initial interview values (not all interviewers submitted)');
+            }
+
+            // ============================================
+            // FINAL INTERVIEW HANDLING
+            // ============================================
+
+            // Handle individual interviewer evaluation
             if ($request->has('final_interview_id') && $request->final_interview_id) {
                 $finalInterview = IntermediateInterviewer::where('id', $request->final_interview_id)
                     ->where('interviewer_id', auth()->id())
@@ -875,8 +937,51 @@ class IntermediateApplicationController extends Controller
                         'evaluation_remarks' => $request->final_evaluation_remarks,
                     ]);
                 }
+            }
 
-                $this->recalculateFinalInterviewAverage($application);
+            // Always recalculate the average
+            $this->recalculateFinalInterviewAverage($application);
+            $application->refresh();
+
+            // Check if ALL approved interviewers have submitted scores
+            $approvedFinalInterviewers = IntermediateInterviewer::where('intermediate_application_id', $application->id)
+                ->where('interview_type', 3)
+                ->where('interview_status', 2)
+                ->get();
+
+            $totalApprovedFinal = $approvedFinalInterviewers->count();
+            $submittedFinalScores = $approvedFinalInterviewers->filter(fn ($i) => ! is_null($i->evaluation_score) && $i->evaluation_score !== '')->count();
+
+            if ($totalApprovedFinal > 0 && $submittedFinalScores === $totalApprovedFinal) {
+                // All interviewers submitted - use auto-calculated score and result
+                $validated['final_interview_final'] = $application->final_interview_final;
+                $validated['final_interview_result'] = $application->final_interview_result;
+
+                // ✅ KEY FIX: Check if status was manually changed
+                $autoCalculatedStatus = $application->final_interview_application_status;
+                $requestStatus = $request->input('final_interview_application_status');
+
+                // If the request status is different from auto-calculated, HR manually changed it
+                if ($requestStatus !== null && $requestStatus != $autoCalculatedStatus) {
+                    \Log::info('HR manually changed final interview status', [
+                        'auto_calculated' => $autoCalculatedStatus,
+                        'manual' => $requestStatus,
+                    ]);
+                    $validated['final_interview_application_status'] = $requestStatus;
+                } else {
+                    \Log::info('Using auto-calculated final interview status', [
+                        'status' => $autoCalculatedStatus,
+                    ]);
+                    $validated['final_interview_application_status'] = $autoCalculatedStatus;
+                }
+
+                \Log::info('Final interview values set', [
+                    'final' => $validated['final_interview_final'] ?? 'not set',
+                    'result' => $validated['final_interview_result'] ?? 'not set',
+                    'status' => $validated['final_interview_application_status'] ?? 'not set',
+                ]);
+            } else {
+                \Log::info('Keeping manual final interview values (not all interviewers submitted)');
             }
 
             $newStage = $application->application_stage;
@@ -891,18 +996,53 @@ class IntermediateApplicationController extends Controller
             }
             // Priority 3: Initial Interview or Exam (interchangeable)
             else {
-                $hasInitial = $this->hasInitialInterviewDataFromRequest($request);
                 $hasExam = $this->hasExamDataFromRequest($request);
+                $hasInitial = $this->hasInitialInterviewDataFromRequest($request);
 
-                if ($hasInitial) {
-                    // Check if Exam ALSO has data
-                    if ($hasExam) {
-                        $newStage = 2; // Exam takes priority when both exist
-                    } else {
-                        $newStage = 3; // Only Initial Interview
+                if ($hasInitial && ! $hasExam) {
+                    // Only Initial Interview has data → For Initial Interview
+                    $newStage = 3;
+                } elseif ($hasExam && ! $hasInitial) {
+                    // Only Exam has data → For Exam
+                    $newStage = 2;
+                } elseif ($hasExam && $hasInitial) {
+                    // Both have data → Check which was most recently edited
+                    $examUpdatedAt = $application->exam_updated_at ?? $application->updated_time;
+                    $initialUpdatedAt = $application->initial_interview_updated_at ?? $application->updated_time;
+
+                    // Get the latest update timestamp from the request data
+                    $requestExamFields = [
+                        'exam_plan_date', 'exam_actual_date', 'exam_venue',
+                        'exam_atpp_part1_correct', 'exam_atpp_part1_wrong',
+                        'exam_atpp_part2_correct', 'exam_atpp_part2_wrong',
+                        'exam_atpp_part3_correct', 'exam_atpp_part3_wrong',
+                        'exam_atpp_result', 'exam_tech_result', 'exam_remarks',
+                    ];
+
+                    $requestInitialFields = [
+                        'initial_interview_plan_date', 'initial_interview_actual_date',
+                        'initial_interview_venue', 'initial_interview_final',
+                        'initial_interview_remarks',
+                    ];
+
+                    $examHasNewData = collect($requestExamFields)->some(fn ($field) => $request->has($field) && $request->$field !== null);
+                    $initialHasNewData = collect($requestInitialFields)->some(fn ($field) => $request->has($field) && $request->$field !== null);
+
+                    if ($examHasNewData && ! $initialHasNewData) {
+                        // Exam fields were edited in this request → For Exam
+                        $newStage = 2;
+                    } elseif ($initialHasNewData && ! $examHasNewData) {
+                        // Initial interview fields were edited in this request → For Initial Interview
+                        $newStage = 3;
+                    } elseif ($examHasNewData && $initialHasNewData) {
+                        // Both edited in this request → Default to Exam (stage 2)
+                        $newStage = 2;
                     }
-                } elseif ($hasExam) {
-                    $newStage = 2; // Only Exam
+                    // If neither was edited in this request, keep current stage
+
+                } elseif (! $hasExam && ! $hasInitial) {
+                    // Neither has data → New
+                    $newStage = 1;
                 }
             }
 
@@ -938,44 +1078,78 @@ class IntermediateApplicationController extends Controller
     }
 
     /**
-     * Recalculate initial interview average from all interviewer evaluations
+     * Recalculate initial interview average from ALL approved interviewer evaluations
+     * ONLY if ALL approved interviewers have submitted their scores
      */
     private function recalculateInitialInterviewAverage($application): void
     {
         \Log::info('=== RECALCULATING INITIAL INTERVIEW AVERAGE ===');
 
-        $allEvaluations = IntermediateInterviewer::where('intermediate_application_id', $application->id)
-            ->where('interview_type', 2)
+        // ✅ Get ALL approved interviewers for this stage (interview_type = 2, status = 2)
+        $approvedInterviewers = IntermediateInterviewer::where('intermediate_application_id', $application->id)
+            ->where('interview_type', 2) // Initial Interview
+            ->where('interview_status', 2) // Approved/Accepted
             ->get();
 
-        \Log::info('Total initial interviewers: '.$allEvaluations->count());
+        $totalApproved = $approvedInterviewers->count();
 
+        \Log::info("Total approved initial interviewers: {$totalApproved}");
+
+        if ($totalApproved === 0) {
+            \Log::info('⚠️ No approved interviewers found - clearing initial interview data');
+            $application->initial_interview_final = null;
+            $application->initial_interview_result = null;
+            $application->initial_interview_application_status = null;
+            $application->save();
+
+            return;
+        }
+
+        // ✅ Collect scores from approved interviewers
         $scores = [];
-        foreach ($allEvaluations as $eval) {
-            \Log::info('Interviewer ID: '.$eval->interviewer_id.
-                       ' | Score: '.($eval->evaluation_score ?? 'NULL').
-                       ' | Result: '.($eval->evaluation_results ?? 'NULL'));
-            if (! is_null($eval->evaluation_score)) {
-                $scores[] = $eval->evaluation_score;
+        $interviewersWithScores = 0;
+
+        foreach ($approvedInterviewers as $interviewer) {
+            \Log::info("Interviewer ID: {$interviewer->interviewer_id} | Score: ".($interviewer->evaluation_score ?? 'NULL'));
+
+            if (! is_null($interviewer->evaluation_score) && $interviewer->evaluation_score !== '') {
+                $scores[] = floatval($interviewer->evaluation_score);
+                $interviewersWithScores++;
             }
         }
 
-        \Log::info('Valid scores found: '.count($scores));
+        \Log::info("Interviewers who submitted scores: {$interviewersWithScores} / {$totalApproved}");
         \Log::info('Scores array: '.json_encode($scores));
 
+        // ✅ CRITICAL: Only calculate average if ALL approved interviewers have submitted
+        if ($interviewersWithScores < $totalApproved) {
+            \Log::info("⏳ Not all interviewers have submitted scores ({$interviewersWithScores}/{$totalApproved}) - clearing initial interview data");
+
+            // Clear the fields until everyone has submitted
+            $application->initial_interview_final = null;
+            $application->initial_interview_result = null;
+            $application->initial_interview_application_status = null;
+            $application->save();
+
+            return;
+        }
+
+        // ✅ All interviewers have submitted - calculate average
         if (count($scores) > 0) {
             $sum = array_sum($scores);
             $average = $sum / count($scores);
+            $roundedAverage = round($average, 2);
 
-            \Log::info('Sum: '.$sum);
-            \Log::info('Count: '.count($scores));
-            \Log::info('Calculated Average: '.$average);
-            \Log::info('Rounded Average: '.round($average, 2));
+            \Log::info("✅ All {$totalApproved} interviewers submitted!");
+            \Log::info("Sum: {$sum}");
+            \Log::info("Average: {$average}");
+            \Log::info("Rounded Average: {$roundedAverage}");
 
-            $application->initial_interview_final = round($average, 2);
+            // Update the application with the average
+            $application->initial_interview_final = $roundedAverage;
 
             // Apply the score mapping logic
-            $result = $this->mapInterviewScore($average);
+            $result = $this->mapInterviewScore($roundedAverage);
 
             \Log::info('Mapped Result: '.$result['result']);
             \Log::info('Mapped Status: '.$result['status']);
@@ -985,51 +1159,85 @@ class IntermediateApplicationController extends Controller
 
             $application->save();
 
-            \Log::info('✅ Application updated with new initial interview average');
+            \Log::info("✅ Initial interview average saved: {$roundedAverage}");
         } else {
-            \Log::info('⚠️ No valid scores found - application not updated');
+            \Log::info('⚠️ No valid scores found');
         }
     }
 
     /**
-     * Recalculate final interview average from all interviewer evaluations
+     * Recalculate final interview average from ALL approved interviewer evaluations
+     * ONLY if ALL approved interviewers have submitted their scores
      */
     private function recalculateFinalInterviewAverage($application): void
     {
         \Log::info('=== RECALCULATING FINAL INTERVIEW AVERAGE ===');
 
-        $allEvaluations = IntermediateInterviewer::where('intermediate_application_id', $application->id)
-            ->where('interview_type', 3)
+        // ✅ Get ALL approved interviewers for this stage (interview_type = 3, status = 2)
+        $approvedInterviewers = IntermediateInterviewer::where('intermediate_application_id', $application->id)
+            ->where('interview_type', 3) // Final Interview
+            ->where('interview_status', 2) // Approved/Accepted
             ->get();
 
-        \Log::info('Total final interviewers: '.$allEvaluations->count());
+        $totalApproved = $approvedInterviewers->count();
 
+        \Log::info("Total approved final interviewers: {$totalApproved}");
+
+        if ($totalApproved === 0) {
+            \Log::info('⚠️ No approved interviewers found - clearing final interview data');
+            $application->final_interview_final = null;
+            $application->final_interview_result = null;
+            $application->final_interview_application_status = null;
+            $application->save();
+
+            return;
+        }
+
+        // ✅ Collect scores from approved interviewers
         $scores = [];
-        foreach ($allEvaluations as $eval) {
-            \Log::info('Interviewer ID: '.$eval->interviewer_id.
-                       ' | Score: '.($eval->evaluation_score ?? 'NULL').
-                       ' | Result: '.($eval->evaluation_results ?? 'NULL'));
-            if (! is_null($eval->evaluation_score)) {
-                $scores[] = $eval->evaluation_score;
+        $interviewersWithScores = 0;
+
+        foreach ($approvedInterviewers as $interviewer) {
+            \Log::info("Interviewer ID: {$interviewer->interviewer_id} | Score: ".($interviewer->evaluation_score ?? 'NULL'));
+
+            if (! is_null($interviewer->evaluation_score) && $interviewer->evaluation_score !== '') {
+                $scores[] = floatval($interviewer->evaluation_score);
+                $interviewersWithScores++;
             }
         }
 
-        \Log::info('Valid scores found: '.count($scores));
+        \Log::info("Interviewers who submitted scores: {$interviewersWithScores} / {$totalApproved}");
         \Log::info('Scores array: '.json_encode($scores));
 
+        // ✅ CRITICAL: Only calculate average if ALL approved interviewers have submitted
+        if ($interviewersWithScores < $totalApproved) {
+            \Log::info("⏳ Not all interviewers have submitted scores ({$interviewersWithScores}/{$totalApproved}) - clearing final interview data");
+
+            // Clear the fields until everyone has submitted
+            $application->final_interview_final = null;
+            $application->final_interview_result = null;
+            $application->final_interview_application_status = null;
+            $application->save();
+
+            return;
+        }
+
+        // ✅ All interviewers have submitted - calculate average
         if (count($scores) > 0) {
             $sum = array_sum($scores);
             $average = $sum / count($scores);
+            $roundedAverage = round($average, 2);
 
-            \Log::info('Sum: '.$sum);
-            \Log::info('Count: '.count($scores));
-            \Log::info('Calculated Average: '.$average);
-            \Log::info('Rounded Average: '.round($average, 2));
+            \Log::info("✅ All {$totalApproved} interviewers submitted!");
+            \Log::info("Sum: {$sum}");
+            \Log::info("Average: {$average}");
+            \Log::info("Rounded Average: {$roundedAverage}");
 
-            $application->final_interview_final = round($average, 2);
+            // Update the application with the average
+            $application->final_interview_final = $roundedAverage;
 
             // Apply the score mapping logic
-            $result = $this->mapInterviewScore($average);
+            $result = $this->mapInterviewScore($roundedAverage);
 
             \Log::info('Mapped Result: '.$result['result']);
             \Log::info('Mapped Status: '.$result['status']);
@@ -1039,48 +1247,65 @@ class IntermediateApplicationController extends Controller
 
             $application->save();
 
-            \Log::info('✅ Application updated with new final interview average');
+            \Log::info("✅ Final interview average saved: {$roundedAverage}");
         } else {
-            \Log::info('⚠️ No valid scores found - application not updated');
+            \Log::info('⚠️ No valid scores found');
         }
     }
 
-    /**
-     * Map interview score to result and status
-     */
+    // ✅ CORRECTED: Backend interview score mapping
     private function mapInterviewScore($score): array
     {
         $num = floatval($score);
 
         \Log::info('Mapping score: '.$num);
 
-        if ($num == 0) {
-            \Log::info('→ Score is 0: Pending');
+        // No score or invalid = Pending
+        if ($num == 0 || $num < 1.00) {
+            \Log::info('→ Score is 0 or invalid: Pending');
 
-            return ['result' => 1, 'status' => '1'];
+            return [
+                'result' => 1,  // Pending
+                'status' => 1,   // Pending
+            ];
         }
 
+        // 1.00 - 2.00 = Passed (Priority 1)
         if ($num >= 1.00 && $num <= 2.00) {
-            \Log::info('→ Score 1.00-2.00: Passed (2), Status Passed (3)');
+            \Log::info('→ Score 1.00-2.00: Result=Passed(2), Status=Passed(3)');
 
-            return ['result' => 2, 'status' => '3'];
+            return [
+                'result' => 2,  // Passed
+                'status' => 3,   // Passed (Priority 1)
+            ];
         }
 
+        // 2.01 - 3.00 = Passed (Priority 2)
         if ($num >= 2.01 && $num <= 3.00) {
-            \Log::info('→ Score 2.01-3.00: Passed (2), Status P2 (4)');
+            \Log::info('→ Score 2.01-3.00: Result=Passed(2), Status=P2(4)');
 
-            return ['result' => 2, 'status' => '4'];
+            return [
+                'result' => 2,  // Passed
+                'status' => 4,   // P2 (Priority 2)
+            ];
         }
 
+        // 3.01 - 5.00 = Failed
         if ($num >= 3.01 && $num <= 5.00) {
-            \Log::info('→ Score 3.01-5.00: Failed (3), Status Failed (5)');
+            \Log::info('→ Score 3.01-5.00: Result=Failed(3), Status=Failed(5)');
 
-            return ['result' => 3, 'status' => '5'];
+            return [
+                'result' => 3,  // Failed
+                'status' => 5,   // Failed
+            ];
         }
 
         \Log::info('→ Default: Pending');
 
-        return ['result' => 1, 'status' => '1'];
+        return [
+            'result' => 1,  // Pending
+            'status' => 1,   // Pending
+        ];
     }
 
     public function print($id)
@@ -1128,10 +1353,8 @@ class IntermediateApplicationController extends Controller
             });
 
         $examVenues = [
-            1 => 'Gmeet',
-            2 => 'Zoom',
-            3 => 'USJ-R Basak',
-            4 => 'AdDU',
+            1 => 'Online',
+            2 => 'Face to Face',
         ];
 
         return view('intermediate.intermprint', compact(
@@ -1201,13 +1424,8 @@ class IntermediateApplicationController extends Controller
      */
     public function sendNotification(Request $request, $id)
     {
-        \Log::info('sendNotification() was called', [
-            'id' => $id,
-            'type' => $request->type,
-        ]);
-
         $request->validate([
-            'type' => 'required|string|in:interviewer_pending_approval,applicant_failed,hr_recruiters_job_offer',
+            'type' => 'required|string|in:interviewer_pending_approval,applicant_failed,hr_recruiters_job_offer,applicant_schedule',
         ]);
 
         DB::beginTransaction();
@@ -1218,6 +1436,10 @@ class IntermediateApplicationController extends Controller
             switch ($request->type) {
                 case 'interviewer_pending_approval':
                     $this->sendPendingApprovalToInterviewers($application);
+                    break;
+
+                case 'applicant_schedule':
+                    $this->sendApplicantSchedule($application);
                     break;
 
                 case 'applicant_failed':
@@ -1319,27 +1541,25 @@ class IntermediateApplicationController extends Controller
             throw new \Exception('Applicant has no email address.');
         }
 
-        // Determine which stage they failed
+        // Determine which stage failed based on application_status
         $failedStage = null;
-        if ($application->final_interview_result == 3) {
-            $failedStage = 'Final Interview';
-        } elseif ($application->initial_interview_result == 3) {
-            $failedStage = 'Initial Interview';
-        } elseif ($application->exam_result == 3) {
-            $failedStage = 'Exam';
+        if ($application->final_interview_application_status == 5) {
+            $failedStage = 'final interview';
+        } elseif ($application->initial_interview_application_status == 5) {
+            $failedStage = 'initial interview';
+        } elseif ($application->exam_application_status == 5) {
+            $failedStage = 'exam';
         } else {
             throw new \Exception('No failed stage found for this application.');
         }
 
-        // Send email (you'll need to create this Mailable)
         Mail::to($applicant->email_address)
-            ->send(new ApplicantFailedMail(
-                applicantName: $applicant->first_name.' '.$applicant->last_name,
-                position: $application->position ?? 'the position',
+            ->send(new ATS0009Mail(
+                application: $application,
                 failedStage: $failedStage
             ));
 
-        \Log::info("Failed notification sent to applicant {$applicant->email_address} for application {$application->id}");
+        \Log::info("Applicant failed notification sent to {$applicant->email_address} for {$failedStage} - application {$application->id}");
     }
 
     /**
@@ -1351,7 +1571,6 @@ class IntermediateApplicationController extends Controller
             throw new \Exception('No job offer schedule set for this application.');
         }
 
-        // Get all HR recruiters (permissions 1, 2, 3 = HR/Admin)
         $hrRecruiters = User::whereIn('permissions', [1, 2, 3])
             ->where('active_status', 1)
             ->whereNotNull('email_address')
@@ -1361,19 +1580,85 @@ class IntermediateApplicationController extends Controller
             throw new \Exception('No HR recruiters found.');
         }
 
-        $scheduledDate = Carbon::parse($application->job_offer_schedule)->format('F j, Y g:i A');
+        $link = route('intermediate.applications.show', $application->id);
+        $sentCount = 0;
 
         foreach ($hrRecruiters as $recruiter) {
             Mail::to($recruiter->email_address)
-                ->send(new JobOfferScheduledMail(
-                    recruiterName: $recruiter->full_name ?? 'HR Recruiter',
-                    applicantName: $application->intermediateApplicant->first_name.' '.$application->intermediateApplicant->last_name,
-                    position: $application->position ?? 'the position',
-                    scheduledDate: $scheduledDate,
-                    applicationUrl: route('intermediate.applications.show', $application->id)
-                ));
+                ->send(new ATS0007Mail($application, $link));
+
+            $sentCount++;
+
+            sleep(10); // Rate limit for Mailtrap
         }
 
-        \Log::info('Job offer notification sent to '.$hrRecruiters->count().' HR recruiters');
+        \Log::info("Job offer notification sent to {$sentCount} HR recruiters for application {$application->id}");
+    }
+
+    private function sendApplicantSchedule($application)
+    {
+        $applicant = $application->intermediateApplicant;
+
+        if (! $applicant || empty($applicant->email_address)) {
+            throw new \Exception('Applicant has no email address.');
+        }
+
+        $applicantName = trim($applicant->first_name.' '.$applicant->last_name) ?: 'Applicant';
+
+        $stage = (int) $application->application_stage;
+
+        // Check if stage is already passed
+        $alreadyPassed = match ($stage) {
+            2 => $application->exam_result == 2,
+            3 => $application->initial_interview_result == 2,
+            4 => $application->final_interview_result == 2,
+            default => false,
+        };
+
+        if ($alreadyPassed) {
+            throw new \Exception('Applicant has already passed this stage. Cannot send schedule.');
+        }
+
+        // Determine stage details
+        $stageData = match ($stage) {
+            2 => [
+                'label' => 'exam',
+                'plan_date' => $application->exam_plan_date,
+                'venue_field' => $application->exam_venue,
+            ],
+            3 => [
+                'label' => 'initial interview',
+                'plan_date' => $application->initial_interview_plan_date,
+                'venue_field' => $application->initial_interview_venue,
+            ],
+            4 => [
+                'label' => 'final interview',
+                'plan_date' => $application->final_interview_date,
+                'venue_field' => null,
+            ],
+            default => throw new \Exception('Application is not in a schedulable stage.'),
+        };
+
+        // Venue label
+        $venueLabel = match ((int) $stageData['venue_field']) {
+            1 => 'online',
+            2 => 'face-to-face',
+            default => '(venue to be announced)',
+        };
+
+        // Format date
+        $scheduledDate = $stageData['plan_date']
+            ? Carbon::parse($stageData['plan_date'])->format('F d, Y h:i A')
+            : 'To be announced';
+
+        Mail::to($applicant->email_address)
+            ->send(new ATS0008Mail(
+                applicantName: $applicantName,
+                venue: $venueLabel,
+                stage: $stageData['label'],
+                scheduledDate: $scheduledDate
+            ));
+
+        \Log::info("Applicant schedule email sent to {$applicant->email_address} for {$stageData['label']} - application {$application->id}");
     }
 }

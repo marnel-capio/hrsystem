@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { Link, usePage, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -9,21 +9,68 @@ const props = defineProps<{
     application: any;
     sourceProjects?: Array<{ value: number; label: string }>;
     examVenues?: Record<number, string>;
+    interviewVenues?: Record<number, string>;
     examStatuses?: Record<number, string>;
     interviewStatuses?: Record<number, string>;
     jobOfferStatuses?: Record<number, string>;
+    examCriteria?: {
+        passed_priority_1: { atpp: number; tech_exam: number };
+        passed_priority_2: { atpp: number; tech_exam: number };
+    };
+    interviewScoreRanges?: {
+        passed: { min: number; max: number };
+        p2: { min: number; max: number };
+        failed: { min: number; max: number };
+    };
     userPermissions?: number;
     userId?: number;
     interviews?: Array<any>;
     flash?: { error?: string; success?: string };
 }>();
 
+// Constants
+const EXAM_STATUS = {
+    PENDING: 1,
+    DONE: 2,
+    PASSED: 3,
+    P2: 4,
+    FAILED: 5,
+};
+
+const EXAM_RESULT = {
+    PENDING: 1,
+    PASSED: 2,
+    FAILED: 3,
+};
+
+const INTERVIEW_STATUS = {
+    PENDING: 1,
+    DONE: 2,
+    PASSED: 3,
+    P2: 4,
+    FAILED: 5,
+};
+
+const INTERVIEW_RESULT = {
+    PENDING: 1,
+    PASSED: 2,
+    FAILED: 3,
+};
+
+const PAPER_SCREENING = {
+    PENDING: 1,
+    DONE: 2,
+    PASSED: 3,
+    P2: 4,
+    FAILED: 5,
+};
+
 // Options from props
 const examVenuesList = ref<Array<{ value: number; label: string }>>([]);
+const interviewVenuesList = ref<Array<{ value: number; label: string }>>([]);
 const examStatusesList = ref<Array<{ value: number; label: string }>>([]);
 const interviewStatusesList = ref<Array<{ value: number; label: string }>>([]);
 const sourceProjectsList = ref<Array<{ value: number; label: string }>>([]);
-
 
 // File handling
 const resumeFile = ref<File | null>(null);
@@ -32,15 +79,47 @@ const resumePreview = ref<string | null>(null);
 const picturePreview = ref<string | null>(null);
 
 // Error and success messages
-const errorMessage = computed(() => (page.props.flash as any)?.error || '');
+const errorMessage = computed(() => {
+    const flash = page.props.flash as any;
+    return flash?.error || '';
+});
 const showError = ref(false);
-const successMessage = computed(() => (page.props.flash as any)?.success || '');
+const successMessage = computed(() => {
+    const flash = page.props.flash as any;
+    return flash?.success || '';
+});
 const showSuccess = ref(false);
 
 // Helper functions
 const formatDateForInput = (dateString: string | null) => {
     if (!dateString) return '';
-    return String(dateString).slice(0, 16).replace(' ', 'T');
+
+    // If it's already in the format Y-m-d H:i:s, convert to datetime-local format
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateString)) {
+        return dateString.replace(' ', 'T').slice(0, 16);
+    }
+
+    // If it's already in datetime-local format, return as is
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dateString)) {
+        return dateString;
+    }
+
+    // For ISO 8601 or other formats, parse and convert
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        return '';
+    }
 };
 
 const parseScore = (value: string | number | null | undefined): number => {
@@ -126,15 +205,7 @@ const currentUserFinalInterview = computed(() => {
     ) || null;
 });
 
-// Paper screening status values
-const PAPER_SCREENING = {
-    PENDING: 1,
-    DONE: 2,
-    PASSED: 3,
-    P2: 4,
-    FAILED: 5,
-};
-
+// Paper screening status
 const isPaperScreeningCompleted = computed(() => {
     const status = Number(props.application.paper_screening_status);
     return status === PAPER_SCREENING.DONE ||
@@ -152,18 +223,18 @@ const isEarlySectionsLocked = computed(() => {
 
 // Stage result statuses
 const isExamFailed = computed(() => {
-    return Number(props.application.exam_application_status) === 5 ||
-        Number(props.application.exam_result) === 3;
+    return Number(props.application.exam_application_status) === EXAM_STATUS.FAILED ||
+        Number(props.application.exam_result) === EXAM_RESULT.FAILED;
 });
 
 const isInitialInterviewFailed = computed(() => {
-    return Number(props.application.initial_interview_application_status) === 5 ||
-        Number(props.application.initial_interview_result) === 3;
+    return Number(props.application.initial_interview_application_status) === INTERVIEW_STATUS.FAILED ||
+        Number(props.application.initial_interview_result) === INTERVIEW_RESULT.FAILED;
 });
 
 const isFinalInterviewFailed = computed(() => {
-    return Number(props.application.final_interview_application_status) === 5 ||
-        Number(props.application.final_interview_result) === 3;
+    return Number(props.application.final_interview_application_status) === INTERVIEW_STATUS.FAILED ||
+        Number(props.application.final_interview_result) === INTERVIEW_RESULT.FAILED;
 });
 
 // Section locking based on progression rules
@@ -184,11 +255,18 @@ const isFinalInterviewApplicable = computed(() => {
     return true;
 });
 
+// AND no stage has Failed (5)
 const isJobOfferApplicable = computed(() => {
-    if (isPaperScreeningFailed.value) return false;
-    if (isFinalInterviewFailed.value) return false;
-    if (isExamFailed.value) return false;
-    if (isInitialInterviewFailed.value) return false;
+    // Check for FAILED status (5) in any stage
+    if (Number(props.application.paper_screening_status) === PAPER_SCREENING.FAILED) return false;
+    if (Number(props.application.exam_application_status) === EXAM_STATUS.FAILED) return false;
+    if (Number(props.application.initial_interview_application_status) === INTERVIEW_STATUS.FAILED) return false;
+    if (Number(props.application.final_interview_application_status) === INTERVIEW_STATUS.FAILED) return false;
+    
+    // ✅ Check if Final Interview is Passed (3) or P2 (4)
+    const finalStatus = Number(props.application.final_interview_application_status);
+    if (finalStatus !== INTERVIEW_STATUS.PASSED && finalStatus !== INTERVIEW_STATUS.P2) return false;
+    
     return true;
 });
 
@@ -211,12 +289,14 @@ const canEditFinalSection = computed(() => {
     return isApprovedForFinal.value;
 });
 
+// Can edit Job Offer
 const canEditJobOfferSection = computed(() => {
-    if (canManageInterviewers.value) return true;
+    // Must be HR/Admin
+    if (!canManageInterviewers.value) return false;
+    // Must meet all applicability conditions
     if (!isJobOfferApplicable.value) return false;
-    return false;
+    return true;
 });
-
 const canEditGeneralRemarks = computed(() => {
     if (canManageInterviewers.value) return true;
     return false;
@@ -280,7 +360,17 @@ const computedFinalAverageScore = computed(() => {
 
 // Get number of interviewers who submitted scores
 const initialInterviewerCount = computed(() => {
-    const initialInterviews = props.interviews?.filter((i: any) => i.interview_type === 2) || [];
+    // Count ONLY approved interviewers
+    const initialInterviews = props.interviews?.filter((i: any) =>
+        i.interview_type === 2 && i.interview_status === 2
+    ) || [];
+    return initialInterviews.length;
+});
+
+const initialInterviewersSubmitted = computed(() => {
+    const initialInterviews = props.interviews?.filter((i: any) =>
+        i.interview_type === 2 && i.interview_status === 2
+    ) || [];
     return initialInterviews.filter((i: any) =>
         i.evaluation_score !== null && i.evaluation_score !== undefined && i.evaluation_score !== ''
     ).length;
@@ -294,10 +384,18 @@ const finalInterviewerCount = computed(() => {
 });
 
 // Exam criteria
-const examCriteriaDisplay = computed(() => ({
-    passed: { atpp: 60, tech_exam: 30 },
-    p2: { atpp: 55, tech_exam: 20 }
-}));
+const examCriteriaDisplay = computed(() => {
+    if (props.examCriteria) {
+        return {
+            passed: props.examCriteria.passed_priority_1,
+            p2: props.examCriteria.passed_priority_2,
+        };
+    }
+    return {
+        passed: { atpp: 60, tech_exam: 30 },
+        p2: { atpp: 55, tech_exam: 20 }
+    };
+});
 
 // Selected applicant display
 const selectedApplicantLabel = computed(() => {
@@ -394,18 +492,17 @@ const isInitialStatusManuallySet = ref(
     !!props.application.initial_interview_application_status &&
     props.application.initial_interview_application_status !== ''
 );
-
 const isFinalStatusManuallySet = ref(
     !!props.application.final_interview_application_status &&
     props.application.final_interview_application_status !== ''
 );
-
 
 // Track previous values to detect manual changes
 const previousExamStatus = ref<string | number>(props.application.exam_application_status || '');
 const previousInitialStatus = ref<string | number>(props.application.initial_interview_application_status || '');
 const previousFinalStatus = ref<string | number>(props.application.final_interview_application_status || '');
 
+// Initialize interview evaluation data if exists
 if (currentUserInitialInterview.value) {
     form.initial_interview_id = currentUserInitialInterview.value.id;
     form.initial_evaluation_score = currentUserInitialInterview.value.evaluation_score || '';
@@ -422,13 +519,21 @@ if (currentUserFinalInterview.value) {
 
 // Exam result label
 const examResultLabel = computed(() => {
-    const results: Record<number, string> = { 1: 'Pending', 2: 'Passed', 3: 'Failed' };
+    const results: Record<number, string> = {
+        [EXAM_RESULT.PENDING]: 'Pending',
+        [EXAM_RESULT.PASSED]: 'Passed',
+        [EXAM_RESULT.FAILED]: 'Failed'
+    };
     return results[Number(form.exam_result)] || 'Pending';
 });
 
 // Evaluation result label helper
 const getEvaluationResultLabel = (result: number | null) => {
-    const results: Record<number, string> = { 1: 'Pending', 2: 'Passed', 3: 'Failed' };
+    const results: Record<number, string> = {
+        [INTERVIEW_RESULT.PENDING]: 'Pending',
+        [INTERVIEW_RESULT.PASSED]: 'Passed',
+        [INTERVIEW_RESULT.FAILED]: 'Failed'
+    };
     if (!result) return '-';
     return results[result] || '-';
 };
@@ -436,7 +541,8 @@ const getEvaluationResultLabel = (result: number | null) => {
 // Venue label helper
 const getVenueLabel = (venue: number | string | null) => {
     if (!venue) return '-';
-    const found = examVenuesList.value.find(v => v.value === Number(venue));
+    const found = examVenuesList.value.find(v => v.value === Number(venue)) ||
+        interviewVenuesList.value.find(v => v.value === Number(venue));
     return found?.label || '-';
 };
 
@@ -451,11 +557,13 @@ const handleResumeUpload = (event: Event) => {
 
         if (!allowedTypes.includes(file.type)) {
             form.setError('upload_resume', 'Please upload a PDF or Word document');
+            target.value = '';
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
             form.setError('upload_resume', 'File size must be less than 5MB');
+            target.value = '';
             return;
         }
 
@@ -464,6 +572,8 @@ const handleResumeUpload = (event: Event) => {
         if (resumePreview.value) URL.revokeObjectURL(resumePreview.value);
         if (file.type === 'application/pdf') {
             resumePreview.value = URL.createObjectURL(file);
+        } else {
+            resumePreview.value = null;
         }
         form.clearErrors('upload_resume');
     }
@@ -479,11 +589,13 @@ const handlePictureUpload = (event: Event) => {
 
         if (!allowedTypes.includes(file.type)) {
             form.setError('upload_pic', 'Please upload a JPG or PNG image');
+            target.value = '';
             return;
         }
 
         if (file.size > 2 * 1024 * 1024) {
             form.setError('upload_pic', 'File size must be less than 2MB');
+            target.value = '';
             return;
         }
 
@@ -515,7 +627,7 @@ const removeFile = (type: 'resume' | 'picture') => {
     }
 };
 
-// Score clamping
+// Score clamping functions
 function clampScore(obj: any, field: string, max: number) {
     let value = Number(obj[field] || 0);
     if (Number.isNaN(value)) value = 0;
@@ -545,7 +657,50 @@ function clampAtppPair(obj: any, correctField: string, wrongField: string, max: 
     obj[wrongField] = wrong;
 }
 
-// Date minimums
+// ✅ CORRECTED: Interview score mapping
+function mapInterviewScore(score: any) {
+    const num = Number(score);
+
+    // No score or invalid = Pending
+    if (!score || Number.isNaN(num) || num === 0) {
+        return {
+            result: INTERVIEW_RESULT.PENDING,    // 1 - Pending
+            status: INTERVIEW_STATUS.PENDING      // 1 - Pending
+        };
+    }
+
+    // 1.00 - 2.00 = Passed (Priority 1)
+    if (num >= 1.00 && num <= 2.00) {
+        return {
+            result: INTERVIEW_RESULT.PASSED,     // 2 - Passed
+            status: INTERVIEW_STATUS.PASSED       // 3 - Passed
+        };
+    }
+
+    // 2.01 - 3.00 = Passed (Priority 2)
+    if (num >= 2.01 && num <= 3.00) {
+        return {
+            result: INTERVIEW_RESULT.PASSED,     // 2 - Passed
+            status: INTERVIEW_STATUS.P2           // 4 - P2
+        };
+    }
+
+    // 3.01 - 5.00 = Failed
+    if (num >= 3.01 && num <= 5.00) {
+        return {
+            result: INTERVIEW_RESULT.FAILED,     // 3 - Failed
+            status: INTERVIEW_STATUS.FAILED       // 5 - Failed
+        };
+    }
+
+    // Default: Pending
+    return {
+        result: INTERVIEW_RESULT.PENDING,        // 1 - Pending
+        status: INTERVIEW_STATUS.PENDING          // 1 - Pending
+    };
+}
+
+// Date helpers
 const nowDateTime = (): string => {
     const now = new Date();
     return formatDateTimeLocal(now);
@@ -576,190 +731,6 @@ const initialInterviewPlanMin = computed(() => isInitialInterviewPlanDateLocked.
 const initialInterviewActualMin = computed(() => form.initial_interview_plan_date || nowDateTime());
 const finalInterviewMin = computed(() => nowDateTime());
 const jobOfferScheduleMin = computed(() => nowDateTime());
-
-// Submit
-const normalizeDateTimeForSubmit = (value: unknown) => {
-    if (typeof value !== 'string' || !value) return value;
-    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
-        return value.replace('T', ' ') + ':00';
-    }
-    return value;
-};
-
-function submit() {
-    form.clearErrors();
-
-    form.transform((data) => {
-        const formData = new FormData();
-
-        Object.keys(data).forEach((key) => {
-            const value = data[key as keyof typeof data];
-
-            if (key === 'upload_resume') {
-                if (resumeFile.value) formData.append('upload_resume', resumeFile.value);
-                return;
-            }
-            if (key === 'upload_pic') {
-                if (pictureFile.value) formData.append('upload_pic', pictureFile.value);
-                return;
-            }
-
-            if (value !== null && value !== undefined && value !== '') {
-                const normalizedValue = normalizeDateTimeForSubmit(value);
-                formData.append(key, String(normalizedValue));
-            }
-        });
-
-        formData.append('_method', 'PUT');
-        return formData as any;
-    });
-
-    form.post(`/intermediate/applications/${props.application.id}`, {
-        preserveState: true,
-        preserveScroll: true,
-    });
-}
-
-// Watch computed ATPP result
-watch(computedAtppResult, (value) => {
-    form.exam_atpp_result = value;
-}, { immediate: true });
-
-// Auto exam status - only if not manually overridden
-watch([() => form.exam_atpp_result, () => form.exam_tech_result], ([atpp, tech]) => {
-    // Skip auto-calculation if manually set
-    if (isExamStatusManuallySet.value) return;
-
-    const hasAllScores = !!atpp && !!tech;
-    if (!hasAllScores) {
-        form.exam_application_status = '';
-        return;
-    }
-    const atppNum = Number(atpp);
-    const techNum = Number(tech);
-    if (Number.isNaN(atppNum) || Number.isNaN(techNum)) {
-        form.exam_application_status = '';
-        return;
-    }
-
-    if (atppNum >= 60 && techNum >= 30) {
-        form.exam_application_status = '3';
-    } else if (atppNum >= 55 && techNum >= 20) {
-        form.exam_application_status = '4';
-    } else {
-        form.exam_application_status = '5';
-    }
-}, { immediate: true });
-
-// Detect manual changes to Exam Application Status
-watch(() => form.exam_application_status, (newVal, oldVal) => {
-    // Skip if this is the initial load
-    if (oldVal === undefined) return;
-
-    // Mark as manually set when user changes the dropdown
-    if (newVal !== previousExamStatus.value) {
-        isExamStatusManuallySet.value = true;
-        previousExamStatus.value = newVal;
-    }
-});
-
-watch(() => form.exam_application_status, (status) => {
-    if (isExamStatusManuallySet.value) return;
-
-    const statusNum = Number(status);
-    if (statusNum === 3 || statusNum === 4) {
-        form.exam_result = 2;
-    } else if (statusNum === 5) {
-        form.exam_result = 3;
-    } else {
-        form.exam_result = 1;
-    }
-}, { immediate: true });
-
-// Reset manual override when scores are cleared
-watch([() => form.exam_atpp_result, () => form.exam_tech_result], ([atpp, tech]) => {
-    // If both scores are cleared, reset manual override
-    if (!atpp && !tech) {
-        isExamStatusManuallySet.value = false;
-    }
-});
-
-watch(() => form.initial_interview_final, (score) => {
-    // If score is cleared, reset manual override
-    if (!score) {
-        isInitialStatusManuallySet.value = false;
-    }
-});
-
-watch(() => form.final_interview_final, (score) => {
-    // If score is cleared, reset manual override
-    if (!score) {
-        isFinalStatusManuallySet.value = false;
-    }
-});
-
-// Interview score mapping
-function mapInterviewScore(score: any) {
-    const num = Number(score);
-
-    if (!score || Number.isNaN(num) || num === 0) {
-        return { result: 1, status: '1' };
-    }
-
-    if (num >= 1.00 && num <= 2.00) {
-        return { result: 2, status: '3' };
-    }
-
-    if (num >= 2.01 && num <= 3.00) {
-        return { result: 2, status: '4' };
-    }
-
-    if (num >= 3.01 && num <= 5.00) {
-        return { result: 3, status: '5' };
-    }
-
-    return { result: 1, status: '1' };
-}
-
-// Auto-correlate Initial Interview - only if not manually overridden
-watch(() => form.initial_interview_final, (score) => {
-    if (isInitialStatusManuallySet.value) return;
-
-    const { result, status } = mapInterviewScore(score);
-    form.initial_interview_result = result;
-    form.initial_interview_application_status = status;
-}, { immediate: true });
-
-// Auto-correlate Final Interview - only if not manually overridden
-watch(() => form.final_interview_final, (score) => {
-    if (isFinalStatusManuallySet.value) return;
-
-    const { result, status } = mapInterviewScore(score);
-    form.final_interview_result = result;
-    form.final_interview_application_status = status;
-}, { immediate: true });
-
-// Watch for changes in interviews prop and update form
-watch(() => props.interviews, () => {
-    if (computedInitialAverageScore.value) {
-        form.initial_interview_final = computedInitialAverageScore.value;
-    }
-    if (computedFinalAverageScore.value) {
-        form.final_interview_final = computedFinalAverageScore.value;
-    }
-}, { deep: true });
-
-watch(computedInitialAverageScore, (value) => {
-    if (value) {
-        form.initial_interview_final = value;
-    }
-});
-
-watch(computedFinalAverageScore, (value) => {
-    if (value) {
-        form.final_interview_final = value;
-    }
-});
 
 // Validate interview score
 function validateInterviewScore(field: string, value: string | number) {
@@ -793,11 +764,283 @@ function clampInterviewScore(obj: any, field: string) {
     obj[field] = Math.round(num * 100) / 100;
 }
 
+// Submit
+const normalizeDateTimeForSubmit = (value: unknown) => {
+    if (typeof value !== 'string' || !value) return value;
+
+    // Convert datetime-local format (YYYY-MM-DDTHH:MM) to database format (YYYY-MM-DD HH:MM:SS)
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
+        return value.replace('T', ' ') + ':00';
+    }
+    return value;
+};
+
+function submit() {
+    form.clearErrors();
+
+    form.transform((data) => {
+        const formData = new FormData();
+
+        // Add all non-file fields
+        Object.keys(data).forEach((key) => {
+            if (key === 'upload_resume' || key === 'upload_pic') return;
+
+            const value = data[key as keyof typeof data];
+            if (value !== null && value !== undefined && value !== '') {
+                const normalizedValue = normalizeDateTimeForSubmit(value);
+                formData.append(key, String(normalizedValue));
+            }
+        });
+
+        // Handle file uploads
+        if (resumeFile.value) {
+            formData.append('upload_resume', resumeFile.value);
+        } else if (form.upload_resume === '') {
+            formData.append('upload_resume', '');
+        }
+
+        if (pictureFile.value) {
+            formData.append('upload_pic', pictureFile.value);
+        } else if (form.upload_pic === '') {
+            formData.append('upload_pic', '');
+        }
+
+        formData.append('_method', 'PUT');
+        return formData as any;
+    });
+
+    form.post(`/intermediate/applications/${props.application.id}`, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+}
+
+// ✅ CORRECTED: Watch computed ATPP result
+watch(computedAtppResult, (value) => {
+    form.exam_atpp_result = value;
+}, { immediate: true });
+
+// ============================================
+// CORRECTED: Exam Calculation System
+// ============================================
+
+const examCalcReady = ref(false);
+const isAutoCalculating = ref(false);
+const userHasEditedScores = ref(false);  // ✅ NEW: Track if user has edited anything
+
+// Store original values from database
+const originalAtppResult = ref(props.application.exam_atpp_result || '');
+const originalTechResult = ref(props.application.exam_tech_result || '');
+const originalExamStatus = ref(props.application.exam_application_status || '');
+const originalExamResult = ref(props.application.exam_result || '');
+
+function calculateExamResults() {
+    const atpp = form.exam_atpp_result;
+    const tech = form.exam_tech_result;
+
+    console.log('🧮 Calculating:', { atpp, tech });
+
+    // Convert to numbers - ONLY if both are non-empty strings
+    if (atpp === '' || atpp === null || atpp === undefined ||
+        tech === '' || tech === null || tech === undefined) {
+        console.log('⏭️ One or both fields empty - not calculating');
+        return;
+    }
+
+    const atppNum = parseFloat(String(atpp));
+    const techNum = parseFloat(String(tech));
+
+    // Must have valid numbers
+    if (isNaN(atppNum) || isNaN(techNum)) {
+        console.log('⏭️ Invalid numbers - not calculating');
+        return;
+    }
+
+    console.log('📊 Valid scores:', { atppNum, techNum });
+
+    // ✅ Set flag to prevent manual override detection
+    isAutoCalculating.value = true;
+
+    // Priority 1: ATPP >= 60 AND Tech >= 30
+    if (atppNum >= 60 && techNum >= 30) {
+        console.log('✅ PASSED P1');
+        form.exam_application_status = 3;  // Passed
+        form.exam_result = 2;              // Passed
+    }
+    // Priority 2: ATPP >= 55 AND Tech >= 20  
+    else if (atppNum >= 55 && techNum >= 20) {
+        console.log('✅ PASSED P2');
+        form.exam_application_status = 4;  // 2nd Priority
+        form.exam_result = 2;              // Passed
+    }
+    // Failed - ONLY when both scores are entered but below thresholds
+    else {
+        console.log('❌ FAILED - Below thresholds');
+        form.exam_application_status = 5;  // Failed
+        form.exam_result = 3;              // Failed
+    }
+
+    // ✅ Reset auto-calculating flag after a short delay
+    setTimeout(() => {
+        isAutoCalculating.value = false;
+    }, 100);
+}
+
+// ✅ Watch for USER edits to ATPP parts (not the computed result)
+watch([
+    () => form.exam_atpp_part1_correct,
+    () => form.exam_atpp_part1_wrong,
+    () => form.exam_atpp_part2_correct,
+    () => form.exam_atpp_part2_wrong,
+    () => form.exam_atpp_part3_correct,
+    () => form.exam_atpp_part3_wrong,
+], () => {
+    // User edited ATPP parts - mark that user has edited scores
+    console.log('✏️ User edited ATPP parts');
+    userHasEditedScores.value = true;
+});
+
+// ✅ Watch for USER edits to Technical Exam Result
+watch(() => form.exam_tech_result, (newVal, oldVal) => {
+    if (examCalcReady.value && oldVal !== undefined && newVal !== oldVal) {
+        console.log('✏️ User edited Tech score');
+        userHasEditedScores.value = true;
+    }
+});
+
+// Watch for changes to BOTH final scores
+watch([() => form.exam_atpp_result, () => form.exam_tech_result], ([newAtpp, newTech], [oldAtpp, oldTech]) => {
+    console.log('👀 Score changed:', {
+        newAtpp, newTech,
+        oldAtpp, oldTech,
+        manual: isExamStatusManuallySet.value,
+        autoCalc: isAutoCalculating.value,
+        userEdited: userHasEditedScores.value
+    });
+
+    if (!examCalcReady.value) {
+        console.log('⏭️ Not ready');
+        return;
+    }
+
+    // ✅ Don't auto-calculate if user hasn't edited anything yet
+    // This preserves database values on initial load
+    if (!userHasEditedScores.value) {
+        console.log('⏭️ User hasn\'t edited scores yet - preserving DB values');
+        return;
+    }
+
+    if (isExamStatusManuallySet.value) {
+        console.log('⏭️ Manually set - skipping auto-calc');
+        return;
+    }
+
+    // Check if user is clearing both fields
+    const bothEmptyNow = (!newAtpp || newAtpp === '') && (!newTech || newTech === '');
+    const hadValues = (oldAtpp && oldAtpp !== '') || (oldTech && oldTech !== '');
+
+    if (hadValues && bothEmptyNow) {
+        console.log('🔄 Both cleared - resetting to defaults');
+        form.exam_application_status = originalExamStatus.value;
+        form.exam_result = originalExamResult.value;
+        isExamStatusManuallySet.value = false;
+        userHasEditedScores.value = false;
+        return;
+    }
+
+    // ✅ ONLY calculate if BOTH fields are non-empty AND user has edited
+    if (newAtpp && newAtpp !== '' && newTech && newTech !== '') {
+        console.log('✅ Both fields have values - calculating');
+        calculateExamResults();
+    } else {
+        console.log('⏳ Waiting for both fields to be filled...');
+    }
+});
+
+// ✅ FIXED: Watch for manual status changes - ignore auto-calculations
+watch(() => form.exam_application_status, (newVal, oldVal) => {
+    // Skip if not ready or no change
+    if (!examCalcReady.value) return;
+    if (oldVal === undefined) return;
+    if (newVal === oldVal) return;
+
+    // ✅ CRITICAL FIX: Don't mark as manual if system is auto-calculating
+    if (isAutoCalculating.value) {
+        console.log('⏭️ Ignoring change - system is auto-calculating');
+        return;
+    }
+
+    // ✅ Only mark as manual if user has been editing
+    if (!userHasEditedScores.value) {
+        console.log('⏭️ Ignoring change - user hasn\'t edited yet');
+        return;
+    }
+
+    // User manually changed the dropdown
+    if (newVal !== '') {
+        console.log('🔒 Manual override detected - user changed dropdown');
+        isExamStatusManuallySet.value = true;
+        previousExamStatus.value = newVal;
+    }
+});
+
+// watch(() => form.initial_interview_final, (score) => {
+//     if (!score) {
+//         isInitialStatusManuallySet.value = false;
+//     }
+// });
+
+// watch(() => form.final_interview_final, (score) => {
+//     if (!score) {
+//         isFinalStatusManuallySet.value = false;
+//     }
+// });
+
+// ✅ CORRECTED: Auto-correlate Initial Interview
+watch(() => form.initial_interview_final, (score) => {
+    if (isInitialStatusManuallySet.value) return;
+
+    const { result, status } = mapInterviewScore(score);
+    form.initial_interview_result = result;
+    form.initial_interview_application_status = status;
+}, { immediate: true });
+
+// ✅ CORRECTED: Auto-correlate Final Interview
+watch(() => form.final_interview_final, (score) => {
+    if (isFinalStatusManuallySet.value) return;
+
+    const { result, status } = mapInterviewScore(score);
+    form.final_interview_result = result;
+    form.final_interview_application_status = status;
+}, { immediate: true });
+
+// Watch for changes in interviews prop and update form
+watch(() => props.interviews, () => {
+    if (computedInitialAverageScore.value) {
+        form.initial_interview_final = computedInitialAverageScore.value;
+    }
+    if (computedFinalAverageScore.value) {
+        form.final_interview_final = computedFinalAverageScore.value;
+    }
+}, { deep: true });
+
+watch(computedInitialAverageScore, (value) => {
+    if (value) {
+        form.initial_interview_final = value;
+    }
+});
+
+watch(computedFinalAverageScore, (value) => {
+    if (value) {
+        form.final_interview_final = value;
+    }
+});
+
 // Detect manual changes to Initial Interview Application Status
 watch(() => form.initial_interview_application_status, (newVal, oldVal) => {
     if (oldVal === undefined) return;
 
-    if (newVal !== previousInitialStatus.value) {
+    if (newVal !== oldVal && newVal !== '') {
         isInitialStatusManuallySet.value = true;
         previousInitialStatus.value = newVal;
     }
@@ -807,13 +1050,11 @@ watch(() => form.initial_interview_application_status, (newVal, oldVal) => {
 watch(() => form.final_interview_application_status, (newVal, oldVal) => {
     if (oldVal === undefined) return;
 
-    if (newVal !== previousFinalStatus.value) {
+    if (newVal !== oldVal && newVal !== '') {
         isFinalStatusManuallySet.value = true;
         previousFinalStatus.value = newVal;
     }
 });
-
-
 
 // Validate scores
 watch(() => form.initial_interview_final, (value) => {
@@ -843,6 +1084,18 @@ onMounted(() => {
         ];
     }
 
+    if (props.interviewVenues) {
+        interviewVenuesList.value = Object.entries(props.interviewVenues).map(([value, label]) => ({
+            value: Number(value),
+            label: String(label),
+        }));
+    } else {
+        interviewVenuesList.value = [
+            { value: 1, label: 'Online' },
+            { value: 2, label: 'Face to Face' }
+        ];
+    }
+
     if (props.examStatuses) {
         examStatusesList.value = Object.entries(props.examStatuses).map(([value, label]) => ({
             value: Number(value),
@@ -860,6 +1113,24 @@ onMounted(() => {
     if (props.sourceProjects) {
         sourceProjectsList.value = props.sourceProjects;
     }
+
+    // ✅ Initialize exam calculation system - but DON'T trigger calculation
+    setTimeout(() => {
+        examCalcReady.value = true;
+        console.log('✅ Exam calculation system ready');
+        console.log('📦 Original DB values:', {
+            atpp: form.exam_atpp_result,
+            tech: form.exam_tech_result,
+            status: form.exam_application_status,
+            result: form.exam_result
+        });
+        console.log('⏸️ Waiting for user to edit scores...');
+
+        // ✅ DO NOT trigger calculation here - preserve DB values
+        // if (form.exam_atpp_result !== '' && form.exam_tech_result !== '') {
+        //     calculateExamResults();
+        // }
+    }, 300);
 });
 
 // Watch for flash messages
@@ -874,6 +1145,16 @@ watch(successMessage, (val) => {
     if (val) {
         showSuccess.value = true;
         setTimeout(() => (showSuccess.value = false), 5000);
+    }
+});
+
+// Cleanup function
+onUnmounted(() => {
+    if (resumePreview.value) {
+        URL.revokeObjectURL(resumePreview.value);
+    }
+    if (picturePreview.value) {
+        URL.revokeObjectURL(picturePreview.value);
     }
 });
 
@@ -902,7 +1183,13 @@ const isInitialInterviewPlanDateLocked = computed(() => {
     return !!props.application.initial_interview_plan_date;
 });
 
-
+// Check if any final interviewer has accepted (status = 2)
+const isFinalInterviewDateLocked = computed(() => {
+    const finalInterviews = props.interviews?.filter((i: any) =>
+        i.interview_type === 3 && i.interview_status === 2
+    ) || [];
+    return finalInterviews.length > 0;
+});
 
 </script>
 
@@ -1004,7 +1291,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                                             :disabled="isEarlySectionsLocked">×</button>
                                     </div>
                                     <span v-if="form.errors.upload_pic" class="error-message">{{ form.errors.upload_pic
-                                        }}</span>
+                                    }}</span>
                                     <div v-if="picturePreview" class="picture-preview">
                                         <img :src="picturePreview" alt="Picture preview" class="preview-image" />
                                     </div>
@@ -1190,7 +1477,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                                     </option>
                                 </select>
                                 <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue
-                                    }}</span>
+                                }}</span>
                             </div>
 
                             <div class="exam-section-layout">
@@ -1317,7 +1604,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500">Technical Exam Result</label>
-                                    <input type="number" step="0.01" min="0" max="80"
+                                    <input type="number" step="1" min="0" max="80"
                                         @input="clampScore(form, 'exam_tech_result', 80)"
                                         v-model="form.exam_tech_result" placeholder="0.00" class="form-input"
                                         :disabled="!canEditExamSection" />
@@ -1353,7 +1640,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                                 <textarea v-model="form.exam_remarks" placeholder="Enter any remarks here..." rows="3"
                                     class="form-textarea" :disabled="!canEditExamSection"></textarea>
                                 <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
 
@@ -1416,10 +1703,22 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                                                 <label class="field-label">Final Score (Average)</label>
                                                 <input type="number" step="0.01" min="1.00" max="5.00"
                                                     v-model="form.initial_interview_final" class="form-input"
-                                                    placeholder="1.00 - 5.00" :disabled="!canEditInitialSection" />
+                                                    placeholder="1.00 - 5.00" readonly />
                                                 <small class="helper-text">
-                                                    Average of {{ initialInterviewerCount }} interviewer(s):
-                                                    {{ computedInitialAverageScore || 'No scores yet' }}
+                                                    <span v-if="initialInterviewerCount === 0">
+                                                        No approved interviewers
+                                                    </span>
+                                                    <span
+                                                        v-else-if="initialInterviewersSubmitted < initialInterviewerCount">
+                                                        ⏳ {{ initialInterviewersSubmitted }}/{{ initialInterviewerCount
+                                                        }} interviewers
+                                                        submitted
+                                                        (Waiting for all scores...)
+                                                    </span>
+                                                    <span v-else>
+                                                        ✅ Average of {{ initialInterviewerCount }} interviewer(s):
+                                                        {{ computedInitialAverageScore || 'No scores yet' }}
+                                                    </span>
                                                 </small>
                                                 <span v-if="form.errors.initial_interview_final" class="error-message">
                                                     {{ form.errors.initial_interview_final }}
@@ -1471,7 +1770,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
 
                                     <div v-if="currentUserInitialInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserInitialInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserInitialInterview.evaluation_results)
                                                 }}</strong></p>
@@ -1505,7 +1804,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
 
                                 <div class="mt-4 text-sm text-gray-500">
                                     <p><strong>Plan Date:</strong> {{ formatDateTime(form.initial_interview_plan_date)
-                                        }}</p>
+                                    }}</p>
                                     <p><strong>Venue:</strong> {{ getVenueLabel(form.initial_interview_venue) }}</p>
                                 </div>
                             </div>
@@ -1515,10 +1814,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                         <div class="form-section" :class="{ 'disabled-section': !canEditFinalSection }">
                             <div class="section-header">
                                 <h3>Final Interview</h3>
-                                <div v-if="!isFinalInterviewApplicable" class="section-badge">
-                                    <span class="badge badge-failed">Not Applicable - Previous stage failed</span>
-                                </div>
-                                <div v-else-if="!canEditFinalSection && hasAnyApprovedInterview" class="section-badge">
+                                <div v-if="!canEditFinalSection && hasAnyApprovedInterview" class="section-badge">
                                     <span class="badge badge-locked">You are not assigned to this stage</span>
                                 </div>
                             </div>
@@ -1530,9 +1826,13 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                                         <div class="form-field mb-6">
                                             <label class="field-label">Final Interview Date</label>
                                             <input type="datetime-local" v-model="form.final_interview_date"
-                                                class="form-input" :disabled="!canEditFinalSection"
+                                                class="form-input"
+                                                :disabled="!canEditFinalSection || isFinalInterviewDateLocked"
                                                 :min="nowDateTime()" />
-                                            <small class="helper-text">Cannot select past dates</small>
+                                            <small v-if="isFinalInterviewDateLocked" class="helper-text text-amber-600">
+                                                ⚠️ Date cannot be changed once an interviewer has accepted the task
+                                            </small>
+                                            <small v-else class="helper-text">Cannot select past dates</small>
                                         </div>
 
                                         <div class="form-grid grid-2 mb-6">
@@ -1540,7 +1840,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                                                 <label class="field-label">Final Score (Average)</label>
                                                 <input type="number" step="0.01" min="1.00" max="5.00"
                                                     v-model="form.final_interview_final" class="form-input"
-                                                    placeholder="1.00 - 5.00" :disabled="!canEditFinalSection" />
+                                                    placeholder="1.00 - 5.00" readonly />
                                                 <small class="helper-text">
                                                     Average of {{ finalInterviewerCount }} interviewer(s):
                                                     {{ computedFinalAverageScore || 'No scores yet' }}
@@ -1595,7 +1895,7 @@ const isInitialInterviewPlanDateLocked = computed(() => {
 
                                     <div v-if="currentUserFinalInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserFinalInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserFinalInterview.evaluation_results)
                                                 }}</strong></p>
@@ -1632,45 +1932,66 @@ const isInitialInterviewPlanDateLocked = computed(() => {
                             </div>
                         </div>
 
+
                         <!-- Job Offer -->
-                        <div class="form-section" :class="{ 'disabled-section': !canEditJobOfferSection }">
-                            <div class="section-header">
-                                <h3>Job Offer</h3>
-                                <div v-if="!isJobOfferApplicable" class="section-badge">
-                                    <span class="badge badge-failed">Not Applicable - Previous stage failed</span>
-                                </div>
-                                <div v-else-if="!canEditJobOfferSection && hasAnyApprovedInterview"
-                                    class="section-badge">
-                                    <span class="badge badge-locked">Only HR/Admin can edit</span>
-                                </div>
-                            </div>
-                            <div class="form-grid grid-2">
-                                <div class="form-field">
-                                    <label class="field-label">Job Offer Schedule</label>
-                                    <input type="datetime-local" v-model="form.job_offer_schedule" class="form-input"
-                                        :disabled="!canEditJobOfferSection" :min="nowDateTime()" />
-                                    <small class="helper-text">Cannot select past dates</small>
-                                </div>
-                                <div class="form-field">
-                                    <label class="field-label">Job Offer Status</label>
-                                    <select v-model="form.job_offer_status" class="form-select"
-                                        :disabled="!canEditJobOfferSection">
-                                        <option value="">Select Status</option>
-                                        <option value="1">Pending</option>
-                                        <option value="2">Done</option>
-                                        <option value="3">Accept</option>
-                                        <option value="4">Decline</option>
-                                        <option value="5">Withdraw</option>
-                                        <option value="6">Retracted</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-field mt-3">
-                                <label class="field-label">Job Offer Remarks</label>
-                                <textarea v-model="form.job_offer_remarks" class="form-textarea" rows="3"
-                                    :disabled="!canEditJobOfferSection"></textarea>
-                            </div>
-                        </div>
+<div class="form-section" :class="{ 'disabled-section': !canEditJobOfferSection }">
+    <div class="section-header">
+        <h3>Job Offer</h3>
+        <!-- Failed stages -->
+        <div v-if="Number(application.paper_screening_status) === PAPER_SCREENING.FAILED" class="section-badge">
+            <span class="badge badge-failed">Not Applicable - Paper Screening Failed</span>
+        </div>
+        <div v-else-if="Number(application.exam_application_status) === EXAM_STATUS.FAILED" class="section-badge">
+            <span class="badge badge-failed">Not Applicable - Exam Failed</span>
+        </div>
+        <div v-else-if="Number(application.initial_interview_application_status) === INTERVIEW_STATUS.FAILED" class="section-badge">
+            <span class="badge badge-failed">Not Applicable - Initial Interview Failed</span>
+        </div>
+        <div v-else-if="Number(application.final_interview_application_status) === INTERVIEW_STATUS.FAILED" class="section-badge">
+            <span class="badge badge-failed">Not Applicable - Final Interview Failed</span>
+        </div>
+        <!-- Final Interview not yet Passed/P2 -->
+        <div v-else-if="Number(application.final_interview_application_status) !== INTERVIEW_STATUS.PASSED && 
+                         Number(application.final_interview_application_status) !== INTERVIEW_STATUS.P2" 
+             class="section-badge">
+            <span class="badge badge-locked">
+                ⚠️ Waiting for Final Interview to be Passed/P2 
+                (Current: {{ interviewStatusesList.find(s => s.value == application.final_interview_application_status)?.label || 'Not set' }})
+            </span>
+        </div>
+        <!-- Not HR/Admin -->
+        <div v-else-if="!canManageInterviewers" class="section-badge">
+            <span class="badge badge-locked">Only HR/Admin can edit</span>
+        </div>
+    </div>
+    
+    <div class="form-grid grid-2">
+        <div class="form-field">
+            <label class="field-label">Job Offer Schedule</label>
+            <input type="datetime-local" v-model="form.job_offer_schedule" class="form-input"
+                :disabled="!canEditJobOfferSection" :min="nowDateTime()" />
+            <small class="helper-text">Cannot select past dates</small>
+        </div>
+        <div class="form-field">
+            <label class="field-label">Job Offer Status</label>
+            <select v-model="form.job_offer_status" class="form-select"
+                :disabled="!canEditJobOfferSection">
+                <option value="">Select Status</option>
+                <option value="1">Pending</option>
+                <option value="2">Done</option>
+                <option value="3">Accept</option>
+                <option value="4">Decline</option>
+                <option value="5">Withdraw</option>
+                <option value="6">Retracted</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-field mt-3">
+        <label class="field-label">Job Offer Remarks</label>
+        <textarea v-model="form.job_offer_remarks" class="form-textarea" rows="3"
+            :disabled="!canEditJobOfferSection"></textarea>
+    </div>
+</div>
 
                         <!-- General Remarks -->
                         <div class="form-section" :class="{ 'disabled-section': !canEditGeneralRemarks }">
@@ -2021,8 +2342,10 @@ const isInitialInterviewPlanDateLocked = computed(() => {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.7rem 1.75rem;  /* ✅ Bigger padding */
-    font-size: 0.9375rem;      /* ✅ Slightly larger font */
+    padding: 0.7rem 1.75rem;
+    /* ✅ Bigger padding */
+    font-size: 0.9375rem;
+    /* ✅ Slightly larger font */
     font-weight: 500;
     line-height: 1.25;
     text-decoration: none;

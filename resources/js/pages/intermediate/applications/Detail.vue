@@ -40,7 +40,7 @@ const canAcceptDecline = (interview: any) => {
     const hasPermission = [2, 3, 5, 6].includes(userPermissions.value);
     const isAssignedInterviewer = interview.interviewer_id === page.props.userId; // Changed from user_id
     const isPending = Number(interview.status) === 1;
-    
+
     console.log('canAcceptDecline check:', {
         hasPermission,
         isAssignedInterviewer,
@@ -49,7 +49,7 @@ const canAcceptDecline = (interview: any) => {
         userId: page.props.userId,
         interviewerId: interview.interviewer_id
     });
-    
+
     return hasPermission && isAssignedInterviewer && isPending;
 };
 
@@ -122,7 +122,7 @@ const hasApprovedInStage = (stage: number): boolean => {
     const stageInterviewers = interviews.value.filter(
         (i: any) => i && Number(i.interview_type) === stage
     );
-    
+
     return stageInterviewers.some((i: any) => Number(i.status) === 2);
 };
 
@@ -203,13 +203,13 @@ const pendingApprovalInterviewers = computed(() => {
 });
 
 const failedStage = computed(() => {
-    if (Number(application.value?.final_interview_result) === 3) {
+    if (Number(application.value?.final_interview_application_status) === 5) {
         return 'final_interview';
     }
-    if (Number(application.value?.initial_interview_result) === 3) {
+    if (Number(application.value?.initial_interview_application_status) === 5) {
         return 'initial_interview';
     }
-    if (Number(application.value?.exam_result) === 3) {
+    if (Number(application.value?.exam_application_status) === 5) {
         return 'exam';
     }
     return null;
@@ -238,25 +238,71 @@ const availableNotificationOptions = computed(() => {
         });
     }
 
-    if (failedStage.value) {
+    const scheduleEmailStage = computed(() => {
+    const stage = Number(application.value?.application_stage);
+        if (stage === 2 && ![2, 3, 4, 5].includes(Number(application.value?.exam_application_status))) {
+            return { value: 'applicant_schedule', label: 'Exam' };
+        }
+        if (stage === 3 && ![2, 3, 4, 5].includes(Number(application.value?.initial_interview_application_status))) {
+            return { value: 'applicant_schedule', label: 'Initial Interview' };
+        }
+        if (stage === 4 && ![2, 3, 4, 5].includes(Number(application.value?.final_interview_application_status))) {
+            return { value: 'applicant_schedule', label: 'Final Interview' };
+        }
+        return null;
+    });
+
+
+    const hasApprovedInterviewerForStage = computed(() => {
+    const stage = Number(application.value?.application_stage);
+    let interviewType;
+    
+    if (stage === 2) interviewType = 1; // Exam
+    else if (stage === 3) interviewType = 2; // Initial Interview
+    else if (stage === 4) interviewType = 3; // Final Interview
+    else return false;
+    
+    return interviews.value.some(
+        (i: any) => Number(i.interview_type) === interviewType && Number(i.status) === 2
+        );
+    });
+
+    const stageInfo = scheduleEmailStage.value;
+    const hasScheduleDate = 
+        (Number(application.value?.application_stage) === 2 && application.value?.exam_plan_date &&
+        ![2, 3, 4, 5].includes(Number(application.value?.exam_application_status))) ||
+        (Number(application.value?.application_stage) === 3 && application.value?.initial_interview_plan_date &&
+        ![2, 3, 4, 5].includes(Number(application.value?.initial_interview_application_status))) ||
+        (Number(application.value?.application_stage) === 4 && application.value?.final_interview_date &&
+        ![2, 3, 4, 5].includes(Number(application.value?.final_interview_application_status)));
+
+    if (stageInfo && hasScheduleDate && hasApprovedInterviewerForStage.value) {
         options.push({
-            value: 'applicant_failed',
-            label: `Send applicant failed notification (${failedStageLabel.value})`,
-            description: `Notify the applicant that they did not pass the ${failedStageLabel.value}.`,
+            value: stageInfo.value,
+            label: `Send ${stageInfo.label.toLowerCase()} schedule to applicant`,
+            description: `Notify the applicant of their scheduled ${stageInfo.label.toLowerCase()}.`,
         });
     }
 
-    if (hasScheduledJobOffer.value) {
-        options.push({
-            value: 'hr_recruiters_job_offer',
-            label: 'Notify all HR recruiters of scheduled job offer',
-            description:
-                'Send the scheduled job offer details to all HR recruiters.',
-        });
-    }
+        if (failedStage.value) {
+            options.push({
+                value: 'applicant_failed',
+                label: `Send applicant failed notification (${failedStageLabel.value})`,
+                description: `Notify the applicant that they did not pass the ${failedStageLabel.value}.`,
+            });
+        }
 
-    return options;
-});
+        if (hasScheduledJobOffer.value) {
+            options.push({
+                value: 'hr_recruiters_job_offer',
+                label: 'Notify all HR recruiters of scheduled job offer',
+                description:
+                    'Send the scheduled job offer details to all HR recruiters.',
+            });
+        }
+
+        return options;
+    });
 
 const notificationPreview = computed(() => {
     switch (notification.value.type) {
@@ -269,6 +315,47 @@ const notificationPreview = computed(() => {
                     extra: `${getStageLabel(i.interview_type)} • ${formatDateTime(i.scheduled_date)}`,
                 })),
                 summary: `This email tells interviewer(s) that they have a pending interview assignment for ${applicantFullName.value} and includes a direct link to the application page so they can review and respond.`,
+            };
+
+        case 'applicant_scheduled_exam':
+            return {
+                subject: '【HR System】AWS Intermediate Application Schedule',
+                recipients: [
+                    {
+                        name: applicantFullName.value,
+                        email: application.value?.applicant?.email_address || '',
+                        extra: `Exam • ${formatDateTime(application.value?.exam_plan_date)}`,
+                    },
+                ],
+                summary: `This email tells the applicant about their scheduled exam, including scope and reminders.`,
+            };
+        
+        case 'applicant_schedule':
+            const stage = Number(application.value?.application_stage);
+            let stageLabel = 'Assessment';
+            let scheduleDate = '';
+            
+            if (stage === 2) {
+                stageLabel = 'Exam';
+                scheduleDate = application.value?.exam_plan_date;
+            } else if (stage === 3) {
+                stageLabel = 'Initial Interview';
+                scheduleDate = application.value?.initial_interview_plan_date;
+            } else if (stage === 4) {
+                stageLabel = 'Final Interview';
+                scheduleDate = application.value?.final_interview_date;
+            }
+            
+            return {
+                subject: '【HR System】AWS Intermediate Application Schedule',
+                recipients: [
+                    {
+                        name: applicantFullName.value,
+                        email: application.value?.applicant?.email_address || '',
+                        extra: `${stageLabel} • ${formatDateTime(scheduleDate)}`,
+                    },
+                ],
+                summary: `This email tells the applicant about their scheduled ${stageLabel.toLowerCase()}, including ${stageLabel === 'Exam' ? 'exam scope and ' : ''}reminders.`,
             };
 
         case 'applicant_failed':
@@ -328,19 +415,19 @@ const normalizeDateTimeForSubmit = (value: string) => {
 
     // Create date object
     const date = new Date(value);
-    
+
     // Format using Philippine Time explicitly
     const phDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
-    
+
     const year = phDate.getFullYear();
     const month = String(phDate.getMonth() + 1).padStart(2, '0');
     const day = String(phDate.getDate()).padStart(2, '0');
     const hours = String(phDate.getHours()).padStart(2, '0');
     const minutes = String(phDate.getMinutes()).padStart(2, '0');
-    
+
     console.log('Original value:', value);
     console.log('Converted to PHT:', `${year}-${month}-${day} ${hours}:${minutes}:00`);
-    
+
     return `${year}-${month}-${day} ${hours}:${minutes}:00`;
 };
 
@@ -349,10 +436,10 @@ const formatDateTime = (dateString: string | null) => {
 
     // Parse the date string
     const date = new Date(dateString);
-    
+
     // Check if date is valid
     if (isNaN(date.getTime())) return String(dateString);
-    
+
     // Format to Philippine Time (UTC+8)
     return date.toLocaleString('en-US', {
         month: 'long',
@@ -560,11 +647,11 @@ const canViewDeclineReason = (interview: any) => {
 // Check if all selected interviewers are from the same stage
 const allSameStage = computed(() => {
     if (selectedInterviewers.value.length === 0) return false;
-    
+
     const selectedInterviews = interviews.value.filter((i: any) =>
         selectedInterviewers.value.includes(i.id)
     );
-    
+
     const stages = [...new Set(selectedInterviews.map((i: any) => Number(i.interview_type)))];
     return stages.length === 1;
 });
@@ -618,14 +705,14 @@ const closeDeclineReasonModal = () => {
 const openBulkAddModal = () => {
     selectedBulkInterviewers.value = [];
     interviewerSearch.value = '';
-    
+
     // Set default stage to first available stage
     if (availableStages.value.length > 0) {
         bulkAddStage.value = String(availableStages.value[0].value);
     } else {
         bulkAddStage.value = '1'; // Fallback
     }
-    
+
     showBulkAddModal.value = true;
 };
 
@@ -686,10 +773,10 @@ const submitBulkEditSchedule = async () => {
     try {
         // ✅ Use normalizeDateTimeForSubmit to convert to PHT
         const normalizedDate = normalizeDateTimeForSubmit(bulkEditScheduledDate.value);
-        
+
         console.log('Bulk edit - Original:', bulkEditScheduledDate.value);
         console.log('Bulk edit - Converted to PHT:', normalizedDate);
-        
+
         const response = await axios.post(
             `/intermediate/applications/${application.value.id}/interviews/bulk-update-schedule`,
             {
@@ -739,10 +826,10 @@ const submitBulkAdd = async () => {
     try {
         // ✅ Use normalizeDateTimeForSubmit to convert to PHT
         const normalizedDate = normalizeDateTimeForSubmit(bulkAddPlannedDate.value);
-        
+
         console.log('Original value:', bulkAddPlannedDate.value);
         console.log('Converted to PHT:', normalizedDate);
-        
+
         const payload = {
             interviewer_ids: selectedBulkInterviewers.value.map((i) => i.id),
             interview_type: Number(bulkAddStage.value),
@@ -851,17 +938,17 @@ const submitAcceptDecline = async () => {
 // Check if an interview can be selected for editing
 const canSelectInterview = (interview: any): boolean => {
     if (!interview) return false;
-    
+
     // Cannot select if Done (status = 4)
     if (Number(interview.status) === 4) {
         return false;
     }
-    
+
     // Cannot select if already Approved (status = 2)
     if (Number(interview.status) === 2) {
         return false;
     }
-    
+
     // Can select for all other statuses (Pending=1, Declined=3)
     return true;
 };
@@ -871,9 +958,9 @@ const canEditScheduleForStage = (stage: number): boolean => {
     const stageInterviewers = interviews.value.filter(
         (i: any) => i && Number(i.interview_type) === stage
     );
-    
+
     if (stageInterviewers.length === 0) return true; // No interviewers = can edit
-    
+
     // Can edit ONLY if ALL interviewers for this stage have Declined (status = 3)
     return stageInterviewers.every((i: any) => Number(i.status) === 3);
 };
@@ -907,7 +994,7 @@ const scheduleEditErrorMessage = computed(() => {
     if (blockedStages.length === 0) return '';
 
     const stageNames = blockedStages.map(s => getStageLabel(s)).join(', ');
-    
+
     // Check why each stage is blocked
     const reasons = blockedStages.map(stage => {
         const stageInterviewers = interviews.value.filter(
@@ -915,12 +1002,12 @@ const scheduleEditErrorMessage = computed(() => {
         );
         const hasPending = stageInterviewers.some((i: any) => Number(i.status) === 1);
         const hasApproved = stageInterviewers.some((i: any) => Number(i.status) === 2);
-        
+
         if (hasApproved) return `${getStageLabel(stage)} has approved interviewer(s)`;
         if (hasPending) return `${getStageLabel(stage)} has pending interviewer(s)`;
         return `${getStageLabel(stage)} is not editable`;
     });
-    
+
     return `Cannot edit schedule: ${reasons.join('; ')}.`;
 });
 
@@ -940,9 +1027,9 @@ const canChangeMind = (interview: any) => {
 // Change mind directly from decline modal
 const changeMindFromDeclineModal = async () => {
     if (!selectedDeclinedInterview.value) return;
-    
+
     changeMindSubmitting.value = true;
-    
+
     try {
         await axios.post(
             `/intermediate/applications/${application.value.id}/interviews/${selectedDeclinedInterview.value.id}/decision`,
@@ -965,7 +1052,7 @@ const changeMindFromDeclineModal = async () => {
         });
 
         closeDeclineReasonModal();
-        
+
         showToast('Interview assignment accepted successfully!', 'success');
     } catch (error: any) {
         showToast(
@@ -1183,47 +1270,47 @@ const stageUpdateConfirmDetails = ref<{
 // Update schedule for entire stage
 const submitStageScheduleUpdate = () => {
     if (selectedInterviewers.value.length === 0) return;
-    
+
     // Get the stage from the first selected interviewer (all should be same stage)
-    const firstInterview = interviews.value.find((i: any) => 
+    const firstInterview = interviews.value.find((i: any) =>
         selectedInterviewers.value.includes(i.id)
     );
-    
+
     if (!firstInterview) return;
-    
+
     const stage = Number(firstInterview.interview_type);
     const stageName = getStageLabel(stage);
-    
+
     // Count all interviewers in this stage
     const stageInterviewers = interviews.value.filter(
         (i: any) => Number(i.interview_type) === stage
     );
-    
+
     // Store details and show confirmation modal
     stageUpdateConfirmDetails.value = {
         stage: stage,
         stageName: stageName,
         interviewerCount: stageInterviewers.length,
     };
-    
+
     showStageUpdateConfirmModal.value = true;
 };
 
 // Execute the actual stage update after confirmation
 const executeStageScheduleUpdate = async () => {
     if (!stageUpdateConfirmDetails.value) return;
-    
+
     const { stage, stageName } = stageUpdateConfirmDetails.value;
-    
+
     showStageUpdateConfirmModal.value = false;
     bulkEditingSchedule.value = true;
-    
+
     try {
         const normalizedDate = normalizeDateTimeForSubmit(bulkEditScheduledDate.value);
-        
+
         console.log('Stage update - Original:', bulkEditScheduledDate.value);
         console.log('Stage update - Converted to PHT:', normalizedDate);
-        
+
         const response = await axios.post(
             `/intermediate/applications/${application.value.id}/interviews/stage-update-schedule`,
             {
@@ -1234,7 +1321,7 @@ const executeStageScheduleUpdate = async () => {
 
         interviews.value = response.data.interviews || interviews.value;
         syncApplicationDatesFromInterviews();
-        
+
         // Update the application's plan date
         if (response.data.application_date) {
             if (stage === 1) {
@@ -1245,7 +1332,7 @@ const executeStageScheduleUpdate = async () => {
                 application.value.final_interview_date = response.data.application_date;
             }
         }
-        
+
         showBulkEditScheduleModal.value = false;
         selectedInterviewers.value = [];
         selectAll.value = false;
@@ -1290,7 +1377,7 @@ const availableStages = computed(() => {
         { value: 2, label: 'Initial Interview' },
         { value: 3, label: 'Final Interview' },
     ];
-    
+
     return stages.filter(stage => {
         // Check the result for each stage
         if (stage.value === 1) {
@@ -1429,8 +1516,6 @@ const finalInterviewersList = computed(() => {
                             style="background-color: #2f359e">
                             <div
                                 class="mb-3 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-white">
-
-                                <!-- <img src="storage\app\public\pictures\NJIqtRIp5zplmVzoCeRUKuIBAtqCR2bv5aI9WEv5.jpg" alt="Test" class="h-full w-full object-cover" /> -->
                                 <img v-if="application.upload_pic" :src="getPicUrl(application.upload_pic) || ''"
                                     alt="Applicant Photo" class="h-full w-full object-cover" />
                                 <User v-else class="h-10 w-10 text-blue-600" />
@@ -1893,7 +1978,8 @@ const finalInterviewersList = computed(() => {
                     </div>
 
                     <!-- Initial Interview Details -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
+                    <div
+                        class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
                         <div class="mb-4 flex items-center justify-between">
                             <h2 class="flex items-center gap-2 text-lg font-bold">
                                 <Calendar class="h-5 w-5 text-blue-600" /> INITIAL INTERVIEW DETAILS
@@ -1904,22 +1990,27 @@ const finalInterviewersList = computed(() => {
                         <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-4">
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Interview Plan Date</div>
-                                <div class="text-sm font-medium">{{ formatDateTime(application.initial_interview_plan_date) }}</div>
+                                <div class="text-sm font-medium">{{
+                                    formatDateTime(application.initial_interview_plan_date) }}</div>
                             </div>
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Interview Actual Date</div>
-                                <div class="text-sm font-medium">{{ formatDateTime(application.initial_interview_actual_date) }}</div>
+                                <div class="text-sm font-medium">{{
+                                    formatDateTime(application.initial_interview_actual_date) }}</div>
                             </div>
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Final Score (Average)</div>
-                                <div class="text-lg font-bold">{{ formatScore(application.initial_interview_final) }}</div>
+                                <div class="text-lg font-bold">{{ formatScore(application.initial_interview_final) }}
+                                </div>
                             </div>
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Application Status</div>
                                 <div>
                                     <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
                                         :class="getApplicationStatusBadgeClass(application.initial_interview_application_status)">
-                                        {{ getInterviewApplicationStatusLabel(application.initial_interview_application_status) || '-' }}
+                                        {{
+                                            getInterviewApplicationStatusLabel(application.initial_interview_application_status)
+                                            || '-' }}
                                     </span>
                                 </div>
                             </div>
@@ -1928,12 +2019,12 @@ const finalInterviewersList = computed(() => {
                         <!-- Interviewers Table -->
                         <div class="mb-5">
                             <div class="mb-3 text-sm font-semibold">Initial Interviewers</div>
-                            
+
                             <div v-if="initialInterviewersList.length === 0"
                                 class="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500 dark:border-zinc-700">
                                 No initial interviewers assigned.
                             </div>
-                            
+
                             <div v-else class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
                                 <table class="w-full text-sm">
                                     <thead class="bg-zinc-50 dark:bg-zinc-800">
@@ -1984,7 +2075,8 @@ const finalInterviewersList = computed(() => {
                     </div>
 
                     <!-- Final Interview Details -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
+                    <div
+                        class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
                         <div class="mb-4 flex items-center justify-between">
                             <h2 class="flex items-center gap-2 text-lg font-bold">
                                 <Star class="h-5 w-5 text-blue-600" /> FINAL INTERVIEW DETAILS
@@ -1995,18 +2087,22 @@ const finalInterviewersList = computed(() => {
                         <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Interview Date</div>
-                                <div class="text-sm font-medium">{{ formatDateTime(application.final_interview_date) }}</div>
+                                <div class="text-sm font-medium">{{ formatDateTime(application.final_interview_date) }}
+                                </div>
                             </div>
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Final Score (Average)</div>
-                                <div class="text-lg font-bold">{{ formatScore(application.final_interview_final) }}</div>
+                                <div class="text-lg font-bold">{{ formatScore(application.final_interview_final) }}
+                                </div>
                             </div>
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Application Status</div>
                                 <div>
                                     <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
                                         :class="getApplicationStatusBadgeClass(application.final_interview_application_status)">
-                                        {{ getInterviewApplicationStatusLabel(application.final_interview_application_status) || '-' }}
+                                        {{
+                                            getInterviewApplicationStatusLabel(application.final_interview_application_status)
+                                            || '-' }}
                                     </span>
                                 </div>
                             </div>
@@ -2015,12 +2111,12 @@ const finalInterviewersList = computed(() => {
                         <!-- Final Interviewers Table -->
                         <div class="mb-5">
                             <div class="mb-3 text-sm font-semibold">Final Interviewers</div>
-                            
+
                             <div v-if="finalInterviewersList.length === 0"
                                 class="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500 dark:border-zinc-700">
                                 No final interviewers assigned.
                             </div>
-                            
+
                             <div v-else class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
                                 <table class="w-full text-sm">
                                     <thead class="bg-zinc-50 dark:bg-zinc-800">
@@ -2158,14 +2254,16 @@ const finalInterviewersList = computed(() => {
                             </div>
 
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Stage</label>
-                                <select v-model="bulkAddStage" 
+                                <label
+                                    class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Stage</label>
+                                <select v-model="bulkAddStage"
                                     class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800"
                                     :disabled="availableStages.length === 0">
                                     <option v-for="stage in availableStages" :key="stage.value" :value="stage.value">
                                         {{ stage.label }}
                                     </option>
-                                    <optgroup v-if="isStageLocked(1) || isStageLocked(2) || isStageLocked(3)" label="Locked Stages">
+                                    <optgroup v-if="isStageLocked(1) || isStageLocked(2) || isStageLocked(3)"
+                                        label="Locked Stages">
                                         <option v-if="isStageLocked(1)" value="1" disabled>
                                             Exam ({{ getStageLockedReason(1) }})
                                         </option>
@@ -2217,7 +2315,7 @@ const finalInterviewersList = computed(() => {
                         <h3 class="mb-2 text-xl font-bold">
                             {{ allSameStage ? 'Edit Stage Schedule' : 'Bulk Edit Schedule' }}
                         </h3>
-                        
+
 
                         <div class="space-y-4">
                             <div>
@@ -2232,7 +2330,7 @@ const finalInterviewersList = computed(() => {
                                                     interview.name }}</div>
                                                 <div class="text-xs text-gray-500 dark:text-gray-400">
                                                     {{ interview.role_label || '-' }} • {{
-                                                    getStageLabel(interview.interview_type) }}
+                                                        getStageLabel(interview.interview_type) }}
                                                 </div>
                                             </div>
                                             <div class="text-right text-xs text-gray-500 dark:text-gray-400">
@@ -2248,13 +2346,14 @@ const finalInterviewersList = computed(() => {
                                     class="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/30">
                                     ⚠️ {{ scheduleEditErrorMessage }}
                                 </div>
-                                
+
                                 <!-- Info message for same stage -->
                                 <div v-if="allSameStage && !scheduleEditErrorMessage"
                                     class="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-900/30">
-                                    ℹ️ All  scheduled date for interviewers in this stage will be updated and their status reset to "Pending Approval".
+                                    ℹ️ All scheduled date for interviewers in this stage will be updated and their
+                                    status reset to "Pending Approval".
                                 </div>
-                                
+
                                 <p v-if="bulkEditScheduleErrors.selectedInterviewers" class="mt-1 text-sm text-red-600">
                                     {{ bulkEditScheduleErrors.selectedInterviewers }}
                                 </p>
@@ -2277,7 +2376,7 @@ const finalInterviewersList = computed(() => {
                                 class="flex-1 rounded-lg border border-gray-300 px-4 py-2 transition hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
                                 Cancel
                             </button>
-                            <button @click="allSameStage ? submitStageScheduleUpdate() : submitBulkEditSchedule()" 
+                            <button @click="allSameStage ? submitStageScheduleUpdate() : submitBulkEditSchedule()"
                                 :disabled="bulkEditingSchedule"
                                 class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50">
                                 <span v-if="!bulkEditingSchedule">Update Schedule</span>
@@ -2364,12 +2463,6 @@ const finalInterviewersList = computed(() => {
                                     {{ acceptDeclineErrors.reason }}
                                 </p>
                             </div>
-
-                            <div v-if="willTriggerApplicantAutoEmail"
-                                class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-3 text-sm text-blue-800">
-                                Accepting will send an automatic email to the applicant, informing them of their
-                                scheduled assessment.
-                            </div>
                         </div>
 
                         <div class="mt-6 flex gap-3">
@@ -2401,28 +2494,36 @@ const finalInterviewersList = computed(() => {
                         <div v-if="canChangeMind(selectedDeclinedInterview)"
                             class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-900/30">
                             <p class="font-medium text-amber-800 dark:text-amber-300">Do you change your mind?</p>
-                            <p class="mt-1 text-amber-700 dark:text-amber-400">You can accept this assignment instead.</p>
+                            <p class="mt-1 text-amber-700 dark:text-amber-400">You can accept this assignment instead.
+                            </p>
                         </div>
 
                         <div class="space-y-4">
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Interviewer</label>
+                                <label
+                                    class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Interviewer</label>
                                 <input type="text" :value="selectedDeclinedInterview?.name || '-'" disabled
                                     class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 dark:border-zinc-700" />
                             </div>
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Stage</label>
-                                <input type="text" :value="getStageLabel(selectedDeclinedInterview?.interview_type)" disabled
+                                <label
+                                    class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Stage</label>
+                                <input type="text" :value="getStageLabel(selectedDeclinedInterview?.interview_type)"
+                                    disabled
                                     class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 dark:border-zinc-700" />
                             </div>
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled Date</label>
-                                <input type="text" :value="formatDateTime(selectedDeclinedInterview?.scheduled_date)" disabled
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled
+                                    Date</label>
+                                <input type="text" :value="formatDateTime(selectedDeclinedInterview?.scheduled_date)"
+                                    disabled
                                     class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 dark:border-zinc-700" />
                             </div>
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Decline Reason</label>
-                                <div class="w-full rounded-lg border border-gray-300 bg-zinc-50 px-3 py-3 text-sm whitespace-pre-wrap dark:border-zinc-700 dark:bg-zinc-800">
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Decline
+                                    Reason</label>
+                                <div
+                                    class="w-full rounded-lg border border-gray-300 bg-zinc-50 px-3 py-3 text-sm whitespace-pre-wrap dark:border-zinc-700 dark:bg-zinc-800">
                                     {{ selectedDeclinedInterview?.decline_reason || '-' }}
                                 </div>
                             </div>
@@ -2433,10 +2534,9 @@ const finalInterviewersList = computed(() => {
                                 class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm transition hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
                                 Close
                             </button>
-                            
+
                             <!-- Change Mind Button - Only shows if user can change mind -->
-                            <button v-if="canChangeMind(selectedDeclinedInterview)"
-                                @click="changeMindFromDeclineModal"
+                            <button v-if="canChangeMind(selectedDeclinedInterview)" @click="changeMindFromDeclineModal"
                                 :disabled="changeMindSubmitting"
                                 class="flex-1 rounded-lg bg-amber-600 px-4 py-2 text-sm text-white transition hover:bg-amber-700 disabled:opacity-50">
                                 <span v-if="!changeMindSubmitting">Accept Instead</span>
@@ -2545,8 +2645,7 @@ const finalInterviewersList = computed(() => {
                             </div>
 
                             <div class="flex gap-2" v-if="canManageInterviewers">
-                                <button @click="openBulkAddModal" 
-                                    class="btn-bulk-add"
+                                <button @click="openBulkAddModal" class="btn-bulk-add"
                                     :class="{ 'opacity-50 cursor-not-allowed': availableStages.length === 0 }"
                                     :disabled="availableStages.length === 0"
                                     :title="availableStages.length === 0 ? 'All stages are completed' : 'Add interviewers'">
@@ -2584,22 +2683,24 @@ const finalInterviewersList = computed(() => {
                                     <td class="px-4 py-3" v-if="canManageInterviewers">
                                         <div class="flex items-center justify-center">
                                             <!-- Show checkbox if selectable -->
-                                            <input v-if="canSelectInterview(interview)"
-                                                type="checkbox" v-model="selectedInterviewers" :value="interview.id"
+                                            <input v-if="canSelectInterview(interview)" type="checkbox"
+                                                v-model="selectedInterviewers" :value="interview.id"
                                                 class="rounded border-gray-300" />
-                                            
+
                                             <!-- Show warning icon if stage has at least 1 Approved (status=2) -->
-                                            <div v-else-if="Number(interview.status) !== 4 && hasApprovedInStage(interview.interview_type)" 
+                                            <div v-else-if="Number(interview.status) !== 4 && hasApprovedInStage(interview.interview_type)"
                                                 class="flex items-center justify-center">
-                                                <span class="cursor-help text-amber-500" title="This stage has an approved interviewer">
-                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <span class="cursor-help text-amber-500"
+                                                    title="This stage has an approved interviewer">
+                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2">
                                                         <circle cx="12" cy="12" r="10" />
                                                         <line x1="12" y1="8" x2="12" y2="12" />
                                                         <line x1="12" y1="16" x2="12.01" y2="16" />
                                                     </svg>
                                                 </span>
                                             </div>
-                                            
+
                                             <!-- Show empty space for Done (status=4) -->
                                             <div v-else class="h-4 w-4"></div>
                                         </div>
@@ -2628,17 +2729,17 @@ const finalInterviewersList = computed(() => {
                                         <div class="flex items-center gap-2">
                                             <!-- For Pending (status=1) - Show Respond button -->
                                             <button v-if="canAcceptDecline(interview)"
-                                                    @click="openAcceptDeclineModal(interview)"
-                                                    class="inline-flex items-center justify-center rounded-md px-1 py-2 text-green-600 transition hover:bg-green-50 hover:text-green-800"
-                                                    title="Accept/Decline">
+                                                @click="openAcceptDeclineModal(interview)"
+                                                class="inline-flex items-center justify-center rounded-md px-1 py-2 text-green-600 transition hover:bg-green-50 hover:text-green-800"
+                                                title="Accept/Decline">
                                                 <CheckCircle class="mr-1 h-4 w-4" /> Respond
                                             </button>
-                                            
+
                                             <!-- For Declined (status=3) - Show View Reason button -->
                                             <button v-if="canViewDeclineReason(interview)"
-                                                    @click="openDeclineReasonModal(interview)"
-                                                    class="font-sm inline-flex items-center justify-center rounded-md px-1 py-2 text-sm text-blue-600 transition hover:bg-blue-50 hover:text-blue-800"
-                                                    title="View Decline Details">
+                                                @click="openDeclineReasonModal(interview)"
+                                                class="font-sm inline-flex items-center justify-center rounded-md px-1 py-2 text-sm text-blue-600 transition hover:bg-blue-50 hover:text-blue-800"
+                                                title="View Decline Details">
                                                 View Details
                                             </button>
                                         </div>
@@ -2656,7 +2757,8 @@ const finalInterviewersList = computed(() => {
                 </div>
 
                 <!-- Additional Information -->
-                <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
+                <div
+                    class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
                     <h2 class="mb-4 flex items-center gap-2 text-lg font-bold">
                         <Users class="h-5 w-5 text-blue-600" /> ADDITIONAL INFORMATION
                     </h2>
@@ -2669,7 +2771,7 @@ const finalInterviewersList = computed(() => {
                                 {{ application.remarks || 'No remarks' }}
                             </div>
                         </div>
-                        
+
                         <!-- You can add more fields here if needed -->
                         <!-- Example: Reason for Decline (if applicable) -->
                         <div v-if="application.reason_for_decline">
@@ -2678,7 +2780,7 @@ const finalInterviewersList = computed(() => {
                                 {{ application.reason_for_decline }}
                             </div>
                         </div>
-                        
+
                         <!-- Reason by Category -->
                         <div v-if="application.reason_by_category">
                             <div class="mb-2 text-sm font-semibold">Decline Category</div>
@@ -2686,7 +2788,7 @@ const finalInterviewersList = computed(() => {
                                 {{ application.reason_by_category }}
                             </div>
                         </div>
-                        
+
                         <!-- Parked To -->
                         <div v-if="application.parked_to">
                             <div class="mb-2 text-sm font-semibold">Parked To</div>
@@ -2694,7 +2796,7 @@ const finalInterviewersList = computed(() => {
                                 {{ application.parked_to }}
                             </div>
                         </div>
-                        
+
                         <!-- AWS Rank -->
                         <div v-if="application.aws_rank">
                             <div class="mb-2 text-sm font-semibold">AWS Rank</div>
@@ -2702,7 +2804,7 @@ const finalInterviewersList = computed(() => {
                                 {{ application.aws_rank }}
                             </div>
                         </div>
-                        
+
                         <!-- AWS Start Date -->
                         <div v-if="application.aws_start_date">
                             <div class="mb-2 text-sm font-semibold">AWS Start Date</div>
@@ -2718,35 +2820,39 @@ const finalInterviewersList = computed(() => {
                     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="cancelStageUpdate"></div>
                     <div class="relative mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900">
                         <div class="mb-4 flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-                                <svg class="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                                <svg class="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
                             <h3 class="text-xl font-bold">Confirm Stage Schedule Update</h3>
                         </div>
-                        
+
                         <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                            You are about to update the schedule for <strong>ALL</strong> interviewers in the 
+                            You are about to update the schedule for <strong>ALL</strong> interviewers in the
                             <strong>{{ stageUpdateConfirmDetails?.stageName }}</strong> stage.
                         </p>
-                        
+
                         <div class="mb-4 rounded-lg bg-amber-50 p-4 dark:bg-amber-900/20">
                             <p class="text-sm text-amber-800 dark:text-amber-300">
                                 <strong>⚠️ This will:</strong>
                             </p>
                             <ul class="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-400">
-                                <li>• Update the scheduled date for <strong>{{ stageUpdateConfirmDetails?.interviewerCount }}</strong> interviewer(s)</li>
+                                <li>• Update the scheduled date for <strong>{{
+                                    stageUpdateConfirmDetails?.interviewerCount }}</strong> interviewer(s)</li>
                                 <li>• Reset all interviewers' status to <strong>"Pending Approval"</strong></li>
                                 <li>• Clear any previous decline reasons</li>
                                 <li>• Update the {{ stageUpdateConfirmDetails?.stageName }} plan date</li>
                             </ul>
                         </div>
-                        
+
                         <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
                             Are you sure you want to continue?
                         </p>
-                        
+
                         <div class="flex gap-3">
                             <button @click="cancelStageUpdate"
                                 class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm transition hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
