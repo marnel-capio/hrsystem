@@ -1,6 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 import interviews from './interviews'
-import intermediate from './intermediate'
 /**
 * @see \App\Http\Controllers\ActionApplicationController::index
  * @see app/Http/Controllers/ActionApplicationController.php:28
@@ -311,7 +310,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     show.form = showForm
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:52
+ * @see app/Http/Controllers/ApplicationImportController.php:92
  * @route '/action/applications/import'
  */
 export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -326,7 +325,7 @@ importMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:52
+ * @see app/Http/Controllers/ApplicationImportController.php:92
  * @route '/action/applications/import'
  */
 importMethod.url = (options?: RouteQueryOptions) => {
@@ -335,7 +334,7 @@ importMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:52
+ * @see app/Http/Controllers/ApplicationImportController.php:92
  * @route '/action/applications/import'
  */
 importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -345,7 +344,7 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:52
+ * @see app/Http/Controllers/ApplicationImportController.php:92
  * @route '/action/applications/import'
  */
     const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -355,7 +354,7 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:52
+ * @see app/Http/Controllers/ApplicationImportController.php:92
  * @route '/action/applications/import'
  */
         importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -979,7 +978,6 @@ interviews: Object.assign(interviews, interviews),
 sendNotification: Object.assign(sendNotification, sendNotification),
 print: Object.assign(print, print),
 batchResourceSchedule: Object.assign(batchResourceSchedule, batchResourceSchedule),
-intermediate: Object.assign(intermediate, intermediate),
 }
 
 export default applications
