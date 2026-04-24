@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
+<<<<<<< HEAD
 * @see \App\Http\Controllers\IntermediateApplicationController::updatePaperScreening
  * @see app/Http/Controllers/IntermediateApplicationController.php:532
  * @route '/intermediate/applications/{id}/update-paper-screening'
@@ -426,6 +427,8 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
     
     print.form = printForm
 /**
+=======
+>>>>>>> develop
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:28
  * @route '/intermediate/applications'
@@ -505,7 +508,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:423
+ * @see app/Http/Controllers/ApplicationImportController.php:521
  * @route '/intermediate/applications/import'
  */
 export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -520,7 +523,7 @@ importMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:423
+ * @see app/Http/Controllers/ApplicationImportController.php:521
  * @route '/intermediate/applications/import'
  */
 importMethod.url = (options?: RouteQueryOptions) => {
@@ -529,7 +532,7 @@ importMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:423
+ * @see app/Http/Controllers/ApplicationImportController.php:521
  * @route '/intermediate/applications/import'
  */
 importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -539,7 +542,7 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:423
+ * @see app/Http/Controllers/ApplicationImportController.php:521
  * @route '/intermediate/applications/import'
  */
     const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -549,7 +552,7 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\ApplicationImportController::importMethod
- * @see app/Http/Controllers/ApplicationImportController.php:423
+ * @see app/Http/Controllers/ApplicationImportController.php:521
  * @route '/intermediate/applications/import'
  */
         importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -789,12 +792,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     
     show.form = showForm
 const applications = {
-    updatePaperScreening: Object.assign(updatePaperScreening, updatePaperScreening),
-sendNotification: Object.assign(sendNotification, sendNotification),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-print: Object.assign(print, print),
-index: Object.assign(index, index),
+    index: Object.assign(index, index),
 import: Object.assign(importMethod, importMethod),
 register: Object.assign(register, register),
 store: Object.assign(store, store),

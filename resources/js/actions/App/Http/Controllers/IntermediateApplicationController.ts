@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
+<<<<<<< HEAD
 * @see \App\Http\Controllers\IntermediateApplicationController::updatePaperScreening
  * @see app/Http/Controllers/IntermediateApplicationController.php:532
  * @route '/intermediate/applications/{id}/update-paper-screening'
@@ -506,6 +507,8 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
     
     print.form = printForm
 /**
+=======
+>>>>>>> develop
 * @see \App\Http\Controllers\IntermediateApplicationController::index
  * @see app/Http/Controllers/IntermediateApplicationController.php:28
  * @route '/intermediate/applications'
@@ -813,6 +816,6 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
     
     show.form = showForm
-const IntermediateApplicationController = { updatePaperScreening, sendNotification, edit, update, print, index, create, store, show }
+const IntermediateApplicationController = { index, create, store, show }
 
 export default IntermediateApplicationController
