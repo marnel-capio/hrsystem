@@ -19,6 +19,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\IntermediateUploadStatusMail;
+use App\Mail\ActionUploadStatusMail;
+
 use App\Models\User;
 
 
@@ -53,6 +55,40 @@ class ApplicationImportController extends Controller
             'userPermissions' => auth()->user()->permissions ?? 0,
         ]);
     }
+
+
+public function getTotalApplicants(int $batchId): int
+    {
+        $existingApplicantsCount = ActionApplication::where('action_batch_id', $batchId)->count();
+
+        return $existingApplicantsCount;
+    }
+    public function getNewApplicants(array $importedApplicants): int
+    {
+        return count($importedApplicants);
+    }
+    
+    public function getExistingApplicants(int $batchId, array $importedApplicants): int
+    {
+        $totalApplicants = $this->getTotalApplicants($batchId);
+        
+        $newApplicants = $this->getNewApplicants($importedApplicants);
+
+        return $totalApplicants - $newApplicants;
+    }
+
+    public function getFailedUploads(array $failedApplicants, array $skippedApplicants): int
+    {
+        return count($failedApplicants) + count($skippedApplicants);
+    }
+
+    public function getLoggedUserName()
+{
+    $user = Auth::user(); 
+    return $user ? $user->name : 'Unknown User';
+}
+
+    
 
     public function import(ImportApplicationsRequest $request)
     {
@@ -395,7 +431,7 @@ class ApplicationImportController extends Controller
         if (!empty($emails)) {
             try {
                 Mail::to($emails)->send(
-                    new UploadStatusReportMail(
+                    new ActionUploadStatusMail(
                         $batchName, 
                         [
                             'senderName' => $userName, 

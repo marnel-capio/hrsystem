@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 
+
 class ActionUploadStatusMail extends Mailable
 {
     use Queueable, SerializesModels;
