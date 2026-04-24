@@ -33,6 +33,8 @@ const page = usePage<{
         id: number
         name: string
         email_address: string
+        work_experiences?: string[]
+        skills?: string[]
     }>
 }>()
 
@@ -65,6 +67,8 @@ const props = defineProps<{
         id: number
         name: string
         email_address: string
+        work_experiences?: string[] 
+        skills?: string[] 
     }>
 }>()
 
@@ -208,10 +212,30 @@ const selectedApplicantLabel = computed(() => {
 
 const filteredApplicants = computed(() => {
     if (!searchQuery.value.trim()) return intermediateApplicants.value
+    
     const query = searchQuery.value.toLowerCase()
-    return intermediateApplicants.value.filter(applicant =>
-        applicant.label.toLowerCase().includes(query)
-    )
+    return intermediateApplicants.value.filter(applicant => {
+        // Search in name and email
+        if (applicant.label.toLowerCase().includes(query)) {
+            return true
+        }
+        
+        // Search in work experience job titles
+        if (applicant.work_experiences?.some(exp => 
+            exp.toLowerCase().includes(query)
+        )) {
+            return true
+        }
+        
+        // Search in skills
+        if (applicant.skills?.some(skill => 
+            skill.toLowerCase().includes(query)
+        )) {
+            return true
+        }
+        
+        return false
+    })
 })
 
 // EVERYTHING DISABLED UNTIL APPLICANT SELECTED
@@ -298,15 +322,20 @@ watch(() => form.intermediate_applicant_id, async (newApplicantId, oldApplicantI
 }, { immediate: true })
 
 // COMPLETE FORM RESET FUNCTION
+// COMPLETE FORM RESET FUNCTION
 async function resetCompleteForm() {
     // Clear all files first
     clearFilePreviews()
+
+    // ✅ SAVE the current requisition value before resetting
+    const currentRequisitionId = form.resource_schedule_id
 
     // Reset ALL form fields to match model
     form.application_stage = 1
     form.position = ''
     form.source_project_id = ''
-    form.resource_schedule_id = ''
+    // ✅ Don't reset resource_schedule_id - keep the selected requisition
+    // form.resource_schedule_id = ''  ← REMOVE THIS LINE
     form.upload_resume = ''
     form.upload_pic = ''
 
@@ -386,6 +415,9 @@ async function resetCompleteForm() {
     form.replied_date = ''
 
     form.remarks = ''
+
+    // ✅ RESTORE the requisition value
+    form.resource_schedule_id = currentRequisitionId
 
     // Clear all errors
     form.clearErrors()
@@ -708,7 +740,9 @@ onMounted(async () => {
         intermediateApplicants.value = props.intermediateApplicants.map(applicant => ({
             value: applicant.id,
             label: `${applicant.name} (${applicant.email_address})`,
-            email_address: applicant.email_address
+            email_address: applicant.email_address,
+            work_experiences: applicant.work_experiences || [],  
+            skills: applicant.skills || [],                      
         }))
     }
 
@@ -777,6 +811,7 @@ function handleClickOutside(event: MouseEvent) {
     const target = event.target as HTMLElement
     if (!target.closest('.custom-select-wrapper')) {
         isDropdownOpen.value = false
+        isRequisitionDropdownOpen.value = false
     }
 }
 
@@ -1140,6 +1175,64 @@ watch(() => form.initial_interview_remarks, (newValue) => {
     }
 })
 
+// Add these refs after your existing refs (around line 60-70)
+const isRequisitionDropdownOpen = ref(false)
+const requisitionSearchQuery = ref('')
+
+// Add this computed property after your existing computed properties
+const filteredRequisitions = computed(() => {
+    if (!requisitionSearchQuery.value.trim()) return sourceProjects.value
+
+    const query = requisitionSearchQuery.value.toLowerCase()
+    return sourceProjects.value.filter(requisition => {
+        const resource = (requisition.label || '').toLowerCase()
+        // Extract project name and location from the label format: "Resource - ProjectName (Location)"
+        const match = requisition.label.match(/^(.+?)\s*-\s*(.+?)\s*\((.+?)\)$/)
+        const projectName = match ? match[2].toLowerCase() : ''
+        const location = match ? match[3].toLowerCase() : ''
+
+        return resource.includes(query) ||
+            projectName.includes(query) ||
+            location.includes(query)
+    })
+})
+
+const selectedRequisitionLabel = computed(() => {
+    const selected = sourceProjects.value.find(r => r.value === Number(form.resource_schedule_id))
+    return selected ? selected.label : ''
+})
+
+// Update the source projects data structure to include parsed fields
+const parsedRequisitions = computed(() => {
+    return sourceProjects.value.map(req => {
+        const match = req.label.match(/^(.+?)\s*-\s*(.+?)\s*\((.+?)\)$/)
+        return {
+            ...req,
+            resource: match ? match[1].trim() : req.label,
+            project_name: match ? match[2].trim() : '',
+            location: match ? match[3].trim() : ''
+        }
+    })
+})
+
+// Add these functions after your existing functions
+function toggleRequisitionDropdown() {
+    isRequisitionDropdownOpen.value = !isRequisitionDropdownOpen.value
+    if (isRequisitionDropdownOpen.value) {
+        requisitionSearchQuery.value = ''
+        // Close the applicant dropdown if it's open
+        if (isDropdownOpen.value) {
+            isDropdownOpen.value = false
+        }
+    }
+}
+
+function selectRequisition(requisition) {
+    form.resource_schedule_id = requisition.value
+    isRequisitionDropdownOpen.value = false
+    requisitionSearchQuery.value = ''
+}
+
 
 </script>
 
@@ -1172,20 +1265,50 @@ watch(() => form.initial_interview_remarks, (newValue) => {
                             <div class="section-header">
                                 <h3>Basic Information</h3>
                             </div>
-                            
+
                             <!-- Applicant + Requisitions - SIDE BY SIDE -->
                             <div class="form-grid grid-2 mb-6">
 
                                 <!-- RIGHT: Request Requisitions -->
                                 <div class="form-field">
                                     <label class="field-label">Request Requisition Forms</label>
-                                    <select v-model="form.resource_schedule_id" class="form-select">
-                                        <option value="">Select Requisition Form</option>
-                                        <option v-for="schedule in sourceProjects" :key="schedule.value"
-                                            :value="schedule.value">
-                                            {{ schedule.label }}
-                                        </option>
-                                    </select>
+                                    <div class="custom-select-wrapper"
+                                        :class="{ 'is-open': isRequisitionDropdownOpen }">
+                                        <div class="custom-select-trigger" @click="toggleRequisitionDropdown"
+                                            tabindex="0">
+                                            <span class="custom-select-value">
+                                                {{ selectedRequisitionLabel || 'Select Requisition Form' }}
+                                            </span>
+                                            <svg class="custom-select-arrow" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="custom-select-dropdown" v-show="isRequisitionDropdownOpen">
+                                            <div class="dropdown-search">
+                                                <input type="text" v-model="requisitionSearchQuery"
+                                                    placeholder="Search by project, location, or resource..."
+                                                    class="dropdown-search-input" @click.stop />
+                                            </div>
+                                            <!-- Update the filteredRequisitions template to use parsed data -->
+                                            <div class="dropdown-options-list requisition-list">
+                                                <div v-for="requisition in filteredRequisitions"
+                                                    :key="requisition.value" class="dropdown-option-item"
+                                                    :class="{ 'is-selected': form.resource_schedule_id === requisition.value }"
+                                                    @click="selectRequisition(requisition)">
+                                                    <div class="option-main">{{ requisition.label }}</div>
+                                                </div>
+                                                <div v-if="filteredRequisitions.length === 0"
+                                                    class="dropdown-empty-item">
+                                                    No requisitions found
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span v-if="form.errors.resource_schedule_id" class="error-message">
+                                        {{ form.errors.resource_schedule_id }}
+                                    </span>
                                 </div>
 
                                 <!-- LEFT: Intermediate Applicant -->
@@ -1222,7 +1345,7 @@ watch(() => form.initial_interview_remarks, (newValue) => {
                                         form.errors.intermediate_applicant_id }}</span>
                                 </div>
 
-                                
+
                             </div>
                         </div>
 
@@ -1436,7 +1559,7 @@ watch(() => form.initial_interview_remarks, (newValue) => {
                                     </option>
                                 </select>
                                 <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue
-                                    }}</span>
+                                }}</span>
                             </div>
                             <div class="exam-section-layout">
                                 <!-- LEFT SIDE -->
@@ -1659,7 +1782,7 @@ watch(() => form.initial_interview_remarks, (newValue) => {
                                 <textarea v-model="form.exam_remarks" placeholder="Enter any remarks here..." rows="3"
                                     class="form-textarea" :disabled="!isApplicantSelected"></textarea>
                                 <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
 
@@ -1716,7 +1839,8 @@ watch(() => form.initial_interview_remarks, (newValue) => {
                                         <label class="field-label">Initial Interview Remarks</label>
                                         <textarea v-model="form.initial_interview_remarks" class="form-textarea"
                                             :disabled="isFormFieldDisabled" rows="3"></textarea>
-                                        <span v-if="form.errors.initial_interview_remarks" class="error-message">{{ form.errors.initial_interview_remarks }}</span>
+                                        <span v-if="form.errors.initial_interview_remarks" class="error-message">{{
+                                            form.errors.initial_interview_remarks }}</span>
                                     </div>
 
                                 </div>
@@ -1783,6 +1907,54 @@ watch(() => form.initial_interview_remarks, (newValue) => {
 </template>
 
 <style scoped>
+/* Add these styles at the end of your style section */
+.option-main {
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 2px;
+}
+
+.option-details {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.option-project {
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.option-location {
+    background: #f0fdf4;
+    color: #166534;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.dropdown-option-item {
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.dropdown-option-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-option-item:hover {
+    background: #f9fafb;
+}
+
+.dropdown-option-item.is-selected {
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+}
+
 /* Rest of your existing styles remain the same */
 .position-preferences-grid {
     display: grid;

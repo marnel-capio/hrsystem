@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 import interviews from './interviews'
+import intermediate from './intermediate'
 /**
 * @see \App\Http\Controllers\ActionApplicationController::index
  * @see app/Http/Controllers/ActionApplicationController.php:28
@@ -978,6 +979,7 @@ interviews: Object.assign(interviews, interviews),
 sendNotification: Object.assign(sendNotification, sendNotification),
 print: Object.assign(print, print),
 batchResourceSchedule: Object.assign(batchResourceSchedule, batchResourceSchedule),
+intermediate: Object.assign(intermediate, intermediate),
 }
 
 export default applications

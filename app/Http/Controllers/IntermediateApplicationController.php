@@ -75,8 +75,8 @@ class IntermediateApplicationController extends Controller
         $cutoffDate = Carbon::now()->subMonths(6);
 
         $intermediateApplicants = IntermediateApplicant::query()
+            ->with(['workExperiences', 'skills']) // ✅ Eager load relationships
             ->where(function ($query) use ($cutoffDate) {
-
                 $query->whereDoesntHave('applications')
                     ->orWhereHas('latestApplication', function ($q) use ($cutoffDate) {
                         $q->where('created_time', '<', $cutoffDate);
@@ -89,6 +89,20 @@ class IntermediateApplicationController extends Controller
                 'id' => $applicant->id,
                 'name' => trim($applicant->first_name.' '.$applicant->last_name),
                 'email_address' => $applicant->email_address,
+                // ✅ Include work experience job titles
+                'work_experiences' => $applicant->workExperiences
+                    ->where('is_deleted', '!=', 1)
+                    ->pluck('job_title')
+                    ->filter()
+                    ->values()
+                    ->toArray(),
+                // ✅ Include skills
+                'skills' => $applicant->skills
+                    ->where('is_deleted', '!=', 1)
+                    ->pluck('skill')
+                    ->filter()
+                    ->values()
+                    ->toArray(),
             ])
             ->toArray();
 
@@ -387,7 +401,7 @@ class IntermediateApplicationController extends Controller
                 'application_stage' => $application->application_stage,
                 'project_name' => $projectName,
                 'paper_screening_status' => $application->paper_screening_status,
-
+                'location_assignment' => $application->resourceSchedule->location_assignment ?? null,
                 // Screening Questions
                 'answer_q1' => $application->answer_q1,
                 'answer_q2' => $application->answer_q2,
