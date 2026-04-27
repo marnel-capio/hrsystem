@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::updatePaperScreening
  * @see app/Http/Controllers/IntermediateApplicationController.php:563
@@ -78,12 +78,12 @@ updatePaperScreening.post = (args: { id: string | number } | [id: string | numbe
  * @see app/Http/Controllers/IntermediateApplicationController.php:1511
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
-const sendNotification4a5ed434e69f8bcc138aae6258fd6124 = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: sendNotification4a5ed434e69f8bcc138aae6258fd6124.url(args, options),
+export const sendNotification = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: sendNotification.url(args, options),
     method: 'post',
 })
 
-sendNotification4a5ed434e69f8bcc138aae6258fd6124.definition = {
+sendNotification.definition = {
     methods: ["post"],
     url: '/intermediate/applications/{applicationId}/send-notification',
 } satisfies RouteDefinition<["post"]>
@@ -93,7 +93,7 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.definition = {
  * @see app/Http/Controllers/IntermediateApplicationController.php:1511
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
-sendNotification4a5ed434e69f8bcc138aae6258fd6124.url = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions) => {
+sendNotification.url = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { applicationId: args }
     }
@@ -111,7 +111,7 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.url = (args: { applicationId: s
                         applicationId: args.applicationId,
                 }
 
-    return sendNotification4a5ed434e69f8bcc138aae6258fd6124.definition.url
+    return sendNotification.definition.url
             .replace('{applicationId}', parsedArgs.applicationId.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
@@ -121,8 +121,8 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.url = (args: { applicationId: s
  * @see app/Http/Controllers/IntermediateApplicationController.php:1511
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
-sendNotification4a5ed434e69f8bcc138aae6258fd6124.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: sendNotification4a5ed434e69f8bcc138aae6258fd6124.url(args, options),
+sendNotification.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: sendNotification.url(args, options),
     method: 'post',
 })
 
@@ -131,8 +131,8 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.post = (args: { applicationId: 
  * @see app/Http/Controllers/IntermediateApplicationController.php:1511
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
-    const sendNotification4a5ed434e69f8bcc138aae6258fd6124Form = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: sendNotification4a5ed434e69f8bcc138aae6258fd6124.url(args, options),
+    const sendNotificationForm = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: sendNotification.url(args, options),
         method: 'post',
     })
 
@@ -141,92 +141,12 @@ sendNotification4a5ed434e69f8bcc138aae6258fd6124.post = (args: { applicationId: 
  * @see app/Http/Controllers/IntermediateApplicationController.php:1511
  * @route '/intermediate/applications/{applicationId}/send-notification'
  */
-        sendNotification4a5ed434e69f8bcc138aae6258fd6124Form.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: sendNotification4a5ed434e69f8bcc138aae6258fd6124.url(args, options),
+        sendNotificationForm.post = (args: { applicationId: string | number } | [applicationId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: sendNotification.url(args, options),
             method: 'post',
         })
     
-    sendNotification4a5ed434e69f8bcc138aae6258fd6124.form = sendNotification4a5ed434e69f8bcc138aae6258fd6124Form
-    /**
-* @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1511
- * @route '/action/applications/intermediate/applications/{application}/send-notification'
- */
-const sendNotificationc561e80030fec4da681fb894f2fd4fa2 = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: sendNotificationc561e80030fec4da681fb894f2fd4fa2.url(args, options),
-    method: 'post',
-})
-
-sendNotificationc561e80030fec4da681fb894f2fd4fa2.definition = {
-    methods: ["post"],
-    url: '/action/applications/intermediate/applications/{application}/send-notification',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1511
- * @route '/action/applications/intermediate/applications/{application}/send-notification'
- */
-sendNotificationc561e80030fec4da681fb894f2fd4fa2.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { application: args }
-    }
-
-    
-    if (Array.isArray(args)) {
-        args = {
-                    application: args[0],
-                }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-                        application: args.application,
-                }
-
-    return sendNotificationc561e80030fec4da681fb894f2fd4fa2.definition.url
-            .replace('{application}', parsedArgs.application.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1511
- * @route '/action/applications/intermediate/applications/{application}/send-notification'
- */
-sendNotificationc561e80030fec4da681fb894f2fd4fa2.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: sendNotificationc561e80030fec4da681fb894f2fd4fa2.url(args, options),
-    method: 'post',
-})
-
-    /**
-* @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1511
- * @route '/action/applications/intermediate/applications/{application}/send-notification'
- */
-    const sendNotificationc561e80030fec4da681fb894f2fd4fa2Form = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: sendNotificationc561e80030fec4da681fb894f2fd4fa2.url(args, options),
-        method: 'post',
-    })
-
-            /**
-* @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1511
- * @route '/action/applications/intermediate/applications/{application}/send-notification'
- */
-        sendNotificationc561e80030fec4da681fb894f2fd4fa2Form.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: sendNotificationc561e80030fec4da681fb894f2fd4fa2.url(args, options),
-            method: 'post',
-        })
-    
-    sendNotificationc561e80030fec4da681fb894f2fd4fa2.form = sendNotificationc561e80030fec4da681fb894f2fd4fa2Form
-
-export const sendNotification = {
-    '/intermediate/applications/{applicationId}/send-notification': sendNotification4a5ed434e69f8bcc138aae6258fd6124,
-    '/action/applications/intermediate/applications/{application}/send-notification': sendNotificationc561e80030fec4da681fb894f2fd4fa2,
-}
-
+    sendNotification.form = sendNotificationForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::edit
  * @see app/Http/Controllers/IntermediateApplicationController.php:639
@@ -584,74 +504,129 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     index.form = indexForm
 /**
-* @see \App\Http\Controllers\IntermediateApplicationController::create
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:521
+ * @route '/intermediate/applications/import'
+ */
+export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importMethod.url(options),
+    method: 'post',
+})
+
+importMethod.definition = {
+    methods: ["post"],
+    url: '/intermediate/applications/import',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:521
+ * @route '/intermediate/applications/import'
+ */
+importMethod.url = (options?: RouteQueryOptions) => {
+    return importMethod.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:521
+ * @route '/intermediate/applications/import'
+ */
+importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importMethod.url(options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:521
+ * @route '/intermediate/applications/import'
+ */
+    const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: importMethod.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ApplicationImportController::importMethod
+ * @see app/Http/Controllers/ApplicationImportController.php:521
+ * @route '/intermediate/applications/import'
+ */
+        importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: importMethod.url(options),
+            method: 'post',
+        })
+    
+    importMethod.form = importMethodForm
+/**
+* @see \App\Http\Controllers\IntermediateApplicationController::register
  * @see app/Http/Controllers/IntermediateApplicationController.php:73
  * @route '/intermediate/applications/register'
  */
-export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: create.url(options),
+export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: register.url(options),
     method: 'get',
 })
 
-create.definition = {
+register.definition = {
     methods: ["get","head"],
     url: '/intermediate/applications/register',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\IntermediateApplicationController::create
+* @see \App\Http\Controllers\IntermediateApplicationController::register
  * @see app/Http/Controllers/IntermediateApplicationController.php:73
  * @route '/intermediate/applications/register'
  */
-create.url = (options?: RouteQueryOptions) => {
-    return create.definition.url + queryParams(options)
+register.url = (options?: RouteQueryOptions) => {
+    return register.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\IntermediateApplicationController::create
+* @see \App\Http\Controllers\IntermediateApplicationController::register
  * @see app/Http/Controllers/IntermediateApplicationController.php:73
  * @route '/intermediate/applications/register'
  */
-create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: create.url(options),
+register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: register.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\IntermediateApplicationController::create
+* @see \App\Http\Controllers\IntermediateApplicationController::register
  * @see app/Http/Controllers/IntermediateApplicationController.php:73
  * @route '/intermediate/applications/register'
  */
-create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: create.url(options),
+register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: register.url(options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\IntermediateApplicationController::create
+* @see \App\Http\Controllers\IntermediateApplicationController::register
  * @see app/Http/Controllers/IntermediateApplicationController.php:73
  * @route '/intermediate/applications/register'
  */
-    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: create.url(options),
+    const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: register.url(options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\IntermediateApplicationController::create
+* @see \App\Http\Controllers\IntermediateApplicationController::register
  * @see app/Http/Controllers/IntermediateApplicationController.php:73
  * @route '/intermediate/applications/register'
  */
-        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: create.url(options),
+        registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: register.url(options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\IntermediateApplicationController::create
+* @see \App\Http\Controllers\IntermediateApplicationController::register
  * @see app/Http/Controllers/IntermediateApplicationController.php:73
  * @route '/intermediate/applications/register'
  */
-        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: create.url({
+        registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: register.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -660,7 +635,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    create.form = createForm
+    register.form = registerForm
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::store
  * @see app/Http/Controllers/IntermediateApplicationController.php:142
@@ -813,6 +788,17 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
     
     show.form = showForm
-const IntermediateApplicationController = { updatePaperScreening, sendNotification, edit, update, print, index, create, store, show }
+const applications = {
+    updatePaperScreening: Object.assign(updatePaperScreening, updatePaperScreening),
+sendNotification: Object.assign(sendNotification, sendNotification),
+edit: Object.assign(edit, edit),
+update: Object.assign(update, update),
+print: Object.assign(print, print),
+index: Object.assign(index, index),
+import: Object.assign(importMethod, importMethod),
+register: Object.assign(register, register),
+store: Object.assign(store, store),
+show: Object.assign(show, show),
+}
 
-export default IntermediateApplicationController
+export default applications
