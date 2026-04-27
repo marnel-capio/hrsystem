@@ -27,7 +27,6 @@ namespace App\Models {
      * @property string|null $middle_name
      * @property string $first_name
      * @property string $last_name
-     * @property bool $source_origin
      * @property string|null $other_source
      * @property bool|null $source
      * @property bool|null $source_type
@@ -44,7 +43,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSourceType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSource($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereOtherSource($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSourceOrigin($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereLastName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereFirstName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereMiddleName($value)
@@ -3623,8 +3621,6 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
-     * @property string|null $reason_for_decline
-     * @property string|null $reason_by_category
      * @property string|null $parked_to
      * @property string|null $aws_rank
      * @property \Illuminate\Support\Carbon|null $aws_start_date
@@ -3658,8 +3654,6 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $exam_actual_date
      * @property \Illuminate\Support\Carbon|null $exam_plan_date
      * @property integer $paper_screening_status
-     * @property string|null $site_assignment
-     * @property string|null $asking_rate
      * @property string|null $current_employer
      * @property \Illuminate\Support\Carbon|null $replied_date
      * @property integer|null $replied
@@ -3689,16 +3683,25 @@ namespace App\Models {
      * @property mixed $intermediate_applicant_id
      * @property integer $application_stage
      * @property int $id
-     * @property-read mixed $status_labels
      * @property-read mixed $full_applicant_name
      * @property-read mixed $project_name
      * @property-read mixed $stage_label
+     * @property-read mixed $contacted_by_name
+     * @property-read mixed $work_experiences
+     * @property-read mixed $skills
+     * @property-read mixed $formatted_interviews
+     * @property-read mixed $formatted_contacted_date
+     * @property-read mixed $formatted_replied_date
+     * @property-read mixed $detail_data
+     * @property-read mixed $edit_data
      * @property-read \App\Models\IntermediateApplicant $intermediateApplicant
      * @property-read \App\Models\IntermediateProjectModel $project
      * @property-read \App\Models\User $contactedBy
      * @property-read \App\Models\User $createdBy
      * @property-read \App\Models\User $updatedBy
      * @property-read \App\Models\IntermediateRequisitionModel $resourceSchedule
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermediateInterviewer> $interviews
+     * @property-read int|null $interviews_count
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereApplicationStage($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereIntermediateApplicantId($value)
@@ -3728,8 +3731,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereReplied($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereRepliedDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereCurrentEmployer($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAskingRate($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereSiteAssignment($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication wherePaperScreeningStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamPlanDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamActualDate($value)
@@ -3763,8 +3764,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAwsStartDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAwsRank($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereParkedTo($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereReasonByCategory($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereReasonForDecline($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereCreatedTime($value)

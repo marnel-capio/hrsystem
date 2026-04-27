@@ -30,10 +30,37 @@ const canManageInterviewers = computed(() =>
     [1, 2, 3].includes(userPermissions.value),
 );
 const canNotify = computed(() => ![5, 6].includes(userPermissions.value));
-const successMessage = ref((page.props.flash as any)?.success || '');
-const showSuccess = ref(!!successMessage.value);
-const errorMessage = ref((page.props.flash as any)?.error || '');
-const showError = ref(!!errorMessage.value);
+
+const flashMessage = ref('');
+const flashType = ref<'success' | 'error'>('success');
+const showFlash = ref(false);
+
+// Watch for page flash messages
+watch(
+    () => (page.props.flash as any)?.success,
+    (newVal) => {
+        if (newVal) {
+            flashMessage.value = newVal;
+            flashType.value = 'success';
+            showFlash.value = true;
+            setTimeout(() => { showFlash.value = false; }, 5000);
+        }
+    },
+    { immediate: true },
+);
+
+watch(
+    () => (page.props.flash as any)?.error,
+    (newVal) => {
+        if (newVal) {
+            flashMessage.value = newVal;
+            flashType.value = 'error';
+            showFlash.value = true;
+            setTimeout(() => { showFlash.value = false; }, 5000);
+        }
+    },
+    { immediate: true },
+);
 
 const canAcceptDecline = (interview: any) => {
     // Check if user has permission and is the assigned interviewer
@@ -1121,47 +1148,12 @@ const downloadApplication = () => {
     );
 };
 
-// Toast
-const toastMessage = ref<string | null>(null);
-const toastType = ref<'success' | 'error'>('success');
-const showToastMessage = ref(false);
-
 const showToast = (message: string, type: 'success' | 'error') => {
-    toastMessage.value = message;
-    toastType.value = type;
-    showToastMessage.value = true;
-    setTimeout(() => {
-        showToastMessage.value = false;
-    }, 3000);
+    flashMessage.value = message;
+    flashType.value = type;
+    showFlash.value = true;
+    setTimeout(() => { showFlash.value = false; }, 5000);
 };
-
-watch(
-    successMessage,
-    (newVal) => {
-        if (newVal) {
-            showSuccess.value = true;
-            setTimeout(() => {
-                showSuccess.value = false;
-                successMessage.value = '';
-            }, 5000);
-        }
-    },
-    { immediate: true },
-);
-
-watch(
-    errorMessage,
-    (newVal) => {
-        if (newVal) {
-            showError.value = true;
-            setTimeout(() => {
-                showError.value = false;
-                errorMessage.value = '';
-            }, 5000);
-        }
-    },
-    { immediate: true },
-);
 
 watch(acceptDeclineReason, (newVal) => {
     if (newVal.trim()) {
@@ -1222,12 +1214,12 @@ const updatePaperScreeningStatus = async () => {
         showPaperScreeningModal.value = false;
 
         showToast(
-            response.data.message || 'Paper screening status updated successfully!',
+            response.data.message || 'Record Updated Successfully!',
             'success'
         );
     } catch (error: any) {
         showToast(
-            error?.response?.data?.message || 'Failed to update paper screening status',
+            error?.response?.data?.message || 'An error occurred while updating the record. Please try again.',
             'error'
         );
     } finally {
@@ -1466,36 +1458,15 @@ const getLocationLabel = (location: number | null) => {
 <template>
     <AppLayout>
         <div class="intermediate-application-detail">
-            <!-- Toast Messages -->
-            <div v-if="showSuccess" class="full-width-alert">
-                <div class="alert-banner alert-success-banner">
-                    <div class="alert-body">{{ successMessage }}</div>
-                    <button type="button" class="close-btn" @click="showSuccess = false">
-                        ×
-                    </button>
-                </div>
-            </div>
 
-            <div v-if="showError" class="full-width-alert">
-                <div class="alert-banner alert-error-banner">
-                    <div class="alert-body">{{ errorMessage }}</div>
-                    <button type="button" class="close-btn" @click="showError = false">
-                        ×
-                    </button>
-                </div>
-            </div>
-
-            <div v-if="showToastMessage" class="full-width-alert">Project / Status
-                <div class="alert-banner" :class="toastType === 'success'
-                    ? 'alert-success-banner'
-                    : 'alert-error-banner'
-                    ">
-                    <div class="alert-body">{{ toastMessage }}</div>
-                    <button type="button" class="close-btn" @click="showToastMessage = false">
-                        ×
-                    </button>
-                </div>
-            </div>
+        <!-- Floating Banner -->
+        <div v-if="showFlash" 
+            class="fixed top-0 left-0 right-0 z-50 px-6 py-3 text-base font-medium text-left shadow-md"
+            :class="flashType === 'success' 
+                ? 'bg-emerald-500 text-white' 
+                : 'bg-red-500 text-white'">
+            {{ flashMessage }}
+        </div>
 
             <div class="flex min-h-screen flex-1 flex-col gap-6 bg-zinc-50/50 p-8 dark:bg-zinc-950">
                 <!-- Header -->
@@ -2260,12 +2231,6 @@ const getLocationLabel = (location: number | null) => {
                                 <div class="text-sm font-medium">{{ application.parked_to || '—' }}</div>
                             </div>
                         </div>
-
-                        <!-- AWS Fields Empty State -->
-                        <div v-else class="mb-5 rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500 dark:border-zinc-700">
-                            AWS details (Start Date, Rank, Parked To) are only shown when the Job Offer Status is "Accept".
-                        </div>
-
                         <div>
                             <div class="mb-2 text-sm font-semibold">Comments</div>
                             <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
@@ -2980,39 +2945,6 @@ const getLocationLabel = (location: number | null) => {
     border: none;
     font-size: 1.2rem;
     cursor: pointer;
-}
-
-.full-width-alert {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    width: auto;
-    max-width: 500px;
-}
-
-.alert-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.alert-success-banner {
-    background-color: #10b981;
-    color: white;
-}
-
-.alert-error-banner {
-    background-color: #ef4444;
-    color: white;
-}
-
-.alert-body {
-    margin-right: 1rem;
 }
 
 .tag-item {
