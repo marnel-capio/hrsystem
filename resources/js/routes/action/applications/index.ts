@@ -547,7 +547,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:906
+ * @see app/Http/Controllers/ActionApplicationController.php:907
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 export const eligibleApplicants = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -562,7 +562,7 @@ eligibleApplicants.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:906
+ * @see app/Http/Controllers/ActionApplicationController.php:907
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 eligibleApplicants.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -590,7 +590,7 @@ eligibleApplicants.url = (args: { batchId: string | number } | [batchId: string 
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:906
+ * @see app/Http/Controllers/ActionApplicationController.php:907
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 eligibleApplicants.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -599,7 +599,7 @@ eligibleApplicants.get = (args: { batchId: string | number } | [batchId: string 
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:906
+ * @see app/Http/Controllers/ActionApplicationController.php:907
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -609,7 +609,7 @@ eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:906
+ * @see app/Http/Controllers/ActionApplicationController.php:907
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
     const eligibleApplicantsForm = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -619,7 +619,7 @@ eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:906
+ * @see app/Http/Controllers/ActionApplicationController.php:907
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         eligibleApplicantsForm.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -628,7 +628,7 @@ eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:906
+ * @see app/Http/Controllers/ActionApplicationController.php:907
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         eligibleApplicantsForm.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
