@@ -858,11 +858,12 @@ if (
             $stageInterviews = $application->interviews
                 ->where('interview_type', $stageType);
 
-$hasAnyApprovedForStage = $stageInterviews->contains(function ($row) {
-    return (int) $row->status === config('constants.interview_assignment_status.approved');
-});
+            $allApprovedForStage = $stageInterviews->isNotEmpty() &&
+                $stageInterviews->every(function ($row) {
+                    return (int) $row->status === config('constants.interview_assignment_status.approved');
+                });
 
-if ($hasAnyApprovedForStage && !empty(optional($application->applicant)->email_address)) {
+            if ($allApprovedForStage && !empty(optional($application->applicant)->email_address)) {
                 $link = url("/action/applications/{$application->id}");
 
                 Mail::to($application->applicant->email_address)->send(
@@ -872,7 +873,7 @@ if ($hasAnyApprovedForStage && !empty(optional($application->applicant)->email_a
                 Log::createLog(
                     'ACTION',
                     'Automatically sent applicant schedule email for stage ' . $stageType .
-                    ' after first interviewer approved for application of ' .
+                    ' after all assigned interviewers approved for application of ' .
                     ($application->applicant->first_name ?? '') . ' ' .
                     ($application->applicant->last_name ?? '') . '.',
                     auth()->id()
