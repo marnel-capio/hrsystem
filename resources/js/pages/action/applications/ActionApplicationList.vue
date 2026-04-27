@@ -279,6 +279,10 @@ const filteredApplications = computed(() => {
     return props.applications.filter((app) => {
         const fullName = `${app.first_name} ${app.last_name}`.toLowerCase();
         const batch = app.action_batch.toLowerCase();
+        const applicationStage = String(
+            app.application_stage || '',
+        ).toLowerCase();
+        const remarks = String(app.remarks || '').toLowerCase();
 
         // Map trainees_from to string for search
         const locLabel = formatLocation(app.target_location).toLowerCase();
@@ -290,6 +294,8 @@ const filteredApplications = computed(() => {
             batch.includes(q) ||
             locLabel.includes(q) || // this allows "unknown" to match
             locNumber.includes(q) ||
+            applicationStage.includes(q) ||
+            remarks.includes(q) ||
             String(app.id).includes(q)
         );
     });
@@ -579,7 +585,7 @@ console.log('Received batches:', props.actionBatches);
                     <input
                         v-model="searchQuery"
                         type="text"
-                        placeholder="Search by Applicant, Batch Name, or Location"
+                        placeholder="Search by Applicant, Batch Name, Location, Application Stage, or Remarks"
                         class="w-full rounded-lg border bg-white py-2 pr-3 pl-10 dark:border-zinc-700 dark:bg-zinc-900"
                     />
                 </div>
