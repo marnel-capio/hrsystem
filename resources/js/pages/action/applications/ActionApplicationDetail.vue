@@ -827,17 +827,8 @@ const notificationPreview = computed(() => {
 const willTriggerApplicantAutoEmail = computed(() => {
     const current = acceptDeclineInterviewer.value;
     if (!current) return false;
-
-    const sameStageRows = interviews.value.filter(
-        (i: any) => Number(i.interview_type) === Number(current.interview_type),
-    );
-
-    const otherRows = sameStageRows.filter((i: any) => i.id !== current.id);
-
     return (
-        sameStageRows.length > 0 &&
-        Number(current.status) === 1 &&
-        otherRows.every((i: any) => Number(i.status) === 2)
+        acceptDeclineDecision.value === 'accept' && Number(current.status) === 1
     );
 });
 
@@ -2339,7 +2330,7 @@ watch(
                 <div
                     class="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl dark:bg-zinc-900"
                 >
-                    <h3 class="mb-2 text-xl font-bold">Bulk Edit Schedule</h3>
+                    <h3 class="mb-2 text-xl font-bold">Edit Schedule</h3>
                     <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
                         Update the schedule of checked interviewers
                     </p>

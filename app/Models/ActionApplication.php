@@ -59,19 +59,46 @@ class ActionApplication extends Model
         'updated_time',
     ];
 
+        public function getApplicationStageLabel(): string
+{
+    if ((int) $this->job_offer_status === 3) return 'Offer Accepted';
+    if ((int) $this->job_offer_status === 4) return 'Offer Declined';
+    if ((int) $this->job_offer_status === 5) return 'Offer Withdrawn';
+    if ((int) $this->job_offer_status === 6) return 'Offer Retracted';
+
+    if ((int) $this->final_interview_result === 3) return 'Failed Final Interview';
+    if ((int) $this->initial_interview_result === 3) return 'Failed Initial Interview';
+    if ((int) $this->exam_result === 3) return 'Failed Exam';
+
+    if ((int) $this->final_interview_result === 2) return 'For Job Offer';
+    if ((int) $this->initial_interview_result === 2) return 'For Final Interview';
+    if ((int) $this->exam_result === 2) return 'For Initial Interview';
+
+    if ((int) $this->job_offer_status === 1 || (int) $this->job_offer_status === 2) {
+        return 'For Job Offer';
+    }
+
+    return 'New';
+}
+
     public static function listPageData(?string $search = null)
     {
         return static::query()
-            ->select(
-                'action_applicant_applications.id',
-                'resource_schedules.target_location',
-                'action_applicant_applications.action_applicant_id',
-                'action_applicant_applications.action_batch_id',
-                'action_batches.action_batch',
-                'action_applicants.first_name',
-                'action_applicants.middle_name',
-                'action_applicants.last_name'
-            )
+->select(
+    'action_applicant_applications.id',
+    'resource_schedules.target_location',
+    'action_applicant_applications.action_applicant_id',
+    'action_applicant_applications.action_batch_id',
+    'action_batches.action_batch',
+    'action_applicants.first_name',
+    'action_applicants.middle_name',
+    'action_applicants.last_name',
+    'action_applicant_applications.exam_result',
+    'action_applicant_applications.initial_interview_result',
+    'action_applicant_applications.final_interview_result',
+    'action_applicant_applications.job_offer_status',
+    'action_applicant_applications.remarks'
+)
             ->join('action_batches', 'action_applicant_applications.action_batch_id', '=', 'action_batches.id')
             ->join('action_applicants', 'action_applicant_applications.action_applicant_id', '=', 'action_applicants.id')
             ->leftJoin('resource_schedules', 'action_batches.id', '=', 'resource_schedules.action_batch_id')
@@ -85,8 +112,14 @@ class ActionApplication extends Model
                 });
             })
             ->orderBy('action_applicant_applications.created_time', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($application) {
+    $application->application_stage = $application->getApplicationStageLabel();
+    return $application;
+});
     }
+
+
 
     public static function createApplication(array $data)
     {

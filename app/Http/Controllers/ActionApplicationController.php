@@ -150,9 +150,14 @@ $application = ActionApplication::with([
             'finalInterviewAssignments' => $finalInterviewAssignments,
             'canEditFinalInterviewDecision' => $this->isHrFinalDecisionEditor(),
             'availableInterviewers' => $availableInterviewers,
-            'hasMixedInitialInterviewResults' => $application->hasMixedInitialInterviewEvaluations(),
-            'hasMixedFinalInterviewResults' => $application->hasMixedFinalInterviewResults(),
-            'user_permissions' => auth()->user()->permissions,
+'hasMixedInitialInterviewResults' =>
+    $application->hasMixedInitialInterviewEvaluations() &&
+    in_array((int) $application->initial_interview_application_status, [1, 2], true),
+
+'hasMixedFinalInterviewResults' =>
+    $application->hasMixedFinalInterviewResults() &&
+    in_array((int) $application->final_interview_application_status, [1, 2], true),
+                'user_permissions' => auth()->user()->permissions,
             'user_id' => auth()->id(),
         ],
         $this->applicationFormOptions()
@@ -198,6 +203,15 @@ $application = ActionApplication::with([
             $this->applicationFormOptions()
         ));
     }
+
+    private function mapInterviewResultFromApplicationStatus(?int $status): ?int
+{
+    if (!$status) return null;
+
+    return config("constants.application_result_map.final_interview.{$status}")
+        ?? config("constants.application_result_map.initial_interview.{$status}")
+        ?? null;
+}
 
 public function update(UpdateActionApplicationRequest $request, $id)
 {
@@ -290,12 +304,36 @@ $validated['final_interview_assignments'] = $application->finalInterviewAssignme
     ->toArray();
 
         // Recompute parent-level fields from latest assignment data
-        $validated = ActionApplication::normalizeComputedFields(
-            array_merge($application->toArray(), $validated)
-        );
+$manualFinalStatus = $request->has('final_interview_application_status');
+$manualInitialStatus = $request->has('initial_interview_application_status');
 
-        $application->updateApplication($validated);
-        $application->refresh();
+// Preserve HR/manual stage decisions before normalizeComputedFields()
+$manualInitialApplicationStatus = $validated['initial_interview_application_status'] ?? null;
+$manualInitialResult = $validated['initial_interview_result']
+    ?? $this->mapInterviewResultFromApplicationStatus((int) $manualInitialApplicationStatus);
+
+$manualFinalApplicationStatus = $validated['final_interview_application_status'] ?? null;
+$manualFinalResult = $validated['final_interview_result']
+    ?? $this->mapInterviewResultFromApplicationStatus((int) $manualFinalApplicationStatus);
+
+// Recompute parent-level fields from latest assignment data
+$validated = ActionApplication::normalizeComputedFields(
+    array_merge($application->toArray(), $validated)
+);
+
+// Restore manual Initial Interview decision
+if ($manualInitialStatus) {
+    $validated['initial_interview_application_status'] = $manualInitialApplicationStatus;
+    $validated['initial_interview_result'] = $manualInitialResult;
+}
+
+// Restore manual Final Interview decision
+if ($manualFinalStatus) {
+    $validated['final_interview_application_status'] = $manualFinalApplicationStatus;
+    $validated['final_interview_result'] = $manualFinalResult;
+}
+
+$application->updateApplication($validated);        $application->refresh();
 
         $application->clearBlockedStages();
         $application->refresh();
@@ -313,8 +351,9 @@ $validated['final_interview_assignments'] = $application->finalInterviewAssignme
 
         $application->refresh();
 
-        $application->syncInterviewStatusesFromStageResults();
-
+if (!$manualInitialStatus && !$manualFinalStatus) {
+    $application->syncInterviewStatusesFromStageResults();
+}
         $application->refresh();
         $application->load('applicant');
 
@@ -858,12 +897,11 @@ if (
             $stageInterviews = $application->interviews
                 ->where('interview_type', $stageType);
 
-            $allApprovedForStage = $stageInterviews->isNotEmpty() &&
-                $stageInterviews->every(function ($row) {
-                    return (int) $row->status === config('constants.interview_assignment_status.approved');
-                });
+$hasAnyApprovedForStage = $stageInterviews->contains(function ($row) {
+    return (int) $row->status === config('constants.interview_assignment_status.approved');
+});
 
-            if ($allApprovedForStage && !empty(optional($application->applicant)->email_address)) {
+if ($hasAnyApprovedForStage && !empty(optional($application->applicant)->email_address)) {
                 $link = url("/action/applications/{$application->id}");
 
                 Mail::to($application->applicant->email_address)->send(
@@ -873,7 +911,7 @@ if (
                 Log::createLog(
                     'ACTION',
                     'Automatically sent applicant schedule email for stage ' . $stageType .
-                    ' after all assigned interviewers approved for application of ' .
+                    ' after first interviewer approved for application of ' .
                     ($application->applicant->first_name ?? '') . ' ' .
                     ($application->applicant->last_name ?? '') . '.',
                     auth()->id()
