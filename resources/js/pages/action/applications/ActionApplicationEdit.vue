@@ -207,6 +207,14 @@ const canEditFinalInterviewPlanDate = computed(
         !props.application.final_interview_date,
 );
 
+const canViewFinalScoreSection = computed(() => {
+    // adjust these values based on your role IDs
+    const INTERVIEWER = 5;
+    const BU_MANAGER = 6;
+
+    return ![INTERVIEWER, BU_MANAGER].includes(Number(props.user_permissions));
+});
+
 const examVenues = ref<Array<{ value: number; label: string }>>([]);
 const examResults = ref<Array<{ value: number; label: string }>>([]);
 const examStatuses = ref<Array<{ value: number; label: string }>>([]);
@@ -490,6 +498,67 @@ const finalInterviewEvaluatedRows = computed(() => {
     );
 });
 
+// INITIAL INTERVIEW SCORE LABEL
+const initialInterviewerCount = computed(() => {
+    return getEligibleStageRows(form.initial_interview_assignments || [])
+        .length;
+});
+
+const initialInterviewersSubmitted = computed(() => {
+    return getEligibleStageRows(
+        form.initial_interview_assignments || [],
+    ).filter(
+        (row: any) =>
+            row.score !== '' && row.score !== null && row.score !== undefined,
+    ).length;
+});
+
+const computedInitialAverageScore = computed(() => {
+    const rows = getEligibleStageRows(
+        form.initial_interview_assignments || [],
+    ).filter(
+        (row: any) =>
+            row.score !== '' && row.score !== null && row.score !== undefined,
+    );
+
+    if (rows.length === 0) return null;
+
+    const total = rows.reduce((sum: number, row: any) => {
+        return sum + Number(row.score || 0);
+    }, 0);
+
+    return (total / rows.length).toFixed(2);
+});
+
+// FINAL INTERVIEW SCORE LABEL
+const finalInterviewerCount = computed(() => {
+    return getEligibleStageRows(form.final_interview_assignments || []).length;
+});
+
+const finalInterviewersSubmitted = computed(() => {
+    return getEligibleStageRows(form.final_interview_assignments || []).filter(
+        (row: any) =>
+            row.score !== '' && row.score !== null && row.score !== undefined,
+    ).length;
+});
+
+const computedFinalAverageScore = computed(() => {
+    const rows = getEligibleStageRows(
+        form.final_interview_assignments || [],
+    ).filter(
+        (row: any) =>
+            row.score !== '' && row.score !== null && row.score !== undefined,
+    );
+
+    if (rows.length === 0) return null;
+
+    const total = rows.reduce((sum: number, row: any) => {
+        return sum + Number(row.score || 0);
+    }, 0);
+
+    return (total / rows.length).toFixed(2);
+});
+
 const allFinalInterviewersPassed = computed(() => {
     const rows = finalInterviewEvaluatedRows.value;
     return (
@@ -745,7 +814,7 @@ watch(
         form.initial_interview_application_status = '1';
         form.initial_interview_result = '1';
     },
-    { deep: true },
+    { deep: true, immediate: true },
 );
 
 watch(
@@ -1077,7 +1146,7 @@ watch(
         form.final_interview_application_status = '1';
         form.final_interview_result = '1';
     },
-    { deep: true },
+    { deep: true, immediate: true },
 );
 
 onMounted(() => {
@@ -3009,7 +3078,10 @@ const examCriteriaDisplay = computed(() => {
                                 </div>
                             </div>
 
-                            <div class="form-grid grid-3 mt-3">
+                            <div
+                                v-if="canViewFinalScoreSection"
+                                class="form-grid grid-3 mt-3"
+                            >
                                 <div class="form-field">
                                     <label class="field-label"
                                         >Final Score</label
@@ -3032,6 +3104,37 @@ const examCriteriaDisplay = computed(() => {
                                             );
                                         "
                                     />
+                                    <small class="helper-text">
+                                        <span
+                                            v-if="initialInterviewerCount === 0"
+                                        >
+                                            No approved interviewers
+                                        </span>
+
+                                        <span
+                                            v-else-if="
+                                                initialInterviewersSubmitted <
+                                                initialInterviewerCount
+                                            "
+                                        >
+                                            ⏳
+                                            {{
+                                                initialInterviewersSubmitted
+                                            }}/{{ initialInterviewerCount }}
+                                            interviewer(s) submitted (Waiting
+                                            for all scores...)
+                                        </span>
+
+                                        <span v-else>
+                                            ✅ Average of
+                                            {{ initialInterviewerCount }}
+                                            interviewer(s):
+                                            {{
+                                                computedInitialAverageScore ||
+                                                'No scores yet'
+                                            }}
+                                        </span>
+                                    </small>
                                     <span
                                         v-if="
                                             form.errors.initial_interview_final
@@ -3084,7 +3187,10 @@ const examCriteriaDisplay = computed(() => {
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-field mt-3">
+                            <div
+                                v-if="canViewFinalScoreSection"
+                                class="form-field mt-3"
+                            >
                                 <label class="field-label mt-3"
                                     >Initial Interview Comments</label
                                 >
@@ -3275,7 +3381,10 @@ const examCriteriaDisplay = computed(() => {
                                 </div>
                             </div>
 
-                            <div class="form-grid grid-3 mt-3">
+                            <div
+                                v-if="canViewFinalScoreSection"
+                                class="form-grid grid-3 mt-3"
+                            >
                                 <div class="form-field">
                                     <label class="field-label"
                                         >Final Score</label
@@ -3299,6 +3408,37 @@ const examCriteriaDisplay = computed(() => {
                                             !editableStages.final_interview
                                         "
                                     />
+                                    <small class="helper-text">
+                                        <span
+                                            v-if="finalInterviewerCount === 0"
+                                        >
+                                            No approved interviewers
+                                        </span>
+
+                                        <span
+                                            v-else-if="
+                                                finalInterviewersSubmitted <
+                                                finalInterviewerCount
+                                            "
+                                        >
+                                            ⏳
+                                            {{ finalInterviewersSubmitted }}/{{
+                                                finalInterviewerCount
+                                            }}
+                                            interviewer(s) submitted (Waiting
+                                            for all scores...)
+                                        </span>
+
+                                        <span v-else>
+                                            ✅ Average of
+                                            {{ finalInterviewerCount }}
+                                            interviewer(s):
+                                            {{
+                                                computedFinalAverageScore ||
+                                                'No scores yet'
+                                            }}
+                                        </span>
+                                    </small>
                                 </div>
 
                                 <div class="form-field">
@@ -3342,7 +3482,10 @@ const examCriteriaDisplay = computed(() => {
                                 </div>
                             </div>
 
-                            <div class="form-field mt-3">
+                            <div
+                                v-if="canViewFinalScoreSection"
+                                class="form-field mt-3"
+                            >
                                 <label class="field-label"
                                     >Final Interview Comments</label
                                 >
