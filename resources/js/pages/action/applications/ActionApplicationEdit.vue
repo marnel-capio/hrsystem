@@ -726,8 +726,13 @@ watch(
     },
 );
 
-const initialStatusManuallyEdited = ref(false);
+const initialStatusManuallyEdited = ref(
+    [3, 4, 5].includes(Number(form.initial_interview_application_status)),
+);
 
+const finalStatusManuallyEdited = ref(
+    [3, 4, 5].includes(Number(form.final_interview_application_status)),
+);
 watch(
     () => form.initial_interview_assignments,
     (rows) => {
@@ -1066,6 +1071,8 @@ watch(
 watch(
     () => form.final_interview_assignments,
     (rows) => {
+        if (finalStatusManuallyEdited.value) return;
+
         const list = rows || [];
         const eligibleRows = getEligibleStageRows(list);
 
@@ -1305,6 +1312,8 @@ watch(
         () => form.initial_interview_plan_date,
     ],
     ([score, planDate]) => {
+        if (initialStatusManuallyEdited.value) return;
+
         if (!score) {
             form.initial_interview_application_status = planDate ? '1' : '';
             return;
@@ -1681,6 +1690,7 @@ function getFinalInterviewApplicationStatus(score: number): string {
 watch(
     [() => form.final_interview_final, () => form.final_interview_date],
     ([score, finalDate]) => {
+        if (finalStatusManuallyEdited.value) return;
         if (!score) {
             form.final_interview_application_status = finalDate ? '1' : '';
             form.final_interview_result = finalDate ? '1' : '';
@@ -1697,6 +1707,15 @@ watch(
 
         form.final_interview_application_status =
             getFinalInterviewApplicationStatus(numericScore);
+    },
+);
+
+watch(
+    () => form.final_interview_application_status,
+    (newStatus, oldStatus) => {
+        if (oldStatus !== undefined && newStatus !== oldStatus) {
+            finalStatusManuallyEdited.value = true;
+        }
     },
 );
 
@@ -3167,6 +3186,9 @@ const examCriteriaDisplay = computed(() => {
                                         >Application Status</label
                                     >
                                     <select
+                                        @change="
+                                            initialStatusManuallyEdited = true
+                                        "
                                         v-model="
                                             form.initial_interview_application_status
                                         "
@@ -3461,6 +3483,9 @@ const examCriteriaDisplay = computed(() => {
                                         >Application Status</label
                                     >
                                     <select
+                                        @change="
+                                            finalStatusManuallyEdited = true
+                                        "
                                         v-model="
                                             form.final_interview_application_status
                                         "

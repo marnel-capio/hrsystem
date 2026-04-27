@@ -150,9 +150,14 @@ $application = ActionApplication::with([
             'finalInterviewAssignments' => $finalInterviewAssignments,
             'canEditFinalInterviewDecision' => $this->isHrFinalDecisionEditor(),
             'availableInterviewers' => $availableInterviewers,
-            'hasMixedInitialInterviewResults' => $application->hasMixedInitialInterviewEvaluations(),
-            'hasMixedFinalInterviewResults' => $application->hasMixedFinalInterviewResults(),
-            'user_permissions' => auth()->user()->permissions,
+'hasMixedInitialInterviewResults' =>
+    $application->hasMixedInitialInterviewEvaluations() &&
+    in_array((int) $application->initial_interview_application_status, [1, 2], true),
+
+'hasMixedFinalInterviewResults' =>
+    $application->hasMixedFinalInterviewResults() &&
+    in_array((int) $application->final_interview_application_status, [1, 2], true),
+                'user_permissions' => auth()->user()->permissions,
             'user_id' => auth()->id(),
         ],
         $this->applicationFormOptions()
@@ -299,8 +304,8 @@ $validated['final_interview_assignments'] = $application->finalInterviewAssignme
     ->toArray();
 
         // Recompute parent-level fields from latest assignment data
-$manualInitialStatus = $request->filled('initial_interview_application_status');
-$manualFinalStatus = $request->filled('final_interview_application_status');
+$manualFinalStatus = $request->has('final_interview_application_status');
+$manualInitialStatus = $request->has('initial_interview_application_status');
 
 // Preserve HR/manual stage decisions before normalizeComputedFields()
 $manualInitialApplicationStatus = $validated['initial_interview_application_status'] ?? null;
@@ -346,8 +351,9 @@ $application->updateApplication($validated);        $application->refresh();
 
         $application->refresh();
 
-        $application->syncInterviewStatusesFromStageResults();
-
+if (!$manualInitialStatus && !$manualFinalStatus) {
+    $application->syncInterviewStatusesFromStageResults();
+}
         $application->refresh();
         $application->load('applicant');
 
