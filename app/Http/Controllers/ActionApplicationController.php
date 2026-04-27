@@ -199,6 +199,15 @@ $application = ActionApplication::with([
         ));
     }
 
+    private function mapInterviewResultFromApplicationStatus(?int $status): ?int
+{
+    if (!$status) return null;
+
+    return config("constants.application_result_map.final_interview.{$status}")
+        ?? config("constants.application_result_map.initial_interview.{$status}")
+        ?? null;
+}
+
 public function update(UpdateActionApplicationRequest $request, $id)
 {
     $application = ActionApplication::with(['interviews', 'applicant'])->findOrFail($id);
@@ -290,12 +299,36 @@ $validated['final_interview_assignments'] = $application->finalInterviewAssignme
     ->toArray();
 
         // Recompute parent-level fields from latest assignment data
-        $validated = ActionApplication::normalizeComputedFields(
-            array_merge($application->toArray(), $validated)
-        );
+$manualInitialStatus = $request->filled('initial_interview_application_status');
+$manualFinalStatus = $request->filled('final_interview_application_status');
 
-        $application->updateApplication($validated);
-        $application->refresh();
+// Preserve HR/manual stage decisions before normalizeComputedFields()
+$manualInitialApplicationStatus = $validated['initial_interview_application_status'] ?? null;
+$manualInitialResult = $validated['initial_interview_result']
+    ?? $this->mapInterviewResultFromApplicationStatus((int) $manualInitialApplicationStatus);
+
+$manualFinalApplicationStatus = $validated['final_interview_application_status'] ?? null;
+$manualFinalResult = $validated['final_interview_result']
+    ?? $this->mapInterviewResultFromApplicationStatus((int) $manualFinalApplicationStatus);
+
+// Recompute parent-level fields from latest assignment data
+$validated = ActionApplication::normalizeComputedFields(
+    array_merge($application->toArray(), $validated)
+);
+
+// Restore manual Initial Interview decision
+if ($manualInitialStatus) {
+    $validated['initial_interview_application_status'] = $manualInitialApplicationStatus;
+    $validated['initial_interview_result'] = $manualInitialResult;
+}
+
+// Restore manual Final Interview decision
+if ($manualFinalStatus) {
+    $validated['final_interview_application_status'] = $manualFinalApplicationStatus;
+    $validated['final_interview_result'] = $manualFinalResult;
+}
+
+$application->updateApplication($validated);        $application->refresh();
 
         $application->clearBlockedStages();
         $application->refresh();
