@@ -67,8 +67,8 @@ const props = defineProps<{
         id: number
         name: string
         email_address: string
-        work_experiences?: string[] 
-        skills?: string[] 
+        work_experiences?: string[]
+        skills?: string[]
     }>
 }>()
 
@@ -212,28 +212,28 @@ const selectedApplicantLabel = computed(() => {
 
 const filteredApplicants = computed(() => {
     if (!searchQuery.value.trim()) return intermediateApplicants.value
-    
+
     const query = searchQuery.value.toLowerCase()
     return intermediateApplicants.value.filter(applicant => {
         // Search in name and email
         if (applicant.label.toLowerCase().includes(query)) {
             return true
         }
-        
+
         // Search in work experience job titles
-        if (applicant.work_experiences?.some(exp => 
+        if (applicant.work_experiences?.some(exp =>
             exp.toLowerCase().includes(query)
         )) {
             return true
         }
-        
+
         // Search in skills
-        if (applicant.skills?.some(skill => 
+        if (applicant.skills?.some(skill =>
             skill.toLowerCase().includes(query)
         )) {
             return true
         }
-        
+
         return false
     })
 })
@@ -741,8 +741,8 @@ onMounted(async () => {
             value: applicant.id,
             label: `${applicant.name} (${applicant.email_address})`,
             email_address: applicant.email_address,
-            work_experiences: applicant.work_experiences || [],  
-            skills: applicant.skills || [],                      
+            work_experiences: applicant.work_experiences || [],
+            skills: applicant.skills || [],
         }))
     }
 
@@ -847,6 +847,17 @@ function submit() {
     if (form.remarks && form.remarks.length > 65535) {
         remarksError.value = true
         hasError = true
+    }
+
+    // Replied date validation
+    if (form.replied_date && form.contacted_date) {
+        const contactedDate = new Date(form.contacted_date)
+        const repliedDate = new Date(form.replied_date)
+
+        if (repliedDate < contactedDate) {
+            form.setError('replied_date', 'Replied date cannot be earlier than contacted date.')
+            hasError = true
+        }
     }
 
     // Check initial interview remarks length
@@ -1233,6 +1244,81 @@ function selectRequisition(requisition) {
     requisitionSearchQuery.value = ''
 }
 
+// Get current user info from page props
+const currentUser = computed(() => {
+    // If you have user info in page props, use it
+    // Otherwise, you might need to fetch it
+    return page.props.auth?.user || null
+})
+
+const currentUserName = computed(() => {
+    if (!currentUser.value) return 'Unknown'
+    return `${currentUser.value.first_name || ''} ${currentUser.value.last_name || ''}`.trim() || currentUser.value.name || 'Unknown'
+})
+
+const currentUserId = computed(() => {
+    return currentUser.value?.id || null
+})
+
+// Handle contacted date change
+function handleContactedDateChange() {
+    if (form.contacted_date && currentUserId.value) {
+        form.contacted_by = currentUserId.value
+    } else if (!form.contacted_date) {
+        // Clear contacted_by if date is removed
+        form.contacted_by = null
+        // Also clear replied fields since there's no contact date
+        form.replied = null
+        form.replied_date = ''
+    }
+}
+
+// Update the existing watcher to also clear replied fields
+watch(() => form.contacted_date, (newVal) => {
+    if (!newVal) {
+        form.contacted_by = null
+        form.replied = null
+        form.replied_date = ''
+    } else if (currentUserId.value) {
+        form.contacted_by = currentUserId.value
+    }
+})
+
+// Validate replied date is not before contacted date
+watch(() => form.replied_date, (newVal) => {
+    if (!isApplicantSelected.value || !form.contacted_date) return
+
+    if (newVal) {
+        const contactedDate = new Date(form.contacted_date)
+        const repliedDate = new Date(newVal)
+
+        if (repliedDate < contactedDate) {
+            setLiveError('replied_date', 'Replied date cannot be earlier than contacted date.')
+        } else {
+            clearLiveError('replied_date')
+        }
+    }
+})
+
+// Also validate when contacted date changes (might invalidate existing replied date)
+watch(() => form.contacted_date, (newVal) => {
+    if (!form.replied_date) return
+
+    if (newVal) {
+        const contactedDate = new Date(newVal)
+        const repliedDate = new Date(form.replied_date)
+
+        if (repliedDate < contactedDate) {
+            setLiveError('replied_date', 'Replied date cannot be earlier than contacted date.')
+        } else {
+            clearLiveError('replied_date')
+        }
+    } else if (!newVal) {
+        // Contacted date cleared - clear any error
+        clearLiveError('replied_date')
+    }
+})
+
 
 </script>
 
@@ -1392,6 +1478,50 @@ function selectRequisition(requisition) {
                             </div>
                         </div>
 
+                        <!-- Contact & Response Tracking -->
+                        <div class="form-section" :class="{ 'disabled-section': isFormFieldDisabled }">
+                            <div class="section-header">
+                                <h3>Contact & Response Tracking</h3>
+                            </div>
+
+                            <div class="form-grid grid-2 mb-6">
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500">Contacted Date</label>
+                                    <input type="datetime-local" v-model="form.contacted_date" class="form-input"
+                                        :disabled="isFormFieldDisabled" @change="handleContactedDateChange" />
+                                    <span v-if="form.errors.contacted_date" class="error-message">{{
+                                        form.errors.contacted_date }}</span>
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500">Contacted By</label>
+                                    <input type="text" :value="currentUserName" class="form-input" disabled />
+                                </div>
+                            </div>
+
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500">Replied</label>
+                                    <select v-model="form.replied" class="form-select"
+                                        :disabled="isFormFieldDisabled || !form.contacted_date">
+                                        <option :value="null">Select Status</option>
+                                        <option :value="1">Yes</option>
+                                        <option :value="0">No</option>
+                                    </select>
+                                    <span v-if="form.errors.replied" class="error-message">{{ form.errors.replied
+                                    }}</span>
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500">Replied Date</label>
+                                    <input type="datetime-local" v-model="form.replied_date" class="form-input"
+                                        :disabled="!isApplicantSelected || !form.contacted_date || form.replied !== 1" />
+                                    <span v-if="form.errors.replied_date" class="error-message">{{
+                                        form.errors.replied_date }}</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Screening Questions & Preferences -->
                         <div class="form-section" :class="{ 'disabled-section': isFormFieldDisabled }">
                             <div class="section-header">
@@ -1399,11 +1529,14 @@ function selectRequisition(requisition) {
                             </div>
 
                             <div class="position-preferences-grid mb-6">
+                                <!-- 1. Position -->
                                 <div class="form-field">
                                     <label class="field-label position-label">Position</label>
                                     <input type="text" v-model="form.position" class="form-input position-input"
                                         placeholder="Enter aspiring position" :disabled="isFormFieldDisabled" />
                                 </div>
+
+                                <!-- 2. Availability Date -->
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500 position-label">When are you available to
                                         start?</label>
@@ -1411,21 +1544,29 @@ function selectRequisition(requisition) {
                                         class="form-input position-input" placeholder="ex: 2024-12-01 or ASAP"
                                         :disabled="isFormFieldDisabled" />
                                 </div>
+
+                                <!-- 3. Desired Salary -->
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500 position-label">Desired Salary</label>
-
                                     <input type="text" v-model="form.desired_salary_range"
                                         class="form-input position-input" placeholder="ex: 50,000 - 70,000"
                                         :disabled="isFormFieldDisabled" @input="filterSalaryInput" />
-
-                                    <span v-if="errors.desired_salary_range" class="text-red-500 text-xs mt-1 block">
-                                        {{ errors.desired_salary_range }}
-                                    </span>
                                 </div>
+
+                                <!-- 4. Work Preference -->
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500 position-label">Work Preference</label>
                                     <input type="text" v-model="form.work_preference" class="form-input position-input"
                                         placeholder="ex: Regular/Part-time" :disabled="isFormFieldDisabled" />
+                                </div>
+
+                                <!-- 5. Current Employer 👈 Now in the same row -->
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500 position-label">Current Employer</label>
+                                    <input type="text" v-model="form.current_employer" class="form-input position-input"
+                                        placeholder="Enter current employer" :disabled="isFormFieldDisabled" />
+                                    <span v-if="form.errors.current_employer" class="error-message">{{
+                                        form.errors.current_employer }}</span>
                                 </div>
                             </div>
 
@@ -1559,7 +1700,7 @@ function selectRequisition(requisition) {
                                     </option>
                                 </select>
                                 <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue
-                                }}</span>
+                                    }}</span>
                             </div>
                             <div class="exam-section-layout">
                                 <!-- LEFT SIDE -->
@@ -1782,7 +1923,7 @@ function selectRequisition(requisition) {
                                 <textarea v-model="form.exam_remarks" placeholder="Enter any remarks here..." rows="3"
                                     class="form-textarea" :disabled="!isApplicantSelected"></textarea>
                                 <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
 
@@ -1958,7 +2099,8 @@ function selectRequisition(requisition) {
 /* Rest of your existing styles remain the same */
 .position-preferences-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
+    /* Changed from 4 to 5 */
     gap: 0.75rem;
     margin-bottom: 1.5rem;
 }
@@ -2006,9 +2148,9 @@ function selectRequisition(requisition) {
 }
 
 @media (max-width: 768px) {
-    .compensation-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.75rem;
+    .position-preferences-grid {
+        grid-template-columns: 1fr;
+        /* Stack on mobile */
     }
 }
 
@@ -2515,10 +2657,9 @@ a.btn-secondary:hover {
 
 /* Responsive */
 @media (max-width: 1024px) {
-
-    .grid-4,
-    .grid-5 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+    .position-preferences-grid {
+        grid-template-columns: repeat(3, 1fr);
+        /* 3 columns on tablet */
     }
 }
 

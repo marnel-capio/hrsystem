@@ -262,11 +262,11 @@ const isJobOfferApplicable = computed(() => {
     if (Number(props.application.exam_application_status) === EXAM_STATUS.FAILED) return false;
     if (Number(props.application.initial_interview_application_status) === INTERVIEW_STATUS.FAILED) return false;
     if (Number(props.application.final_interview_application_status) === INTERVIEW_STATUS.FAILED) return false;
-    
+
     // ✅ Check if Final Interview is Passed (3) or P2 (4)
     const finalStatus = Number(props.application.final_interview_application_status);
     if (finalStatus !== INTERVIEW_STATUS.PASSED && finalStatus !== INTERVIEW_STATUS.P2) return false;
-    
+
     return true;
 });
 
@@ -428,6 +428,7 @@ const form = useForm({
     availability_date: props.application.availability_date || '',
     desired_salary_range: props.application.desired_salary_range || '',
     work_preference: props.application.work_preference || '',
+    current_employer: props.application.current_employer || '',
 
     basic_pay: props.application.basic_pay || '',
     bonuses: props.application.bonuses || '',
@@ -471,7 +472,18 @@ const form = useForm({
     job_offer_status: props.application.job_offer_status || '',
     job_offer_remarks: props.application.job_offer_remarks || '',
 
+    aws_start_date: formatDateForInput(props.application.aws_start_date),
+    aws_rank: props.application.aws_rank || '',
+    parked_to: props.application.parked_to || '',
+
     remarks: props.application.remarks || '',
+
+    // Contact & Response Tracking 👈 NEW
+    contacted_by: props.application.contacted_by || null,
+    contacted_date: formatDateForInput(props.application.contacted_date),
+    replied: props.application.replied !== null && props.application.replied !== undefined
+        ? Number(props.application.replied) : null,
+    replied_date: formatDateForInput(props.application.replied_date),
 
     initial_interview_id: null as number | null,
     initial_evaluation_score: '' as string | number,
@@ -984,18 +996,6 @@ watch(() => form.exam_application_status, (newVal, oldVal) => {
     }
 });
 
-// watch(() => form.initial_interview_final, (score) => {
-//     if (!score) {
-//         isInitialStatusManuallySet.value = false;
-//     }
-// });
-
-// watch(() => form.final_interview_final, (score) => {
-//     if (!score) {
-//         isFinalStatusManuallySet.value = false;
-//     }
-// });
-
 // ✅ CORRECTED: Auto-correlate Initial Interview
 watch(() => form.initial_interview_final, (score) => {
     if (isInitialStatusManuallySet.value) return;
@@ -1110,6 +1110,10 @@ onMounted(() => {
         }));
     }
 
+    if (form.contacted_date && !form.contacted_by && currentUserId.value) {
+        form.contacted_by = currentUserId.value;
+    }
+
     if (props.sourceProjects) {
         sourceProjectsList.value = props.sourceProjects;
     }
@@ -1190,6 +1194,111 @@ const isFinalInterviewDateLocked = computed(() => {
     ) || [];
     return finalInterviews.length > 0;
 });
+
+// Current user info for contact tracking
+const currentUser = computed(() => {
+    // Get user info from page props
+    const auth = (page.props as any).auth;
+    return auth?.user || null;
+});
+
+const currentUserName = computed(() => {
+    if (!currentUser.value) return 'Not set';
+    const firstName = currentUser.value.first_name || '';
+    const lastName = currentUser.value.last_name || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    return fullName || currentUser.value.name || 'Not set';
+});
+
+const currentUserId = computed(() => {
+    return currentUser.value?.id || null;
+});
+// Handle contacted date change - auto-set contacted_by
+function handleContactedDateChange() {
+    if (form.contacted_date && currentUserId.value) {
+        form.contacted_by = currentUserId.value;
+    } else if (!form.contacted_date) {
+        form.contacted_by = null;
+        form.replied = null;
+        form.replied_date = '';
+    }
+}
+
+// Contact & Response validations
+watch(() => form.contacted_date, (newVal) => {
+    if (!newVal) {
+        form.contacted_by = null;
+        form.replied = null;
+        form.replied_date = '';
+        form.clearErrors('replied_date');
+    } else if (currentUserId.value) {
+        form.contacted_by = currentUserId.value;
+    }
+
+    // Validate existing replied date when contacted date changes
+    if (form.replied_date && newVal) {
+        const contactedDate = new Date(newVal);
+        const repliedDate = new Date(form.replied_date);
+        if (repliedDate < contactedDate) {
+            form.setError('replied_date', 'Replied date cannot be earlier than contacted date.');
+        } else {
+            form.clearErrors('replied_date');
+        }
+    }
+});
+
+watch(() => form.replied_date, (newVal) => {
+    if (!form.contacted_date) return;
+
+    if (newVal) {
+        const contactedDate = new Date(form.contacted_date);
+        const repliedDate = new Date(newVal);
+        if (repliedDate < contactedDate) {
+            form.setError('replied_date', 'Replied date cannot be earlier than contacted date.');
+        } else {
+            form.clearErrors('replied_date');
+        }
+    }
+});
+
+watch(() => form.replied, (newVal) => {
+    if (newVal === 0) {
+        form.replied_date = '';
+        form.clearErrors('replied_date');
+    }
+});
+
+// Contact tracking lock states
+const isContactTrackingLocked = computed(() => {
+    return isEarlySectionsLocked.value ||
+        !!(props.application.contacted_date);  // Lock if contact date already exists
+});
+
+const isContactedDateLocked = computed(() => {
+    return !!props.application.contacted_date;  // Lock if date already set
+});
+
+const isRepliedLocked = computed(() => {
+    return !!(props.application.replied !== null &&
+        props.application.replied !== undefined);  // Lock if replied already set
+});
+
+const isRepliedDateLocked = computed(() => {
+    return !!(props.application.replied_date);  // Lock if date already set
+});
+
+const isAwsFieldsEnabled = computed(() => {
+    return Number(form.job_offer_status) === 3;  // 3 = Accept
+});
+
+watch(() => form.job_offer_status, (newVal) => {
+    if (Number(newVal) !== 3) {
+        form.aws_start_date = '';
+        form.aws_rank = '';
+        form.parked_to = '';
+    }
+});
+
 
 </script>
 
@@ -1291,7 +1400,7 @@ const isFinalInterviewDateLocked = computed(() => {
                                             :disabled="isEarlySectionsLocked">×</button>
                                     </div>
                                     <span v-if="form.errors.upload_pic" class="error-message">{{ form.errors.upload_pic
-                                    }}</span>
+                                        }}</span>
                                     <div v-if="picturePreview" class="picture-preview">
                                         <img :src="picturePreview" alt="Picture preview" class="preview-image" />
                                     </div>
@@ -1302,6 +1411,57 @@ const isFinalInterviewDateLocked = computed(() => {
                             </div>
                         </div>
 
+                        <!-- Contact & Response Tracking -->
+                        <div class="form-section" :class="{ 'disabled-section': isEarlySectionsLocked }">
+                            <div class="section-header">
+                                <h3>Contact & Response Tracking</h3>
+                                <div v-if="isPaperScreeningCompleted" class="section-badge">
+                                    <span class="badge badge-locked">Locked - Paper Screening Completed</span>
+                                </div>
+                                <div v-if="isPaperScreeningFailed" class="section-badge">
+                                    <span class="badge badge-failed">Locked - Application Failed</span>
+                                </div>
+                            </div>
+
+                            <div class="form-grid grid-2 mb-6">
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500">Contacted Date</label>
+                                    <input type="datetime-local" v-model="form.contacted_date" class="form-input"
+                                        :disabled="isContactedDateLocked || isEarlySectionsLocked"
+                                        @change="handleContactedDateChange" />
+                                    <span v-if="form.errors.contacted_date" class="error-message">{{
+                                        form.errors.contacted_date }}</span>
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500">Contacted By</label>
+                                    <input type="text" :value="currentUserName" class="form-input" disabled />
+                                </div>
+                            </div>
+
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500">Replied</label>
+                                    <select v-model="form.replied" class="form-select"
+                                        :disabled="isRepliedLocked || isEarlySectionsLocked || !form.contacted_date">
+                                        <option :value="null">Select Status</option>
+                                        <option :value="1">Yes</option>
+                                        <option :value="0">No</option>
+                                    </select>
+                                    <span v-if="form.errors.replied" class="error-message">{{ form.errors.replied
+                                        }}</span>
+                                </div>
+
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500">Replied Date</label>
+                                    <input type="datetime-local" v-model="form.replied_date" class="form-input"
+                                        :disabled="isRepliedDateLocked || isEarlySectionsLocked || !form.contacted_date || form.replied !== 1"
+                                        :min="form.contacted_date || undefined" />
+                                    <span v-if="form.errors.replied_date" class="error-message">{{
+                                        form.errors.replied_date }}</span>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Screening Questions & Preferences -->
                         <div class="form-section" :class="{ 'disabled-section': isEarlySectionsLocked }">
                             <div class="section-header">
@@ -1337,6 +1497,14 @@ const isFinalInterviewDateLocked = computed(() => {
                                     <label class="field-label !text-gray-500 position-label">Work Preference</label>
                                     <input type="text" v-model="form.work_preference" class="form-input position-input"
                                         placeholder="ex: Regular/Part-time" :disabled="isEarlySectionsLocked" />
+                                </div>
+                                <!-- 👇 NEW -->
+                                <div class="form-field">
+                                    <label class="field-label !text-gray-500 position-label">Current Employer</label>
+                                    <input type="text" v-model="form.current_employer" class="form-input position-input"
+                                        placeholder="Enter current employer" :disabled="isEarlySectionsLocked" />
+                                    <span v-if="form.errors.current_employer" class="error-message">{{
+                                        form.errors.current_employer }}</span>
                                 </div>
                             </div>
 
@@ -1477,7 +1645,7 @@ const isFinalInterviewDateLocked = computed(() => {
                                     </option>
                                 </select>
                                 <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue
-                                }}</span>
+                                    }}</span>
                             </div>
 
                             <div class="exam-section-layout">
@@ -1640,7 +1808,7 @@ const isFinalInterviewDateLocked = computed(() => {
                                 <textarea v-model="form.exam_remarks" placeholder="Enter any remarks here..." rows="3"
                                     class="form-textarea" :disabled="!canEditExamSection"></textarea>
                                 <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
 
@@ -1770,7 +1938,7 @@ const isFinalInterviewDateLocked = computed(() => {
 
                                     <div v-if="currentUserInitialInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserInitialInterview.evaluation_score || '-'
-                                        }}</strong></p>
+                                                }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserInitialInterview.evaluation_results)
                                                 }}</strong></p>
@@ -1804,7 +1972,7 @@ const isFinalInterviewDateLocked = computed(() => {
 
                                 <div class="mt-4 text-sm text-gray-500">
                                     <p><strong>Plan Date:</strong> {{ formatDateTime(form.initial_interview_plan_date)
-                                    }}</p>
+                                        }}</p>
                                     <p><strong>Venue:</strong> {{ getVenueLabel(form.initial_interview_venue) }}</p>
                                 </div>
                             </div>
@@ -1895,7 +2063,7 @@ const isFinalInterviewDateLocked = computed(() => {
 
                                     <div v-if="currentUserFinalInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserFinalInterview.evaluation_score || '-'
-                                        }}</strong></p>
+                                                }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserFinalInterview.evaluation_results)
                                                 }}</strong></p>
@@ -1934,64 +2102,99 @@ const isFinalInterviewDateLocked = computed(() => {
 
 
                         <!-- Job Offer -->
-<div class="form-section" :class="{ 'disabled-section': !canEditJobOfferSection }">
-    <div class="section-header">
-        <h3>Job Offer</h3>
-        <!-- Failed stages -->
-        <div v-if="Number(application.paper_screening_status) === PAPER_SCREENING.FAILED" class="section-badge">
-            <span class="badge badge-failed">Not Applicable - Paper Screening Failed</span>
-        </div>
-        <div v-else-if="Number(application.exam_application_status) === EXAM_STATUS.FAILED" class="section-badge">
-            <span class="badge badge-failed">Not Applicable - Exam Failed</span>
-        </div>
-        <div v-else-if="Number(application.initial_interview_application_status) === INTERVIEW_STATUS.FAILED" class="section-badge">
-            <span class="badge badge-failed">Not Applicable - Initial Interview Failed</span>
-        </div>
-        <div v-else-if="Number(application.final_interview_application_status) === INTERVIEW_STATUS.FAILED" class="section-badge">
-            <span class="badge badge-failed">Not Applicable - Final Interview Failed</span>
-        </div>
-        <!-- Final Interview not yet Passed/P2 -->
-        <div v-else-if="Number(application.final_interview_application_status) !== INTERVIEW_STATUS.PASSED && 
-                         Number(application.final_interview_application_status) !== INTERVIEW_STATUS.P2" 
-             class="section-badge">
-            <span class="badge badge-locked">
-                ⚠️ Waiting for Final Interview to be Passed/P2 
-                (Current: {{ interviewStatusesList.find(s => s.value == application.final_interview_application_status)?.label || 'Not set' }})
-            </span>
-        </div>
-        <!-- Not HR/Admin -->
-        <div v-else-if="!canManageInterviewers" class="section-badge">
-            <span class="badge badge-locked">Only HR/Admin can edit</span>
-        </div>
-    </div>
-    
-    <div class="form-grid grid-2">
-        <div class="form-field">
-            <label class="field-label">Job Offer Schedule</label>
-            <input type="datetime-local" v-model="form.job_offer_schedule" class="form-input"
-                :disabled="!canEditJobOfferSection" :min="nowDateTime()" />
-            <small class="helper-text">Cannot select past dates</small>
-        </div>
-        <div class="form-field">
-            <label class="field-label">Job Offer Status</label>
-            <select v-model="form.job_offer_status" class="form-select"
-                :disabled="!canEditJobOfferSection">
-                <option value="">Select Status</option>
-                <option value="1">Pending</option>
-                <option value="2">Done</option>
-                <option value="3">Accept</option>
-                <option value="4">Decline</option>
-                <option value="5">Withdraw</option>
-                <option value="6">Retracted</option>
-            </select>
-        </div>
-    </div>
-    <div class="form-field mt-3">
-        <label class="field-label">Job Offer Remarks</label>
-        <textarea v-model="form.job_offer_remarks" class="form-textarea" rows="3"
-            :disabled="!canEditJobOfferSection"></textarea>
-    </div>
-</div>
+                        <div class="form-section" :class="{ 'disabled-section': !canEditJobOfferSection }">
+                            <div class="section-header">
+                                <h3>Job Offer</h3>
+                                <!-- Failed stages -->
+                                <div v-if="Number(application.paper_screening_status) === PAPER_SCREENING.FAILED"
+                                    class="section-badge">
+                                    <span class="badge badge-failed">Not Applicable - Paper Screening Failed</span>
+                                </div>
+                                <div v-else-if="Number(application.exam_application_status) === EXAM_STATUS.FAILED"
+                                    class="section-badge">
+                                    <span class="badge badge-failed">Not Applicable - Exam Failed</span>
+                                </div>
+                                <div v-else-if="Number(application.initial_interview_application_status) === INTERVIEW_STATUS.FAILED"
+                                    class="section-badge">
+                                    <span class="badge badge-failed">Not Applicable - Initial Interview Failed</span>
+                                </div>
+                                <div v-else-if="Number(application.final_interview_application_status) === INTERVIEW_STATUS.FAILED"
+                                    class="section-badge">
+                                    <span class="badge badge-failed">Not Applicable - Final Interview Failed</span>
+                                </div>
+                                <!-- Final Interview not yet Passed/P2 -->
+                                <div v-else-if="Number(application.final_interview_application_status) !== INTERVIEW_STATUS.PASSED &&
+                                    Number(application.final_interview_application_status) !== INTERVIEW_STATUS.P2"
+                                    class="section-badge">
+                                    <span class="badge badge-locked">
+                                        ⚠️ Waiting for Final Interview to be Passed/P2
+                                        (Current: {{interviewStatusesList.find(s => s.value ==
+                                            application.final_interview_application_status)?.label || 'Not set'}})
+                                    </span>
+                                </div>
+                                <!-- Not HR/Admin -->
+                                <div v-else-if="!canManageInterviewers" class="section-badge">
+                                    <span class="badge badge-locked">Only HR/Admin can edit</span>
+                                </div>
+                            </div>
+
+                            <div class="form-grid grid-2">
+                                <div class="form-field">
+                                    <label class="field-label">Job Offer Schedule</label>
+                                    <input type="datetime-local" v-model="form.job_offer_schedule" class="form-input"
+                                        :disabled="!canEditJobOfferSection" :min="nowDateTime()" />
+                                    <small class="helper-text">Cannot select past dates</small>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Job Offer Status</label>
+                                    <select v-model="form.job_offer_status" class="form-select"
+                                        :disabled="!canEditJobOfferSection">
+                                        <option value="">Select Status</option>
+                                        <option value="1">Pending</option>
+                                        <option value="2">Done</option>
+                                        <option value="3">Accept</option>
+                                        <option value="4">Decline</option>
+                                        <option value="5">Withdraw</option>
+                                        <option value="6">Retracted</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- 👇 NEW: AWS Fields - Only enabled when Status is "Accept" -->
+                            <div class="form-grid grid-3 mt-3">
+                                <div class="form-field">
+                                    <label class="field-label">AWS Start Date</label>
+                                    <input type="datetime-local" v-model="form.aws_start_date" class="form-input"
+                                        :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled"
+                                        :min="nowDateTime()" />
+                                    <span v-if="form.errors.aws_start_date" class="error-message">{{
+                                        form.errors.aws_start_date }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">AWS Rank</label>
+                                    <input type="text" v-model="form.aws_rank" class="form-input"
+                                        placeholder="Enter AWS rank"
+                                        :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled" />
+                                    <span v-if="form.errors.aws_rank" class="error-message">{{ form.errors.aws_rank
+                                    }}</span>
+                                </div>
+                                <div class="form-field">
+                                    <label class="field-label">Parked To</label>
+                                    <input type="text" v-model="form.parked_to" class="form-input"
+                                        placeholder="Enter parked location"
+                                        :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled" />
+                                    <span v-if="form.errors.parked_to" class="error-message">{{ form.errors.parked_to
+                                        }}</span>
+                                </div>
+                            </div>
+
+                            <div class="form-field mt-3">
+                                <label class="field-label">Job Offer Remarks</label>
+                                <textarea v-model="form.job_offer_remarks"
+                                    placeholder="For declined, withdrawn, or retracted job offers, please provide the reason here."
+                                    class="form-textarea" rows="3" :disabled="!canEditJobOfferSection"></textarea>
+                            </div>
+                        </div>
 
                         <!-- General Remarks -->
                         <div class="form-section" :class="{ 'disabled-section': !canEditGeneralRemarks }">
@@ -2384,7 +2587,8 @@ const isFinalInterviewDateLocked = computed(() => {
 
 .position-preferences-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
+    /* Changed from 4 to 5 */
     gap: 0.75rem;
     margin-bottom: 1.5rem;
 }
@@ -2621,6 +2825,20 @@ const isFinalInterviewDateLocked = computed(() => {
     .form-actions {
         flex-direction: column-reverse;
         align-items: stretch;
+    }
+}
+
+@media (max-width: 1024px) {
+    .position-preferences-grid {
+        grid-template-columns: repeat(3, 1fr);
+        /* 3 columns on tablet */
+    }
+}
+
+@media (max-width: 768px) {
+    .position-preferences-grid {
+        grid-template-columns: 1fr;
+        /* Stack on mobile */
     }
 }
 </style>
