@@ -104,6 +104,10 @@ onMounted(() => {
   console.log('Requisition data:', requisitions.value);
 });
 
+onMounted(() => {
+  console.log('Requisitions:', requisitions.value); // Check if businessUnit is loaded
+});
+
 </script>
 
 <template>
@@ -182,8 +186,9 @@ onMounted(() => {
                 </td>
                 <td class="border px-3 py-2">{{ requisition.no_resources_needed }}</td>
                 <td class="border px-3 py-2">
-                  {{ requisition.business_unit }}
-                </td>
+  {{ requisition.business_unit?.business_unit }}
+</td>
+                
                 <td class="border px-3 py-2">
                   {{ (requisition.location_assignment === '6' || requisition.location_assignment === 6) && requisition.custom_location
                     ? requisition.custom_location 

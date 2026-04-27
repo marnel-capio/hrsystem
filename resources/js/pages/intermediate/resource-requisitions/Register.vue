@@ -3,6 +3,7 @@ import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import projects from '@/routes/intermediate/projects'
+import requisitions from '@/routes/intermediate/requisitions'
 
 const page = usePage<any>()
 const loading = ref(false)
@@ -10,6 +11,7 @@ const props = defineProps<{
   errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
   newProjects: { id: number; project_name: string; project_description: string; }[];
   custom_location_name: string | null;
+  businessUnits: { id: number; name: string }[];
 }>();
 
 
@@ -42,7 +44,6 @@ const form = ref({
 });
 
 const person_to_replaceError = ref('')
-const business_unitError = ref('')
 const resourceError = ref('')
 const practiceError = ref('')
 const no_resources_neededError = ref('')
@@ -55,11 +56,9 @@ const remarksError = ref('')
 const start_dateError = ref('')
 const custom_locationError = ref('')
 const project_descriptionError = ref('')
-const projectSearchError = ref('');
 
 
 const maxperson_to_replace = 80 
-const maxbusiness_unit = 20 
 const maxresource = 1024 
 const maxpractice = 1024  
 const maxno_resources_needed = 100
@@ -85,11 +84,6 @@ const validatecustom_location = () => {
     : ''
 }
 
-const validatebusiness_unit = () => {
-  business_unitError.value = form.value.business_unit.length > maxbusiness_unit
-    ? `This field exceeds the maximum allowed length.`
-    : ''
-}
 
 const validateproject_description = () => {
   project_descriptionError.value = form.value.project_description.length > maxproject_description
@@ -227,7 +221,6 @@ onMounted(() => {
 const submit = () => {
   person_to_replaceError.value = ''
   custom_locationError.value = ''
-  business_unitError.value = ''
   resourceError.value = ''
   practiceError.value = ''
   no_resources_neededError.value = ''
@@ -305,7 +298,7 @@ const openProjectModal = () => {
 
 const closeProjectModal = () => {
   isProjectModalOpen.value = false
-  resetProjectForm()
+  
 }
 const projectForm = ref({
   project_name: '',
@@ -333,43 +326,25 @@ const validateDescription = () => {
       ? 'This field exceeds the maximum allowed length.'
       : ''
 }
-const submitProject = () => {
+
+
+
+const addProject = () => {
+  // Clear frontend validation errors
   projectNameError.value = ''
   descriptionError.value = ''
   remarksError.value = ''
 
-  projectForm.value.processing = true
+  form.value.processing = true
 
-  router.post('/intermediate/projects', projectForm.value, {
-    preserveScroll: true,
-    onSuccess: (page) => {
-      projectForm.value.processing = false
-      closeProjectModal()
-
-      // OPTIONAL: auto refresh list (depends on backend)
-      // props.newProjects.push(page.props.newProject)
-
-      // OPTIONAL: auto select newly created project
-      // form.value.project_id = page.props.newProject.id
-    },
+  router.post('/intermediate/projects', form.value, {
     onFinish: () => {
-      projectForm.value.processing = false
+      form.value.processing = false
+      loading.value = false
     }
   })
 }
 
-const resetProjectForm = () => {
-  projectForm.value = {
-    project_name: '',
-    project_description: '',
-    remarks: '',
-    processing: false,
-  }
-
-  projectNameError.value = ''
-  descriptionError.value = ''
-  remarksError.value = ''
-}
 </script>
 
 <template>
@@ -546,7 +521,7 @@ const resetProjectForm = () => {
                           No project found
                       </div>
                       <div v-if="filteredProjects.length === 0" 
-                        class="mt-2 mb-3 text-white bg-blue-500 flex justify-center items-center cursor-pointer rounded-md w-25 max-w-xs px-3 py-2 mx-auto"
+                        class="mt-2 mb-3 text-white bg-[#1C7BA5] flex justify-center items-center cursor-pointer rounded-md w-25 max-w-xs px-3 py-2 mx-auto"
                         @click="openProjectModal">
                         Add Project
                       </div>
@@ -608,7 +583,7 @@ const resetProjectForm = () => {
 
             <button
               class="btn btn-primary"
-              @click="submitProject"
+              @click="addProject"
               :disabled="projectForm.processing"
             >
               {{ projectForm.processing ? 'Adding...' : 'Add' }}
@@ -617,40 +592,35 @@ const resetProjectForm = () => {
 
         </div>
       </div>
+
+
         <!-- Business Unit -->
         <div class="flex flex-col">
-          <label class="text-sm font-bold mb-1">Business Unit<label class="text-red-500">*</label></label>
-          <input
-            v-model="form.business_unit"
-            @input="validatebusiness_unit"
-            type="text"
-            placeholder="Business Unit"
-            class="border p-2 rounded w-full"
-          />
-          <span v-if="page.props.errors?.business_unit" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.business_unit }}
-          </span>
-          <span v-if="business_unitError" class="text-red-600 text-xs mt-1">
-            {{ business_unitError }}
+          <label class="text-sm font-semibold mb-1 text-bold">Business Unit <label class="text-red-500">*</label></label>
+          <select v-model="form.business_unit" class="border p-2 rounded w-full">
+            <option disabled value="">Select Business Unit</option>
+
+            <option
+              v-for="unit in props.businessUnits"
+              :key="unit.id"
+              :value="unit.id"
+            >
+            </option>
+          </select>
+          <span v-if="page.props.errors?.sourcing_type" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.sourcing_type }}
           </span>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mt-5">
-        <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Project Description</label>
-          <textarea
-            v-model="form.project_description"
-            @input="validateproject_description"
-            rows="6"
-            placeholder="Project Description"
-            class="border p-2 rounded w-full"
-          />
-          <span v-if="project_descriptionError" class="text-red-600 text-xs mt-1">
-            {{ project_descriptionError }}
-          </span>
-          <span v-if="page.props.errors?.project_description" class="text-red-600 text-xs mt-1"> {{ page.props.errors.project_description }} </span>
-        </div>
+      <div class="flex flex-col mt-5">
+        <label class="text-sm mb-1">Project Description</label>
+        <textarea
+          v-model="form.project_description"
+          placeholder="Project description will auto-fill based on Project selection"
+          class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed"
+          readonly
+        />
       </div>
 
       <!-- Resource, Practice -->

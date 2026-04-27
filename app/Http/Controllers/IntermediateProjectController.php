@@ -19,60 +19,34 @@ class IntermediateProjectController extends Controller
     {
         $this->intermediateService = $intermediateService;
     }
+  
+public function store(IntermediateRequest $request)
+{
+    try {
+        DB::beginTransaction();
 
-    public function index(Request $request)
-    {
-        $user = Auth::user();
+        $project = $this->intermediateService->create($request->validated(), $request);
 
-        $search = $request->input('search');
+        DB::commit();
 
-        $projects = IntermediateProjectModel::getPaginated($search, perPage: 20);
-        $projectsTotal = IntermediateProjectModel::count();
+        if ($request->wantsJson()) {
+            return back()->with([
+    'project' => $project
+]);
+        }
 
-        return Inertia::render('intermediate/projects/ProjectList', [
-            'projects' => $projects,
-            'filters' => [
-                'search' => $search,
-            ],
-            'projects_total' => $projectsTotal,
-            'user_permissions' => $user->permissions,
+        return redirect()
+            ->route('intermediate.projects.show', ['id' => $project->id])
+            ->with('success', config('errors.record_created_successfully.errorMessage'));
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return back()->withErrors([
+            'error' => config('errors.transaction_failed.errorMessage')
         ]);
     }
-
-    public function create()
-    {
-        return Inertia::render('intermediate/projects/ProjectRegister');
-    }
-  
-    public function store(IntermediateRequest $request)
-    {
-        try {
-    
-            DB::beginTransaction();
-    
-            // SIMULATE ERROR
-            //throw new \Exception("Test error");
-    
-            $project = $this->intermediateService->create($request->validated(), $request);
-    
-            DB::commit();
-    
-            return redirect()
-                ->route('intermediate.projects.show', ['id' => $project->id])
-                ->with('success', config('errors.record_created_successfully.errorMessage'));
-    
-        } catch (\Exception $e) {
-    
-            DB::rollBack();
-    
-            return back()->withErrors([
-                'error' => config('errors.transaction_failed.errorMessage')
-            ]);
-        }
-    }
-
-
-
+}
 
     public function edit($id)
     {

@@ -15,7 +15,7 @@ use App\Models\User;
 use App\Mail\ResourceRequisitionNotificationMail;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResourceRequisitionDeletedMail;
-
+use App\Models\BusinessUnitModel;
 
 
 
@@ -49,9 +49,13 @@ class IntermediateRequisitionController extends Controller
     public function create()
     {
         $projects = IntermediateProjectModel::getProjects(); 
+        $businessUnits = BusinessUnitModel::select('id', 'business_unit')
+        ->orderBy('business_unit')
+        ->get();
 
         return Inertia::render('intermediate/resource-requisitions/Register', [
             'newProjects' => $projects,
+            'businessUnits' => $businessUnits,
         ]);
     }
 

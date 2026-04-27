@@ -93,6 +93,7 @@ const props = defineProps<{
   requisition: {
   id: number;
   project_name: string;
+  business_unit: string;
 
   engagement_type: string;
   engagement_type_label?: string;
@@ -114,7 +115,7 @@ const props = defineProps<{
 
   project_id?: number;
   project_description?: string;
-  business_unit?: string;
+  business_unit_id?: number;
   resource?: string;
   practice?: string;
 

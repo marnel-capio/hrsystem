@@ -12,14 +12,13 @@ class IntermediateRequisitionModel extends Model
 
     protected $fillable = [
         'engagement_type',
-        'sourcing_type',
+        'sourcing_type',  
         'request_type',
         'replacement_due_to',
         'person_to_replace',
         'location_assignment',
         'custom_location',
         'project_id',
-        'business_unit',
         'resource',
         'practice',
         'no_resources_needed',
@@ -35,7 +34,10 @@ class IntermediateRequisitionModel extends Model
         'created_time',
         'updated_by',
         'updated_time',
+        'business_unit_id',
+
     ];
+    
 
     public function scopeSearch($query, $search)
     {
@@ -55,6 +57,7 @@ class IntermediateRequisitionModel extends Model
                 $q->whereHas('project', function ($q2) use ($search) {
                     $q2->where('project_name', 'like', "%{$search}%");
                 });
+
 
                 $searchLower = strtolower($search);
                 $months = [
@@ -79,7 +82,6 @@ class IntermediateRequisitionModel extends Model
                     $q->orWhere('start_date', 'like', "%{$search}%");
                 }
                 $q->orWhere('custom_location', 'like', "%{$searchLower}%");
-                $q->orWhere('business_unit', 'like', "%{$searchLower}%");
                 $q->orWhere('required_skills', 'like', "%{$searchLower}%");
 
                 foreach ($locationMap as $key => $value) {
@@ -89,6 +91,9 @@ class IntermediateRequisitionModel extends Model
                 }
 
                 $q->orWhere('resource', 'like', "%{$search}%");
+                $q->orWhereHas('businessUnit', function ($q3) use ($searchLower) {
+                $q3->where('business_unit', 'like', "%{$searchLower}%");
+            });
             });
         }
     }
@@ -97,6 +102,11 @@ class IntermediateRequisitionModel extends Model
     {
         return $this->belongsTo(IntermediateProjectModel::class, 'project_id');
     }
+
+    public function businessUnit()
+{
+    return $this->belongsTo(BusinessUnitModel::class, 'business_unit_id', 'id');
+}
 
     public function getProjectDescriptionAttribute()
     {
@@ -137,12 +147,13 @@ class IntermediateRequisitionModel extends Model
                 'location_assignment',
                 'custom_location',
                 'start_date',
-                'business_unit',
                 'required_skills',
+                'business_unit_id',
             ])
             ->with([
-                'project:id,project_name,project_description',
+                'project:id,project_name,project_description', 
                 'requestedBy:id,first_name,last_name',
+                'businessUnit:id,business_unit',
             ])
             ->search($search)
             ->whereHas('project')
@@ -207,6 +218,9 @@ public function getReplacementDueToLabelAttribute()
 {
     return $this->project?->project_name;
 }
+
+
+
 public function getProjectDescAttribute()
 {
     return $this->project?->project_description;
