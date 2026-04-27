@@ -27,7 +27,6 @@ namespace App\Models {
      * @property string|null $middle_name
      * @property string $first_name
      * @property string $last_name
-     * @property bool $source_origin
      * @property string|null $other_source
      * @property bool|null $source
      * @property bool|null $source_type
@@ -44,7 +43,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSourceType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSource($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereOtherSource($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereSourceOrigin($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereLastName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereFirstName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<ActionApplicant>|ActionApplicant whereMiddleName($value)
@@ -5141,8 +5139,8 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
-     * @property string|null $expected_salary_range
      * @property string|null $custom_location
+     * @property string|null $expected_salary_range
      * @property string|null $role
      * @property string|null $preferred_skills
      * @property string|null $required_skills
@@ -5188,8 +5186,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRequiredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRole($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCustomLocation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereExpectedSalaryRange($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCustomLocation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedTime($value)

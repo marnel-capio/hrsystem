@@ -28,12 +28,6 @@ class StoreIntermediateApplicationRequest extends FormRequest
 
             'resource_schedule_id' => ['nullable', 'exists:resource_requisitions,id'],
 
-            // After 'upload_pic' rules, before screening rules
-            'contacted_by' => ['nullable', 'exists:users,id'],
-            'contacted_date' => ['nullable', 'date'],
-            'replied' => ['nullable', 'integer', 'in:0,1'],
-            'replied_date' => ['nullable', 'date'],
-
             // Screening
             'answer_q1' => ['nullable'],
             'answer_q2' => ['nullable'],
@@ -58,7 +52,6 @@ class StoreIntermediateApplicationRequest extends FormRequest
             'other_benefits' => ['nullable'],
             'targeted_company' => ['nullable'],
             'industry_experience' => ['nullable'],
-            'current_employer' => ['nullable'],
 
             // Exam dates
             'exam_plan_date' => ['nullable', 'date'],
@@ -89,7 +82,7 @@ class StoreIntermediateApplicationRequest extends FormRequest
 
             // Initial Interview
             'initial_interview_plan_date' => ['nullable', 'date'],
-            'initial_interview_actual_date' => ['nullable', 'date', 'after_or_equal:initial_interview_plan_date',],
+            'initial_interview_actual_date' => ['nullable', 'date', 'after_or_equal:exam_plan_date',],
             'initial_interview_venue' => ['nullable', 'integer'],
             'initial_interview_final' => ['nullable', 'numeric', 'min:0', 'max:100'],
 

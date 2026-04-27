@@ -113,15 +113,6 @@ class IntermediateApplicationController extends Controller
             'jobOfferStatuses' => config('constants.job_offer_statuses'),
             'applicationResultMap' => config('constants.application_result_map'),
 
-            'auth' => [
-                'user' => [
-                    'id' => auth()->id(),
-                    'first_name' => auth()->user()->first_name,
-                    'last_name' => auth()->user()->last_name,
-                    'name' => auth()->user()->full_name ?? auth()->user()->name,
-                ],
-            ],
-
             'sourceProjects' => IntermediateRequisitionModel::query()
                 ->whereHas('project')
                 ->with('project')
@@ -146,10 +137,6 @@ class IntermediateApplicationController extends Controller
         try {
             $data = $request->validated();
             // throw new \Exception("Test error");
-
-            if (! empty($data['contacted_date'])) {
-                $data['contacted_by'] = auth()->id();
-            }
 
             $dateFields = [
                 'exam_plan_date',
@@ -405,12 +392,6 @@ class IntermediateApplicationController extends Controller
             ->values()
             ->toArray();
 
-        $contactedByName = null;
-        if ($application->contacted_by) {
-            $contactedByUser = User::find($application->contacted_by);
-            $contactedByName = $contactedByUser ? trim($contactedByUser->first_name . ' ' . $contactedByUser->last_name) : null;
-        }
-
         return Inertia::render('intermediate/applications/Detail', [
             'application' => [
                 'id' => $application->id,
@@ -490,18 +471,6 @@ class IntermediateApplicationController extends Controller
                 'parked_to' => $application->parked_to,
                 'aws_rank' => $application->aws_rank,
                 'aws_start_date' => $application->aws_start_date,
-
-                // Add to the application array in show():
-                'contacted_by' => $application->contacted_by,
-                'contacted_date' => $application->contacted_date 
-                    ? Carbon::parse($application->contacted_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
-                    : null,
-                'replied' => $application->replied,
-                'replied_date' => $application->replied_date 
-                    ? Carbon::parse($application->replied_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
-                    : null,
-                'current_employer' => $application->current_employer,
-                'contacted_by_name' => $contactedByName,
 
                 'applicant' => [
                     'first_name' => $application->intermediateApplicant->first_name ?? '',
@@ -761,25 +730,9 @@ class IntermediateApplicationController extends Controller
                 : null,
                 'job_offer_status' => $application->job_offer_status,
                 'job_offer_remarks' => $application->job_offer_remarks,
-                'aws_start_date' => $application->aws_start_date
-    ? Carbon::parse($application->aws_start_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
-    : null,
-                'aws_rank' => $application->aws_rank,
-                'parked_to' => $application->parked_to,
 
                 // Other
                 'remarks' => $application->remarks,
-                'contacted_by' => $application->contacted_by,
-                'contacted_date' => $application->contacted_date
-                    ? Carbon::parse($application->contacted_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
-                    : null,
-                'replied' => $application->replied,
-                'replied_date' => $application->replied_date
-                    ? Carbon::parse($application->replied_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
-                    : null,
-
-                // ✅ ADD THIS - Current Employer
-                'current_employer' => $application->current_employer,
 
                 'applicant' => [
                     'first_name' => $application->intermediateApplicant->first_name ?? '',
@@ -819,16 +772,6 @@ class IntermediateApplicationController extends Controller
             'userPermissions' => auth()->user()->permissions ?? 0,
             'userId' => auth()->id(),  // ✅ ADD THIS
             'interviews' => $interviews,  // ✅ ADD THIS
-
-            'auth' => [
-                'user' => [
-                    'id' => auth()->id(),
-                    'first_name' => auth()->user()->first_name,
-                    'last_name' => auth()->user()->last_name,
-                    'name' => auth()->user()->full_name ?? auth()->user()->name,
-                ],
-            ],
-
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),
@@ -881,9 +824,6 @@ class IntermediateApplicationController extends Controller
             'job_offer_schedule' => 'nullable|date',
             'job_offer_status' => 'nullable|integer',
             'job_offer_remarks' => 'nullable|string',
-            'aws_start_date' => ['nullable', 'date'],
-            'aws_rank' => ['nullable', 'string', 'max:80'],
-            'parked_to' => ['nullable', 'string', 'max:80'],
 
             // Files
             'upload_resume' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
@@ -891,15 +831,6 @@ class IntermediateApplicationController extends Controller
 
             // Other
             'remarks' => 'nullable|string',
-
-            // Contact & Response Tracking
-            'contacted_by' => ['nullable', 'integer'],
-            'contacted_date' => ['nullable', 'date'],
-            'replied' => ['nullable', 'integer', 'in:0,1'],
-            'replied_date' => ['nullable', 'date'],
-
-            // Current Employer
-            'current_employer' => ['nullable', 'string', 'max:80'],
         ];
 
         $validated = $request->validate($rules);
@@ -908,14 +839,10 @@ class IntermediateApplicationController extends Controller
 
         try {
             // Handle date fields with timezone
-
-            if (! empty($validated['contacted_date']) && empty($application->contacted_by)) {
-                $validated['contacted_by'] = auth()->id();
-            }
             $dateFields = [
                 'exam_plan_date', 'exam_actual_date',
                 'initial_interview_plan_date', 'initial_interview_actual_date',
-                'final_interview_date', 'job_offer_schedule', 'aws_start_date',
+                'final_interview_date', 'job_offer_schedule',
             ];
 
             foreach ($dateFields as $field) {
