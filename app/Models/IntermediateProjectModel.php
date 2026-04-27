@@ -34,7 +34,7 @@ class IntermediateProjectModel extends Model
 
     public function requisitions()
     {
-        return $this->hasMany(IntermediateRequisitionModel::class, 'project_id');
+        return $this->hasMany(IntermediateRequisitionModel::class, 'project_id', 'project_description');
     }
     
 

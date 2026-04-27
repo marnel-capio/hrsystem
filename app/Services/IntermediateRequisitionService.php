@@ -13,10 +13,9 @@ class IntermediateRequisitionService
 {
     $requisition = new IntermediateRequisitionModel();
 
-    $project = IntermediateProjectModel::find($data['project_id , project_desciption']);
+    $project = IntermediateProjectModel::find($data['project_id']);
     $requisition->project_id = $data['project_id'];
-    $requisition->project_description = $data['project_description'];
-
+    
     $requisition->engagement_type = $data['engagement_type'];
     $requisition->sourcing_type = $data['sourcing_type'];
     $requisition->request_type = $data['request_type'];

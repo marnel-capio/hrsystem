@@ -55,6 +55,66 @@ const submit = () => {
     }
   })
 }
+
+const projectForm = ref({
+  project_name: '',
+  project_description: '',
+  remarks: '',
+  processing: false,
+})
+
+const isProjectModalOpen = ref(false)
+
+const openProjectModal = () => {
+  isProjectModalOpen.value = true
+}
+
+const closeProjectModal = () => {
+  isProjectModalOpen.value = false
+  resetProjectForm()
+}
+
+
+const maxProjectNameLength = 20
+const maxDescriptionLength = 1024
+
+const projectNameError = ref('')
+const descriptionError = ref('')
+
+const validateProjectName = () => {
+  projectNameError.value =
+    projectForm.value.project_name.length > maxProjectNameLength
+      ? 'This field exceeds the maximum allowed length.'
+      : ''
+}
+
+const validateDescription = () => {
+  descriptionError.value =
+    projectForm.value.project_description.length > maxDescriptionLength
+      ? 'This field exceeds the maximum allowed length.'
+      : ''
+}
+
+
+const submitProject = () => {
+  projectNameError.value = ''
+  descriptionError.value = ''
+  remarksError.value = ''
+
+  projectForm.value.processing = true
+
+  router.post('/intermediate/projects', projectForm.value, {
+    preserveScroll: true,
+    onSuccess: (page) => {
+      projectForm.value.processing = false
+      closeProjectModal()
+
+    },
+    onFinish: () => {
+      projectForm.value.processing = false
+    }
+  })
+}
 </script>
  
 <template>

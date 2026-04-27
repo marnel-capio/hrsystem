@@ -19,7 +19,6 @@ class IntermediateRequisitionModel extends Model
         'location_assignment',
         'custom_location',
         'project_id',
-        'project_description',
         'business_unit',
         'resource',
         'practice',
@@ -146,6 +145,7 @@ class IntermediateRequisitionModel extends Model
                 'requestedBy:id,first_name,last_name',
             ])
             ->search($search)
+            ->whereHas('project')
             ->orderBy('id', 'desc')
             ->paginate($perPage)
             ->withQueryString();

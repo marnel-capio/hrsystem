@@ -55,6 +55,7 @@ const remarksError = ref('')
 const start_dateError = ref('')
 const custom_locationError = ref('')
 const project_descriptionError = ref('')
+const projectSearchError = ref('');
 
 
 const maxperson_to_replace = 80 
@@ -291,6 +292,84 @@ const filteredProjects = computed(() => {
       .includes(projectSearchQuery.value.toLowerCase())
   )
 })
+
+
+
+
+
+const isProjectModalOpen = ref(false)
+
+const openProjectModal = () => {
+  isProjectModalOpen.value = true
+}
+
+const closeProjectModal = () => {
+  isProjectModalOpen.value = false
+  resetProjectForm()
+}
+const projectForm = ref({
+  project_name: '',
+  project_description: '',
+  remarks: '',
+  processing: false,
+})
+
+const maxProjectNameLength = 20
+const maxDescriptionLength = 1024
+
+const projectNameError = ref('')
+const descriptionError = ref('')
+
+const validateProjectName = () => {
+  projectNameError.value =
+    projectForm.value.project_name.length > maxProjectNameLength
+      ? 'This field exceeds the maximum allowed length.'
+      : ''
+}
+
+const validateDescription = () => {
+  descriptionError.value =
+    projectForm.value.project_description.length > maxDescriptionLength
+      ? 'This field exceeds the maximum allowed length.'
+      : ''
+}
+const submitProject = () => {
+  projectNameError.value = ''
+  descriptionError.value = ''
+  remarksError.value = ''
+
+  projectForm.value.processing = true
+
+  router.post('/intermediate/projects', projectForm.value, {
+    preserveScroll: true,
+    onSuccess: (page) => {
+      projectForm.value.processing = false
+      closeProjectModal()
+
+      // OPTIONAL: auto refresh list (depends on backend)
+      // props.newProjects.push(page.props.newProject)
+
+      // OPTIONAL: auto select newly created project
+      // form.value.project_id = page.props.newProject.id
+    },
+    onFinish: () => {
+      projectForm.value.processing = false
+    }
+  })
+}
+
+const resetProjectForm = () => {
+  projectForm.value = {
+    project_name: '',
+    project_description: '',
+    remarks: '',
+    processing: false,
+  }
+
+  projectNameError.value = ''
+  descriptionError.value = ''
+  remarksError.value = ''
+}
 </script>
 
 <template>
@@ -430,7 +509,7 @@ const filteredProjects = computed(() => {
       <!-- Project Name, Business Unit -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="form-field">
-          <label class="field-label">Projects</label>
+          <label class="text-sm font-bold mb-1">Project<label class="text-red-500">*</label></label>
           <div class="custom-select-wrapper"
               :class="{ 'is-open': isProjectDropdownOpen }">
               <div class="border p-2 rounded w-full flex items-center justify-between cursor-pointer bg-white"
@@ -447,7 +526,7 @@ const filteredProjects = computed(() => {
               <div class="custom-select-dropdown border border-1-black border p-2 rounded-sm max-h-64 overflow-y-auto" v-show="isProjectDropdownOpen">
                   <div class="dropdown-search">
                       <input type="text" v-model="projectSearchQuery"
-                          placeholder="Search by project..."
+                          placeholder="Search/Input project..."
                           class="text-sm border border-1-black border p-2 rounded-sm w-full" @click.stop />
 
                       
@@ -467,8 +546,9 @@ const filteredProjects = computed(() => {
                           No project found
                       </div>
                       <div v-if="filteredProjects.length === 0" 
-                          class="dropdown-empty-item text-white flex justify-center items-center cursor-pointer !bg-[#1C7BA5] ">
-                          Add Project
+                        class="mt-2 mb-3 text-white bg-blue-500 flex justify-center items-center cursor-pointer rounded-md w-25 max-w-xs px-3 py-2 mx-auto"
+                        @click="openProjectModal">
+                        Add Project
                       </div>
                   </div>
               </div>
@@ -478,6 +558,65 @@ const filteredProjects = computed(() => {
           </span>
         </div>
 
+
+
+
+        <!-- PROJECT MODAL -->
+      <div
+        v-if="isProjectModalOpen"
+        class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 text-sm"
+      >
+        <div class="bg-white w-1/2 rounded-lg shadow-lg p-6 relative">
+
+          <!-- Close -->
+          <span class="absolute top-2 right-3 text-black cursor-pointer text-sm" @click="closeProjectModal">
+            ✕
+          </span>
+
+          <h2 class="text-lg font-bold mb-4">Add Project</h2>
+
+          <!-- Project Name -->
+          <div class="mb-4">
+            <label class="text-sm font-bold">Project Name <label class="text-red-500">*</label></label>
+            <input
+              v-model="projectForm.project_name"
+              @input="validateProjectName"
+              class="border p-2 rounded w-full"
+              placeholder="Project Name"
+            />
+            <span class="text-red-500 text-xs">{{ projectNameError }}</span>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <label class="text-sm">Project Description</label>
+            <textarea
+              v-model="projectForm.project_description"
+              @input="validateDescription"
+              rows="4"
+              class="border p-2 rounded w-full"
+              placeholder="Project Description"
+            />
+            <span class="text-red-500 text-xs">{{ descriptionError }}</span>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex justify-end gap-2 mt-6">
+            <button class="btn-secondary" @click="closeProjectModal">
+              Cancel
+            </button>
+
+            <button
+              class="btn btn-primary"
+              @click="submitProject"
+              :disabled="projectForm.processing"
+            >
+              {{ projectForm.processing ? 'Adding...' : 'Add' }}
+            </button>
+          </div>
+
+        </div>
+      </div>
         <!-- Business Unit -->
         <div class="flex flex-col">
           <label class="text-sm font-bold mb-1">Business Unit<label class="text-red-500">*</label></label>
@@ -500,7 +639,6 @@ const filteredProjects = computed(() => {
       <div class="grid grid-cols-2 gap-4 mt-5">
         <div class="flex flex-col col-span-2">
           <label class="text-sm mb-1">Project Description</label>
-
           <textarea
             v-model="form.project_description"
             @input="validateproject_description"
