@@ -3268,7 +3268,7 @@ const examCriteriaDisplay = computed(() => {
                                                 assignment, index
                                             ) in visibleFinalInterviewAssignments"
                                             :key="assignment.id"
-                                            class="atpp-card"
+                                            class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30"
                                         >
                                             <div class="atpp-card-title">
                                                 {{ assignment.name }}
