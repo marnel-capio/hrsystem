@@ -520,7 +520,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-2 gap-5 mt-5">
         <!-- Resource -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1 text-gray-500">Resource</label>
+          <label class="text-sm mb-1 font-bold">Resource <label class="text-red-500">*</label></label>
           <input
             v-model="form.resource"
             @input="validateresource"
@@ -559,7 +559,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-3 gap-5 mt-5">
         <!-- No. of Resources Needed -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1 text-gray-500">No. of Resources Needed</label>
+          <label class="text-sm mb-1 font-bold">No. of Resources Needed <label class="text-red-500">*</label></label>
           <input
             v-model="form.no_resources_needed"
             @input="validateno_resources_needed"
@@ -616,7 +616,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Required Skills/Experience -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1 text-gray-500">Required Skills/Experience</label>
+          <label class="text-sm mb-1 font-bold">Required Skills/Experience <label class="text-red-500">*</label></label>
           <textarea v-model="form.required_skills" rows="6" @input="validaterequired_skills" class="border p-2 rounded w-full" placeholder="Required Skills/Experience"></textarea>
           <span v-if="required_skillsError" class="text-red-600 text-xs mt-1">
             {{ required_skillsError }}

@@ -19,6 +19,7 @@ class IntermediateRequisitionModel extends Model
         'location_assignment',
         'custom_location',
         'project_id',
+        'project_description',
         'business_unit',
         'resource',
         'practice',
@@ -78,12 +79,9 @@ class IntermediateRequisitionModel extends Model
                 } else {
                     $q->orWhere('start_date', 'like', "%{$search}%");
                 }
-
-                $q->orWhereHas('requestedBy', function ($q3) use ($search) {
-                    $q3->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                });
                 $q->orWhere('custom_location', 'like', "%{$searchLower}%");
+                $q->orWhere('business_unit', 'like', "%{$searchLower}%");
+                $q->orWhere('required_skills', 'like', "%{$searchLower}%");
 
                 foreach ($locationMap as $key => $value) {
                     if (stripos($key, $searchLower) !== false) {
@@ -136,12 +134,12 @@ class IntermediateRequisitionModel extends Model
             ->select([
                 'id',
                 'project_id',
-                'resource',
+                'no_resources_needed',
                 'location_assignment',
                 'custom_location',
                 'start_date',
-                'created_by',
-                'created_time',
+                'business_unit',
+                'required_skills',
             ])
             ->with([
                 'project:id,project_name,project_description',

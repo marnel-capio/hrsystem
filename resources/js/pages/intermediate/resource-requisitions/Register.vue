@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
+import projects from '@/routes/intermediate/projects'
 
 const page = usePage<any>()
 const loading = ref(false)
@@ -10,6 +11,8 @@ const props = defineProps<{
   newProjects: { id: number; project_name: string; project_description: string; }[];
   custom_location_name: string | null;
 }>();
+
+
 const today = new Date().toISOString().slice(0, 10)  
 
 
@@ -22,7 +25,7 @@ const form = ref({
   person_to_replace: '',
   location_assignment: '',
   custom_location: '', 
-  project_id: '',
+  project_id: null as number | null,
   business_unit: '',
   resource: '',
   practice: '',
@@ -51,6 +54,7 @@ const expected_salary_rangeError = ref('')
 const remarksError = ref('')
 const start_dateError = ref('')
 const custom_locationError = ref('')
+const project_descriptionError = ref('')
 
 
 const maxperson_to_replace = 80 
@@ -65,6 +69,7 @@ const maxrole = 1024
 const maxexpected_salary_range = 80  
 const maxremarks = 1024  
 const maxcustom_location = 1024  
+const maxproject_description = 1024
 
 
 const validateperson_to_replace = () => {
@@ -81,6 +86,12 @@ const validatecustom_location = () => {
 
 const validatebusiness_unit = () => {
   business_unitError.value = form.value.business_unit.length > maxbusiness_unit
+    ? `This field exceeds the maximum allowed length.`
+    : ''
+}
+
+const validateproject_description = () => {
+  project_descriptionError.value = form.value.project_description.length > maxproject_description
     ? `This field exceeds the maximum allowed length.`
     : ''
 }
@@ -155,17 +166,6 @@ const validateStartDate = () => {
     : '';
 }
 
-
-
-const updateProjectDescription = (projectId: string) => {
-  const project = props.newProjects.find((p: any) => p.id === Number(projectId)); 
-  if (project) {
-    form.value.project_description = project.project_description;
-  } else {
-    form.value.project_description = '';
-  }
-};
-
 watch(() => form.value.project_id, (newId) => {
   const project = props.newProjects.find(p => p.id === Number(newId));
 
@@ -237,6 +237,7 @@ const submit = () => {
   expected_salary_rangeError.value = ''
   remarksError.value = ''
   start_dateError.value = ''
+  project_descriptionError.value =''
 
   form.value.processing = true
   loading.value = true
@@ -251,11 +252,45 @@ const submit = () => {
   })
 }
 
-
-
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 2); 
 const tomorrowISOString = tomorrow.toISOString().slice(0, 10); 
+
+
+
+
+
+const isProjectDropdownOpen = ref(false)
+const projectSearchQuery = ref('')
+
+const toggleProjectDropdown = () => {
+  isProjectDropdownOpen.value = !isProjectDropdownOpen.value
+}
+
+const selectProject = (project: any) => {
+  form.value.project_id = project.id
+  isProjectDropdownOpen.value = false   
+  projectSearchQuery.value = ''        
+}
+
+// label for selected project
+const selectedProjectLabel = computed(() => {
+  const project = props.newProjects.find(
+    (p) => p.id === Number(form.value.project_id)
+  )
+  return project ? project.project_name : ''
+})
+
+// filtered list
+const filteredProjects = computed(() => {
+  if (!projectSearchQuery.value) return props.newProjects
+
+  return props.newProjects.filter((p) =>
+    p.project_name
+      .toLowerCase()
+      .includes(projectSearchQuery.value.toLowerCase())
+  )
+})
 </script>
 
 <template>
@@ -394,15 +429,50 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
       <!-- Project Name, Business Unit -->
       <div class="grid grid-cols-2 gap-5 mt-5">
-        <!-- Project Name (Dropdown) -->
-        <div class="flex flex-col">
-          <label class="text-sm font-semibold mb-1 text-bold">Project <label class="text-red-500">*</label></label>
-          <select v-model="form.project_id" class="border p-2 rounded w-full" @change="updateProjectDescription(form.project_id)">
-            <option disabled value="">Select Project</option>
-            <option v-for="project in props.newProjects" :key="project.id" :value="project.id">
-              {{ project.project_name }}
-            </option>
-          </select>
+        <div class="form-field">
+          <label class="field-label">Projects</label>
+          <div class="custom-select-wrapper"
+              :class="{ 'is-open': isProjectDropdownOpen }">
+              <div class="border p-2 rounded w-full flex items-center justify-between cursor-pointer bg-white"
+                   @click="toggleProjectDropdown" tabindex="0">
+                  <span class="custom-select-value text-sm">
+                      {{ selectedProjectLabel || 'Select Project' }}
+                  </span>
+                  <svg class="custom-select-arrow" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 9l-7 7-7-7"></path>
+                  </svg>
+              </div>
+              <div class="custom-select-dropdown border border-1-black border p-2 rounded-sm max-h-64 overflow-y-auto" v-show="isProjectDropdownOpen">
+                  <div class="dropdown-search">
+                      <input type="text" v-model="projectSearchQuery"
+                          placeholder="Search by project..."
+                          class="text-sm border border-1-black border p-2 rounded-sm w-full" @click.stop />
+
+                      
+                  </div>
+                  <div class="dropdown-options-list requisition-list">
+                      <div v-for="project in filteredProjects"
+                        :key="project.id"
+                        class="dropdown-option-item"
+                        :class="{ 'is-selected': form.project_id === project.id }"
+                        @click="selectProject(project)">
+                        <div class="option-main">
+                          {{ project.project_name }}
+                        </div>
+                      </div><br>
+                      <div v-if="filteredProjects.length === 0"
+                          class="dropdown-empty-item text-gray-500 flex justify-center items-center">
+                          No project found
+                      </div>
+                      <div v-if="filteredProjects.length === 0" 
+                          class="dropdown-empty-item text-white flex justify-center items-center cursor-pointer !bg-[#1C7BA5] ">
+                          Add Project
+                      </div>
+                  </div>
+              </div>
+          </div>
           <span v-if="page.props.errors?.project_id" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.project_id }}
           </span>
@@ -427,21 +497,29 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         </div>
       </div>
 
-      <div class="flex flex-col mt-5">
-        <label class="text-sm mb-1">Project Description</label>
-        <textarea
-          v-model="form.project_description"
-          placeholder="Project description will auto-fill based on Project selection"
-          class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed"
-          readonly
-        />
+      <div class="grid grid-cols-2 gap-4 mt-5">
+        <div class="flex flex-col col-span-2">
+          <label class="text-sm mb-1">Project Description</label>
+
+          <textarea
+            v-model="form.project_description"
+            @input="validateproject_description"
+            rows="6"
+            placeholder="Project Description"
+            class="border p-2 rounded w-full"
+          />
+          <span v-if="project_descriptionError" class="text-red-600 text-xs mt-1">
+            {{ project_descriptionError }}
+          </span>
+          <span v-if="page.props.errors?.project_description" class="text-red-600 text-xs mt-1"> {{ page.props.errors.project_description }} </span>
+        </div>
       </div>
 
       <!-- Resource, Practice -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <!-- Resource -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Resource</label>
+          <label class="text-sm mb-1 font-bold">Resource <label class="text-red-500">*</label></label>
           <input
             v-model="form.resource"
             @input="validateresource"
@@ -449,11 +527,11 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             placeholder="Indicate position title or service required."
             class="border p-2 rounded w-full"
           />
-          <span v-if="resourceError" class="text-red-600 text-xs mt-1">
-            {{ resourceError }}
-          </span>
           <span v-if="page.props.errors?.resource" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.resource }}
+          </span>
+          <span v-if="resourceError" class="text-red-600 text-xs mt-1">
+            {{ resourceError }}
           </span>
         </div>
         
@@ -480,7 +558,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-3 gap-5 mt-5">
         <!-- No. of Resources Needed -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">No. of Resources Needed</label>
+          <label class="text-sm mb-1  font-bold">No. of Resources Needed <label class="text-red-500">*</label></label>
           <input
             v-model="form.no_resources_needed"
             @input="validateno_resources_needed"
@@ -537,7 +615,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Required Skills/Experience -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Required Skills/Experience</label>
+          <label class="text-sm mb-1 font-bold">Required Skills/Experience  <label class="text-red-500">*</label></label>
           <textarea v-model="form.required_skills" rows="6" @input="validaterequired_skills" class="border p-2 rounded w-full" placeholder="Required Skills/Experience"></textarea>
           <span v-if="required_skillsError" class="text-red-600 text-xs mt-1">
             {{ required_skillsError }}
@@ -635,12 +713,85 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         </button>
       </div>
     </div>
-    </div>
+  </div>
   </AppLayout>
 </template>
 
 
 <style scoped>
+
+.custom-select-arrow {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.option-main {
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 2px;
+}
+
+.option-details {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.option-project {
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.option-location {
+    background: #f0fdf4;
+    color: #166534;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.dropdown-option-item {
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.dropdown-option-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-option-item:hover {
+    background: #e6ecf1;
+}
+
+.dropdown-option-item.is-selected {
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+}
+
+/* Rest of your existing styles remain the same */
+.position-preferences-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.position-input {
+    height: 36px !important;
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.875rem !important;
+}
+
+.position-label {
+    font-size: 0.8125rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0.25rem !important;
+}
+
 .form-actions {
   margin-top: 2rem;
   display: flex;

@@ -13,8 +13,9 @@ class IntermediateRequisitionService
 {
     $requisition = new IntermediateRequisitionModel();
 
-    $project = IntermediateProjectModel::find($data['project_id']);
+    $project = IntermediateProjectModel::find($data['project_id , project_desciption']);
     $requisition->project_id = $data['project_id'];
+    $requisition->project_description = $data['project_description'];
 
     $requisition->engagement_type = $data['engagement_type'];
     $requisition->sourcing_type = $data['sourcing_type'];
@@ -24,12 +25,12 @@ class IntermediateRequisitionService
 
     $requisition->location_assignment = $data['location_assignment'];
     $requisition->business_unit = $data['business_unit'];
-    $requisition->resource = $data['resource']?? null;
+    $requisition->resource = $data['resource'];
     $requisition->practice = $data['practice']?? null;
-    $requisition->no_resources_needed = $data['no_resources_needed']?? null;
+    $requisition->no_resources_needed = $data['no_resources_needed'];
     $requisition->start_date = $data['start_date']?? null;
     $requisition->duration_project_engagement = $data['duration_project_engagement']?? null;
-    $requisition->required_skills = $data['required_skills']?? null;
+    $requisition->required_skills = $data['required_skills'];
     $requisition->preferred_skills = $data['preferred_skills'] ?? null;
     $requisition->role = $data['role']?? null;
     $requisition->custom_location = $data['custom_location'] ?? null;
@@ -77,6 +78,7 @@ public function update($data, $request)
         'location_assignment' => $requisition->location_assignment,
 
         'project_id' => $requisition->project_id,
+        'project_description' => $requisition->project_description,
         'business_unit' => $requisition->business_unit,
 
         'resource' => $requisition->resource,
@@ -108,12 +110,12 @@ public function update($data, $request)
         $requisition->location_assignment = $data['location_assignment'];
         $requisition->project_id = $data['project_id'];
         $requisition->business_unit = $data['business_unit'];
-        $requisition->resource = $data['resource']?? null;
+        $requisition->resource = $data['resource'];
         $requisition->practice = $data['practice']?? null;
-        $requisition->no_resources_needed = $data['no_resources_needed']?? null;
+        $requisition->no_resources_needed = $data['no_resources_needed'];
         $requisition->start_date = $data['start_date']?? null;
         $requisition->duration_project_engagement = $data['duration_project_engagement']?? null;
-        $requisition->required_skills = $data['required_skills']?? null;
+        $requisition->required_skills = $data['required_skills'];
         $requisition->preferred_skills = $data['preferred_skills'] ?? null;
         $requisition->role = $data['role']?? null;
         $requisition->expected_salary_range = $data['expected_salary_range']?? null;

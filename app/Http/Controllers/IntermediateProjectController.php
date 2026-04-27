@@ -71,20 +71,6 @@ class IntermediateProjectController extends Controller
         }
     }
 
-    public function show($id)
-    {
-        $project = IntermediateProjectModel::findOrFail($id);
- 
-        $createdByUser = \App\Models\User::find($project->created_by);
-        $updatedByUser = \App\Models\User::find($project->updated_by);
- 
-        $project->created_by_name = $createdByUser ? $createdByUser->first_name . ' ' . $createdByUser->last_name : 'Unknown';
-        $project->updated_by_name = $updatedByUser ? $updatedByUser->first_name . ' ' . $updatedByUser->last_name : 'Unknown';
-        return Inertia::render('intermediate/projects/ProjectDetail', [
-            'project' => $project,
-            'user_permissions' => auth()->user()->permissions,
-        ]);
-    }
 
 
 
