@@ -2854,7 +2854,7 @@ const examCriteriaDisplay = computed(() => {
                                                 assignment, index
                                             ) in visibleInitialInterviewAssignments"
                                             :key="assignment.id"
-                                            class="atpp-card"
+                                            class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30"
                                         >
                                             <div class="atpp-card-title">
                                                 {{ assignment.name }}
@@ -2993,27 +2993,17 @@ const examCriteriaDisplay = computed(() => {
 
                                     <div class="criteria-rule passed">
                                         <div class="criteria-rule-title">
-                                            1 - Highly Recommended
-                                        </div>
-                                    </div>
-                                    <div class="criteria-rule passed">
-                                        <div class="criteria-rule-title">
-                                            2 - Recommended
+                                            1.00 - 2.00 → Passed
                                         </div>
                                     </div>
                                     <div class="criteria-rule p2">
                                         <div class="criteria-rule-title">
-                                            3 - Average
+                                            2.01 - 3.00 → P2
                                         </div>
                                     </div>
                                     <div class="criteria-rule failed">
                                         <div class="criteria-rule-title">
-                                            4 - Not Recommended
-                                        </div>
-                                    </div>
-                                    <div class="criteria-rule failed">
-                                        <div class="criteria-rule-title">
-                                            5 - Never Recommended
+                                            3.01 - 5.00 → Failed
                                         </div>
                                     </div>
                                 </div>
@@ -3268,31 +3258,17 @@ const examCriteriaDisplay = computed(() => {
 
                                         <div class="criteria-rule passed">
                                             <div class="criteria-rule-title">
-                                                1 - Highly Recommended
+                                                1.00 - 2.00 → Passed
                                             </div>
                                         </div>
-
-                                        <div class="criteria-rule passed">
-                                            <div class="criteria-rule-title">
-                                                2 - Recommended
-                                            </div>
-                                        </div>
-
                                         <div class="criteria-rule p2">
                                             <div class="criteria-rule-title">
-                                                3 - Average
+                                                2.01 - 3.00 → P2
                                             </div>
                                         </div>
-
                                         <div class="criteria-rule failed">
                                             <div class="criteria-rule-title">
-                                                4 - Not Recommended
-                                            </div>
-                                        </div>
-
-                                        <div class="criteria-rule failed">
-                                            <div class="criteria-rule-title">
-                                                5 - Never Recommended
+                                                3.01 - 5.00 → Failed
                                             </div>
                                         </div>
                                     </div>
