@@ -827,9 +827,18 @@ const notificationPreview = computed(() => {
 const willTriggerApplicantAutoEmail = computed(() => {
     const current = acceptDeclineInterviewer.value;
     if (!current) return false;
-    return (
-        acceptDeclineDecision.value === 'accept' && Number(current.status) === 1
+
+    if (acceptDeclineDecision.value !== 'accept') return false;
+
+    // check if there is already an approved interviewer in same stage
+    const alreadyHasApproved = interviews.value.some(
+        (i: any) =>
+            Number(i.interview_type) === Number(current.interview_type) &&
+            Number(i.id) !== Number(current.id) &&
+            Number(i.status) === 2, // approved
     );
+
+    return !alreadyHasApproved;
 });
 
 watch(acceptDeclineReason, (newVal) => {
