@@ -402,11 +402,6 @@ function validateScoreField(
         return;
     }
 
-    if (num < 0 || num > 999.99) {
-        setLiveError(field, `${label} must be between 0 and 999.99.`);
-        return;
-    }
-
     clearLiveError(field);
 }
 

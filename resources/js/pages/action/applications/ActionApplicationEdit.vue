@@ -1019,11 +1019,6 @@ function validateScoreField(
         return;
     }
 
-    if (num < 0 || num > 999.99) {
-        form.setError(field as any, `${label} must be between 0 and 999.99.`);
-        return;
-    }
-
     if ((form.errors as any)[field]?.includes(`${label} must`)) {
         form.clearErrors(field as any);
     }

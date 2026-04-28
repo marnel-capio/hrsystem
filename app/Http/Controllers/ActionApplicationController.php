@@ -878,16 +878,26 @@ if (
             abort(403, 'You are not assigned to this interview.');
         }
 
-        $newStatus = $request->decision === 'accept'
-            ? config('constants.interview_assignment_status.approved')
-            : config('constants.interview_assignment_status.declined');
+$stageAlreadyHadApprovedInterviewer = false;
 
-        $interview->update([
-            'status' => $newStatus,
-            'decline_reason' => $request->decision === 'decline' ? $request->reason : null,
-            'updated_by' => auth()->id(),
-            'updated_time' => now(),
-        ]);
+if ($request->decision === 'accept') {
+    $stageAlreadyHadApprovedInterviewer = ActionApplicationInterview::where('action_application_id', $applicationId)
+        ->where('interview_type', $interview->interview_type)
+        ->where('id', '!=', $interview->id)
+        ->where('status', config('constants.interview_assignment_status.approved'))
+        ->exists();
+}
+
+$newStatus = $request->decision === 'accept'
+    ? config('constants.interview_assignment_status.approved')
+    : config('constants.interview_assignment_status.declined');
+
+$interview->update([
+    'status' => $newStatus,
+    'decline_reason' => $request->decision === 'decline' ? $request->reason : null,
+    'updated_by' => auth()->id(),
+    'updated_time' => now(),
+]);
 
         $application = ActionApplication::with(['applicant', 'interviews.interviewer'])->findOrFail($applicationId);
 
@@ -897,12 +907,9 @@ if (
             $stageInterviews = $application->interviews
                 ->where('interview_type', $stageType);
 
-$hasAnyApprovedForStage = $stageInterviews->contains(function ($row) {
-    return (int) $row->status === config('constants.interview_assignment_status.approved');
-});
 
-if ($hasAnyApprovedForStage && !empty(optional($application->applicant)->email_address)) {
-                $link = url("/action/applications/{$application->id}");
+if (!$stageAlreadyHadApprovedInterviewer && !empty(optional($application->applicant)->email_address)) {
+                    $link = url("/action/applications/{$application->id}");
 
                 Mail::to($application->applicant->email_address)->send(
                     new ActionApplicantScheduledMail($application, $stageInterviews->values(), $link)
@@ -1080,10 +1087,11 @@ private function visibleFinalInterviewAssignments(ActionApplication $application
             return $updateData;
         }
 
-        if (in_array((int) $evaluationResult, [
-            config('constants.application_results.passed'),
-            config('constants.application_results.failed'),
-        ], true)) {
+if (in_array((int) $evaluationResult, [
+    config('constants.application_results.passed'),
+    config('constants.application_results.failed'),
+    4, // P2
+], true)) {
             $updateData['status'] = config('constants.interview_assignment_status.completed');
             return $updateData;
         }
@@ -1244,17 +1252,27 @@ private function syncInitialInterviewEvaluationFromRequest(ActionApplication $ap
             continue;
         }
 
-        ActionApplicationInterview::query()
+        $assignment = ActionApplicationInterview::query()
             ->where('id', $row['id'])
             ->where('action_application_id', $application->id)
             ->where('interview_type', config('constants.interview_types.initial'))
-            ->update([
-                'score' => $row['score'] !== '' ? ($row['score'] ?? null) : null,
-                'evaluation_result' => $row['evaluation_result'] !== '' ? ($row['evaluation_result'] ?? null) : null,
-                'evaluation_remarks' => $row['evaluation_remarks'] ?? null,
-                'updated_by' => auth()->id(),
-                'updated_time' => now(),
-            ]);
+            ->first();
+
+        if (!$assignment) {
+            continue;
+        }
+
+        $updateData = [
+            'score' => $row['score'] !== '' ? ($row['score'] ?? null) : null,
+            'evaluation_result' => $row['evaluation_result'] !== '' ? ($row['evaluation_result'] ?? null) : null,
+            'evaluation_remarks' => $row['evaluation_remarks'] ?? null,
+            'updated_by' => auth()->id(),
+            'updated_time' => now(),
+        ];
+
+        $updateData = $this->applyInterviewEvaluationStatus($updateData, $assignment);
+
+        $assignment->update($updateData);
     }
 }
 
