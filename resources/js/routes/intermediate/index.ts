@@ -1,11 +1,11 @@
 import applications from './applications'
-import requisitions from './requisitions'
 import projects from './projects'
+import requisitions from './requisitions'
 import applicants from './applicants'
 const intermediate = {
     applications: Object.assign(applications, applications),
-requisitions: Object.assign(requisitions, requisitions),
 projects: Object.assign(projects, projects),
+requisitions: Object.assign(requisitions, requisitions),
 applicants: Object.assign(applicants, applicants),
 }
 
