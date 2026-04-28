@@ -30,10 +30,37 @@ const canManageInterviewers = computed(() =>
     [1, 2, 3].includes(userPermissions.value),
 );
 const canNotify = computed(() => ![5, 6].includes(userPermissions.value));
-const successMessage = ref((page.props.flash as any)?.success || '');
-const showSuccess = ref(!!successMessage.value);
-const errorMessage = ref((page.props.flash as any)?.error || '');
-const showError = ref(!!errorMessage.value);
+
+const flashMessage = ref('');
+const flashType = ref<'success' | 'error'>('success');
+const showFlash = ref(false);
+
+// Watch for page flash messages
+watch(
+    () => (page.props.flash as any)?.success,
+    (newVal) => {
+        if (newVal) {
+            flashMessage.value = newVal;
+            flashType.value = 'success';
+            showFlash.value = true;
+            setTimeout(() => { showFlash.value = false; }, 5000);
+        }
+    },
+    { immediate: true },
+);
+
+watch(
+    () => (page.props.flash as any)?.error,
+    (newVal) => {
+        if (newVal) {
+            flashMessage.value = newVal;
+            flashType.value = 'error';
+            showFlash.value = true;
+            setTimeout(() => { showFlash.value = false; }, 5000);
+        }
+    },
+    { immediate: true },
+);
 
 const canAcceptDecline = (interview: any) => {
     // Check if user has permission and is the assigned interviewer
@@ -1121,47 +1148,12 @@ const downloadApplication = () => {
     );
 };
 
-// Toast
-const toastMessage = ref<string | null>(null);
-const toastType = ref<'success' | 'error'>('success');
-const showToastMessage = ref(false);
-
 const showToast = (message: string, type: 'success' | 'error') => {
-    toastMessage.value = message;
-    toastType.value = type;
-    showToastMessage.value = true;
-    setTimeout(() => {
-        showToastMessage.value = false;
-    }, 3000);
+    flashMessage.value = message;
+    flashType.value = type;
+    showFlash.value = true;
+    setTimeout(() => { showFlash.value = false; }, 5000);
 };
-
-watch(
-    successMessage,
-    (newVal) => {
-        if (newVal) {
-            showSuccess.value = true;
-            setTimeout(() => {
-                showSuccess.value = false;
-                successMessage.value = '';
-            }, 5000);
-        }
-    },
-    { immediate: true },
-);
-
-watch(
-    errorMessage,
-    (newVal) => {
-        if (newVal) {
-            showError.value = true;
-            setTimeout(() => {
-                showError.value = false;
-                errorMessage.value = '';
-            }, 5000);
-        }
-    },
-    { immediate: true },
-);
 
 watch(acceptDeclineReason, (newVal) => {
     if (newVal.trim()) {
@@ -1222,12 +1214,12 @@ const updatePaperScreeningStatus = async () => {
         showPaperScreeningModal.value = false;
 
         showToast(
-            response.data.message || 'Paper screening status updated successfully!',
+            response.data.message || 'Record Updated Successfully!',
             'success'
         );
     } catch (error: any) {
         showToast(
-            error?.response?.data?.message || 'Failed to update paper screening status',
+            error?.response?.data?.message || 'An error occurred while updating the record. Please try again.',
             'error'
         );
     } finally {
@@ -1466,36 +1458,16 @@ const getLocationLabel = (location: number | null) => {
 <template>
     <AppLayout>
         <div class="intermediate-application-detail">
-            <!-- Toast Messages -->
-            <div v-if="showSuccess" class="full-width-alert">
-                <div class="alert-banner alert-success-banner">
-                    <div class="alert-body">{{ successMessage }}</div>
-                    <button type="button" class="close-btn" @click="showSuccess = false">
-                        ×
-                    </button>
-                </div>
-            </div>
 
-            <div v-if="showError" class="full-width-alert">
-                <div class="alert-banner alert-error-banner">
-                    <div class="alert-body">{{ errorMessage }}</div>
-                    <button type="button" class="close-btn" @click="showError = false">
-                        ×
-                    </button>
-                </div>
-            </div>
-
-            <div v-if="showToastMessage" class="full-width-alert">Project / Status
-                <div class="alert-banner" :class="toastType === 'success'
-                    ? 'alert-success-banner'
-                    : 'alert-error-banner'
-                    ">
-                    <div class="alert-body">{{ toastMessage }}</div>
-                    <button type="button" class="close-btn" @click="showToastMessage = false">
-                        ×
-                    </button>
-                </div>
-            </div>
+        <!-- Floating Banner -->
+        <div v-if="showFlash" 
+            class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 text-base font-medium shadow-md"
+            :class="flashType === 'success' 
+                ? 'bg-emerald-500 text-white' 
+                : 'bg-red-500 text-white'">
+            <span>{{ flashMessage }}</span>
+            <button type="button" class="close-btn" @click="showFlash = false">×</button>
+        </div>
 
             <div class="flex min-h-screen flex-1 flex-col gap-6 bg-zinc-50/50 p-8 dark:bg-zinc-950">
                 <!-- Header -->
@@ -1551,16 +1523,16 @@ const getLocationLabel = (location: number | null) => {
                             <div class="space-y-3 text-sm">
                                 <div
                                     class="flex items-center justify-between rounded-lg bg-zinc-100 px-4 py-2 dark:bg-zinc-800">
-                                    <span class="font-semibold">Project:</span>
+                                    <span class="font-semibold">Project Name:</span>
                                     <span class="font-extrabold text-blue-600">{{ application.project_name }}</span>
                                 </div>
                                 <div class="flex items-center justify-between rounded-lg bg-zinc-100 px-4 py-2 dark:bg-zinc-800">
-                                    <span class="font-semibold">Location:</span>
+                                    <span class="font-semibold">Project Site/Location:</span>
                                     <span class="font-extrabold text-blue-600">{{ getLocationLabel(application.location_assignment) }}</span>
                                 </div>
                                 <div
                                     class="flex items-center justify-between rounded-lg bg-zinc-100 px-4 py-2 dark:bg-zinc-800">
-                                    <span class="font-semibold">Status:</span>
+                                    <span class="font-semibold">Application Stage Status:</span>
                                     <span :class="[
                                         'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
                                         getOverallStatusColor(),
@@ -1598,6 +1570,38 @@ const getLocationLabel = (location: number | null) => {
                             <div v-else class="text-sm text-gray-500 dark:text-gray-400">
                                 No uploaded documents available.
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact & Response Tracking -->
+                <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h2 class="flex items-center gap-2 text-lg font-bold">
+                            <Calendar class="h-5 w-5 text-blue-600" /> CONTACT & RESPONSE TRACKING
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+                            <div class="mb-1 text-xs text-zinc-500">Contacted Date</div>
+                            <div class="text-sm font-medium">{{ formatDateTime(application.contacted_date) || '—' }}</div>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+                            <div class="mb-1 text-xs text-zinc-500">Contacted By</div>
+                            <div class="text-sm font-medium">{{ application.contacted_by_name || '—' }}</div>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+                            <div class="mb-1 text-xs text-zinc-500">Replied</div>
+                            <div class="text-sm font-medium">
+                                <span v-if="application.replied === 1" class="text-green-600 font-semibold">Yes</span>
+                                <span v-else-if="application.replied === 0" class="text-red-600 font-semibold">No</span>
+                                <span v-else class="text-zinc-400">—</span>
+                            </div>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+                            <div class="mb-1 text-xs text-zinc-500">Replied Date</div>
+                            <div class="text-sm font-medium">{{ formatDateTime(application.replied_date) || '—' }}</div>
                         </div>
                     </div>
                 </div>
@@ -1677,14 +1681,19 @@ const getLocationLabel = (location: number | null) => {
                     <!-- Availability & Preferences -->
                     <div class="mb-5">
                         <div class="mb-3 text-sm font-semibold">Availability & Preferences</div>
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">When is the applicant available to start?</div>
-                                <div class="text-sm font-medium">{{ application.availability_date || '-' }}</div>
+                                <div class="text-sm font-medium">{{ application.availability_date || '—' }}</div>
                             </div>
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Work Preference</div>
-                                <div class="text-sm font-medium">{{ application.work_preference || '-' }}</div>
+                                <div class="text-sm font-medium">{{ application.work_preference || '—' }}</div>
+                            </div>
+                            <!-- 👇 NEW -->
+                            <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+                                <div class="mb-1 text-xs text-zinc-500">Current Employer</div>
+                                <div class="text-sm font-medium">{{ application.current_employer || '—' }}</div>
                             </div>
                         </div>
                     </div>
@@ -1729,7 +1738,6 @@ const getLocationLabel = (location: number | null) => {
 
                     <!-- Desired & Target -->
                     <div class="mb-5">
-                        <div class="mb-3 text-sm font-semibold">Desired & Target</div>
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Desired Salary Range</div>
@@ -2185,32 +2193,45 @@ const getLocationLabel = (location: number | null) => {
                     </div>
 
                     <!-- Job Offer Details -->
-                    <div
-                        class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
+                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
                         <div class="mb-4 flex items-center justify-between">
                             <h2 class="flex items-center gap-2 text-lg font-bold">
                                 <CheckCircle class="h-5 w-5 text-blue-600" /> JOB OFFER DETAILS
                             </h2>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 mb-5">
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Schedule</div>
-                                <div class="text-sm font-medium">{{ formatDateTime(application.job_offer_schedule) }}
-                                </div>
+                                <div class="text-sm font-medium">{{ formatDateTime(application.job_offer_schedule) || '—' }}</div>
                             </div>
                             <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
                                 <div class="mb-1 text-xs text-zinc-500">Status</div>
                                 <div>
                                     <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
                                         :class="getApplicationStatusBadgeClass(application.job_offer_status)">
-                                        {{ getJobOfferStatusLabel(application.job_offer_status) || '-' }}
+                                        {{ getJobOfferStatusLabel(application.job_offer_status) || '—' }}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-5">
+                        <!-- 👇 NEW: AWS Fields - Only show when Job Offer Status is "Accept" (3) -->
+                        <div v-if="Number(application.job_offer_status) === 3" class="grid grid-cols-1 gap-4 md:grid-cols-3 mb-5">
+                            <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+                                <div class="mb-1 text-xs text-zinc-500">AWS Start Date</div>
+                                <div class="text-sm font-medium">{{ formatDateTime(application.aws_start_date) || '—' }}</div>
+                            </div>
+                            <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+                                <div class="mb-1 text-xs text-zinc-500">AWS Rank</div>
+                                <div class="text-sm font-medium">{{ application.aws_rank || '—' }}</div>
+                            </div>
+                            <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+                                <div class="mb-1 text-xs text-zinc-500">Parked To</div>
+                                <div class="text-sm font-medium">{{ application.parked_to || '—' }}</div>
+                            </div>
+                        </div>
+                        <div>
                             <div class="mb-2 text-sm font-semibold">Comments</div>
                             <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
                                 {{ application.job_offer_remarks || 'No comments' }}
@@ -2775,8 +2796,7 @@ const getLocationLabel = (location: number | null) => {
                 </div>
 
                 <!-- Additional Information -->
-                <div
-                    class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
+                <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
                     <h2 class="mb-4 flex items-center gap-2 text-lg font-bold">
                         <Users class="h-5 w-5 text-blue-600" /> ADDITIONAL INFORMATION
                     </h2>
@@ -2787,47 +2807,6 @@ const getLocationLabel = (location: number | null) => {
                             <div class="mb-2 text-sm font-semibold">General Remarks</div>
                             <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
                                 {{ application.remarks || 'No remarks' }}
-                            </div>
-                        </div>
-
-                        <!-- You can add more fields here if needed -->
-                        <!-- Example: Reason for Decline (if applicable) -->
-                        <div v-if="application.reason_for_decline">
-                            <div class="mb-2 text-sm font-semibold">Reason for Decline</div>
-                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
-                                {{ application.reason_for_decline }}
-                            </div>
-                        </div>
-
-                        <!-- Reason by Category -->
-                        <div v-if="application.reason_by_category">
-                            <div class="mb-2 text-sm font-semibold">Decline Category</div>
-                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
-                                {{ application.reason_by_category }}
-                            </div>
-                        </div>
-
-                        <!-- Parked To -->
-                        <div v-if="application.parked_to">
-                            <div class="mb-2 text-sm font-semibold">Parked To</div>
-                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
-                                {{ application.parked_to }}
-                            </div>
-                        </div>
-
-                        <!-- AWS Rank -->
-                        <div v-if="application.aws_rank">
-                            <div class="mb-2 text-sm font-semibold">AWS Rank</div>
-                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
-                                {{ application.aws_rank }}
-                            </div>
-                        </div>
-
-                        <!-- AWS Start Date -->
-                        <div v-if="application.aws_start_date">
-                            <div class="mb-2 text-sm font-semibold">AWS Start Date</div>
-                            <div class="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
-                                {{ formatDateTime(application.aws_start_date) }}
                             </div>
                         </div>
                     </div>
@@ -2966,39 +2945,6 @@ const getLocationLabel = (location: number | null) => {
     border: none;
     font-size: 1.2rem;
     cursor: pointer;
-}
-
-.full-width-alert {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    width: auto;
-    max-width: 500px;
-}
-
-.alert-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.alert-success-banner {
-    background-color: #10b981;
-    color: white;
-}
-
-.alert-error-banner {
-    background-color: #ef4444;
-    color: white;
-}
-
-.alert-body {
-    margin-right: 1rem;
 }
 
 .tag-item {
