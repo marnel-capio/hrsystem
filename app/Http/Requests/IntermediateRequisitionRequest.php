@@ -26,7 +26,7 @@ class IntermediateRequisitionRequest extends FormRequest
         'location_assignment' => [new RequiredField, 'integer'],
         'project_id' => [new RequiredField, 'integer'],
         'custom_location' => ['nullable','string',new MaxLength(1024),'required_if:location_assignment,6'],
-        'business_unit' => [new RequiredField],
+        // 'business_unit' => [new RequiredField],
         'resource' => [new RequiredField,'string',new MaxLength(1024)],
         'practice' => ['nullable','string',new MaxLength(1024)],
         'no_resources_needed' => [new RequiredField, 'integer', 'max:100'],

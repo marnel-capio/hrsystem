@@ -27,7 +27,7 @@ class IntermediateProjectModel extends Model
     {
         return DB::table('projects')
             ->select('id', 'project_name', 'project_description')
-            ->orderBy('project_name')
+            ->orderBy('id','desc')
             ->get();
     }
 

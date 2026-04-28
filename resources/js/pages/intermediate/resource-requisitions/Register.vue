@@ -2,8 +2,8 @@
 import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
-import projects from '@/routes/intermediate/projects'
-import requisitions from '@/routes/intermediate/requisitions'
+import axios from 'axios';
+
 
 const page = usePage<any>()
 const loading = ref(false)
@@ -11,14 +11,14 @@ const props = defineProps<{
   errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
   newProjects: { id: number; project_name: string; project_description: string; }[];
   custom_location_name: string | null;
-  businessUnits: { id: number; name: string }[];
+  businessUnits: { id: number; business_unit: string }[];
 }>();
 
 
 const today = new Date().toISOString().slice(0, 10)  
 
-
-
+const projects = ref<any[]>([]);
+const requisitions = ref({ id: null }); 
 const form = ref({
   engagement_type: '',
   sourcing_type: '',
@@ -28,7 +28,7 @@ const form = ref({
   location_assignment: '',
   custom_location: '', 
   project_id: null as number | null,
-  business_unit: '',
+  business_unit_id: null as number | null,
   resource: '',
   practice: '',
   no_resources_needed: '',
@@ -277,73 +277,61 @@ const selectedProjectLabel = computed(() => {
 
 // filtered list
 const filteredProjects = computed(() => {
-  if (!projectSearchQuery.value) return props.newProjects
+  if (!projectSearchQuery.value) return props.newProjects;
 
   return props.newProjects.filter((p) =>
-    p.project_name
-      .toLowerCase()
-      .includes(projectSearchQuery.value.toLowerCase())
-  )
+    p.project_name.toLowerCase().includes(projectSearchQuery.value.toLowerCase())
+  );
+});
+
+
+
+
+
+
+
+
+//BUSINESS UNIT
+const selectedBusinessUnit = ref("");
+
+selectedBusinessUnit.value = "";
+const businessUnits = computed(() => {
+  return props.businessUnits
 })
 
 
 
 
 
-const isProjectModalOpen = ref(false)
 
-const openProjectModal = () => {
-  isProjectModalOpen.value = true
-}
 
-const closeProjectModal = () => {
-  isProjectModalOpen.value = false
-  
-}
-const projectForm = ref({
+//ADD PROJECT THINGS:
+const modalVisible = ref(false);
+const newProject = ref({
   project_name: '',
-  project_description: '',
-  remarks: '',
-  processing: false,
-})
-
-const maxProjectNameLength = 20
-const maxDescriptionLength = 1024
-
-const projectNameError = ref('')
-const descriptionError = ref('')
-
-const validateProjectName = () => {
-  projectNameError.value =
-    projectForm.value.project_name.length > maxProjectNameLength
-      ? 'This field exceeds the maximum allowed length.'
-      : ''
-}
-
-const validateDescription = () => {
-  descriptionError.value =
-    projectForm.value.project_description.length > maxDescriptionLength
-      ? 'This field exceeds the maximum allowed length.'
-      : ''
-}
+  project_description: ''
+});
 
 
+const addNewProject = async () => {
+  try {
+    const response = await axios.post('/intermediate/projects', {
+  project_name: newProject.value.project_name,
+  project_description: newProject.value.project_description
+});
 
-const addProject = () => {
-  // Clear frontend validation errors
-  projectNameError.value = ''
-  descriptionError.value = ''
-  remarksError.value = ''
+    newProject.value.project_name = '';
+    newProject.value.project_description = '';
 
-  form.value.processing = true
 
-  router.post('/intermediate/projects', form.value, {
-    onFinish: () => {
-      form.value.processing = false
-      loading.value = false
-    }
-  })
-}
+    props.newProjects.push(response.data);
+
+    modalVisible.value = false;
+  } catch (error) {
+    console.error('Error adding project:', error);
+  }
+};
+
 
 </script>
 
@@ -498,7 +486,7 @@ const addProject = () => {
                           d="M19 9l-7 7-7-7"></path>
                   </svg>
               </div>
-              <div class="custom-select-dropdown border border-1-black border p-2 rounded-sm max-h-64 overflow-y-auto" v-show="isProjectDropdownOpen">
+              <div class="custom-select-dropdown border border-1-black border p-2 rounded-sm max-h-40 overflow-y-auto" v-show="isProjectDropdownOpen">
                   <div class="dropdown-search">
                       <input type="text" v-model="projectSearchQuery"
                           placeholder="Search/Input project..."
@@ -521,8 +509,8 @@ const addProject = () => {
                           No project found
                       </div>
                       <div v-if="filteredProjects.length === 0" 
-                        class="mt-2 mb-3 text-white bg-[#1C7BA5] flex justify-center items-center cursor-pointer rounded-md w-25 max-w-xs px-3 py-2 mx-auto"
-                        @click="openProjectModal">
+                        class="mt-2 mb-3 !text-white bg-[#1C7BA5] option-main flex justify-center items-center cursor-pointer rounded-md w-25 max-w-xs px-3 py-2 mx-auto"
+                        @click="modalVisible = true">
                         Add Project
                       </div>
                   </div>
@@ -536,57 +524,72 @@ const addProject = () => {
 
 
 
+
+        <!-- MODAL -->
+      <!-- <div v-if="modalVisible" class="fixed inset-0 flex items-center justify-center z-50 bg-gray-500 bg-opacity-50">
+        <div class="bg-white p-6 rounded-lg w-96 shadow-lg">
+          <h3 class="text-lg font-bold mb-4">Add New Project</h3>
+          <form @submit.prevent="addNewProject">
+            <div class="mb-4">
+              <label for="newProjectName" class="block text-sm font-bold">Project Name</label>
+              <input v-model="newProject.project_name" id="newProjectName" type="text" class="w-full p-2 border rounded" required />
+            </div>
+            <div class="mb-4">
+              <label for="newProjectDescription" class="block text-sm font-bold">Project Description</label>
+              <textarea v-model="newProject.project_description" id="newProjectDescription" class="w-full p-2 border rounded" required></textarea>
+            </div>
+            <div class="flex justify-end space-x-4">
+              <button type="button" @click="modalVisible = false" class="px-4 py-2 bg-gray-300 text-gray-800 rounded">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Save Project</button>
+            </div>
+          </form>
+        </div>
+      </div> -->
+
+
+
         <!-- PROJECT MODAL -->
       <div
-        v-if="isProjectModalOpen"
+        v-if="modalVisible"
         class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 text-sm"
       >
         <div class="bg-white w-1/2 rounded-lg shadow-lg p-6 relative">
 
-          <!-- Close -->
-          <span class="absolute top-2 right-3 text-black cursor-pointer text-sm" @click="closeProjectModal">
+          <span class="absolute top-2 right-3 text-black cursor-pointer text-sm" @click="modalVisible = false">
             ✕
           </span>
 
           <h2 class="text-lg font-bold mb-4">Add Project</h2>
 
-          <!-- Project Name -->
           <div class="mb-4">
             <label class="text-sm font-bold">Project Name <label class="text-red-500">*</label></label>
             <input
-              v-model="projectForm.project_name"
-              @input="validateProjectName"
-              class="border p-2 rounded w-full"
-              placeholder="Project Name"
-            />
-            <span class="text-red-500 text-xs">{{ projectNameError }}</span>
+                    v-model="newProject.project_name"
+                    class=" modal-input border p-2 rounded w-full"
+                    placeholder="Project Name"
+                />
+            <!-- <span class="text-red-500 text-xs">{{ addProjectNameError }}</span> -->
           </div>
 
-          <!-- Description -->
           <div class="mb-4">
             <label class="text-sm">Project Description</label>
             <textarea
-              v-model="projectForm.project_description"
-              @input="validateDescription"
-              rows="4"
-              class="border p-2 rounded w-full"
-              placeholder="Project Description"
-            />
-            <span class="text-red-500 text-xs">{{ descriptionError }}</span>
+                    v-model="newProject.project_description"
+                    class="modal-textarea border p-2 rounded w-full"
+                    placeholder="Project Description (optional)"
+                ></textarea>
+            <!-- <span class="text-red-500 text-xs">{{ addProjectDescriptionError }}</span> -->
           </div>
 
-          <!-- Buttons -->
           <div class="flex justify-end gap-2 mt-6">
-            <button class="btn-secondary" @click="closeProjectModal">
+            <button class="btn-secondary" @click="modalVisible = false">
               Cancel
             </button>
 
             <button
               class="btn btn-primary"
-              @click="addProject"
-              :disabled="projectForm.processing"
-            >
-              {{ projectForm.processing ? 'Adding...' : 'Add' }}
+              @click="addNewProject"
+            >Add 
             </button>
           </div>
 
@@ -594,17 +597,23 @@ const addProject = () => {
       </div>
 
 
+
+
+
+
         <!-- Business Unit -->
         <div class="flex flex-col">
           <label class="text-sm font-semibold mb-1 text-bold">Business Unit <label class="text-red-500">*</label></label>
-          <select v-model="form.business_unit" class="border p-2 rounded w-full">
+          <select class="border p-2 rounded w-full" v-model="selectedBusinessUnit">
             <option disabled value="">Select Business Unit</option>
 
             <option
-              v-for="unit in props.businessUnits"
+              v-for="unit in businessUnits"
               :key="unit.id"
               :value="unit.id"
+              class="text-black"
             >
+              {{ unit.business_unit }} 
             </option>
           </select>
           <span v-if="page.props.errors?.sourcing_type" class="text-red-600 text-xs mt-1">

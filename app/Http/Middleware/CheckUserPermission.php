@@ -320,6 +320,7 @@ class CheckUserPermission
 
         if (in_array($routeName, [
             'intermediate.requisitions.register',
+            'intermediate.requisitions.storeProject',
             'intermediate.requisitions.store',
             'intermediate.requisitions.edit',
             'intermediate.requisitions.update',

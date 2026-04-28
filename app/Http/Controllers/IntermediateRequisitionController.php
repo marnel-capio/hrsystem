@@ -86,7 +86,7 @@ class IntermediateRequisitionController extends Controller
 
     public function show($id)
     {
-        $requisition = IntermediateRequisitionModel::findOrFail($id);
+        $requisition = IntermediateRequisitionModel::with('businessUnit')->findOrFail($id);
         $updatedByUser = \App\Models\User::find($requisition->updated_by);
 
         $requisition->updated_by_name = $updatedByUser ? $updatedByUser->first_name . ' ' . $updatedByUser->last_name : 'Unknown';
@@ -254,4 +254,5 @@ class IntermediateRequisitionController extends Controller
             ]);
         }
     }
+
 }

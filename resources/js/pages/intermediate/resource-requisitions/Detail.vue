@@ -318,7 +318,7 @@ console.log('Is Allowed to Manage:', isAllowedToManage.value);
                   <th class="px-2 py-2 text-left font-bold">
                     Business Unit
                   </th>
-                  <td class=" px-2">{{ requisition.business_unit }}</td>
+                  <td class=" px-2">{{ requisition.business_unit.business_unit }}</td>
               </tr>
               <tr class="mt-5">
                   <th class="px-2 py-2 text-left font-bold mt-5">Location Assignment</th>
