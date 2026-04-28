@@ -3105,6 +3105,7 @@ const examCriteriaDisplay = computed(() => {
                                         step="0.01"
                                         v-model="form.initial_interview_final"
                                         class="form-input"
+                                        readonly
                                         :disabled="
                                             !editableStages.initial_interview ||
                                             isInitialBlocked
@@ -3421,6 +3422,7 @@ const examCriteriaDisplay = computed(() => {
                                             );
                                         "
                                         class="form-input"
+                                        readonly
                                         :disabled="
                                             !editableStages.final_interview
                                         "
