@@ -127,6 +127,13 @@ class IntermediateApplicationController extends Controller
                 ->toArray(),
 
             'intermediateApplicants' => $intermediateApplicants,
+            'currentUserInfo' => [
+                'id' => auth()->id(),
+                'first_name' => auth()->user()->first_name,
+                'last_name' => auth()->user()->last_name,
+                'name' => auth()->user()->full_name ?? auth()->user()->name,
+            ],
+            
         ]);
     }
 
@@ -343,6 +350,12 @@ class IntermediateApplicationController extends Controller
             'resourceSchedule.project',
         ])->findOrFail($id);
 
+        $contactedByName = null;
+        if ($application->contacted_by) {
+            $contactedByUser = User::find($application->contacted_by);
+            $contactedByName = $contactedByUser ? trim($contactedByUser->first_name . ' ' . $contactedByUser->last_name) : null;
+        }
+
         // Get project name
         $projectName = null;
         if ($application->resourceSchedule && $application->resourceSchedule->project) {
@@ -466,11 +479,20 @@ class IntermediateApplicationController extends Controller
 
                 // Additional Information fields
                 'remarks' => $application->remarks,
-                'reason_for_decline' => $application->reason_for_decline,
-                'reason_by_category' => $application->reason_by_category,
-                'parked_to' => $application->parked_to,
+                'current_employer' => $application->current_employer,
+                'contacted_by_name' => $contactedByName,
+                'contacted_date' => $application->contacted_date 
+                    ? Carbon::parse($application->contacted_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                    : null,
+                'replied' => $application->replied,
+                'replied_date' => $application->replied_date 
+                    ? Carbon::parse($application->replied_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                    : null,
+                'aws_start_date' => $application->aws_start_date 
+                    ? Carbon::parse($application->aws_start_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                    : null,
                 'aws_rank' => $application->aws_rank,
-                'aws_start_date' => $application->aws_start_date,
+                'parked_to' => $application->parked_to,
 
                 'applicant' => [
                     'first_name' => $application->intermediateApplicant->first_name ?? '',
@@ -733,6 +755,26 @@ class IntermediateApplicationController extends Controller
 
                 // Other
                 'remarks' => $application->remarks,
+                'current_employer' => $application->current_employer,
+                // ✅ Contact & Response Tracking
+                'contacted_by' => $application->contacted_by,
+                'contacted_date' => $application->contacted_date 
+                    ? Carbon::parse($application->contacted_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                    : null,
+                'replied' => $application->replied,
+                'replied_date' => $application->replied_date 
+                    ? Carbon::parse($application->replied_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                    : null,
+                
+                // ✅ Current Employer
+                'current_employer' => $application->current_employer,
+                
+                // ✅ AWS Fields
+                'aws_start_date' => $application->aws_start_date 
+                    ? Carbon::parse($application->aws_start_date)->timezone('Asia/Manila')->format('Y-m-d H:i:s')
+                    : null,
+                'aws_rank' => $application->aws_rank,
+                'parked_to' => $application->parked_to,
 
                 'applicant' => [
                     'first_name' => $application->intermediateApplicant->first_name ?? '',
@@ -742,6 +784,14 @@ class IntermediateApplicationController extends Controller
                     'contact_no' => $application->intermediateApplicant->contact_no ?? '',
                 ],
             ],
+
+            'currentUserInfo' => [
+                'id' => auth()->id(),
+                'first_name' => auth()->user()->first_name,
+                'last_name' => auth()->user()->last_name,
+                'name' => auth()->user()->full_name ?? auth()->user()->name,
+            ],
+
             'sourceProjects' => $sourceProjects,
             'examVenues' => [
                 1 => 'Online',
@@ -788,6 +838,32 @@ class IntermediateApplicationController extends Controller
             'resource_schedule_id' => 'nullable|exists:resource_requisitions,id',
             'position' => 'nullable|string|max:80',
 
+            // Screening
+            'answer_q1' => ['nullable'],
+            'answer_q2' => ['nullable'],
+            'answer_q3' => ['nullable'],
+            'answer_q4' => ['nullable'],
+
+            // Profile
+            'availability_date' => ['nullable'],
+            'desired_salary_range' => [
+                'nullable',
+                'regex:/^\d+(,\d{3})*-\d+(,\d{3})*$/',
+            ],
+            'work_preference' => ['nullable'],
+            'basic_pay' => [
+                'nullable',
+                'regex:/^[0-9,]+$/',
+            ],
+            'bonuses' => ['nullable'],
+            'hmo' => ['nullable'],
+            'leaves' => ['nullable'],
+            'allowances' => ['nullable'],
+            'other_benefits' => ['nullable'],
+            'targeted_company' => ['nullable'],
+            'industry_experience' => ['nullable'],
+            'current_employer' => ['nullable'],
+
             // Exam
             'exam_plan_date' => 'nullable|date',
             'exam_actual_date' => 'nullable|date',
@@ -831,6 +907,15 @@ class IntermediateApplicationController extends Controller
 
             // Other
             'remarks' => 'nullable|string',
+
+            'current_employer' => ['nullable', 'string', 'max:80'],
+            'contacted_by' => ['nullable', 'integer'],
+            'contacted_date' => ['nullable', 'date'],
+            'replied' => ['nullable', 'integer', 'in:0,1'],
+            'replied_date' => ['nullable', 'date'],
+            'aws_start_date' => ['nullable', 'date'],
+            'aws_rank' => ['nullable', 'string', 'max:80'],
+            'parked_to' => ['nullable', 'string', 'max:80'],
         ];
 
         $validated = $request->validate($rules);
@@ -842,7 +927,9 @@ class IntermediateApplicationController extends Controller
             $dateFields = [
                 'exam_plan_date', 'exam_actual_date',
                 'initial_interview_plan_date', 'initial_interview_actual_date',
-                'final_interview_date', 'job_offer_schedule',
+                'final_interview_date', 'job_offer_schedule','aws_start_date',  
+                'contacted_date',  
+                'replied_date',
             ];
 
             foreach ($dateFields as $field) {
@@ -1076,17 +1163,15 @@ class IntermediateApplicationController extends Controller
 
             return redirect()
                 ->route('intermediate.applications.show', $application->id)
-                ->with('success', 'Application updated successfully.');
+                ->with('success', 'Record updated successfully.');
 
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            \Log::error('Failed to update application: '.$e->getMessage());
-
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Failed to update application. Please try again.');
+                ->with('error', 'An error occurred while updating the record. Please try again.');
         }
     }
 
@@ -1109,7 +1194,6 @@ class IntermediateApplicationController extends Controller
         \Log::info("Total approved initial interviewers: {$totalApproved}");
 
         if ($totalApproved === 0) {
-            \Log::info('⚠️ No approved interviewers found - clearing initial interview data');
             $application->initial_interview_final = null;
             $application->initial_interview_result = null;
             $application->initial_interview_application_status = null;

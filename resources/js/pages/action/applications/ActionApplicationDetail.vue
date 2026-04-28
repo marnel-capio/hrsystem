@@ -19,9 +19,60 @@ import axios from 'axios';
 const canAcceptDecline = (interview: any) => {
     return (
         [2, 3, 5, 6].includes(userPermissions.value) &&
-        interview.interviewer_id === page.props.user_id &&
-        interview.status === 1
+        Number(interview.interviewer_id) === Number(page.props.user_id) &&
+        [1, 3].includes(Number(interview.status))
     );
+};
+
+const changeMindSubmitting = ref(false);
+
+const canChangeMind = (interview: any) => {
+    if (!interview) return false;
+
+    return (
+        [2, 3, 5, 6].includes(userPermissions.value) &&
+        Number(interview.interviewer_id) === Number(page.props.user_id) &&
+        Number(interview.status) === 3
+    );
+};
+
+const changeMindFromDeclineModal = async () => {
+    if (!selectedDeclinedInterview.value) return;
+
+    changeMindSubmitting.value = true;
+
+    try {
+        await axios.post(
+            `/action/applications/${application.value.id}/interviews/${selectedDeclinedInterview.value.id}/decision`,
+            {
+                decision: 'accept',
+                reason: null,
+            },
+        );
+
+        interviews.value = interviews.value.map((interview: any) => {
+            if (interview.id === selectedDeclinedInterview.value.id) {
+                return {
+                    ...interview,
+                    status: 2,
+                    decline_reason: null,
+                };
+            }
+
+            return interview;
+        });
+
+        closeDeclineReasonModal();
+
+        showToast('Interview assignment accepted successfully!', 'success');
+    } catch (error: any) {
+        showToast(
+            error?.response?.data?.message || 'Failed to change decision',
+            'error',
+        );
+    } finally {
+        changeMindSubmitting.value = false;
+    }
 };
 
 const bulkEditScheduleErrors = ref({
@@ -123,7 +174,8 @@ const submitBulkEditSchedule = async () => {
 
 const openAcceptDeclineModal = (interview: any) => {
     acceptDeclineInterviewer.value = interview;
-    acceptDeclineDecision.value = '';
+    acceptDeclineDecision.value =
+        Number(interview.status) === 3 ? 'accept' : '';
     acceptDeclineReason.value = '';
     acceptDeclineErrors.value.decision = '';
     acceptDeclineErrors.value.reason = '';
@@ -828,17 +880,17 @@ const willTriggerApplicantAutoEmail = computed(() => {
     const current = acceptDeclineInterviewer.value;
     if (!current) return false;
 
-    const sameStageRows = interviews.value.filter(
-        (i: any) => Number(i.interview_type) === Number(current.interview_type),
+    if (acceptDeclineDecision.value !== 'accept') return false;
+
+    // check if there is already an approved interviewer in same stage
+    const alreadyHasApproved = interviews.value.some(
+        (i: any) =>
+            Number(i.interview_type) === Number(current.interview_type) &&
+            Number(i.id) !== Number(current.id) &&
+            Number(i.status) === 2, // approved
     );
 
-    const otherRows = sameStageRows.filter((i: any) => i.id !== current.id);
-
-    return (
-        sameStageRows.length > 0 &&
-        Number(current.status) === 1 &&
-        otherRows.every((i: any) => Number(i.status) === 2)
-    );
+    return !alreadyHasApproved;
 });
 
 watch(acceptDeclineReason, (newVal) => {
@@ -858,22 +910,20 @@ const submitAcceptDecline = async () => {
     acceptDeclineErrors.value.decision = '';
     acceptDeclineErrors.value.reason = '';
 
-    let hasError = false;
+    const effectiveDecision =
+        Number(acceptDeclineInterviewer.value?.status) === 3
+            ? 'accept'
+            : acceptDeclineDecision.value;
 
-    if (!acceptDeclineDecision.value) {
+    if (!effectiveDecision) {
         acceptDeclineErrors.value.decision = 'This field is required.';
-        hasError = true;
+        return;
     }
 
-    if (
-        acceptDeclineDecision.value === 'decline' &&
-        !acceptDeclineReason.value.trim()
-    ) {
+    if (effectiveDecision === 'decline' && !acceptDeclineReason.value.trim()) {
         acceptDeclineErrors.value.reason = 'This field is required.';
-        hasError = true;
+        return;
     }
-
-    if (hasError) return;
 
     acceptDeclineSubmitting.value = true;
 
@@ -881,8 +931,11 @@ const submitAcceptDecline = async () => {
         await axios.post(
             `/action/applications/${application.value.id}/interviews/${acceptDeclineInterviewer.value.id}/decision`,
             {
-                decision: acceptDeclineDecision.value,
-                reason: acceptDeclineReason.value,
+                decision: effectiveDecision,
+                reason:
+                    effectiveDecision === 'decline'
+                        ? acceptDeclineReason.value
+                        : null,
             },
         );
 
@@ -893,20 +946,20 @@ const submitAcceptDecline = async () => {
 
             return {
                 ...interview,
-                status: acceptDeclineDecision.value === 'accept' ? 2 : 3,
+                status: effectiveDecision === 'accept' ? 2 : 3,
                 decline_reason:
-                    acceptDeclineDecision.value === 'decline'
+                    effectiveDecision === 'decline'
                         ? acceptDeclineReason.value
                         : null,
             };
         });
 
         showAcceptDeclineModal.value = false;
-        acceptDeclineErrors.value.decision = '';
-        acceptDeclineErrors.value.reason = '';
+        acceptDeclineDecision.value = '';
+        acceptDeclineReason.value = '';
 
         showToast(
-            acceptDeclineDecision.value === 'accept'
+            effectiveDecision === 'accept'
                 ? 'Interview assignment accepted successfully!'
                 : 'Interview assignment declined.',
             'success',
@@ -2316,10 +2369,10 @@ watch(
                         </div>
                     </div>
 
-                    <div class="mt-6 flex gap-3">
+                    <div class="modal-actions pt-5">
                         <button
                             @click="closeDeclineReasonModal"
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2 transition hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                            class="w-full rounded-lg bg-gray-300 px-4 py-2 text-gray-800 transition hover:bg-gray-400"
                         >
                             Close
                         </button>
@@ -2339,7 +2392,7 @@ watch(
                 <div
                     class="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl dark:bg-zinc-900"
                 >
-                    <h3 class="mb-2 text-xl font-bold">Bulk Edit Schedule</h3>
+                    <h3 class="mb-2 text-xl font-bold">Edit Schedule</h3>
                     <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
                         Update the schedule of checked interviewers
                     </p>
@@ -2631,6 +2684,7 @@ watch(
                 </div>
             </div>
 
+            <!-- Accept/Decline Modal -->
             <div
                 v-if="showAcceptDeclineModal"
                 class="fixed inset-0 z-50 flex items-center justify-center"
@@ -2639,22 +2693,41 @@ watch(
                     class="absolute inset-0 bg-black/50 backdrop-blur-sm"
                     @click="showAcceptDeclineModal = false"
                 ></div>
+
                 <div
                     class="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl dark:bg-zinc-900"
                 >
                     <h3 class="mb-2 text-xl font-bold">
                         Interview Assignment Confirmation
                     </h3>
+
                     <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
                         Please confirm your availability for this interview
                     </p>
+
+                    <!-- Change Your Mind Prompt -->
+                    <div
+                        v-if="acceptDeclineInterviewer?.status === 3"
+                        class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-900/30"
+                    >
+                        <p
+                            class="font-medium text-amber-800 dark:text-amber-300"
+                        >
+                            Do you change your mind?
+                        </p>
+                        <p class="mt-1 text-amber-700 dark:text-amber-400">
+                            You previously declined this assignment. You can
+                            accept it now.
+                        </p>
+                    </div>
 
                     <div class="space-y-4">
                         <div>
                             <label
                                 class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >Interviewer</label
                             >
+                                Interviewer
+                            </label>
                             <input
                                 type="text"
                                 :value="acceptDeclineInterviewer?.name"
@@ -2662,11 +2735,13 @@ watch(
                                 class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 dark:border-zinc-700"
                             />
                         </div>
+
                         <div>
                             <label
                                 class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >Stage</label
                             >
+                                Stage
+                            </label>
                             <input
                                 type="text"
                                 :value="
@@ -2678,11 +2753,13 @@ watch(
                                 class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 dark:border-zinc-700"
                             />
                         </div>
+
                         <div>
                             <label
                                 class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >Scheduled Date</label
                             >
+                                Scheduled Date
+                            </label>
                             <input
                                 type="text"
                                 :value="
@@ -2695,11 +2772,14 @@ watch(
                             />
                         </div>
 
-                        <div>
+                        <!-- Hide decision radios if already declined -->
+                        <div v-if="acceptDeclineInterviewer?.status !== 3">
                             <label
                                 class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >Decision</label
                             >
+                                Decision
+                            </label>
+
                             <div class="flex gap-4">
                                 <label class="flex items-center gap-2">
                                     <input
@@ -2710,6 +2790,7 @@ watch(
                                     />
                                     <span>Accept</span>
                                 </label>
+
                                 <label class="flex items-center gap-2">
                                     <input
                                         type="radio"
@@ -2721,37 +2802,58 @@ watch(
                                 </label>
                             </div>
                             <p
+                                v-if="
+                                    (acceptDeclineDecision === 'accept' ||
+                                        acceptDeclineInterviewer?.status ===
+                                            3) &&
+                                    willTriggerApplicantAutoEmail
+                                "
+                                class="text-sm text-blue-600 dark:text-blue-400"
+                            >
+                                Accepting will send an automatic email to the
+                                applicant, informing them of their scheduled
+                                assessment.
+                            </p>
+                            <p
                                 v-if="acceptDeclineErrors.decision"
                                 class="mt-1 text-sm text-red-600"
                             >
                                 {{ acceptDeclineErrors.decision }}
                             </p>
                         </div>
-                        <div v-if="acceptDeclineDecision === 'decline'">
+
+                        <!-- Declined state accept-only message -->
+                        <div v-else>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Click "Accept" to change your decision.
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="
+                                acceptDeclineDecision === 'decline' &&
+                                acceptDeclineInterviewer?.status !== 3
+                            "
+                        >
                             <label
                                 class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >Reason for Declining</label
                             >
+                                Reason for Declining
+                            </label>
+
                             <textarea
                                 v-model="acceptDeclineReason"
                                 rows="3"
                                 class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-zinc-700"
                                 placeholder="Please provide reason for declining..."
                             ></textarea>
+
                             <p
                                 v-if="acceptDeclineErrors.reason"
                                 class="mt-1 text-sm text-red-600"
                             >
                                 {{ acceptDeclineErrors.reason }}
                             </p>
-                        </div>
-                        <div
-                            v-if="willTriggerApplicantAutoEmail"
-                            class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-3 text-sm text-blue-800"
-                        >
-                            Accepting will send an automatic email to the
-                            applicant, informing them of their scheduled
-                            assessment.
                         </div>
                     </div>
 
@@ -2762,13 +2864,20 @@ watch(
                         >
                             Cancel
                         </button>
+
                         <button
                             @click="submitAcceptDecline"
                             :disabled="acceptDeclineSubmitting"
                             class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50"
                         >
-                            <span v-if="!acceptDeclineSubmitting">Submit</span
-                            ><span v-else>Submitting...</span>
+                            <span v-if="!acceptDeclineSubmitting">
+                                {{
+                                    acceptDeclineInterviewer?.status === 3
+                                        ? 'Accept'
+                                        : 'Submit'
+                                }}
+                            </span>
+                            <span v-else>Submitting...</span>
                         </button>
                     </div>
                 </div>

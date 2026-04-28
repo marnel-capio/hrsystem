@@ -26,6 +26,10 @@ class StoreIntermediateApplicationRequest extends FormRequest
                 new MaxLength(80),
             ],
 
+            'contacted_date' => ['nullable', 'date'],
+            'replied' => ['nullable', 'integer', 'in:0,1'],
+            'replied_date' => ['nullable', 'date'],
+
             'resource_schedule_id' => ['nullable', 'exists:resource_requisitions,id'],
 
             // Screening
@@ -52,6 +56,7 @@ class StoreIntermediateApplicationRequest extends FormRequest
             'other_benefits' => ['nullable'],
             'targeted_company' => ['nullable'],
             'industry_experience' => ['nullable'],
+            'current_employer' => ['nullable'],
 
             // Exam dates
             'exam_plan_date' => ['nullable', 'date'],
@@ -102,6 +107,20 @@ class StoreIntermediateApplicationRequest extends FormRequest
             'job_offer_schedule' => ['nullable', 'date'],
             'job_offer_status' => ['nullable', 'integer'],
             'job_offer_remarks' => ['nullable'],
+
+            // Contact & Response Tracking
+            'contacted_by' => ['nullable', 'integer'],
+            'contacted_date' => ['nullable', 'date'],
+            'replied' => ['nullable', 'integer', 'in:0,1'],
+            'replied_date' => ['nullable', 'date'],
+            
+            // Current Employer
+            'current_employer' => ['nullable', 'string', 'max:80'],
+            
+            // AWS Fields
+            'aws_start_date' => ['nullable', 'date'],
+            'aws_rank' => ['nullable', 'string', 'max:80'],
+            'parked_to' => ['nullable', 'string', 'max:80'],
 
             // Optional remarks
             'remarks' => [

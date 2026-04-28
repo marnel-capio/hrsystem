@@ -366,7 +366,7 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     importMethod.form = importMethodForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::edit
- * @see app/Http/Controllers/ActionApplicationController.php:162
+ * @see app/Http/Controllers/ActionApplicationController.php:167
  * @route '/action/applications/{id}/edit'
  */
 export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -381,7 +381,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::edit
- * @see app/Http/Controllers/ActionApplicationController.php:162
+ * @see app/Http/Controllers/ActionApplicationController.php:167
  * @route '/action/applications/{id}/edit'
  */
 edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -409,7 +409,7 @@ edit.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::edit
- * @see app/Http/Controllers/ActionApplicationController.php:162
+ * @see app/Http/Controllers/ActionApplicationController.php:167
  * @route '/action/applications/{id}/edit'
  */
 edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -418,7 +418,7 @@ edit.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::edit
- * @see app/Http/Controllers/ActionApplicationController.php:162
+ * @see app/Http/Controllers/ActionApplicationController.php:167
  * @route '/action/applications/{id}/edit'
  */
 edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -428,7 +428,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::edit
- * @see app/Http/Controllers/ActionApplicationController.php:162
+ * @see app/Http/Controllers/ActionApplicationController.php:167
  * @route '/action/applications/{id}/edit'
  */
     const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -438,7 +438,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::edit
- * @see app/Http/Controllers/ActionApplicationController.php:162
+ * @see app/Http/Controllers/ActionApplicationController.php:167
  * @route '/action/applications/{id}/edit'
  */
         editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -447,7 +447,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::edit
- * @see app/Http/Controllers/ActionApplicationController.php:162
+ * @see app/Http/Controllers/ActionApplicationController.php:167
  * @route '/action/applications/{id}/edit'
  */
         editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -463,7 +463,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::update
- * @see app/Http/Controllers/ActionApplicationController.php:202
+ * @see app/Http/Controllers/ActionApplicationController.php:216
  * @route '/action/applications/{id}'
  */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -478,7 +478,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::update
- * @see app/Http/Controllers/ActionApplicationController.php:202
+ * @see app/Http/Controllers/ActionApplicationController.php:216
  * @route '/action/applications/{id}'
  */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -506,7 +506,7 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::update
- * @see app/Http/Controllers/ActionApplicationController.php:202
+ * @see app/Http/Controllers/ActionApplicationController.php:216
  * @route '/action/applications/{id}'
  */
 update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -516,7 +516,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::update
- * @see app/Http/Controllers/ActionApplicationController.php:202
+ * @see app/Http/Controllers/ActionApplicationController.php:216
  * @route '/action/applications/{id}'
  */
     const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -531,7 +531,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::update
- * @see app/Http/Controllers/ActionApplicationController.php:202
+ * @see app/Http/Controllers/ActionApplicationController.php:216
  * @route '/action/applications/{id}'
  */
         updateForm.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -547,7 +547,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:907
+ * @see app/Http/Controllers/ActionApplicationController.php:952
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 export const eligibleApplicants = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -562,7 +562,7 @@ eligibleApplicants.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:907
+ * @see app/Http/Controllers/ActionApplicationController.php:952
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 eligibleApplicants.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -590,7 +590,7 @@ eligibleApplicants.url = (args: { batchId: string | number } | [batchId: string 
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:907
+ * @see app/Http/Controllers/ActionApplicationController.php:952
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 eligibleApplicants.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -599,7 +599,7 @@ eligibleApplicants.get = (args: { batchId: string | number } | [batchId: string 
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:907
+ * @see app/Http/Controllers/ActionApplicationController.php:952
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
 eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -609,7 +609,7 @@ eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:907
+ * @see app/Http/Controllers/ActionApplicationController.php:952
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
     const eligibleApplicantsForm = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -619,7 +619,7 @@ eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:907
+ * @see app/Http/Controllers/ActionApplicationController.php:952
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         eligibleApplicantsForm.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -628,7 +628,7 @@ eligibleApplicants.head = (args: { batchId: string | number } | [batchId: string
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::eligibleApplicants
- * @see app/Http/Controllers/ActionApplicationController.php:907
+ * @see app/Http/Controllers/ActionApplicationController.php:952
  * @route '/action/applications/eligible-applicants/{batchId}'
  */
         eligibleApplicantsForm.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -699,7 +699,7 @@ checkEligibility.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =
     checkEligibility.form = checkEligibilityForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::sendNotification
- * @see app/Http/Controllers/ActionApplicationController.php:373
+ * @see app/Http/Controllers/ActionApplicationController.php:412
  * @route '/action/applications/{application}/send-notification'
  */
 export const sendNotification = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -714,7 +714,7 @@ sendNotification.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::sendNotification
- * @see app/Http/Controllers/ActionApplicationController.php:373
+ * @see app/Http/Controllers/ActionApplicationController.php:412
  * @route '/action/applications/{application}/send-notification'
  */
 sendNotification.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -742,7 +742,7 @@ sendNotification.url = (args: { application: string | number } | [application: s
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::sendNotification
- * @see app/Http/Controllers/ActionApplicationController.php:373
+ * @see app/Http/Controllers/ActionApplicationController.php:412
  * @route '/action/applications/{application}/send-notification'
  */
 sendNotification.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -752,7 +752,7 @@ sendNotification.post = (args: { application: string | number } | [application: 
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::sendNotification
- * @see app/Http/Controllers/ActionApplicationController.php:373
+ * @see app/Http/Controllers/ActionApplicationController.php:412
  * @route '/action/applications/{application}/send-notification'
  */
     const sendNotificationForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -762,7 +762,7 @@ sendNotification.post = (args: { application: string | number } | [application: 
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::sendNotification
- * @see app/Http/Controllers/ActionApplicationController.php:373
+ * @see app/Http/Controllers/ActionApplicationController.php:412
  * @route '/action/applications/{application}/send-notification'
  */
         sendNotificationForm.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -773,7 +773,7 @@ sendNotification.post = (args: { application: string | number } | [application: 
     sendNotification.form = sendNotificationForm
 /**
 * @see \App\Http\Controllers\ActionApplicationController::print
- * @see app/Http/Controllers/ActionApplicationController.php:344
+ * @see app/Http/Controllers/ActionApplicationController.php:383
  * @route '/action/applications/{id}/print'
  */
 export const print = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -788,7 +788,7 @@ print.definition = {
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::print
- * @see app/Http/Controllers/ActionApplicationController.php:344
+ * @see app/Http/Controllers/ActionApplicationController.php:383
  * @route '/action/applications/{id}/print'
  */
 print.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -816,7 +816,7 @@ print.url = (args: { id: string | number } | [id: string | number ] | string | n
 
 /**
 * @see \App\Http\Controllers\ActionApplicationController::print
- * @see app/Http/Controllers/ActionApplicationController.php:344
+ * @see app/Http/Controllers/ActionApplicationController.php:383
  * @route '/action/applications/{id}/print'
  */
 print.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -825,7 +825,7 @@ print.get = (args: { id: string | number } | [id: string | number ] | string | n
 })
 /**
 * @see \App\Http\Controllers\ActionApplicationController::print
- * @see app/Http/Controllers/ActionApplicationController.php:344
+ * @see app/Http/Controllers/ActionApplicationController.php:383
  * @route '/action/applications/{id}/print'
  */
 print.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -835,7 +835,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
 
     /**
 * @see \App\Http\Controllers\ActionApplicationController::print
- * @see app/Http/Controllers/ActionApplicationController.php:344
+ * @see app/Http/Controllers/ActionApplicationController.php:383
  * @route '/action/applications/{id}/print'
  */
     const printForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -845,7 +845,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
 
             /**
 * @see \App\Http\Controllers\ActionApplicationController::print
- * @see app/Http/Controllers/ActionApplicationController.php:344
+ * @see app/Http/Controllers/ActionApplicationController.php:383
  * @route '/action/applications/{id}/print'
  */
         printForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -854,7 +854,7 @@ print.head = (args: { id: string | number } | [id: string | number ] | string | 
         })
             /**
 * @see \App\Http\Controllers\ActionApplicationController::print
- * @see app/Http/Controllers/ActionApplicationController.php:344
+ * @see app/Http/Controllers/ActionApplicationController.php:383
  * @route '/action/applications/{id}/print'
  */
         printForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
