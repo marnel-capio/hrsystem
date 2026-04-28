@@ -11,8 +11,8 @@ import ActionApplicationController from './ActionApplicationController'
 import ApplicationImportController from './ApplicationImportController'
 import ActionBatchController from './ActionBatchController'
 import ActionApplicantController from './ActionApplicantController'
-import IntermediateRequisitionController from './IntermediateRequisitionController'
 import IntermediateProjectController from './IntermediateProjectController'
+import IntermediateRequisitionController from './IntermediateRequisitionController'
 import IntermediateApplicantController from './IntermediateApplicantController'
 import IntermediateApplicantSkillController from './IntermediateApplicantSkillController'
 import IntermediateApplicantWorkExperienceController from './IntermediateApplicantWorkExperienceController'
@@ -31,8 +31,8 @@ ActionApplicationController: Object.assign(ActionApplicationController, ActionAp
 ApplicationImportController: Object.assign(ApplicationImportController, ApplicationImportController),
 ActionBatchController: Object.assign(ActionBatchController, ActionBatchController),
 ActionApplicantController: Object.assign(ActionApplicantController, ActionApplicantController),
-IntermediateRequisitionController: Object.assign(IntermediateRequisitionController, IntermediateRequisitionController),
 IntermediateProjectController: Object.assign(IntermediateProjectController, IntermediateProjectController),
+IntermediateRequisitionController: Object.assign(IntermediateRequisitionController, IntermediateRequisitionController),
 IntermediateApplicantController: Object.assign(IntermediateApplicantController, IntermediateApplicantController),
 IntermediateApplicantSkillController: Object.assign(IntermediateApplicantSkillController, IntermediateApplicantSkillController),
 IntermediateApplicantWorkExperienceController: Object.assign(IntermediateApplicantWorkExperienceController, IntermediateApplicantWorkExperienceController),
