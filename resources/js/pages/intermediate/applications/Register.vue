@@ -1529,7 +1529,7 @@ watch(() => form.replied, (newVal) => {
                                         :disabled="isFormFieldDisabled" />
                                 </div>
                                 <div class="form-field">
-                                    <label class="field-label !text-gray-500 position-label">Desired Salary</label>
+                                    <label class="field-label !text-gray-500 position-label">Desired Salary Range</label>
 
                                     <input type="text" v-model="form.desired_salary_range"
                                         class="form-input position-input" placeholder="ex: 50,000 - 70,000"

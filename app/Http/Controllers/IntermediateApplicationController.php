@@ -838,6 +838,32 @@ class IntermediateApplicationController extends Controller
             'resource_schedule_id' => 'nullable|exists:resource_requisitions,id',
             'position' => 'nullable|string|max:80',
 
+            // Screening
+            'answer_q1' => ['nullable'],
+            'answer_q2' => ['nullable'],
+            'answer_q3' => ['nullable'],
+            'answer_q4' => ['nullable'],
+
+            // Profile
+            'availability_date' => ['nullable'],
+            'desired_salary_range' => [
+                'nullable',
+                'regex:/^\d+(,\d{3})*-\d+(,\d{3})*$/',
+            ],
+            'work_preference' => ['nullable'],
+            'basic_pay' => [
+                'nullable',
+                'regex:/^[0-9,]+$/',
+            ],
+            'bonuses' => ['nullable'],
+            'hmo' => ['nullable'],
+            'leaves' => ['nullable'],
+            'allowances' => ['nullable'],
+            'other_benefits' => ['nullable'],
+            'targeted_company' => ['nullable'],
+            'industry_experience' => ['nullable'],
+            'current_employer' => ['nullable'],
+
             // Exam
             'exam_plan_date' => 'nullable|date',
             'exam_actual_date' => 'nullable|date',

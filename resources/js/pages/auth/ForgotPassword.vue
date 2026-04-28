@@ -34,7 +34,7 @@ defineProps<{
             name="email_address"
             autocomplete="off"
             autofocus
-            placeholder="email@example.com"
+            placeholder="email@awsys-i.com"
           />
           <!-- Display server-side validation errors -->
           <InputError :message="errors.email_address" />
