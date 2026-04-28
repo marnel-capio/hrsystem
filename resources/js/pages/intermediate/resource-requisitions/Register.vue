@@ -341,6 +341,7 @@ const newProject = ref({
   project_description: ''
 });
 const projects = ref([...props.newProjects])
+
 const addProjectErrors = ref<any>({})
   
 
@@ -371,34 +372,41 @@ const addNewProject = () => {
     preserveScroll: true,
 
     onSuccess: async (page: any) => {
-  const project = page.props.project;
+      const project = page.props.project;
 
-  if (!project || !project.project_name) return;
+      if (!project || !project.project_name) return;
 
-  form.value.project_id = project.id;
-  form.value.project_description = project.project_description;
+      form.value.project_id = project.id;
+      form.value.project_description = project.project_description;
 
-  newProject.value.project_name = '';
-  newProject.value.project_description = '';
-  
-  await fetchProjects;
+      newProject.value.project_name = '';
+      newProject.value.project_description = '';
+      
+      await fetchProjects();
 
-  projectSearchQuery.value = '';
+      projectSearchQuery.value = '';
 
-  nextTick(() => {
-    projectSearchQuery.value = project.project_name;
-  });
-},
+      nextTick(() => {
+        projectSearchQuery.value = project.project_name;
+      });
+    },
 
     onFinish: () => {
-      if (validateNewProject()) {
+      form.value.processing = false;
+      loading.value = false;
+      const hasBackendErrors = page.props.errors && Object.keys(page.props.errors).length > 0;
+      const hasFrontendErrors = Object.keys(addProjectErrors.value).length > 0;
+
+      if (!hasBackendErrors && !hasFrontendErrors) {
         modalVisible.value = false;
       }
     },
 
     onError: (errors) => {
       addProjectErrors.value = errors;
-    }
+      
+      modalVisible.value = true;
+    },
   });
 };
 
@@ -429,7 +437,7 @@ const fetchProjects = async () => {
         v-if="modalVisible"
         class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 text-sm"
       >
-        <div class="bg-white w-1/2 rounded-lg shadow-lg p-6 relative">
+        <div class="bg-white w-1/3 rounded-lg shadow-lg p-6 relative">
 
           <span class="absolute top-2 right-3 text-black cursor-pointer text-sm" @click="modalVisible = false">
             ✕
@@ -632,11 +640,11 @@ const fetchProjects = async () => {
                           class="dropdown-empty-item text-gray-500 flex justify-center items-center">
                           No project found
                       </div>
-                      <div v-if="filteredProjects.length === 0" 
-                        class="mt-2 mb-3 !text-white bg-[#1C7BA5] option-main flex justify-center items-center cursor-pointer rounded-md w-25 max-w-xs px-3 py-2 mx-auto"
+                      <div 
+                        class="mt-2 mb-3 !text-white bg-[#1C7BA5] option-main flex justify-center items-center cursor-pointer rounded-md w-23 max-w-xs px-.5 py-1.5 mx-auto"
                         @click="modalVisible = true">
                         Add Project
-                      </div>
+                      </div><br>
                   </div>
               </div>
           </div>
