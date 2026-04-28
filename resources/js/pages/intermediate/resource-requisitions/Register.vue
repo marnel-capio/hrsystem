@@ -259,10 +259,11 @@ const toggleProjectDropdown = () => {
 }
 
 const selectProject = (project: any) => {
-  form.value.project_id = project.id
-  isProjectDropdownOpen.value = false   
-  projectSearchQuery.value = ''        
-}
+  form.value.project_id = project.id;
+  form.value.project_description = project.project_description;
+  isProjectDropdownOpen.value = false; 
+  projectSearchQuery.value = '';       
+};
 
 // label for selected project
 const selectedProjectLabel = computed(() => {
@@ -320,18 +321,8 @@ const filteredBusinessUnit = computed(() => {
   )
 })
 
-
-
-
-
-
-
-
 //BUSINESS UNIT
 const businessUnits = computed(() => props.businessUnits)
-
-
-
 
 
 //ADD PROJECT THINGS:
@@ -343,7 +334,7 @@ const newProject = ref({
 const projects = ref([...props.newProjects])
 
 const addProjectErrors = ref<any>({})
-  
+
 
 const validateNewProject = () => {
   addProjectErrors.value = {};
@@ -360,9 +351,37 @@ const validateNewProject = () => {
 };
 
 
+const showSuccess = ref(false);
+
+
+const showToast = ref(false);
+const toastMessage = ref<string | null>(null);
+const toastType = ref<'success' | 'error'>('success');
+
+const successMessage = computed(() => page.props.flash?.success);
+
+const closeToast = () => {
+    showToast.value = false;
+};
+
+watch(
+    successMessage,
+    (val) => {
+        if (val) {
+            toastMessage.value = val;
+            toastType.value = 'success';
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 5000);
+        }
+    },
+    { immediate: true },
+);
+
+
+
 const addNewProject = () => {
   if (!validateNewProject()) {
-    return; 
+    return;
   }
 
   router.post('/intermediate/projects', {
@@ -375,16 +394,18 @@ const addNewProject = () => {
       const project = page.props.project;
 
       if (!project || !project.project_name) return;
+      projects.value.push(project);
 
-      form.value.project_id = project.id;
-      form.value.project_description = project.project_description;
-
+    
+      
+      // Clear the modal form
       newProject.value.project_name = '';
       newProject.value.project_description = '';
       
-      await fetchProjects();
-
       projectSearchQuery.value = '';
+      toastMessage.value = "Project added successfully!";
+      toastType.value = 'success';
+      showToast.value = true;
 
       nextTick(() => {
         projectSearchQuery.value = project.project_name;
@@ -398,13 +419,13 @@ const addNewProject = () => {
       const hasFrontendErrors = Object.keys(addProjectErrors.value).length > 0;
 
       if (!hasBackendErrors && !hasFrontendErrors) {
+        router.reload({ only: ['newProjects'] });
         modalVisible.value = false;
       }
     },
 
     onError: (errors) => {
       addProjectErrors.value = errors;
-      
       modalVisible.value = true;
     },
   });
@@ -415,12 +436,28 @@ const fetchProjects = async () => {
   const response = await axios.get('/intermediate/projects/list')
   projects.value = response.data.projects
 }
+
 </script>
 
 <template>
   <Head title="Resource Requisition Register" />
 
   <AppLayout :errors="page.props.errors">
+    <div v-if="showToast" class="full-width-alert">
+            <div
+                :class="[
+                    'alert-banner',
+                    toastType === 'success'
+                        ? 'alert-success-banner'
+                        : 'alert-error-banner',
+                ]"
+            >
+                <div class="alert-body">{{ toastMessage }}</div>
+                <button type="button" class="close-btn" @click="closeToast">
+                    ×
+                </button>
+            </div>
+        </div>
 
   <div class="w-3/4 mx-auto">
 

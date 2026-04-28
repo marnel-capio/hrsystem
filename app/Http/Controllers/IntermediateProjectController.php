@@ -35,10 +35,10 @@ public function store(IntermediateRequest $request)
 
         DB::commit();
 
-        return redirect()->route('intermediate.requisitions.register')->with([
-            'newProject' => $project, // Send new project data
-        ]);
-
+        // Correct way to use 'with' for passing success message
+        return redirect()->back()->with([
+            'project' => $project,
+        ])->with('success', config('errors.record_created_successfully.errorMessage'));
     } catch (\Exception $e) {
         DB::rollBack();
 

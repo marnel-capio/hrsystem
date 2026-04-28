@@ -42,7 +42,6 @@ class StoreIntermediateApplicationRequest extends FormRequest
             'availability_date' => ['nullable'],
             'desired_salary_range' => [
                 'nullable',
-                'regex:/^\d+(,\d{3})*-\d+(,\d{3})*$/',
             ],
             'work_preference' => ['nullable'],
             'basic_pay' => [
