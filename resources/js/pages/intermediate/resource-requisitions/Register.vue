@@ -431,12 +431,6 @@ const addNewProject = () => {
   });
 };
 
-
-const fetchProjects = async () => {
-  const response = await axios.get('/intermediate/projects/list')
-  projects.value = response.data.projects
-}
-
 </script>
 
 <template>
