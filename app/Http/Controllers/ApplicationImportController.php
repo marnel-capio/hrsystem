@@ -66,11 +66,11 @@ public function getTotalApplicants(int $batchId): int
     {
         return count($importedApplicants);
     }
-    
+
     public function getExistingApplicants(int $batchId, array $importedApplicants): int
     {
         $totalApplicants = $this->getTotalApplicants($batchId);
-        
+
         $newApplicants = $this->getNewApplicants($importedApplicants);
 
         return $totalApplicants - $newApplicants;
@@ -83,11 +83,11 @@ public function getTotalApplicants(int $batchId): int
 
     public function getLoggedUserName()
 {
-    $user = Auth::user(); 
+    $user = Auth::user();
     return $user ? $user->name : 'Unknown User';
 }
 
-    
+
 
     public function import(ImportApplicationsRequest $request)
     {
@@ -297,7 +297,7 @@ public function getTotalApplicants(int $batchId): int
                         // duplicate + failed before + old enough => NEW
                         $applicationBranch = 'new';
                         $applicationOverrides = [
-                            'remarks' => 'New',
+                            'remarks' => 'New upload.',
                             'exam_application_status' => null,
                             'initial_interview_application_status' => null,
                             'final_interview_application_status' => null,
@@ -308,7 +308,7 @@ public function getTotalApplicants(int $batchId): int
                         // duplicate + not failed + recent => FOR INITIAL INTERVIEW
                         $applicationBranch = 'for_initial_interview';
                         $applicationOverrides = [
-                            'remarks' => 'For Initial Interview',
+                            'remarks' => 'For Initial Interview. Re-applied from previous batch. Passed exam in previously applied batch.',
                             'exam_application_status' => $lastApplication->exam_application_status ?: 5,
                             'exam_plan_date' => $lastApplication->exam_plan_date,
                             'initial_interview_application_status' => 1,
@@ -388,7 +388,7 @@ public function getTotalApplicants(int $batchId): int
         $totalApplicants = $this->getTotalApplicants($request->batch_id);
         $newApplicants = $this->getNewApplicants($importedApplicants);
         $existingApplicants = $this->getExistingApplicants($request->batch_id, $importedApplicants);
-        $failedUploads = $this->getFailedUploads($failedApplicants, $skippedApplicants); 
+        $failedUploads = $this->getFailedUploads($failedApplicants, $skippedApplicants);
 
         // -------------------------
         // Prepare messages that show on screen & logging
@@ -438,16 +438,16 @@ public function getTotalApplicants(int $batchId): int
             try {
                 Mail::to($emails)->send(
                     new ActionUploadStatusMail(
-                        $batchName, 
+                        $batchName,
                         [
-                            'senderName' => $userName, 
-                            'senderRole' => '$', 
-                        ], 
+                            'senderName' => $userName,
+                            'senderRole' => '$',
+                        ],
                         $totalApplicants,
                         $newApplicants,
                         $existingApplicants,
                         $failedUploads,
-                        $skippedApplicants 
+                        $skippedApplicants
                     )
                 );
             } catch (\Exception $e) {
