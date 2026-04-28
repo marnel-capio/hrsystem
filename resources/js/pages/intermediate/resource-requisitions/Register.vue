@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch, computed } from 'vue'
+import { ref, onMounted, nextTick, watch, computed  } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import axios from 'axios';
@@ -14,11 +14,8 @@ const props = defineProps<{
   businessUnits: { id: number; business_unit: string }[];
 }>();
 
-
 const today = new Date().toISOString().slice(0, 10)  
 
-const projects = ref<any[]>([]);
-const requisitions = ref({ id: null }); 
 const form = ref({
   engagement_type: '',
   sourcing_type: '',
@@ -28,7 +25,7 @@ const form = ref({
   location_assignment: '',
   custom_location: '', 
   project_id: null as number | null,
-  business_unit_id: null as number | null,
+  business_unit_id: '' as number | string | null,
   resource: '',
   practice: '',
   no_resources_needed: '',
@@ -269,20 +266,59 @@ const selectProject = (project: any) => {
 
 // label for selected project
 const selectedProjectLabel = computed(() => {
-  const project = props.newProjects.find(
+  const project = projects.value.find(
     (p) => p.id === Number(form.value.project_id)
   )
+
   return project ? project.project_name : ''
 })
 
 // filtered list
 const filteredProjects = computed(() => {
-  if (!projectSearchQuery.value) return props.newProjects;
+  if (!projectSearchQuery.value) return projects.value
 
-  return props.newProjects.filter((p) =>
-    p.project_name.toLowerCase().includes(projectSearchQuery.value.toLowerCase())
-  );
-});
+  return projects.value.filter((p) =>
+    (p?.project_name ?? '')
+      .toLowerCase()
+      .includes(projectSearchQuery.value.toLowerCase())
+  )
+})
+
+
+
+//BUSINESS Unit
+const isBusinessUnitDropdownOpen = ref(false)
+const businessUnitSearchQuery = ref('')
+
+const toggleBusinessUnitDropdown = () => {
+  isBusinessUnitDropdownOpen.value = !isBusinessUnitDropdownOpen.value
+}
+
+const selectBusinessUnit = (businessUnit: any) => {
+  form.value.business_unit_id = businessUnit.id
+  isBusinessUnitDropdownOpen.value = false   
+  businessUnitSearchQuery.value = ''        
+}
+
+// label for selected bu
+const selectedBusinessUnitLabel = computed(() => {
+  const businessUnit = businessUnits.value.find(
+    (p) => p.id === Number(form.value.business_unit_id)
+  )
+
+  return businessUnit ? businessUnit.business_unit : ''
+})
+
+// filtered list
+const filteredBusinessUnit = computed(() => {
+  if (!businessUnitSearchQuery.value) return businessUnits.value
+
+  return businessUnits.value.filter((p) =>
+    (p?.business_unit ?? '')
+      .toLowerCase()
+      .includes(businessUnitSearchQuery.value.toLowerCase())
+  )
+})
 
 
 
@@ -292,14 +328,7 @@ const filteredProjects = computed(() => {
 
 
 //BUSINESS UNIT
-const selectedBusinessUnit = ref("");
-
-selectedBusinessUnit.value = "";
-const businessUnits = computed(() => {
-  return props.businessUnits
-})
-
-
+const businessUnits = computed(() => props.businessUnits)
 
 
 
@@ -311,28 +340,73 @@ const newProject = ref({
   project_name: '',
   project_description: ''
 });
+const projects = ref([...props.newProjects])
+const addProjectErrors = ref<any>({})
+  
 
-
-const addNewProject = async () => {
-  try {
-    const response = await axios.post('/intermediate/projects', {
-  project_name: newProject.value.project_name,
-  project_description: newProject.value.project_description
-});
-
-    newProject.value.project_name = '';
-    newProject.value.project_description = '';
-
-
-    props.newProjects.push(response.data);
-
-    modalVisible.value = false;
-  } catch (error) {
-    console.error('Error adding project:', error);
+const validateNewProject = () => {
+  addProjectErrors.value = {};
+  if (!newProject.value.project_name) {
+    addProjectErrors.value.project_name = "This field is required.";
   }
+  if (newProject.value.project_name.length > 20) {
+    addProjectErrors.value.project_name = "This field exceeds the maximum allowed length.";
+  }
+  if (newProject.value.project_description.length > 1024) {
+    addProjectErrors.value.project_description = "This field exceeds the maximum allowed length.";
+  }
+  return Object.keys(addProjectErrors.value).length === 0;
 };
 
 
+const addNewProject = () => {
+  if (!validateNewProject()) {
+    return; 
+  }
+
+  router.post('/intermediate/projects', {
+    project_name: newProject.value.project_name,
+    project_description: newProject.value.project_description,
+  }, {
+    preserveScroll: true,
+
+    onSuccess: async (page: any) => {
+  const project = page.props.project;
+
+  if (!project || !project.project_name) return;
+
+  form.value.project_id = project.id;
+  form.value.project_description = project.project_description;
+
+  newProject.value.project_name = '';
+  newProject.value.project_description = '';
+  
+  await fetchProjects;
+
+  projectSearchQuery.value = '';
+
+  nextTick(() => {
+    projectSearchQuery.value = project.project_name;
+  });
+},
+
+    onFinish: () => {
+      if (validateNewProject()) {
+        modalVisible.value = false;
+      }
+    },
+
+    onError: (errors) => {
+      addProjectErrors.value = errors;
+    }
+  });
+};
+
+
+const fetchProjects = async () => {
+  const response = await axios.get('/intermediate/projects/list')
+  projects.value = response.data.projects
+}
 </script>
 
 <template>
@@ -349,6 +423,60 @@ const addNewProject = async () => {
     <!-- Form container -->
     <div class="text-xs overflow-x-auto mt-6 p-6 bg-white shadow-lg rounded-lg border">
       <p class="text-red-500 mb-10 mt-4"><b>Note:</b> Resource Requisition must already be approved by SR Manager.</p>
+      
+      <!-- PROJECT MODAL -->
+      <div
+        v-if="modalVisible"
+        class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 text-sm"
+      >
+        <div class="bg-white w-1/2 rounded-lg shadow-lg p-6 relative">
+
+          <span class="absolute top-2 right-3 text-black cursor-pointer text-sm" @click="modalVisible = false">
+            ✕
+          </span>
+
+          <h2 class="text-lg font-bold mb-4">Add Project</h2>
+
+          <div class="mb-4">
+            <label class="text-sm font-bold">Project Name <label class="text-red-500">*</label></label>
+            <input
+                    v-model="newProject.project_name"
+                    class=" modal-input border p-2 rounded w-full"
+                    placeholder="Project Name"
+                />
+            <span v-if="addProjectErrors.project_name" class="text-red-500 text-xs">
+              {{ addProjectErrors.project_name }}
+            </span>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-sm">Project Description</label>
+            <textarea
+                    v-model="newProject.project_description"
+                    class="modal-textarea border p-2 rounded w-full"
+                    placeholder="Project Description (optional)"
+                ></textarea>
+            <span v-if="addProjectErrors.project_description" class="text-red-500 text-xs">
+              {{ addProjectErrors.project_description }}
+            </span>
+          </div>
+
+          <div class="flex justify-end gap-2 mt-6">
+            <button class="btn-secondary" @click="modalVisible = false">
+              Cancel
+            </button>
+
+            <button
+              class="btn btn-primary"
+              @click="addNewProject"
+            >Add 
+            </button>
+          </div>
+
+        </div>
+      </div>
+      
+      
       <!-- Engagement Type, Sourcing Type, Request Type -->
       <div class="grid grid-cols-3 gap-5">
         <!-- Engagement Type -->
@@ -495,14 +623,10 @@ const addNewProject = async () => {
                       
                   </div>
                   <div class="dropdown-options-list requisition-list">
-                      <div v-for="project in filteredProjects"
-                        :key="project.id"
-                        class="dropdown-option-item"
-                        :class="{ 'is-selected': form.project_id === project.id }"
-                        @click="selectProject(project)">
-                        <div class="option-main">
-                          {{ project.project_name }}
-                        </div>
+                      <div v-for="project in filteredProjects" :key="project.id"
+                          class="dropdown-option-item" :class="{ 'is-selected': form.project_id === project.id }"
+                          @click="selectProject(project)">
+                        <div class="option-main">{{ project.project_name }}</div>
                       </div><br>
                       <div v-if="filteredProjects.length === 0"
                           class="dropdown-empty-item text-gray-500 flex justify-center items-center">
@@ -525,101 +649,82 @@ const addNewProject = async () => {
 
 
 
-        <!-- MODAL -->
-      <!-- <div v-if="modalVisible" class="fixed inset-0 flex items-center justify-center z-50 bg-gray-500 bg-opacity-50">
-        <div class="bg-white p-6 rounded-lg w-96 shadow-lg">
-          <h3 class="text-lg font-bold mb-4">Add New Project</h3>
-          <form @submit.prevent="addNewProject">
-            <div class="mb-4">
-              <label for="newProjectName" class="block text-sm font-bold">Project Name</label>
-              <input v-model="newProject.project_name" id="newProjectName" type="text" class="w-full p-2 border rounded" required />
-            </div>
-            <div class="mb-4">
-              <label for="newProjectDescription" class="block text-sm font-bold">Project Description</label>
-              <textarea v-model="newProject.project_description" id="newProjectDescription" class="w-full p-2 border rounded" required></textarea>
-            </div>
-            <div class="flex justify-end space-x-4">
-              <button type="button" @click="modalVisible = false" class="px-4 py-2 bg-gray-300 text-gray-800 rounded">Cancel</button>
-              <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Save Project</button>
-            </div>
-          </form>
-        </div>
-      </div> -->
+        <!-- Business Unit -->
+<div class="form-field">
+  <label class="text-sm font-semibold mb-1 text-bold">
+    Business Unit <label class="text-red-500">*</label>
+  </label>
 
+  <div class="custom-select-wrapper" :class="{ 'is-open': isBusinessUnitDropdownOpen }">
+    
+    <!-- Dropdown Button -->
+    <div
+      class="border p-2 rounded w-full flex items-center justify-between cursor-pointer bg-white"
+      @click="toggleBusinessUnitDropdown"
+      tabindex="0"
+    >
+      <span class="custom-select-value text-sm">
+        {{ selectedBusinessUnitLabel || 'Select Business Unit' }}
+      </span>
 
+      <svg class="custom-select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </div>
 
-        <!-- PROJECT MODAL -->
-      <div
-        v-if="modalVisible"
-        class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 text-sm"
-      >
-        <div class="bg-white w-1/2 rounded-lg shadow-lg p-6 relative">
+    <!-- Dropdown -->
+    <div
+      class="custom-select-dropdown border p-2 rounded-sm max-h-40 overflow-y-auto"
+      v-show="isBusinessUnitDropdownOpen"
+    >
 
-          <span class="absolute top-2 right-3 text-black cursor-pointer text-sm" @click="modalVisible = false">
-            ✕
-          </span>
-
-          <h2 class="text-lg font-bold mb-4">Add Project</h2>
-
-          <div class="mb-4">
-            <label class="text-sm font-bold">Project Name <label class="text-red-500">*</label></label>
-            <input
-                    v-model="newProject.project_name"
-                    class=" modal-input border p-2 rounded w-full"
-                    placeholder="Project Name"
-                />
-            <!-- <span class="text-red-500 text-xs">{{ addProjectNameError }}</span> -->
-          </div>
-
-          <div class="mb-4">
-            <label class="text-sm">Project Description</label>
-            <textarea
-                    v-model="newProject.project_description"
-                    class="modal-textarea border p-2 rounded w-full"
-                    placeholder="Project Description (optional)"
-                ></textarea>
-            <!-- <span class="text-red-500 text-xs">{{ addProjectDescriptionError }}</span> -->
-          </div>
-
-          <div class="flex justify-end gap-2 mt-6">
-            <button class="btn-secondary" @click="modalVisible = false">
-              Cancel
-            </button>
-
-            <button
-              class="btn btn-primary"
-              @click="addNewProject"
-            >Add 
-            </button>
-          </div>
-
-        </div>
+      <!-- (Optional search input if you want later) -->
+      <div class="dropdown-search">
+        <input
+          type="text"
+          v-model="businessUnitSearchQuery"
+          placeholder="Search business unit..."
+          class="text-sm border p-2 rounded-sm w-full"
+          @click.stop
+        />
       </div>
 
+      <!-- Options -->
+      <div class="dropdown-options-list requisition-list">
+        
+        <div
+          v-for="unit in filteredBusinessUnit"
+          :key="unit.id"
+          class="dropdown-option-item"
+          :class="{ 'is-selected': form.business_unit_id === unit.id }"
+          @click="selectBusinessUnit(unit)"
+        >
+          <div class="option-main">
+            {{ unit.business_unit }}
+          </div>
+        </div><br>
 
-
-
-
-
-        <!-- Business Unit -->
-        <div class="flex flex-col">
-          <label class="text-sm font-semibold mb-1 text-bold">Business Unit <label class="text-red-500">*</label></label>
-          <select class="border p-2 rounded w-full" v-model="selectedBusinessUnit">
-            <option disabled value="">Select Business Unit</option>
-
-            <option
-              v-for="unit in businessUnits"
-              :key="unit.id"
-              :value="unit.id"
-              class="text-black"
-            >
-              {{ unit.business_unit }} 
-            </option>
-          </select>
-          <span v-if="page.props.errors?.sourcing_type" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.sourcing_type }}
-          </span>
+        <!-- Empty state -->
+        <div
+          v-if="filteredBusinessUnit.length === 0"
+          class="dropdown-empty-item text-gray-500 flex justify-center items-center"
+        >
+          No business unit found
         </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <span v-if="page.props.errors?.business_unit_id" class="text-red-600 text-xs mt-1">
+    {{ page.props.errors.business_unit_id }}
+  </span>
+</div>
+
+
+
       </div>
 
       <div class="flex flex-col mt-5">

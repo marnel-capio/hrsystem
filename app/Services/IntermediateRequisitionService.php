@@ -1,7 +1,8 @@
 <?php
  
 namespace App\Services;
- 
+
+use App\Models\BusinessUnitModel;
 use App\Models\IntermediateRequisitionModel;
 use App\Models\IntermediateProjectModel;
 
@@ -15,6 +16,8 @@ class IntermediateRequisitionService
 
     $project = IntermediateProjectModel::find($data['project_id']);
     $requisition->project_id = $data['project_id'];
+    $businessUnits = BusinessUnitModel::find($data['business_unit_id']);
+    $requisition->business_unit_id = $data['business_unit_id'];
     
     $requisition->engagement_type = $data['engagement_type'];
     $requisition->sourcing_type = $data['sourcing_type'];
@@ -23,7 +26,6 @@ class IntermediateRequisitionService
     $requisition->person_to_replace = $data['person_to_replace'] ?? null;
 
     $requisition->location_assignment = $data['location_assignment'];
-    $requisition->business_unit = $data['business_unit'];
     $requisition->resource = $data['resource'];
     $requisition->practice = $data['practice']?? null;
     $requisition->no_resources_needed = $data['no_resources_needed'];
@@ -65,7 +67,8 @@ public function update($data, $request)
     {
         $requisition = IntermediateRequisitionModel::findOrFail($data['id']);
         $project = IntermediateProjectModel::find($data['project_id']);
-        
+        $businessUnit = BusinessUnitModel::find($data['business_unit_id']);
+       
 
         $oldData = [
         'engagement_type' => $requisition->engagement_type,
@@ -78,7 +81,7 @@ public function update($data, $request)
 
         'project_id' => $requisition->project_id,
         'project_description' => $requisition->project_description,
-        'business_unit' => $requisition->business_unit,
+        'business_unit_id' => $requisition->business_unit_id,
 
         'resource' => $requisition->resource,
         'practice' => $requisition->practice,
@@ -108,7 +111,7 @@ public function update($data, $request)
         } 
         $requisition->location_assignment = $data['location_assignment'];
         $requisition->project_id = $data['project_id'];
-        $requisition->business_unit = $data['business_unit'];
+        $requisition->business_unit_id = $data['business_unit_id'];
         $requisition->resource = $data['resource'];
         $requisition->practice = $data['practice']?? null;
         $requisition->no_resources_needed = $data['no_resources_needed'];
@@ -143,7 +146,7 @@ public function update($data, $request)
             'location_assignment',
             'custom_location',
             'project_id',
-            'business_unit',
+            'business_unit_id',
 
             'resource',
             'practice',

@@ -19,7 +19,13 @@ class IntermediateProjectController extends Controller
     {
         $this->intermediateService = $intermediateService;
     }
-  
+
+public function list()
+{
+    return response()->json([
+        'projects' => IntermediateProjectModel::orderBy('id', 'desc')->get()
+    ]);
+}
 public function store(IntermediateRequest $request)
 {
     try {
@@ -29,15 +35,9 @@ public function store(IntermediateRequest $request)
 
         DB::commit();
 
-        if ($request->wantsJson()) {
-            return back()->with([
-    'project' => $project
-]);
-        }
-
-        return redirect()
-            ->route('intermediate.projects.show', ['id' => $project->id])
-            ->with('success', config('errors.record_created_successfully.errorMessage'));
+        return redirect()->route('intermediate.requisitions.register')->with([
+            'newProject' => $project, // Send new project data
+        ]);
 
     } catch (\Exception $e) {
         DB::rollBack();

@@ -371,25 +371,13 @@ console.log('Is Allowed to Manage:', isAllowedToManage.value);
             <tr>
               <td class="font-semibold px-3 py-2 border-y border-x-0">Resource</td>
               <td class="px-3 py-2 border-y border-x-0">
-                <span
-                  v-for="(item, index) in requisition.resource?.split(',')|| '-'"
-                  :key="index"
-                  class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full mr-1 mb-1"
-                >
-                  {{ item.trim() }}
-                </span>
+                {{ requisition.resource || '-' }}
               </td>
             </tr>
             <tr>
               <td class="font-semibold px-3 py-2 border-y border-x-0">Practice</td>
               <td class="px-3 py-2 border-y border-x-0">
-                <span
-                  v-for="(item, index) in requisition.practice?.split(',')|| '-'"
-                  :key="index"
-                  class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full mr-1 mb-1"
-                >
-                  {{ item.trim()}}
-                </span>
+                {{ requisition.practice || '-' }}
               </td>
             </tr>
             <tr>

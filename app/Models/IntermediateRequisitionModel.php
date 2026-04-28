@@ -25,9 +25,8 @@ class IntermediateRequisitionModel extends Model
         'start_date',
         'duration_project_engagement',
         'required_skills',
-        'preferred_skilLs',
+        'preferred_skills',
         'role',
-        'custom?_location',
         'expected_salary_range',
         'remarks',
         'created_by',
@@ -210,10 +209,7 @@ public function getReplacementDueToLabelAttribute()
     return config('constants.resource_requisitions.replacement_due_to.RDT_' . $this->replacement_due_to . '_NAME', '-');
 }
 
-    public function getLocationAssignmentLabelAttr()
-    {
-        return config('constants.location_assignment.LA_' . $this->location_assignment . '_NAME');
-    }
+
      public function getProjectNameAttribute()
 {
     return $this->project?->project_name;
@@ -221,10 +217,6 @@ public function getReplacementDueToLabelAttribute()
 
 
 
-public function getProjectDescAttribute()
-{
-    return $this->project?->project_description;
-}
 
     const CREATED_AT = 'created_time';
 
