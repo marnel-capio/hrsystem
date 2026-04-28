@@ -1406,7 +1406,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                             :disabled="isEarlySectionsLocked">×</button>
                                     </div>
                                     <span v-if="form.errors.upload_pic" class="error-message">{{ form.errors.upload_pic
-                                    }}</span>
+                                        }}</span>
                                     <div v-if="picturePreview" class="picture-preview">
                                         <img :src="picturePreview" alt="Picture preview" class="preview-image" />
                                     </div>
@@ -1455,7 +1455,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                         <option :value="0">No</option>
                                     </select>
                                     <span v-if="form.errors.replied" class="error-message">{{ form.errors.replied
-                                        }}</span>
+                                    }}</span>
                                 </div>
 
                                 <div class="form-field">
@@ -1495,7 +1495,8 @@ watch(() => form.job_offer_status, (newVal) => {
                                         :disabled="isEarlySectionsLocked" />
                                 </div>
                                 <div class="form-field">
-                                    <label class="field-label !text-gray-500 position-label">Desired Salary Range</label>
+                                    <label class="field-label !text-gray-500 position-label">Desired Salary
+                                        Range</label>
                                     <input type="text" v-model="form.desired_salary_range"
                                         class="form-input position-input" placeholder="ex: 50,000 - 70,000"
                                         @input="filterSalaryInput" :disabled="isEarlySectionsLocked" />
@@ -1651,7 +1652,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                     </option>
                                 </select>
                                 <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue
-                                }}</span>
+                                    }}</span>
                             </div>
 
                             <div class="exam-section-layout">
@@ -1814,7 +1815,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                 <textarea v-model="form.exam_remarks" placeholder="Enter any remarks here..." rows="3"
                                     class="form-textarea" :disabled="!canEditExamSection"></textarea>
                                 <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
 
@@ -1831,8 +1832,130 @@ watch(() => form.job_offer_status, (newVal) => {
                                 </div>
                             </div>
 
-                            <!-- HR/Admin sees all fields -->
-                            <div v-if="canManageInterviewers">
+                            <!-- ✅ HR/Admin who is ALSO an approved interviewer sees their evaluation form -->
+                            <div v-if="canManageInterviewers && isApprovedForInitial">
+                                <div
+                                    class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30 mb-4">
+                                    <h4 class="mb-3 text-sm font-semibold text-blue-800 dark:text-blue-300">
+                                        Your Interview Evaluation ({{ currentUserInitialInterview?.role_label ||
+                                        'HR/Admin' }})
+                                    </h4>
+
+                                    <div v-if="currentUserInitialInterview?.evaluation_score" class="mb-4 text-sm">
+                                        <p>Current Score: <strong>{{ currentUserInitialInterview.evaluation_score || '-'
+                                                }}</strong></p>
+                                        <p>Current Result: <strong>{{
+                                            getEvaluationResultLabel(currentUserInitialInterview.evaluation_results)
+                                                }}</strong></p>
+                                    </div>
+
+                                    <div class="form-grid grid-2">
+                                        <div class="form-field">
+                                            <label class="field-label">Your Score (1.00 - 5.00)</label>
+                                            <input type="number" step="0.01" min="1.00" max="5.00"
+                                                v-model="form.initial_evaluation_score"
+                                                @input="clampInterviewScore(form, 'initial_evaluation_score')"
+                                                class="form-input" placeholder="1.00 - 5.00" />
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="field-label">Your Evaluation Result</label>
+                                            <select v-model="form.initial_evaluation_result" class="form-select">
+                                                <option value="">Select Result</option>
+                                                <option value="1">Pending</option>
+                                                <option value="2">Passed</option>
+                                                <option value="3">Failed</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-field mt-3">
+                                        <label class="field-label">Your Remarks</label>
+                                        <textarea v-model="form.initial_evaluation_remarks" rows="3"
+                                            class="form-textarea"
+                                            placeholder="Enter your evaluation remarks..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 text-sm text-gray-500 mb-4">
+                                    <p><strong>Plan Date:</strong> {{ formatDateTime(form.initial_interview_plan_date)
+                                        }}</p>
+                                    <p><strong>Venue:</strong> {{ getVenueLabel(form.initial_interview_venue) }}</p>
+                                </div>
+
+                                <!-- Divider -->
+                                <div class="border-t border-gray-200 my-4"></div>
+                                <p class="text-sm font-medium text-gray-500 mb-3">📋 General Initial Interview Details
+                                    (Read Only)</p>
+
+                                <!-- General fields shown as read-only for reference -->
+                                <div class="opacity-70 pointer-events-none">
+                                    <div class="form-grid grid-2 mb-6">
+                                        <div class="form-field">
+                                            <label class="field-label">Initial Interview Plan Date</label>
+                                            <input type="datetime-local" :value="form.initial_interview_plan_date"
+                                                class="form-input" disabled />
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="field-label">Initial Interview Actual Date</label>
+                                            <input type="datetime-local" :value="form.initial_interview_actual_date"
+                                                class="form-input" disabled />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-field mb-6">
+                                        <label class="field-label">Initial Interview Venue</label>
+                                        <select :value="form.initial_interview_venue" class="form-select" disabled>
+                                            <option value="">Select Venue</option>
+                                            <option v-for="venue in examVenuesList" :key="venue.value"
+                                                :value="venue.value">
+                                                {{ venue.label }}
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-grid grid-2 mb-6">
+                                        <div class="form-field">
+                                            <label class="field-label">Final Score (Average)</label>
+                                            <input type="number" step="0.01" min="1.00" max="5.00"
+                                                :value="form.initial_interview_final" class="form-input" disabled />
+                                            <small class="helper-text">
+                                                <span v-if="initialInterviewerCount === 0">
+                                                    No approved interviewers
+                                                </span>
+                                                <span
+                                                    v-else-if="initialInterviewersSubmitted < initialInterviewerCount">
+                                                    ⏳ {{ initialInterviewersSubmitted }}/{{ initialInterviewerCount }}
+                                                    interviewers submitted
+                                                    (Waiting for all scores...)
+                                                </span>
+                                                <span v-else>
+                                                    ✅ Average of {{ initialInterviewerCount }} interviewer(s):
+                                                    {{ computedInitialAverageScore || 'No scores yet' }}
+                                                </span>
+                                            </small>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="field-label">Application Status</label>
+                                            <select :value="form.initial_interview_application_status"
+                                                class="form-select" disabled>
+                                                <option value="">Select Status</option>
+                                                <option v-for="status in interviewStatusesList" :key="status.value"
+                                                    :value="status.value">
+                                                    {{ status.label }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="field-label">Initial Interview Remarks</label>
+                                        <textarea :value="form.initial_interview_remarks" class="form-textarea" rows="3"
+                                            disabled></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ✅ HR/Admin who is NOT an interviewer sees all editable fields -->
+                            <div v-else-if="canManageInterviewers && !isApprovedForInitial">
                                 <div class="exam-section-layout">
                                     <div class="exam-form-column">
                                         <div class="form-grid grid-2 mb-6">
@@ -1935,7 +2058,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                 </div>
                             </div>
 
-                            <!-- Interviewer sees only their evaluation -->
+                            <!-- ✅ Regular interviewer (non-HR/Admin) sees only their evaluation -->
                             <div v-else-if="isApprovedForInitial">
                                 <div
                                     class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30">
@@ -1944,7 +2067,7 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                     <div v-if="currentUserInitialInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserInitialInterview.evaluation_score || '-'
-                                        }}</strong></p>
+                                                }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserInitialInterview.evaluation_results)
                                                 }}</strong></p>
@@ -1978,7 +2101,7 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                 <div class="mt-4 text-sm text-gray-500">
                                     <p><strong>Plan Date:</strong> {{ formatDateTime(form.initial_interview_plan_date)
-                                    }}</p>
+                                        }}</p>
                                     <p><strong>Venue:</strong> {{ getVenueLabel(form.initial_interview_venue) }}</p>
                                 </div>
                             </div>
@@ -1988,13 +2111,106 @@ watch(() => form.job_offer_status, (newVal) => {
                         <div class="form-section" :class="{ 'disabled-section': !canEditFinalSection }">
                             <div class="section-header">
                                 <h3>Final Interview</h3>
-                                <div v-if="!canEditFinalSection && hasAnyApprovedInterview" class="section-badge">
+                                <div v-if="!isFinalInterviewApplicable" class="section-badge">
+                                    <span class="badge badge-failed">Not Applicable - Previous stage failed</span>
+                                </div>
+                                <div v-else-if="!canEditFinalSection && hasAnyApprovedInterview" class="section-badge">
                                     <span class="badge badge-locked">You are not assigned to this stage</span>
                                 </div>
                             </div>
 
-                            <!-- HR/Admin sees all fields -->
-                            <div v-if="canManageInterviewers">
+                            <!-- ✅ HR/Admin who is ALSO an approved interviewer sees their evaluation form -->
+                            <div v-if="canManageInterviewers && isApprovedForFinal">
+                                <div
+                                    class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30 mb-4">
+                                    <h4 class="mb-3 text-sm font-semibold text-blue-800 dark:text-blue-300">
+                                        Your Interview Evaluation ({{ currentUserFinalInterview?.role_label ||
+                                        'HR/Admin' }})
+                                    </h4>
+
+                                    <div v-if="currentUserFinalInterview?.evaluation_score" class="mb-4 text-sm">
+                                        <p>Current Score: <strong>{{ currentUserFinalInterview.evaluation_score || '-'
+                                                }}</strong></p>
+                                        <p>Current Result: <strong>{{
+                                            getEvaluationResultLabel(currentUserFinalInterview.evaluation_results)
+                                                }}</strong></p>
+                                    </div>
+
+                                    <div class="form-grid grid-2">
+                                        <div class="form-field">
+                                            <label class="field-label">Your Score (1.00 - 5.00)</label>
+                                            <input type="number" step="0.01" min="1.00" max="5.00"
+                                                v-model="form.final_evaluation_score"
+                                                @input="clampInterviewScore(form, 'final_evaluation_score')"
+                                                class="form-input" placeholder="1.00 - 5.00" />
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="field-label">Your Evaluation Result</label>
+                                            <select v-model="form.final_evaluation_result" class="form-select">
+                                                <option value="">Select Result</option>
+                                                <option value="1">Pending</option>
+                                                <option value="2">Passed</option>
+                                                <option value="3">Failed</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-field mt-3">
+                                        <label class="field-label">Your Remarks</label>
+                                        <textarea v-model="form.final_evaluation_remarks" rows="3" class="form-textarea"
+                                            placeholder="Enter your evaluation remarks..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 text-sm text-gray-500 mb-4">
+                                    <p><strong>Date:</strong> {{ formatDateTime(form.final_interview_date) }}</p>
+                                </div>
+
+                                <!-- Divider -->
+                                <div class="border-t border-gray-200 my-4"></div>
+                                <p class="text-sm font-medium text-gray-500 mb-3">📋 General Final Interview Details
+                                    (Read Only)</p>
+
+                                <!-- General fields shown as read-only for reference -->
+                                <div class="opacity-70 pointer-events-none">
+                                    <div class="form-field mb-6">
+                                        <label class="field-label">Final Interview Date</label>
+                                        <input type="datetime-local" :value="form.final_interview_date"
+                                            class="form-input" disabled />
+                                    </div>
+
+                                    <div class="form-grid grid-2 mb-6">
+                                        <div class="form-field">
+                                            <label class="field-label">Final Score (Average)</label>
+                                            <input type="number" step="0.01" min="1.00" max="5.00"
+                                                :value="form.final_interview_final" class="form-input" disabled />
+                                            <small class="helper-text">
+                                                Average of {{ finalInterviewerCount }} interviewer(s):
+                                                {{ computedFinalAverageScore || 'No scores yet' }}
+                                            </small>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="field-label">Application Status</label>
+                                            <select :value="form.final_interview_application_status" class="form-select"
+                                                disabled>
+                                                <option value="">Select Status</option>
+                                                <option v-for="status in interviewStatusesList" :key="status.value"
+                                                    :value="status.value">
+                                                    {{ status.label }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label class="field-label">Final Interview Remarks</label>
+                                        <textarea :value="form.final_interview_remarks" class="form-textarea" rows="3"
+                                            disabled></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ✅ HR/Admin who is NOT an interviewer sees all editable fields -->
+                            <div v-else-if="canManageInterviewers && !isApprovedForFinal">
                                 <div class="exam-section-layout">
                                     <div class="exam-form-column">
                                         <div class="form-field mb-6">
@@ -2060,7 +2276,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                 </div>
                             </div>
 
-                            <!-- Interviewer sees only their evaluation -->
+                            <!-- ✅ Regular interviewer (non-HR/Admin) sees only their evaluation -->
                             <div v-else-if="isApprovedForFinal">
                                 <div
                                     class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30">
@@ -2069,7 +2285,7 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                     <div v-if="currentUserFinalInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserFinalInterview.evaluation_score || '-'
-                                        }}</strong></p>
+                                                }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserFinalInterview.evaluation_results)
                                                 }}</strong></p>
@@ -2179,9 +2395,9 @@ watch(() => form.job_offer_status, (newVal) => {
                                     <label class="field-label">AWS Rank</label>
                                     <input type="text" v-model="form.aws_rank" class="form-input"
                                         placeholder="Enter AWS rank"
-                                        :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled" />                             
+                                        :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled" />
                                     <span v-if="form.errors.aws_rank" class="error-message">{{ form.errors.aws_rank
-                                    }}</span>
+                                        }}</span>
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label">Parked To</label>
@@ -2189,7 +2405,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                         placeholder="Enter parked location"
                                         :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled" />
                                     <span v-if="form.errors.parked_to" class="error-message">{{ form.errors.parked_to
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
 
