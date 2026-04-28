@@ -93,6 +93,7 @@ const props = defineProps<{
   requisition: {
   id: number;
   project_name: string;
+  business_unit: string;
 
   engagement_type: string;
   engagement_type_label?: string;
@@ -114,7 +115,7 @@ const props = defineProps<{
 
   project_id?: number;
   project_description?: string;
-  business_unit?: string;
+  business_unit_id?: number;
   resource?: string;
   practice?: string;
 
@@ -317,7 +318,7 @@ console.log('Is Allowed to Manage:', isAllowedToManage.value);
                   <th class="px-2 py-2 text-left font-bold">
                     Business Unit
                   </th>
-                  <td class=" px-2">{{ requisition.business_unit }}</td>
+                  <td class=" px-2">{{ requisition.business_unit.business_unit }}</td>
               </tr>
               <tr class="mt-5">
                   <th class="px-2 py-2 text-left font-bold mt-5">Location Assignment</th>
@@ -370,25 +371,13 @@ console.log('Is Allowed to Manage:', isAllowedToManage.value);
             <tr>
               <td class="font-semibold px-3 py-2 border-y border-x-0">Resource</td>
               <td class="px-3 py-2 border-y border-x-0">
-                <span
-                  v-for="(item, index) in requisition.resource?.split(',')|| '-'"
-                  :key="index"
-                  class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full mr-1 mb-1"
-                >
-                  {{ item.trim() }}
-                </span>
+                {{ requisition.resource || '-' }}
               </td>
             </tr>
             <tr>
               <td class="font-semibold px-3 py-2 border-y border-x-0">Practice</td>
               <td class="px-3 py-2 border-y border-x-0">
-                <span
-                  v-for="(item, index) in requisition.practice?.split(',')|| '-'"
-                  :key="index"
-                  class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full mr-1 mb-1"
-                >
-                  {{ item.trim()}}
-                </span>
+                {{ requisition.practice || '-' }}
               </td>
             </tr>
             <tr>

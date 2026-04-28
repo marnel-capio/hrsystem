@@ -15,7 +15,7 @@ use App\Models\User;
 use App\Mail\ResourceRequisitionNotificationMail;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResourceRequisitionDeletedMail;
-
+use App\Models\BusinessUnitModel;
 
 
 
@@ -49,9 +49,13 @@ class IntermediateRequisitionController extends Controller
     public function create()
     {
         $projects = IntermediateProjectModel::getProjects(); 
+        $businessUnits = BusinessUnitModel::select('id', 'business_unit')
+        ->orderBy('business_unit')
+        ->get();
 
         return Inertia::render('intermediate/resource-requisitions/Register', [
             'newProjects' => $projects,
+            'businessUnits' => $businessUnits,
         ]);
     }
 
@@ -82,7 +86,7 @@ class IntermediateRequisitionController extends Controller
 
     public function show($id)
     {
-        $requisition = IntermediateRequisitionModel::findOrFail($id);
+        $requisition = IntermediateRequisitionModel::with('businessUnit')->findOrFail($id);
         $updatedByUser = \App\Models\User::find($requisition->updated_by);
 
         $requisition->updated_by_name = $updatedByUser ? $updatedByUser->first_name . ' ' . $updatedByUser->last_name : 'Unknown';
@@ -134,11 +138,11 @@ class IntermediateRequisitionController extends Controller
         $requisition = IntermediateRequisitionModel::with('project')->findOrFail($id);
 
         $projectName = $requisition->project->project_name ?? '';
-        $Location_assignment =
-        $requisition->Location_assignment == 1 ? 'Alabang' :
-        ($requisition->Location_assignment == 2 ? 'Makati' :
-        ($requisition->Location_assignment == 3 ? 'Cebu' :
-        ($requisition->Location_assignment == 4 ? 'Japan' : 'China')));
+        $location_assignment =
+            $requisition->location_assignment == 1 ? 'Alabang' :
+            ($requisition->location_assignment == 2 ? 'Makati' :
+            ($requisition->location_assignment == 3 ? 'Cebu' :
+            ($requisition->location_assignment == 4 ? 'Japan' : 'China')));
         $start_date = $requisition->start_date;
         $emails = $this->getDeleteNotificationEmails();
         try {
@@ -160,7 +164,7 @@ class IntermediateRequisitionController extends Controller
             try {
                 Mail::to($emails)->send(new ResourceRequisitionDeletedMail(
                     $projectName,
-                    $Location_assignment,
+                    $location_assignment,
                     $start_date
                 ));
             } catch (\Exception $e) {
@@ -213,10 +217,12 @@ class IntermediateRequisitionController extends Controller
     
     public function edit($id)
     {
-        $requisition = IntermediateRequisitionModel::findOrFail($id);
+        $requisition = IntermediateRequisitionModel::with('businessUnit')->findOrFail($id);
+
     
         return Inertia::render('intermediate/resource-requisitions/Edit', [
             'requisition' => $requisition,
+            'businessUnits' => BusinessUnitModel::all(),
             'user_permissions' => auth()->user()->permissions,
         ]);
     }
@@ -250,4 +256,5 @@ class IntermediateRequisitionController extends Controller
             ]);
         }
     }
+
 }

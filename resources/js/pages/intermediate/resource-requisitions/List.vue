@@ -104,6 +104,10 @@ onMounted(() => {
   console.log('Requisition data:', requisitions.value);
 });
 
+onMounted(() => {
+  console.log('Requisitions:', requisitions.value); // Check if businessUnit is loaded
+});
+
 </script>
 
 <template>
@@ -141,7 +145,7 @@ onMounted(() => {
                 d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
             </svg>
           </span>
-          <input v-model="search" type="text" placeholder="Search by Project Name, Resources, Location Assignment, Start Date, and Requester"
+          <input v-model="search" type="text" placeholder="Search by Project Name, Business Unit, Location Assignment, Start Date, and Required Skills"
             class="w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-700" />
         </div>
       </div>
@@ -160,12 +164,11 @@ onMounted(() => {
             <thead class="bg-zinc-100 dark:bg-zinc-800 text-left">
               <tr>
                 <th class="border px-3 py-2">Project Name</th>
-                <th class="border p3 py-2">Project Description</th>
-                <th class="borderx-3 py-2">Resources Title</th>
+                <th class="borderx-3 py-2">No. of Resources Needed</th>
+                <th class="border p-3 py-2">Business Unit</th>
                 <th class="borderx-3 py-2">Location Assignment</th>
                 <th class="border px-3 py-2">Start Date</th>
-                <th class="border p-3 py-2">Date Requested</th>
-                <th class="border px-3 py-2">Requested By</th>
+                <th class="border px-3 py-2">Required Skills</th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-zinc-900">
@@ -181,28 +184,18 @@ onMounted(() => {
                     {{ requisition.project?.project_name }}
                   </Link>
                 </td>
-                <td class="border px-3 py-2">{{ requisition.project?.project_description }}</td>
+                <td class="border px-3 py-2">{{ requisition.no_resources_needed }}</td>
                 <td class="border px-3 py-2">
-                  <div class="flex flex-wrap gap-1">
-                    <span
-                      v-for="(item, index) in requisition.resource?.split(',')"
-                      :key="index"
-                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-black-800 dark:text-blue-200"
-                    >
-                      {{ item.trim() }}
-                    </span>
-                  </div>
-                </td>
+  {{ requisition.business_unit?.business_unit }}
+</td>
+                
                 <td class="border px-3 py-2">
                   {{ (requisition.location_assignment === '6' || requisition.location_assignment === 6) && requisition.custom_location
                     ? requisition.custom_location 
                     : locationMap[Number(requisition.location_assignment)] || 'No location specified' }}
                 </td>
                 <td class="border px-3 py-2">{{ formatDate(requisition.start_date) }}</td>
-                <td class="border px-3 py-2">{{ formatDate(requisition.created_time) }}</td>
-                <td class="border px-3 py-2">
-                  {{ requisition.requested_by?.first_name }} {{ requisition.requested_by?.last_name }}
-                </td>
+                <td class="border px-3 py-2 truncate">{{ requisition.required_skills }}</td>
               </tr>
             </tbody>
           </table>
@@ -228,152 +221,24 @@ onMounted(() => {
 
 <style scoped>
 /* CARD */
-.card {
-  background: var(--ats-card, white);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: var(--ats-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
-}
-
-.card {
-  background: var(--ats-card, white);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: var(--ats-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
-}
-
-.table-wrapper {
-  width: 100%; 
-  overflow-x: hidden;
-  display: block;
-}
-
-.ats-table {
-  width: 100%; 
-  table-layout: auto; 
-}
-
-.ats-table th,
-.ats-table td {
-  padding-left: 10px;
-  padding-right: 10px;
-  word-wrap: break-word; 
-  text-overflow: ellipsis; 
-  white-space: normal; 
-}
-
-.ats-table th:nth-child(1),
-.ats-table td:nth-child(1) {
-  min-width: 150px; 
-}
-
-.ats-table th:nth-child(2),
-.ats-table td:nth-child(2) {
-  min-width: 200px;
-}
-
-.ats-table th:nth-child(3),
-.ats-table td:nth-child(3) {
-  min-width: 170px;
-}
-
-.ats-table th:nth-child(4),
-.ats-table td:nth-child(4) {
-  min-width: 100px;
-}
-
-.ats-table th:nth-child(5),
-.ats-table td:nth-child(5) {
-  min-width: 150px;
-}
-
-.ats-table th:nth-child(6),
-.ats-table td:nth-child(6) {
-  min-width:130px;
-}
-.ats-table th:nth-child(7),
-.ats-table td:nth-child(7) {
-  min-width: 240px;
-}
-
-.ats-table td:nth-child(7) {
-  white-space: normal; 
-  word-wrap: break-word;
-}
-
-.table-wrapper {
-  width: 100%;
-}
-
-.table-link {
-  color: var(--ats-accent, #1C7BA5);
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.table-link:hover {
-  text-decoration: underline;
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-}
-
-.page-title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--ats-text);
-}
-
-.btn-primary {
-  background: var(--ats-primary, #1C7BA5);
-  color: #fff;
-  padding: 0.55rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: background 0.15s ease;
-}
-
-.btn-primary:hover {
-  background: var(--ats-accent, #165a80);
-}
-
-.page-content {
-  max-width: 1175px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-.ats-table td {
+.truncate {
+  max-width: 30ch;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 20ch;
-  position: relative;
 }
 
+.ats-table {
+    min-width: 0 !important;
+    table-layout: fixed;
+}
+
+
 .ats-table td:hover {
-max-width: none;
-overflow: visible;
-white-space: normal;
-z-index: 10;
-}
- 
-.ats-table td > div {
-display: flex;
-flex-wrap: nowrap;
-overflow: hidden;
-max-width: 100%;
-}
- 
-.ats-table td:hover > div {
-flex-wrap: wrap;
-overflow: visible;
+  max-width: none;
+  overflow: visible;
+  white-space: normal;
+  z-index: 10;
 }
 
 </style>

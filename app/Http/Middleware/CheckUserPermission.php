@@ -285,8 +285,6 @@ class CheckUserPermission
         if (in_array($routeName, [
             'intermediate.projects.register',
             'intermediate.projects.store',
-            'intermediate.projects.edit',
-            'intermediate.projects.update',
         ])) {
             if (in_array($permission, [1, 5])) {
                 return $next($request);
@@ -320,6 +318,7 @@ class CheckUserPermission
 
         if (in_array($routeName, [
             'intermediate.requisitions.register',
+            'intermediate.requisitions.storeProject',
             'intermediate.requisitions.store',
             'intermediate.requisitions.edit',
             'intermediate.requisitions.update',

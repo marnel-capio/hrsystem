@@ -12,30 +12,31 @@ class IntermediateRequisitionModel extends Model
 
     protected $fillable = [
         'engagement_type',
-        'sourcing_type',
+        'sourcing_type',  
         'request_type',
         'replacement_due_to',
         'person_to_replace',
         'location_assignment',
         'custom_location',
         'project_id',
-        'business_unit',
         'resource',
         'practice',
         'no_resources_needed',
         'start_date',
         'duration_project_engagement',
         'required_skills',
-        'preferred_skilLs',
+        'preferred_skills',
         'role',
-        'custom?_location',
         'expected_salary_range',
         'remarks',
         'created_by',
         'created_time',
         'updated_by',
         'updated_time',
+        'business_unit_id',
+
     ];
+    
 
     public function scopeSearch($query, $search)
     {
@@ -55,6 +56,7 @@ class IntermediateRequisitionModel extends Model
                 $q->whereHas('project', function ($q2) use ($search) {
                     $q2->where('project_name', 'like', "%{$search}%");
                 });
+
 
                 $searchLower = strtolower($search);
                 $months = [
@@ -78,12 +80,8 @@ class IntermediateRequisitionModel extends Model
                 } else {
                     $q->orWhere('start_date', 'like', "%{$search}%");
                 }
-
-                $q->orWhereHas('requestedBy', function ($q3) use ($search) {
-                    $q3->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                });
                 $q->orWhere('custom_location', 'like', "%{$searchLower}%");
+                $q->orWhere('required_skills', 'like', "%{$searchLower}%");
 
                 foreach ($locationMap as $key => $value) {
                     if (stripos($key, $searchLower) !== false) {
@@ -92,6 +90,9 @@ class IntermediateRequisitionModel extends Model
                 }
 
                 $q->orWhere('resource', 'like', "%{$search}%");
+                $q->orWhereHas('businessUnit', function ($q3) use ($searchLower) {
+                $q3->where('business_unit', 'like', "%{$searchLower}%");
+            });
             });
         }
     }
@@ -100,6 +101,11 @@ class IntermediateRequisitionModel extends Model
     {
         return $this->belongsTo(IntermediateProjectModel::class, 'project_id');
     }
+
+    public function businessUnit()
+{
+    return $this->belongsTo(BusinessUnitModel::class, 'business_unit_id', 'id');
+}
 
     public function getProjectDescriptionAttribute()
     {
@@ -136,18 +142,20 @@ class IntermediateRequisitionModel extends Model
             ->select([
                 'id',
                 'project_id',
-                'resource',
+                'no_resources_needed',
                 'location_assignment',
                 'custom_location',
                 'start_date',
-                'created_by',
-                'created_time',
+                'required_skills',
+                'business_unit_id',
             ])
             ->with([
-                'project:id,project_name,project_description',
+                'project:id,project_name,project_description', 
                 'requestedBy:id,first_name,last_name',
+                'businessUnit:id,business_unit',
             ])
             ->search($search)
+            ->whereHas('project')
             ->orderBy('id', 'desc')
             ->paginate($perPage)
             ->withQueryString();
@@ -201,18 +209,14 @@ public function getReplacementDueToLabelAttribute()
     return config('constants.resource_requisitions.replacement_due_to.RDT_' . $this->replacement_due_to . '_NAME', '-');
 }
 
-    public function getLocationAssignmentLabelAttr()
-    {
-        return config('constants.location_assignment.LA_' . $this->location_assignment . '_NAME');
-    }
+
      public function getProjectNameAttribute()
 {
     return $this->project?->project_name;
 }
-public function getProjectDescAttribute()
-{
-    return $this->project?->project_description;
-}
+
+
+
 
     const CREATED_AT = 'created_time';
 

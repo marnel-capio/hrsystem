@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, nextTick, watch, computed  } from 'vue'
 import { router, usePage, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
+import axios from 'axios';
+
 
 const page = usePage<any>()
 const loading = ref(false)
@@ -9,10 +11,10 @@ const props = defineProps<{
   errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
   newProjects: { id: number; project_name: string; project_description: string; }[];
   custom_location_name: string | null;
+  businessUnits: { id: number; business_unit: string }[];
 }>();
+
 const today = new Date().toISOString().slice(0, 10)  
-
-
 
 const form = ref({
   engagement_type: '',
@@ -22,8 +24,8 @@ const form = ref({
   person_to_replace: '',
   location_assignment: '',
   custom_location: '', 
-  project_id: '',
-  business_unit: '',
+  project_id: null as number | null,
+  business_unit_id: '' as number | string | null,
   resource: '',
   practice: '',
   no_resources_needed: '',
@@ -39,7 +41,6 @@ const form = ref({
 });
 
 const person_to_replaceError = ref('')
-const business_unitError = ref('')
 const resourceError = ref('')
 const practiceError = ref('')
 const no_resources_neededError = ref('')
@@ -51,10 +52,10 @@ const expected_salary_rangeError = ref('')
 const remarksError = ref('')
 const start_dateError = ref('')
 const custom_locationError = ref('')
+const project_descriptionError = ref('')
 
 
 const maxperson_to_replace = 80 
-const maxbusiness_unit = 20 
 const maxresource = 1024 
 const maxpractice = 1024  
 const maxno_resources_needed = 100
@@ -65,6 +66,7 @@ const maxrole = 1024
 const maxexpected_salary_range = 80  
 const maxremarks = 1024  
 const maxcustom_location = 1024  
+const maxproject_description = 1024
 
 
 const validateperson_to_replace = () => {
@@ -79,8 +81,9 @@ const validatecustom_location = () => {
     : ''
 }
 
-const validatebusiness_unit = () => {
-  business_unitError.value = form.value.business_unit.length > maxbusiness_unit
+
+const validateproject_description = () => {
+  project_descriptionError.value = form.value.project_description.length > maxproject_description
     ? `This field exceeds the maximum allowed length.`
     : ''
 }
@@ -155,17 +158,6 @@ const validateStartDate = () => {
     : '';
 }
 
-
-
-const updateProjectDescription = (projectId: string) => {
-  const project = props.newProjects.find((p: any) => p.id === Number(projectId)); 
-  if (project) {
-    form.value.project_description = project.project_description;
-  } else {
-    form.value.project_description = '';
-  }
-};
-
 watch(() => form.value.project_id, (newId) => {
   const project = props.newProjects.find(p => p.id === Number(newId));
 
@@ -226,7 +218,6 @@ onMounted(() => {
 const submit = () => {
   person_to_replaceError.value = ''
   custom_locationError.value = ''
-  business_unitError.value = ''
   resourceError.value = ''
   practiceError.value = ''
   no_resources_neededError.value = ''
@@ -237,6 +228,7 @@ const submit = () => {
   expected_salary_rangeError.value = ''
   remarksError.value = ''
   start_dateError.value = ''
+  project_descriptionError.value =''
 
   form.value.processing = true
   loading.value = true
@@ -251,17 +243,221 @@ const submit = () => {
   })
 }
 
-
-
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 2); 
 const tomorrowISOString = tomorrow.toISOString().slice(0, 10); 
+
+
+
+
+
+const isProjectDropdownOpen = ref(false)
+const projectSearchQuery = ref('')
+
+const toggleProjectDropdown = () => {
+  isProjectDropdownOpen.value = !isProjectDropdownOpen.value
+}
+
+const selectProject = (project: any) => {
+  form.value.project_id = project.id;
+  form.value.project_description = project.project_description;
+  isProjectDropdownOpen.value = false; 
+  projectSearchQuery.value = '';       
+};
+
+// label for selected project
+const selectedProjectLabel = computed(() => {
+  const project = projects.value.find(
+    (p) => p.id === Number(form.value.project_id)
+  )
+
+  return project ? project.project_name : ''
+})
+
+// filtered list
+const filteredProjects = computed(() => {
+  if (!projectSearchQuery.value) return projects.value
+
+  return projects.value.filter((p) =>
+    (p?.project_name ?? '')
+      .toLowerCase()
+      .includes(projectSearchQuery.value.toLowerCase())
+  )
+})
+
+
+
+//BUSINESS Unit
+const isBusinessUnitDropdownOpen = ref(false)
+const businessUnitSearchQuery = ref('')
+
+const toggleBusinessUnitDropdown = () => {
+  isBusinessUnitDropdownOpen.value = !isBusinessUnitDropdownOpen.value
+}
+
+const selectBusinessUnit = (businessUnit: any) => {
+  form.value.business_unit_id = businessUnit.id
+  isBusinessUnitDropdownOpen.value = false   
+  businessUnitSearchQuery.value = ''        
+}
+
+// label for selected bu
+const selectedBusinessUnitLabel = computed(() => {
+  const businessUnit = businessUnits.value.find(
+    (p) => p.id === Number(form.value.business_unit_id)
+  )
+
+  return businessUnit ? businessUnit.business_unit : ''
+})
+
+// filtered list
+const filteredBusinessUnit = computed(() => {
+  if (!businessUnitSearchQuery.value) return businessUnits.value
+
+  return businessUnits.value.filter((p) =>
+    (p?.business_unit ?? '')
+      .toLowerCase()
+      .includes(businessUnitSearchQuery.value.toLowerCase())
+  )
+})
+
+//BUSINESS UNIT
+const businessUnits = computed(() => props.businessUnits)
+
+
+//ADD PROJECT THINGS:
+const modalVisible = ref(false);
+const newProject = ref({
+  project_name: '',
+  project_description: ''
+});
+const projects = ref([...props.newProjects])
+
+const addProjectErrors = ref<any>({})
+
+
+const validateNewProject = () => {
+  addProjectErrors.value = {};
+  if (!newProject.value.project_name) {
+    addProjectErrors.value.project_name = "This field is required.";
+  }
+  if (newProject.value.project_name.length > 20) {
+    addProjectErrors.value.project_name = "This field exceeds the maximum allowed length.";
+  }
+  if (newProject.value.project_description.length > 1024) {
+    addProjectErrors.value.project_description = "This field exceeds the maximum allowed length.";
+  }
+  return Object.keys(addProjectErrors.value).length === 0;
+};
+
+
+const showSuccess = ref(false);
+
+
+const showToast = ref(false);
+const toastMessage = ref<string | null>(null);
+const toastType = ref<'success' | 'error'>('success');
+
+const successMessage = computed(() => page.props.flash?.success);
+
+const closeToast = () => {
+    showToast.value = false;
+};
+
+watch(
+    successMessage,
+    (val) => {
+        if (val) {
+            toastMessage.value = val;
+            toastType.value = 'success';
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 5000);
+        }
+    },
+    { immediate: true },
+);
+
+
+
+const addNewProject = () => {
+  if (!validateNewProject()) {
+    return;
+  }
+
+  router.post('/intermediate/projects', {
+    project_name: newProject.value.project_name,
+    project_description: newProject.value.project_description,
+  }, {
+    preserveScroll: true,
+
+    onSuccess: async (page: any) => {
+      const project = page.props.project;
+
+      if (!project || !project.project_name) return;
+      projects.value.push(project);
+
+    
+      
+      // Clear the modal form
+      newProject.value.project_name = '';
+      newProject.value.project_description = '';
+      
+      projectSearchQuery.value = '';
+      toastMessage.value = "Project added successfully!";
+      toastType.value = 'success';
+      showToast.value = true;
+
+      nextTick(() => {
+        projectSearchQuery.value = project.project_name;
+      });
+    },
+
+    onFinish: () => {
+      form.value.processing = false;
+      loading.value = false;
+      const hasBackendErrors = page.props.errors && Object.keys(page.props.errors).length > 0;
+      const hasFrontendErrors = Object.keys(addProjectErrors.value).length > 0;
+
+      if (!hasBackendErrors && !hasFrontendErrors) {
+        router.reload({ only: ['newProjects'] });
+        modalVisible.value = false;
+      }
+    },
+
+    onError: (errors) => {
+      addProjectErrors.value = errors;
+      modalVisible.value = true;
+    },
+  });
+};
+
+
+const fetchProjects = async () => {
+  const response = await axios.get('/intermediate/projects/list')
+  projects.value = response.data.projects
+}
+
 </script>
 
 <template>
   <Head title="Resource Requisition Register" />
 
   <AppLayout :errors="page.props.errors">
+    <div v-if="showToast" class="full-width-alert">
+            <div
+                :class="[
+                    'alert-banner',
+                    toastType === 'success'
+                        ? 'alert-success-banner'
+                        : 'alert-error-banner',
+                ]"
+            >
+                <div class="alert-body">{{ toastMessage }}</div>
+                <button type="button" class="close-btn" @click="closeToast">
+                    ×
+                </button>
+            </div>
+        </div>
 
   <div class="w-3/4 mx-auto">
 
@@ -272,6 +468,60 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
     <!-- Form container -->
     <div class="text-xs overflow-x-auto mt-6 p-6 bg-white shadow-lg rounded-lg border">
       <p class="text-red-500 mb-10 mt-4"><b>Note:</b> Resource Requisition must already be approved by SR Manager.</p>
+      
+      <!-- PROJECT MODAL -->
+      <div
+        v-if="modalVisible"
+        class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 text-sm"
+      >
+        <div class="bg-white w-1/3 rounded-lg shadow-lg p-6 relative">
+
+          <span class="absolute top-2 right-3 text-black cursor-pointer text-sm" @click="modalVisible = false">
+            ✕
+          </span>
+
+          <h2 class="text-lg font-bold mb-4">Add Project</h2>
+
+          <div class="mb-4">
+            <label class="text-sm font-bold">Project Name <label class="text-red-500">*</label></label>
+            <input
+                    v-model="newProject.project_name"
+                    class=" modal-input border p-2 rounded w-full"
+                    placeholder="Project Name"
+                />
+            <span v-if="addProjectErrors.project_name" class="text-red-500 text-xs">
+              {{ addProjectErrors.project_name }}
+            </span>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-sm">Project Description</label>
+            <textarea
+                    v-model="newProject.project_description"
+                    class="modal-textarea border p-2 rounded w-full"
+                    placeholder="Project Description (optional)"
+                ></textarea>
+            <span v-if="addProjectErrors.project_description" class="text-red-500 text-xs">
+              {{ addProjectErrors.project_description }}
+            </span>
+          </div>
+
+          <div class="flex justify-end gap-2 mt-6">
+            <button class="btn-secondary" @click="modalVisible = false">
+              Cancel
+            </button>
+
+            <button
+              class="btn btn-primary"
+              @click="addNewProject"
+            >Add 
+            </button>
+          </div>
+
+        </div>
+      </div>
+      
+      
       <!-- Engagement Type, Sourcing Type, Request Type -->
       <div class="grid grid-cols-3 gap-5">
         <!-- Engagement Type -->
@@ -394,37 +644,132 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
       <!-- Project Name, Business Unit -->
       <div class="grid grid-cols-2 gap-5 mt-5">
-        <!-- Project Name (Dropdown) -->
-        <div class="flex flex-col">
-          <label class="text-sm font-semibold mb-1 text-bold">Project <label class="text-red-500">*</label></label>
-          <select v-model="form.project_id" class="border p-2 rounded w-full" @change="updateProjectDescription(form.project_id)">
-            <option disabled value="">Select Project</option>
-            <option v-for="project in props.newProjects" :key="project.id" :value="project.id">
-              {{ project.project_name }}
-            </option>
-          </select>
+        <div class="form-field">
+          <label class="text-sm font-bold mb-1">Project<label class="text-red-500">*</label></label>
+          <div class="custom-select-wrapper"
+              :class="{ 'is-open': isProjectDropdownOpen }">
+              <div class="border p-2 rounded w-full flex items-center justify-between cursor-pointer bg-white"
+                   @click="toggleProjectDropdown" tabindex="0">
+                  <span class="custom-select-value text-sm">
+                      {{ selectedProjectLabel || 'Select Project' }}
+                  </span>
+                  <svg class="custom-select-arrow" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 9l-7 7-7-7"></path>
+                  </svg>
+              </div>
+              <div class="custom-select-dropdown border border-1-black border p-2 rounded-sm max-h-40 overflow-y-auto" v-show="isProjectDropdownOpen">
+                  <div class="dropdown-search">
+                      <input type="text" v-model="projectSearchQuery"
+                          placeholder="Search/Input project..."
+                          class="text-sm border border-1-black border p-2 rounded-sm w-full" @click.stop />
+
+                      
+                  </div>
+                  <div class="dropdown-options-list requisition-list">
+                      <div v-for="project in filteredProjects" :key="project.id"
+                          class="dropdown-option-item" :class="{ 'is-selected': form.project_id === project.id }"
+                          @click="selectProject(project)">
+                        <div class="option-main">{{ project.project_name }}</div>
+                      </div><br>
+                      <div v-if="filteredProjects.length === 0"
+                          class="dropdown-empty-item text-gray-500 flex justify-center items-center">
+                          No project found
+                      </div>
+                      <div 
+                        class="mt-2 mb-3 !text-white bg-[#1C7BA5] option-main flex justify-center items-center cursor-pointer rounded-md w-23 max-w-xs px-.5 py-1.5 mx-auto"
+                        @click="modalVisible = true">
+                        Add Project
+                      </div><br>
+                  </div>
+              </div>
+          </div>
           <span v-if="page.props.errors?.project_id" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.project_id }}
           </span>
         </div>
 
+
+
+
+
         <!-- Business Unit -->
-        <div class="flex flex-col">
-          <label class="text-sm font-bold mb-1">Business Unit<label class="text-red-500">*</label></label>
-          <input
-            v-model="form.business_unit"
-            @input="validatebusiness_unit"
-            type="text"
-            placeholder="Business Unit"
-            class="border p-2 rounded w-full"
-          />
-          <span v-if="page.props.errors?.business_unit" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.business_unit }}
-          </span>
-          <span v-if="business_unitError" class="text-red-600 text-xs mt-1">
-            {{ business_unitError }}
-          </span>
+<div class="form-field">
+  <label class="text-sm font-semibold mb-1 text-bold">
+    Business Unit <label class="text-red-500">*</label>
+  </label>
+
+  <div class="custom-select-wrapper" :class="{ 'is-open': isBusinessUnitDropdownOpen }">
+    
+    <!-- Dropdown Button -->
+    <div
+      class="border p-2 rounded w-full flex items-center justify-between cursor-pointer bg-white"
+      @click="toggleBusinessUnitDropdown"
+      tabindex="0"
+    >
+      <span class="custom-select-value text-sm">
+        {{ selectedBusinessUnitLabel || 'Select Business Unit' }}
+      </span>
+
+      <svg class="custom-select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </div>
+
+    <!-- Dropdown -->
+    <div
+      class="custom-select-dropdown border p-2 rounded-sm max-h-40 overflow-y-auto"
+      v-show="isBusinessUnitDropdownOpen"
+    >
+
+      <!-- (Optional search input if you want later) -->
+      <div class="dropdown-search">
+        <input
+          type="text"
+          v-model="businessUnitSearchQuery"
+          placeholder="Search business unit..."
+          class="text-sm border p-2 rounded-sm w-full"
+          @click.stop
+        />
+      </div>
+
+      <!-- Options -->
+      <div class="dropdown-options-list requisition-list">
+        
+        <div
+          v-for="unit in filteredBusinessUnit"
+          :key="unit.id"
+          class="dropdown-option-item"
+          :class="{ 'is-selected': form.business_unit_id === unit.id }"
+          @click="selectBusinessUnit(unit)"
+        >
+          <div class="option-main">
+            {{ unit.business_unit }}
+          </div>
+        </div><br>
+
+        <!-- Empty state -->
+        <div
+          v-if="filteredBusinessUnit.length === 0"
+          class="dropdown-empty-item text-gray-500 flex justify-center items-center"
+        >
+          No business unit found
         </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <span v-if="page.props.errors?.business_unit_id" class="text-red-600 text-xs mt-1">
+    {{ page.props.errors.business_unit_id }}
+  </span>
+</div>
+
+
+
       </div>
 
       <div class="flex flex-col mt-5">
@@ -441,7 +786,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-2 gap-5 mt-5">
         <!-- Resource -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">Resource</label>
+          <label class="text-sm mb-1 font-bold">Resource <label class="text-red-500">*</label></label>
           <input
             v-model="form.resource"
             @input="validateresource"
@@ -449,11 +794,11 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
             placeholder="Indicate position title or service required."
             class="border p-2 rounded w-full"
           />
-          <span v-if="resourceError" class="text-red-600 text-xs mt-1">
-            {{ resourceError }}
-          </span>
           <span v-if="page.props.errors?.resource" class="text-red-600 text-xs mt-1">
             {{ page.props.errors.resource }}
+          </span>
+          <span v-if="resourceError" class="text-red-600 text-xs mt-1">
+            {{ resourceError }}
           </span>
         </div>
         
@@ -480,7 +825,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-3 gap-5 mt-5">
         <!-- No. of Resources Needed -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1">No. of Resources Needed</label>
+          <label class="text-sm mb-1  font-bold">No. of Resources Needed <label class="text-red-500">*</label></label>
           <input
             v-model="form.no_resources_needed"
             @input="validateno_resources_needed"
@@ -537,7 +882,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Required Skills/Experience -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1">Required Skills/Experience</label>
+          <label class="text-sm mb-1 font-bold">Required Skills/Experience  <label class="text-red-500">*</label></label>
           <textarea v-model="form.required_skills" rows="6" @input="validaterequired_skills" class="border p-2 rounded w-full" placeholder="Required Skills/Experience"></textarea>
           <span v-if="required_skillsError" class="text-red-600 text-xs mt-1">
             {{ required_skillsError }}
@@ -635,12 +980,85 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
         </button>
       </div>
     </div>
-    </div>
+  </div>
   </AppLayout>
 </template>
 
 
 <style scoped>
+
+.custom-select-arrow {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.option-main {
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 2px;
+}
+
+.option-details {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.option-project {
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.option-location {
+    background: #f0fdf4;
+    color: #166534;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.dropdown-option-item {
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.dropdown-option-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-option-item:hover {
+    background: #e6ecf1;
+}
+
+.dropdown-option-item.is-selected {
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+}
+
+/* Rest of your existing styles remain the same */
+.position-preferences-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.position-input {
+    height: 36px !important;
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.875rem !important;
+}
+
+.position-label {
+    font-size: 0.8125rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0.25rem !important;
+}
+
 .form-actions {
   margin-top: 2rem;
   display: flex;

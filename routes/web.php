@@ -249,28 +249,6 @@ Route::middleware(['check.permission'])->group(function () {
 
 });
 
-// Intermediate Projects
-// ------------------------
-Route::middleware(['auth', 'check.permission'])->group(function () {
-    Route::get('/intermediate/projects', [IntermediateProjectController::class, 'index'])->name('intermediate.projects.list');
-    Route::get('/intermediate/projects/register', [IntermediateProjectController::class, 'create'])->name('intermediate.projects.register');
-    Route::post('/intermediate/projects', [IntermediateProjectController::class, 'store'])->name('intermediate.projects.store');
-    Route::get('/intermediate/projects/{id}', [IntermediateProjectController::class, 'show'])->name('intermediate.projects.show');
-    Route::get('/intermediate/projects/{id}/edit', [IntermediateProjectController::class, 'edit'])->name('intermediate.projects.edit');
-    Route::post('/intermediate/projects/{id}/update', [IntermediateProjectController::class, 'update'])->name('intermediate.projects.update');
-});
-
-// ------------------------
-// Intermediate Resource Requisitions
-// ------------------------
-Route::middleware(['auth', 'check.permission'])->group(function () {
-    Route::get('/intermediate/resource-requisitions', [IntermediateRequisitionController::class, 'index'])->name('intermediate.requisitions.index');
-    Route::get('/intermediate/resource-requisitions/register', [IntermediateRequisitionController::class, 'create'])->name('intermediate.requisitions.register');
-    Route::post('/intermediate/resource-requisitions', [IntermediateRequisitionController::class, 'store'])->name('intermediate.requisitions.store');
-    Route::get('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'show'])->name('intermediate.requisitions.show');
-    Route::get('/intermediate/resource-requisitions/{id}/edit', [IntermediateRequisitionController::class, 'edit'])->name('intermediate.requisitions.edit');
-    Route::post('/intermediate/resource-requisitions/{id}/update', [IntermediateRequisitionController::class, 'update'])->name('intermediate.requisitions.update');
-});
 
 Route::middleware(['check.permission'])->group(function () {
     Route::get('/intermediate/applications', [IntermediateApplicationController::class, 'index'])
@@ -302,7 +280,8 @@ Route::middleware(['check.permission'])->group(function () {
         Route::post('/intermediate/resource-requisitions/{id}/update', [IntermediateRequisitionController::class, 'update'])->name('intermediate.requisitions.update');
         Route::post('/intermediate/resource-requisitions/{id}/send-notification', [IntermediateRequisitionController::class, 'sendResourceRequisitionNotification'])->name('intermediate.requisitions.notify');
         Route::delete('/intermediate/resource-requisitions/{id}', [IntermediateRequisitionController::class, 'destroy'])->name('intermediate.requisitions.destroy');
-    });
+});
+Route::get('/intermediate/projects/list', [IntermediateProjectController::class, 'list']);
 
     // ------------------------
 // Intermediate Applications

@@ -12,6 +12,7 @@ const props = defineProps<{
   errorMessages: Record<string, { errorCode: string; errorMessage: string }>;
   newProjects: { id: number; project_name: string; project_description: string }[];
   custom_location_name: string | null;
+  businessUnits: { id: number; business_unit: string }[];
 }>();
 const today = new Date().toISOString().slice(0, 10)  
 
@@ -35,7 +36,9 @@ const form = ref({
   project_id: props.requisition?.project_id
   ? Number(props.requisition.project_id)
   : '',
-  business_unit: props.requisition?.business_unit || '',
+  business_unit_id: props.requisition?.business_unit_id || '',
+
+  business_unit: '',
 
   resource: props.requisition?.resource || '',
   practice: props.requisition?.practice || '',
@@ -58,8 +61,28 @@ const form = ref({
   processing: false,
 });
 
+
+
+watch(() => form.value.business_unit_id, (newId) => {
+  const businessUnit = props.businessUnits.find(bu => bu.id === Number(newId));
+  if (businessUnit) {
+    form.value.business_unit = businessUnit.business_unit;
+  } else {
+    form.value.business_unit = ''; // Clear the name if no match found
+  }
+});
+
+// Initialize the business_unit field when the component is mounted
+onMounted(() => {
+  if (form.value.business_unit_id) {
+    const businessUnit = props.businessUnits.find(bu => bu.id === Number(form.value.business_unit_id));
+    if (businessUnit) {
+      form.value.business_unit = businessUnit.business_unit;
+    }
+  }
+});
+
 const person_to_replaceError = ref('')
-const business_unitError = ref('')
 const resourceError = ref('')
 const practiceError = ref('')
 const no_resources_neededError = ref('')
@@ -74,7 +97,6 @@ const custom_locationError = ref('')
 
 
 const maxperson_to_replace = 80 
-const maxbusiness_unit = 20 
 const maxresource = 1024 
 const maxpractice = 1024  
 const maxno_resources_needed = 100
@@ -102,11 +124,6 @@ const validatecustom_location = () => {
     : ''
 }
 
-const validatebusiness_unit = () => {
-  business_unitError.value = form.value.business_unit.length > maxbusiness_unit
-    ? `This field exceeds the maximum allowed length.`
-    : ''
-}
 
 const validateresource = () => {
   resourceError.value = form.value.resource.length > maxresource
@@ -178,6 +195,20 @@ const validateStartDate = () => {
     : '';
 }
 
+
+
+watch(() => form.value.business_unit_id, (newId) => {
+  const businessUnit = props.businessUnits.find(bu => bu.id === Number(newId));
+  if (businessUnit) {
+    form.value.business_unit = businessUnit.business_unit;
+  } else {
+    form.value.business_unit = '';
+  }
+});
+
+
+
+
 watch(() => form.value.project_id, (newId) => {
   const project = props.newProjects.find(p => p.id === Number(newId));
 
@@ -238,7 +269,6 @@ onMounted(() => {
 const submit = () => {
   person_to_replaceError.value = ''
   custom_locationError.value = ''
-  business_unitError.value = ''
   resourceError.value = ''
   practiceError.value = ''
   no_resources_neededError.value = ''
@@ -285,8 +315,8 @@ watch(() => form.value.request_type, async (newRequestType) => {
 watch(
   () => form.value.request_type,
   (newRequestType) => {
-    if (newRequestType === '1') {  // When "New Requirement" is selected
-      form.value.replacement_due_to = '';  // Reset the field to "" (Select Reason)
+    if (newRequestType === '1') {  
+      form.value.replacement_due_to = ''; 
     }
   }
 );
@@ -489,20 +519,13 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
 
         <!-- Business Unit -->
         <div class="flex flex-col">
-          <label class="text-sm font-bold mb-1">Business Unit <label class="text-red-500">*</label></label>
+          <label class="text-sm font-semibold mb-1 text-bold">Business Unit <label class="text-red-500">*</label></label>
           <input
             v-model="form.business_unit"
-            @input="validatebusiness_unit"
             type="text"
+            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
             placeholder="Business Unit"
-            class="border p-2 rounded w-full"
           />
-          <span v-if="page.props.errors?.business_unit" class="text-red-600 text-xs mt-1">
-            {{ page.props.errors.business_unit }}
-          </span>
-          <span v-if="business_unitError" class="text-red-600 text-xs mt-1">
-            {{ business_unitError }}
-          </span>
         </div>
       </div>
 
@@ -520,7 +543,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-2 gap-5 mt-5">
         <!-- Resource -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1 text-gray-500">Resource</label>
+          <label class="text-sm mb-1 font-bold">Resource <label class="text-red-500">*</label></label>
           <input
             v-model="form.resource"
             @input="validateresource"
@@ -559,7 +582,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="grid grid-cols-3 gap-5 mt-5">
         <!-- No. of Resources Needed -->
         <div class="flex flex-col">
-          <label class="text-sm mb-1 text-gray-500">No. of Resources Needed</label>
+          <label class="text-sm mb-1 font-bold">No. of Resources Needed <label class="text-red-500">*</label></label>
           <input
             v-model="form.no_resources_needed"
             @input="validateno_resources_needed"
@@ -616,7 +639,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Required Skills/Experience -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <div class="flex flex-col col-span-2">
-          <label class="text-sm mb-1 text-gray-500">Required Skills/Experience</label>
+          <label class="text-sm mb-1 font-bold">Required Skills/Experience <label class="text-red-500">*</label></label>
           <textarea v-model="form.required_skills" rows="6" @input="validaterequired_skills" class="border p-2 rounded w-full" placeholder="Required Skills/Experience"></textarea>
           <span v-if="required_skillsError" class="text-red-600 text-xs mt-1">
             {{ required_skillsError }}
