@@ -406,7 +406,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:231
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:232
  * @route '/intermediate/resource-requisitions/{id}/update'
  */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -421,7 +421,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:231
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:232
  * @route '/intermediate/resource-requisitions/{id}/update'
  */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -449,7 +449,7 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:231
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:232
  * @route '/intermediate/resource-requisitions/{id}/update'
  */
 update.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -459,7 +459,7 @@ update.post = (args: { id: string | number } | [id: string | number ] | string |
 
     /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:231
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:232
  * @route '/intermediate/resource-requisitions/{id}/update'
  */
     const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -469,7 +469,7 @@ update.post = (args: { id: string | number } | [id: string | number ] | string |
 
             /**
 * @see \App\Http\Controllers\IntermediateRequisitionController::update
- * @see app/Http/Controllers/IntermediateRequisitionController.php:231
+ * @see app/Http/Controllers/IntermediateRequisitionController.php:232
  * @route '/intermediate/resource-requisitions/{id}/update'
  */
         updateForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

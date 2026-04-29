@@ -394,13 +394,6 @@ const addNewProject = () => {
       const project = page.props.project;
 
       if (!project || !project.project_name) return;
-      projects.value.push(project);
-
-    
-      
-      // Clear the modal form
-      newProject.value.project_name = '';
-      newProject.value.project_description = '';
       
       projectSearchQuery.value = '';
       toastMessage.value = "Project added successfully!";
@@ -417,6 +410,9 @@ const addNewProject = () => {
       loading.value = false;
       const hasBackendErrors = page.props.errors && Object.keys(page.props.errors).length > 0;
       const hasFrontendErrors = Object.keys(addProjectErrors.value).length > 0;
+      refreshDropdownContents();
+      newProject.value.project_name = '';
+      newProject.value.project_description = '';
 
       if (!hasBackendErrors && !hasFrontendErrors) {
         router.reload({ only: ['newProjects'] });
@@ -430,6 +426,15 @@ const addNewProject = () => {
     },
   });
 };
+
+const refreshDropdownContents = () => {
+  router.reload({
+    only: ['newProjects'],
+    onSuccess: (page: any) => {
+      projects.value = [...page.props.newProjects]
+    }
+  })
+}
 
 </script>
 
@@ -507,8 +512,11 @@ const addNewProject = () => {
 
             <button
               class="btn btn-primary"
+              type="button"
               @click="addNewProject"
-            >Add 
+              :disabled="form.processing"
+            > 
+            Add
             </button>
           </div>
 
@@ -653,15 +661,23 @@ const addNewProject = () => {
                           d="M19 9l-7 7-7-7"></path>
                   </svg>
               </div>
-              <div class="custom-select-dropdown border border-1-black border p-2 rounded-sm max-h-40 overflow-y-auto" v-show="isProjectDropdownOpen">
-                  <div class="dropdown-search">
-                      <input type="text" v-model="projectSearchQuery"
-                          placeholder="Search/Input project..."
-                          class="text-sm border border-1-black border p-2 rounded-sm w-full" @click.stop />
+              <div class="custom-select-dropdown border border-1-black border p-2 rounded-sm" v-show="isProjectDropdownOpen">
+                  <div class="dropdown-search flex items-center gap-2">
+                    <input 
+                        type="text" 
+                        v-model="projectSearchQuery"
+                        placeholder="Search/Input project..."
+                        class="text-sm border border-1-black p-2 rounded-sm w-full"
+                        @click.stop
+                    />
 
-                      
-                  </div>
-                  <div class="dropdown-options-list requisition-list">
+                    <div 
+                        class="!text-white text-lg font-bold bg-[#1C7BA5] flex justify-center items-center cursor-pointer rounded-md px-2 py-1"
+                        @click="modalVisible = true">
+                        +
+                    </div>
+                </div>
+                  <div class="dropdown-options-list requisition-list max-h-40 overflow-y-auto">
                       <div v-for="project in filteredProjects" :key="project.id"
                           class="dropdown-option-item" :class="{ 'is-selected': form.project_id === project.id }"
                           @click="selectProject(project)">
@@ -671,11 +687,7 @@ const addNewProject = () => {
                           class="dropdown-empty-item text-gray-500 flex justify-center items-center">
                           No project found
                       </div>
-                      <div 
-                        class="mt-2 mb-3 !text-white bg-[#1C7BA5] option-main flex justify-center items-center cursor-pointer rounded-md w-23 max-w-xs px-.5 py-1.5 mx-auto"
-                        @click="modalVisible = true">
-                        Add Project
-                      </div><br>
+                      <br>
                   </div>
               </div>
           </div>
@@ -684,83 +696,79 @@ const addNewProject = () => {
           </span>
         </div>
 
-
-
-
-
         <!-- Business Unit -->
-<div class="form-field">
-  <label class="text-sm font-semibold mb-1 text-bold">
-    Business Unit <label class="text-red-500">*</label>
-  </label>
+        <div class="form-field">
+          <label class="text-sm font-semibold mb-1 text-bold">
+            Business Unit <label class="text-red-500">*</label>
+          </label>
 
-  <div class="custom-select-wrapper" :class="{ 'is-open': isBusinessUnitDropdownOpen }">
-    
-    <!-- Dropdown Button -->
-    <div
-      class="border p-2 rounded w-full flex items-center justify-between cursor-pointer bg-white"
-      @click="toggleBusinessUnitDropdown"
-      tabindex="0"
-    >
-      <span class="custom-select-value text-sm">
-        {{ selectedBusinessUnitLabel || 'Select Business Unit' }}
-      </span>
+          <div class="custom-select-wrapper" :class="{ 'is-open': isBusinessUnitDropdownOpen }">
+            
+            <!-- Dropdown Button -->
+            <div
+              class="border p-2 rounded w-full flex items-center justify-between cursor-pointer bg-white"
+              @click="toggleBusinessUnitDropdown"
+              tabindex="0"
+            >
+              <span class="custom-select-value text-sm">
+                {{ selectedBusinessUnitLabel || 'Select Business Unit' }}
+              </span>
 
-      <svg class="custom-select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M19 9l-7 7-7-7"></path>
-      </svg>
-    </div>
+              <svg class="custom-select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
 
-    <!-- Dropdown -->
-    <div
-      class="custom-select-dropdown border p-2 rounded-sm max-h-40 overflow-y-auto"
-      v-show="isBusinessUnitDropdownOpen"
-    >
+            <!-- Dropdown -->
+            <div
+              class="custom-select-dropdown border p-2 rounded-sm"
+              v-show="isBusinessUnitDropdownOpen"
+            >
 
-      <!-- (Optional search input if you want later) -->
-      <div class="dropdown-search">
-        <input
-          type="text"
-          v-model="businessUnitSearchQuery"
-          placeholder="Search business unit..."
-          class="text-sm border p-2 rounded-sm w-full"
-          @click.stop
-        />
-      </div>
+              <!-- (Optional search input if you want later) -->
+              <div class="dropdown-search">
+                <input
+                  type="text"
+                  v-model="businessUnitSearchQuery"
+                  placeholder="Search business unit..."
+                  class="text-sm border p-2 rounded-sm w-full"
+                  @click.stop
+                />
+              </div>
 
-      <!-- Options -->
-      <div class="dropdown-options-list requisition-list">
-        
-        <div
-          v-for="unit in filteredBusinessUnit"
-          :key="unit.id"
-          class="dropdown-option-item"
-          :class="{ 'is-selected': form.business_unit_id === unit.id }"
-          @click="selectBusinessUnit(unit)"
-        >
-          <div class="option-main">
-            {{ unit.business_unit }}
+              <!-- Options -->
+              <div class="dropdown-options-list requisition-list max-h-40 overflow-y-auto">
+                
+                <div
+                  v-for="unit in filteredBusinessUnit"
+                  :key="unit.id"
+                  class="dropdown-option-item"
+                  :class="{ 'is-selected': form.business_unit_id === unit.id }"
+                  @click="selectBusinessUnit(unit)"
+                >
+                  <div class="option-main">
+                    {{ unit.business_unit }}
+                  </div>
+                </div><br>
+
+                <!-- Empty state -->
+                <div
+                  v-if="filteredBusinessUnit.length === 0"
+                  class="dropdown-empty-item text-gray-500 flex justify-center items-center"
+                >
+                  No business unit found
+                </div>
+
+              </div>
+            </div>
           </div>
-        </div><br>
 
-        <!-- Empty state -->
-        <div
-          v-if="filteredBusinessUnit.length === 0"
-          class="dropdown-empty-item text-gray-500 flex justify-center items-center"
-        >
-          No business unit found
+          <!-- Error -->
+          <span v-if="page.props.errors?.business_unit_id" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.business_unit_id }}
+          </span>
         </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- Error -->
-  <span v-if="page.props.errors?.business_unit_id" class="text-red-600 text-xs mt-1">
-    {{ page.props.errors.business_unit_id }}
-  </span>
-</div>
 
 
 

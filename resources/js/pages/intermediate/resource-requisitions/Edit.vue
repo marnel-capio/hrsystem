@@ -377,12 +377,167 @@ onMounted(() => {
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 2); 
 const tomorrowISOString = tomorrow.toISOString().slice(0, 10); 
+
+
+// Add these near the top of your script section
+const isProjectDropdownOpen = ref(false)
+const projectSearchQuery = ref('')
+
+const toggleProjectDropdown = () => {
+  isProjectDropdownOpen.value = !isProjectDropdownOpen.value
+}
+
+const selectProject = (project: any) => {
+  form.value.project_id = project.id;
+  form.value.project_description = project.project_description;
+  isProjectDropdownOpen.value = false; 
+  projectSearchQuery.value = '';       
+};
+
+// label for selected project
+const selectedProjectLabel = computed(() => {
+  const project = projects.value.find(
+    (p) => p.id === Number(form.value.project_id)
+  )
+  return project ? project.project_name : ''
+})
+
+// filtered list
+const filteredProjects = computed(() => {
+  if (!projectSearchQuery.value) return projects.value
+
+  return projects.value.filter((p) =>
+    (p?.project_name ?? '')
+      .toLowerCase()
+      .includes(projectSearchQuery.value.toLowerCase())
+  )
+})
+
+onMounted(() => {
+  if (form.value.project_id) {
+    const project = props.newProjects.find(
+      p => p.id === Number(form.value.project_id)
+    )
+    if (project) {
+      form.value.project_description = project.project_description
+    }
+  }
+  
+})
+
+
+const projects = ref([...props.newProjects])
+const editProject = ref({
+  project_name: '',
+  project_description: ''
+});
+const modalVisible = ref(false)
+const editingProject = ref<any>(null)
+const openEditProject = (project: any) => {
+  editingProject.value = { ...project }
+  modalVisible.value = true
+}
+
+
+const showToast = ref(false);
+const toastMessage = ref<string | null>(null);
+const toastType = ref<'success' | 'error'>('success');
+
+const successMessage = computed(() => page.props.flash?.success);
+
+const closeToast = () => {
+    showToast.value = false;
+};
+
+watch(
+    successMessage,
+    (val) => {
+        if (val) {
+            toastMessage.value = val;
+            toastType.value = 'success';
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 5000);
+        }
+    },
+    { immediate: true },
+);
+
+
+const updateProject = () => {
+  if (!editingProject.value) return
+
+  if (!validateEditProject()) return
+
+  router.post(`/intermediate/projects/${editingProject.value.id}/update`, {
+    project_name: editingProject.value.project_name,
+    project_description: editingProject.value.project_description,
+  }, {
+    onSuccess: () => {
+      modalVisible.value = false
+      editingProject.value = null
+      refreshDropdownContents()
+    },
+    onFinish: () => {
+      form.value.processing = false
+      loading.value = false
+    },
+    onError: (errors) => {
+      editProjectErrors.value = errors
+      modalVisible.value = true
+    }
+  })
+}
+
+const editProjectErrors = ref<any>({})
+
+const validateEditProject = () => {
+  editProjectErrors.value = {}
+
+  if (!editingProject.value.project_name) {
+    editProjectErrors.value.project_name = "This field is required."
+  }
+
+  if (editingProject.value.project_name?.length > 20) {
+    editProjectErrors.value.project_name = "This field exceeds the maximum allowed length."
+  }
+
+  if (editingProject.value.project_description?.length > 1024) {
+    editProjectErrors.value.project_description = "This field exceeds the maximum allowed length."
+  }
+
+  return Object.keys(editProjectErrors.value).length === 0
+}
+
+const refreshDropdownContents = () => {
+  router.reload({
+  only: ['newProjects'],
+  onSuccess: (page: any) => {
+    projects.value = [...page.props.newProjects]
+  }
+})
+}
+
 </script>
 
 <template>
   <Head title="Resource Requisition Register" />
 
   <AppLayout :errors="page.props.errors">
+    <div v-if="showToast" class="full-width-alert">
+            <div
+                :class="[
+                    'alert-banner',
+                    toastType === 'success'
+                        ? 'alert-success-banner'
+                        : 'alert-error-banner',
+                ]"
+            >
+                <div class="alert-body">{{ toastMessage }}</div>
+                <button type="button" class="close-btn" @click="closeToast">
+                    ×
+                </button>
+            </div>
+        </div>
 
   <div class="w-3/4 mx-auto">
 
@@ -393,6 +548,64 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
     <!-- Form container -->
     <div class="text-xs overflow-x-auto mt-6 p-6 bg-white shadow-lg rounded-lg border">
       <p class="text-red-500 mb-10 mt-4"><b>Note:</b> This Resource Requisition is already approved by SR Manager.</p>
+      
+      <!-- PROJECT MODAL -->
+      <div
+        v-if="modalVisible"
+        class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 text-sm"
+      >
+        <div class="bg-white w-1/3 rounded-lg shadow-lg p-6 relative">
+
+          <span class="absolute top-2 right-3 text-black cursor-pointer text-sm" @click="modalVisible = false; editingProject = null">
+            ✕
+          </span>
+
+          <h2 class="text-lg font-bold mb-4">Edit Project</h2>
+
+          <div class="mb-4">
+            <label class="text-sm font-bold">Project Name <label class="text-red-500">*</label></label>
+            <input
+              v-model="editingProject.project_name"
+              class="modal-input border p-2 rounded w-full"
+              placeholder="Project Name"
+            />
+            <span v-if="editProjectErrors.project_name" class="text-red-500 text-xs">
+              {{ editProjectErrors.project_name }}
+            </span>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-sm">Project Description</label>
+            <textarea
+              v-model="editingProject.project_description"
+              class="modal-textarea border p-2 rounded w-full"
+              placeholder="Project Description (optional)"
+            ></textarea>
+            <span v-if="editProjectErrors.project_description" class="text-red-500 text-xs">
+              {{ editProjectErrors.project_description }}
+            </span>
+            
+          </div>
+
+          <div class="flex justify-end gap-2 mt-6">
+            <button class="btn-secondary" 
+            @click="modalVisible = false; editingProject = null">
+              Cancel
+            </button>
+
+            <button
+              class="btn btn-primary"
+              type="button"
+              :disabled="form.processing"
+              @click="updateProject"
+            > 
+            Update
+            </button>
+          </div>
+
+        </div>
+      </div>
+      
       <!-- Engagement Type, Sourcing Type, Request Type -->
       <div class="grid grid-cols-3 gap-5">
         <!-- Engagement Type -->
@@ -507,15 +720,65 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Project, Business Unit -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <!-- Project (Dropdown) -->
-        <div class="flex flex-col">
-          <label class="text-sm font-semibold mb-1 text-bold">Project <label class="text-red-500">*</label></label>
-          <input
-            v-model="requisition.project_name"
-            type="text"
-            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
-            placeholder="Enter Project Name"
-          />
+        <div class="form-field">
+          <label class="text-sm font-bold mb-1">Project<label class="text-red-500">*</label></label>
+          <div class="custom-select-wrapper"
+              :class="{ 'is-open': isProjectDropdownOpen }">
+              <div class="border p-2 rounded w-full flex items-center justify-between cursor-pointer bg-white"
+                  @click="toggleProjectDropdown" tabindex="0">
+                  <span class="custom-select-value text-sm">
+                      {{ selectedProjectLabel || 'Select Project' }}
+                  </span>
+                  <svg class="custom-select-arrow" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 9l-7 7-7-7"></path>
+                  </svg>
+              </div>
+              <div class="custom-select-dropdown border border-1-black border p-2 rounded-sm " v-show="isProjectDropdownOpen">
+                  <div class="dropdown-search">
+                      <input type="text" v-model="projectSearchQuery"
+                          placeholder="Search/Input project..."
+                          class="text-sm border border-1-black border p-2 rounded-sm w-full" @click.stop />
+                  </div>
+                  <div class="dropdown-options-list requisition-list">
+                      <div v-for="project in filteredProjects" :key="project.id"
+                          class="dropdown-option-item flex items-center justify-between"
+                          :class="{ 'is-selected': form.project_id === project.id }"
+                          @click="selectProject(project)">
+
+                        <div class="option-main">
+                          {{ project.project_name }}
+                        </div>
+
+                        <!-- Pen icon -->
+                        <svg
+                          class="w-4 h-4 text-red-500 hover:text-red-800 cursor-pointer"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          @click.stop="openEditProject(project)"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11 16l-4 1 1-4 9.586-9.586z"
+                          />
+                        </svg>
+                      </div>
+                      <div v-if="filteredProjects.length === 0"
+                          class="dropdown-empty-item text-gray-500 flex justify-center items-center">
+                          No project found
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <span v-if="page.props.errors?.project_id" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.project_id }}
+          </span>
         </div>
+
 
         <!-- Business Unit -->
         <div class="flex flex-col">
@@ -532,7 +795,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="flex flex-col mt-5">
         <label class="text-sm mb-1">Project Description</label>
         <textarea
-          v-model="requisition.project_description"
+          v-model="form.project_description"
           placeholder="Project description will auto-fill based on Project selection"
           class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed"
           readonly
@@ -782,5 +1045,63 @@ button[type="submit"]:disabled {
 
 .btn-secondary:hover {
   background: #e5e7eb;
+}
+
+/* Add these styles to your style section */
+.custom-select-wrapper {
+  position: relative;
+}
+
+.custom-select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-select-arrow {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s;
+}
+
+.is-open .custom-select-arrow {
+  transform: rotate(180deg);
+}
+
+.custom-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: white;
+  margin-top: 0.25rem;
+}
+
+.dropdown-search {
+  padding: 0.25rem;
+}
+
+.dropdown-options-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-option-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.dropdown-option-item:hover {
+  background-color: #f3f4f6;
+}
+
+.is-selected {
+  background-color: #e5e7eb;
+}
+
+.dropdown-empty-item {
+  padding: 0.5rem 1rem;
+  font-style: italic;
 }
 </style>

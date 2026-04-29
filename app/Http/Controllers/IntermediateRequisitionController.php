@@ -218,10 +218,11 @@ class IntermediateRequisitionController extends Controller
     public function edit($id)
     {
         $requisition = IntermediateRequisitionModel::with('businessUnit')->findOrFail($id);
-
+        $projects = IntermediateProjectModel::getProjects(); // Same method used in create()
     
         return Inertia::render('intermediate/resource-requisitions/Edit', [
             'requisition' => $requisition,
+            'newProjects' => $projects, // Add this line
             'businessUnits' => BusinessUnitModel::all(),
             'user_permissions' => auth()->user()->permissions,
         ]);
