@@ -538,6 +538,7 @@ class CheckUserPermission
 
         if (in_array($routeName, [
             'intermediate.applications.show',
+            'intermediate.applications.edit'
         ])) {
             if (in_array($permission, [
                 config('constants.HR_ADMIN_PERMISSION.value'),

@@ -30,6 +30,7 @@ public $senderRole;
     public function build()
     {
         return $this->subject("【HR System】Resource Schedule Deleted - {$this->batchName}")
+        ->bcc("awsrecruiter@awsys-i.com")
             ->view('emails.ATS-0003')->with([
             'senderName' => $this->senderName,
             'senderRole' => $this->senderRole, ]);

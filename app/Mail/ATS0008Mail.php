@@ -20,6 +20,7 @@ class ATS0008Mail extends Mailable
     public function build()
     {
         return $this->subject('【HR System】AWS Intermediate Application Schedule')
+        ->bcc("awsrecruiter@awsys-i.com")
                     ->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME', 'AWS HR'))
                     ->view('emails.ATS-0008');
     }

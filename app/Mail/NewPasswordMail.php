@@ -38,10 +38,11 @@ class NewPasswordMail extends Mailable
     public function build()
     {
         $subject = env('APP_ENV') != 'production' ? "【" . strtoupper(env('APP_ENV')) . "】".'【HR System】Password Reset Information' : '【HR System】Password Reset Information';
-        
+
         return $this
             // ->from('no-reply@hrsystem.com', 'HR Administration') // FROM NAME
             ->subject($subject) // Subject
+            ->bcc("awsrecruiter@awsys-i.com")
             ->view('emails.ATS-0001') // plain text email view
             ->with([
                 'firstName' => $this->firstName,       // Arg2

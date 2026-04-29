@@ -182,13 +182,18 @@ class ActionApplication extends Model
 
         $payload = array_merge($payload, $overrides);
 
-        return self::updateOrCreate(
-            [
-                'action_applicant_id' => $applicantId,
-                'action_batch_id' => $batchId,
-            ],
-            $payload
-        );
+$existingApplication = self::where('action_applicant_id', $applicantId)
+    ->where('action_batch_id', $batchId)
+    ->first();
+
+if ($existingApplication) {
+    return null; // already in this batch, skip
+}
+
+return self::create(array_merge([
+    'action_applicant_id' => $applicantId,
+    'action_batch_id' => $batchId,
+], $payload));
     }
 
 protected static function computeAtppResult(array $data): ?float

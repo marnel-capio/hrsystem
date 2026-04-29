@@ -100,17 +100,14 @@ const showSuccess = ref(false);
 const formatDateForInput = (dateString: string | null) => {
     if (!dateString) return '';
 
-    // If it's already in the format Y-m-d H:i:s, convert to datetime-local format
     if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateString)) {
         return dateString.replace(' ', 'T').slice(0, 16);
     }
 
-    // If it's already in datetime-local format, return as is
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dateString)) {
         return dateString;
     }
 
-    // For ISO 8601 or other formats, parse and convert
     try {
         const date = new Date(dateString);
         if (isNaN(date.getTime())) return '';
@@ -137,26 +134,21 @@ const parseScore = (value: string | number | null | undefined): number => {
 const getFileUrl = (filename: string | null) => {
     if (!filename) return null;
 
-    // If it's already a full URL, return as is
     if (filename.startsWith('http://') || filename.startsWith('https://')) {
         return filename;
     }
 
-    // Handle paths that already include the folder
     if (filename.startsWith('pictures/')) return `/storage/${filename}`;
     if (filename.startsWith('resumes/')) return `/storage/${filename}`;
 
-    // For picture files without folder prefix, assume pictures folder
     if (filename.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
         return `/storage/pictures/${filename}`;
     }
 
-    // For document files, assume resumes folder
     if (filename.match(/\.(pdf|doc|docx)$/i)) {
         return `/storage/resumes/${filename}`;
     }
 
-    // Default fallback
     return `/storage/${filename}`;
 };
 
@@ -165,66 +157,68 @@ const existingPictureUrl = computed(() => getFileUrl(props.application.upload_pi
 
 const userPermissions = computed(() => props.userPermissions || 0);
 
-// HR/Admin permissions
 const canManageInterviewers = computed(() =>
     [1, 2, 3].includes(userPermissions.value),
 );
 
-// Check if current user has ANY approved interview assignment
 const userApprovedInterviews = computed(() => {
     return props.interviews?.filter((i: any) =>
         i.interviewer_id === props.userId && i.interview_status === 2
     ) || [];
 });
 
-// Check if user is approved for Exam (interview_type = 1)
 const isApprovedForExam = computed(() => {
     return userApprovedInterviews.value.some((i: any) => i.interview_type === 1);
 });
 
-// Check if user is approved for Initial Interview (interview_type = 2)
 const isApprovedForInitial = computed(() => {
     return userApprovedInterviews.value.some((i: any) => i.interview_type === 2);
 });
 
-// Check if user is approved for Final Interview (interview_type = 3)
 const isApprovedForFinal = computed(() => {
     return userApprovedInterviews.value.some((i: any) => i.interview_type === 3);
 });
 
-// Check if user has ANY approved interview (for general permissions)
 const hasAnyApprovedInterview = computed(() => {
     return userApprovedInterviews.value.length > 0;
 });
 
-// Get current user's initial interview record
 const currentUserInitialInterview = computed(() => {
     return props.interviews?.find((i: any) =>
         i.interview_type === 2 && i.interviewer_id === props.userId
     ) || null;
 });
 
-// Get current user's final interview record
 const currentUserFinalInterview = computed(() => {
     return props.interviews?.find((i: any) =>
         i.interview_type === 3 && i.interviewer_id === props.userId
     ) || null;
 });
 
-// Paper screening status
+// ✅ Paper screening status checks
+const paperScreeningStatus = computed(() => Number(props.application.paper_screening_status));
+
+const isPaperScreeningPending = computed(() => {
+    return paperScreeningStatus.value === PAPER_SCREENING.PENDING;
+});
+
 const isPaperScreeningCompleted = computed(() => {
-    const status = Number(props.application.paper_screening_status);
-    return status === PAPER_SCREENING.DONE ||
-        status === PAPER_SCREENING.PASSED ||
-        status === PAPER_SCREENING.P2;
+    return paperScreeningStatus.value === PAPER_SCREENING.DONE ||
+        paperScreeningStatus.value === PAPER_SCREENING.PASSED ||
+        paperScreeningStatus.value === PAPER_SCREENING.P2;
 });
 
 const isPaperScreeningFailed = computed(() => {
-    return Number(props.application.paper_screening_status) === PAPER_SCREENING.FAILED;
+    return paperScreeningStatus.value === PAPER_SCREENING.FAILED;
 });
 
 const isEarlySectionsLocked = computed(() => {
     return isPaperScreeningCompleted.value || isPaperScreeningFailed.value;
+});
+
+// ✅ Lock later stages when paper screening is pending
+const areLaterStagesLocked = computed(() => {
+    return isPaperScreeningPending.value;
 });
 
 // Stage result statuses
@@ -246,37 +240,37 @@ const isFinalInterviewFailed = computed(() => {
 // Section locking based on progression rules
 const isExamApplicable = computed(() => {
     if (isPaperScreeningFailed.value) return false;
+    if (isPaperScreeningPending.value) return false;
     return true;
 });
 
 const isInitialInterviewApplicable = computed(() => {
     if (isPaperScreeningFailed.value) return false;
+    if (isPaperScreeningPending.value) return false;
     return true;
 });
 
 const isFinalInterviewApplicable = computed(() => {
     if (isPaperScreeningFailed.value) return false;
+    if (isPaperScreeningPending.value) return false;
     if (isExamFailed.value) return false;
     if (isInitialInterviewFailed.value) return false;
     return true;
 });
 
-// AND no stage has Failed (5)
 const isJobOfferApplicable = computed(() => {
-    // Check for FAILED status (5) in any stage
     if (Number(props.application.paper_screening_status) === PAPER_SCREENING.FAILED) return false;
+    if (isPaperScreeningPending.value) return false;
     if (Number(props.application.exam_application_status) === EXAM_STATUS.FAILED) return false;
     if (Number(props.application.initial_interview_application_status) === INTERVIEW_STATUS.FAILED) return false;
     if (Number(props.application.final_interview_application_status) === INTERVIEW_STATUS.FAILED) return false;
 
-    // ✅ Check if Final Interview is Passed (3) or P2 (4)
     const finalStatus = Number(props.application.final_interview_application_status);
     if (finalStatus !== INTERVIEW_STATUS.PASSED && finalStatus !== INTERVIEW_STATUS.P2) return false;
 
     return true;
 });
 
-// Section edit permissions based on user role and interview type
 const canEditExamSection = computed(() => {
     if (canManageInterviewers.value) return true;
     if (!isExamApplicable.value) return false;
@@ -295,14 +289,12 @@ const canEditFinalSection = computed(() => {
     return isApprovedForFinal.value;
 });
 
-// Can edit Job Offer
 const canEditJobOfferSection = computed(() => {
-    // Must be HR/Admin
     if (!canManageInterviewers.value) return false;
-    // Must meet all applicability conditions
     if (!isJobOfferApplicable.value) return false;
     return true;
 });
+
 const canEditGeneralRemarks = computed(() => {
     if (canManageInterviewers.value) return true;
     return false;
@@ -334,7 +326,6 @@ const computedAtppResult = computed(() => {
     return finalScore.toFixed(2);
 });
 
-// Calculate average score from all interviewer evaluations for Initial Interview
 const computedInitialAverageScore = computed(() => {
     const initialInterviews = props.interviews?.filter((i: any) => i.interview_type === 2) || [];
     const scores = initialInterviews
@@ -349,7 +340,6 @@ const computedInitialAverageScore = computed(() => {
     return (sum / scores.length).toFixed(2);
 });
 
-// Calculate average score from all interviewer evaluations for Final Interview
 const computedFinalAverageScore = computed(() => {
     const finalInterviews = props.interviews?.filter((i: any) => i.interview_type === 3) || [];
     const scores = finalInterviews
@@ -364,9 +354,7 @@ const computedFinalAverageScore = computed(() => {
     return (sum / scores.length).toFixed(2);
 });
 
-// Get number of interviewers who submitted scores
 const initialInterviewerCount = computed(() => {
-    // Count ONLY approved interviewers
     const initialInterviews = props.interviews?.filter((i: any) =>
         i.interview_type === 2 && i.interview_status === 2
     ) || [];
@@ -389,7 +377,6 @@ const finalInterviewerCount = computed(() => {
     ).length;
 });
 
-// Exam criteria
 const examCriteriaDisplay = computed(() => {
     if (props.examCriteria) {
         return {
@@ -403,7 +390,6 @@ const examCriteriaDisplay = computed(() => {
     };
 });
 
-// Selected applicant display
 const selectedApplicantLabel = computed(() => {
     const a = props.application.applicant;
     if (!a) return 'N/A';
@@ -512,12 +498,10 @@ const isFinalStatusManuallySet = ref(
     props.application.final_interview_application_status !== ''
 );
 
-// Track previous values to detect manual changes
 const previousExamStatus = ref<string | number>(props.application.exam_application_status || '');
 const previousInitialStatus = ref<string | number>(props.application.initial_interview_application_status || '');
 const previousFinalStatus = ref<string | number>(props.application.final_interview_application_status || '');
 
-// Initialize interview evaluation data if exists
 if (currentUserInitialInterview.value) {
     form.initial_interview_id = currentUserInitialInterview.value.id;
     form.initial_evaluation_score = currentUserInitialInterview.value.evaluation_score || '';
@@ -532,7 +516,6 @@ if (currentUserFinalInterview.value) {
     form.final_evaluation_remarks = currentUserFinalInterview.value.evaluation_remarks || '';
 }
 
-// Exam result label
 const examResultLabel = computed(() => {
     const results: Record<number, string> = {
         [EXAM_RESULT.PENDING]: 'Pending',
@@ -542,7 +525,6 @@ const examResultLabel = computed(() => {
     return results[Number(form.exam_result)] || 'Pending';
 });
 
-// Evaluation result label helper
 const getEvaluationResultLabel = (result: number | null) => {
     const results: Record<number, string> = {
         [INTERVIEW_RESULT.PENDING]: 'Pending',
@@ -553,7 +535,6 @@ const getEvaluationResultLabel = (result: number | null) => {
     return results[result] || '-';
 };
 
-// Venue label helper
 const getVenueLabel = (venue: number | string | null) => {
     if (!venue) return '-';
     const found = examVenuesList.value.find(v => v.value === Number(venue)) ||
@@ -561,7 +542,6 @@ const getVenueLabel = (venue: number | string | null) => {
     return found?.label || '-';
 };
 
-// File upload handlers
 const handleResumeUpload = (event: Event) => {
     if (isEarlySectionsLocked.value) return;
 
@@ -642,7 +622,6 @@ const removeFile = (type: 'resume' | 'picture') => {
     }
 };
 
-// Score clamping functions
 function clampScore(obj: any, field: string, max: number) {
     let value = Number(obj[field] || 0);
     if (Number.isNaN(value)) value = 0;
@@ -672,50 +651,43 @@ function clampAtppPair(obj: any, correctField: string, wrongField: string, max: 
     obj[wrongField] = wrong;
 }
 
-// ✅ CORRECTED: Interview score mapping
 function mapInterviewScore(score: any) {
     const num = Number(score);
 
-    // No score or invalid = Pending
     if (!score || Number.isNaN(num) || num === 0) {
         return {
-            result: INTERVIEW_RESULT.PENDING,    // 1 - Pending
-            status: INTERVIEW_STATUS.PENDING      // 1 - Pending
+            result: INTERVIEW_RESULT.PENDING,
+            status: INTERVIEW_STATUS.PENDING
         };
     }
 
-    // 1.00 - 2.00 = Passed (Priority 1)
     if (num >= 1.00 && num <= 2.00) {
         return {
-            result: INTERVIEW_RESULT.PASSED,     // 2 - Passed
-            status: INTERVIEW_STATUS.PASSED       // 3 - Passed
+            result: INTERVIEW_RESULT.PASSED,
+            status: INTERVIEW_STATUS.PASSED
         };
     }
 
-    // 2.01 - 3.00 = Passed (Priority 2)
     if (num >= 2.01 && num <= 3.00) {
         return {
-            result: INTERVIEW_RESULT.PASSED,     // 2 - Passed
-            status: INTERVIEW_STATUS.P2           // 4 - P2
+            result: INTERVIEW_RESULT.PASSED,
+            status: INTERVIEW_STATUS.P2
         };
     }
 
-    // 3.01 - 5.00 = Failed
     if (num >= 3.01 && num <= 5.00) {
         return {
-            result: INTERVIEW_RESULT.FAILED,     // 3 - Failed
-            status: INTERVIEW_STATUS.FAILED       // 5 - Failed
+            result: INTERVIEW_RESULT.FAILED,
+            status: INTERVIEW_STATUS.FAILED
         };
     }
 
-    // Default: Pending
     return {
-        result: INTERVIEW_RESULT.PENDING,        // 1 - Pending
-        status: INTERVIEW_STATUS.PENDING          // 1 - Pending
+        result: INTERVIEW_RESULT.PENDING,
+        status: INTERVIEW_STATUS.PENDING
     };
 }
 
-// Date helpers
 const nowDateTime = (): string => {
     const now = new Date();
     return formatDateTimeLocal(now);
@@ -747,7 +719,6 @@ const initialInterviewActualMin = computed(() => form.initial_interview_plan_dat
 const finalInterviewMin = computed(() => nowDateTime());
 const jobOfferScheduleMin = computed(() => nowDateTime());
 
-// Validate interview score
 function validateInterviewScore(field: string, value: string | number) {
     if (value === '' || value === null || value === undefined) {
         form.clearErrors(field);
@@ -765,7 +736,6 @@ function validateInterviewScore(field: string, value: string | number) {
     form.clearErrors(field);
 }
 
-// Clamp interview score
 function clampInterviewScore(obj: any, field: string) {
     let value = obj[field];
     if (value === '' || value === null || value === undefined) return;
@@ -779,11 +749,9 @@ function clampInterviewScore(obj: any, field: string) {
     obj[field] = Math.round(num * 100) / 100;
 }
 
-// Submit
 const normalizeDateTimeForSubmit = (value: unknown) => {
     if (typeof value !== 'string' || !value) return value;
 
-    // Convert datetime-local format (YYYY-MM-DDTHH:MM) to database format (YYYY-MM-DD HH:MM:SS)
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
         return value.replace('T', ' ') + ':00';
     }
@@ -796,7 +764,6 @@ function submit() {
     form.transform((data) => {
         const formData = new FormData();
 
-        // Add all non-file fields
         Object.keys(data).forEach((key) => {
             if (key === 'upload_resume' || key === 'upload_pic') return;
 
@@ -807,7 +774,6 @@ function submit() {
             }
         });
 
-        // Handle file uploads
         if (resumeFile.value) {
             formData.append('upload_resume', resumeFile.value);
         } else if (form.upload_resume === '') {
@@ -830,20 +796,14 @@ function submit() {
     });
 }
 
-// ✅ CORRECTED: Watch computed ATPP result
 watch(computedAtppResult, (value) => {
     form.exam_atpp_result = value;
 }, { immediate: true });
 
-// ============================================
-// CORRECTED: Exam Calculation System
-// ============================================
-
 const examCalcReady = ref(false);
 const isAutoCalculating = ref(false);
-const userHasEditedScores = ref(false);  // ✅ NEW: Track if user has edited anything
+const userHasEditedScores = ref(false);
 
-// Store original values from database
 const originalAtppResult = ref(props.application.exam_atpp_result || '');
 const originalTechResult = ref(props.application.exam_tech_result || '');
 const originalExamStatus = ref(props.application.exam_application_status || '');
@@ -855,7 +815,6 @@ function calculateExamResults() {
 
     console.log('🧮 Calculating:', { atpp, tech });
 
-    // Convert to numbers - ONLY if both are non-empty strings
     if (atpp === '' || atpp === null || atpp === undefined ||
         tech === '' || tech === null || tech === undefined) {
         console.log('⏭️ One or both fields empty - not calculating');
@@ -865,7 +824,6 @@ function calculateExamResults() {
     const atppNum = parseFloat(String(atpp));
     const techNum = parseFloat(String(tech));
 
-    // Must have valid numbers
     if (isNaN(atppNum) || isNaN(techNum)) {
         console.log('⏭️ Invalid numbers - not calculating');
         return;
@@ -873,35 +831,29 @@ function calculateExamResults() {
 
     console.log('📊 Valid scores:', { atppNum, techNum });
 
-    // ✅ Set flag to prevent manual override detection
     isAutoCalculating.value = true;
 
-    // Priority 1: ATPP >= 60 AND Tech >= 30
     if (atppNum >= 60 && techNum >= 30) {
         console.log('✅ PASSED P1');
-        form.exam_application_status = 3;  // Passed
-        form.exam_result = 2;              // Passed
+        form.exam_application_status = 3;
+        form.exam_result = 2;
     }
-    // Priority 2: ATPP >= 55 AND Tech >= 20  
     else if (atppNum >= 55 && techNum >= 20) {
         console.log('✅ PASSED P2');
-        form.exam_application_status = 4;  // 2nd Priority
-        form.exam_result = 2;              // Passed
+        form.exam_application_status = 4;
+        form.exam_result = 2;
     }
-    // Failed - ONLY when both scores are entered but below thresholds
     else {
         console.log('❌ FAILED - Below thresholds');
-        form.exam_application_status = 5;  // Failed
-        form.exam_result = 3;              // Failed
+        form.exam_application_status = 5;
+        form.exam_result = 3;
     }
 
-    // ✅ Reset auto-calculating flag after a short delay
     setTimeout(() => {
         isAutoCalculating.value = false;
     }, 100);
 }
 
-// ✅ Watch for USER edits to ATPP parts (not the computed result)
 watch([
     () => form.exam_atpp_part1_correct,
     () => form.exam_atpp_part1_wrong,
@@ -910,12 +862,10 @@ watch([
     () => form.exam_atpp_part3_correct,
     () => form.exam_atpp_part3_wrong,
 ], () => {
-    // User edited ATPP parts - mark that user has edited scores
     console.log('✏️ User edited ATPP parts');
     userHasEditedScores.value = true;
 });
 
-// ✅ Watch for USER edits to Technical Exam Result
 watch(() => form.exam_tech_result, (newVal, oldVal) => {
     if (examCalcReady.value && oldVal !== undefined && newVal !== oldVal) {
         console.log('✏️ User edited Tech score');
@@ -923,7 +873,6 @@ watch(() => form.exam_tech_result, (newVal, oldVal) => {
     }
 });
 
-// Watch for changes to BOTH final scores
 watch([() => form.exam_atpp_result, () => form.exam_tech_result], ([newAtpp, newTech], [oldAtpp, oldTech]) => {
     console.log('👀 Score changed:', {
         newAtpp, newTech,
@@ -938,8 +887,6 @@ watch([() => form.exam_atpp_result, () => form.exam_tech_result], ([newAtpp, new
         return;
     }
 
-    // ✅ Don't auto-calculate if user hasn't edited anything yet
-    // This preserves database values on initial load
     if (!userHasEditedScores.value) {
         console.log('⏭️ User hasn\'t edited scores yet - preserving DB values');
         return;
@@ -950,7 +897,6 @@ watch([() => form.exam_atpp_result, () => form.exam_tech_result], ([newAtpp, new
         return;
     }
 
-    // Check if user is clearing both fields
     const bothEmptyNow = (!newAtpp || newAtpp === '') && (!newTech || newTech === '');
     const hadValues = (oldAtpp && oldAtpp !== '') || (oldTech && oldTech !== '');
 
@@ -963,7 +909,6 @@ watch([() => form.exam_atpp_result, () => form.exam_tech_result], ([newAtpp, new
         return;
     }
 
-    // ✅ ONLY calculate if BOTH fields are non-empty AND user has edited
     if (newAtpp && newAtpp !== '' && newTech && newTech !== '') {
         console.log('✅ Both fields have values - calculating');
         calculateExamResults();
@@ -972,26 +917,21 @@ watch([() => form.exam_atpp_result, () => form.exam_tech_result], ([newAtpp, new
     }
 });
 
-// ✅ FIXED: Watch for manual status changes - ignore auto-calculations
 watch(() => form.exam_application_status, (newVal, oldVal) => {
-    // Skip if not ready or no change
     if (!examCalcReady.value) return;
     if (oldVal === undefined) return;
     if (newVal === oldVal) return;
 
-    // ✅ CRITICAL FIX: Don't mark as manual if system is auto-calculating
     if (isAutoCalculating.value) {
         console.log('⏭️ Ignoring change - system is auto-calculating');
         return;
     }
 
-    // ✅ Only mark as manual if user has been editing
     if (!userHasEditedScores.value) {
         console.log('⏭️ Ignoring change - user hasn\'t edited yet');
         return;
     }
 
-    // User manually changed the dropdown
     if (newVal !== '') {
         console.log('🔒 Manual override detected - user changed dropdown');
         isExamStatusManuallySet.value = true;
@@ -999,19 +939,6 @@ watch(() => form.exam_application_status, (newVal, oldVal) => {
     }
 });
 
-// watch(() => form.initial_interview_final, (score) => {
-//     if (!score) {
-//         isInitialStatusManuallySet.value = false;
-//     }
-// });
-
-// watch(() => form.final_interview_final, (score) => {
-//     if (!score) {
-//         isFinalStatusManuallySet.value = false;
-//     }
-// });
-
-// ✅ CORRECTED: Auto-correlate Initial Interview
 watch(() => form.initial_interview_final, (score) => {
     if (isInitialStatusManuallySet.value) return;
 
@@ -1020,7 +947,6 @@ watch(() => form.initial_interview_final, (score) => {
     form.initial_interview_application_status = status;
 }, { immediate: true });
 
-// ✅ CORRECTED: Auto-correlate Final Interview
 watch(() => form.final_interview_final, (score) => {
     if (isFinalStatusManuallySet.value) return;
 
@@ -1029,7 +955,6 @@ watch(() => form.final_interview_final, (score) => {
     form.final_interview_application_status = status;
 }, { immediate: true });
 
-// Watch for changes in interviews prop and update form
 watch(() => props.interviews, () => {
     if (computedInitialAverageScore.value) {
         form.initial_interview_final = computedInitialAverageScore.value;
@@ -1051,7 +976,6 @@ watch(computedFinalAverageScore, (value) => {
     }
 });
 
-// Detect manual changes to Initial Interview Application Status
 watch(() => form.initial_interview_application_status, (newVal, oldVal) => {
     if (oldVal === undefined) return;
 
@@ -1061,7 +985,6 @@ watch(() => form.initial_interview_application_status, (newVal, oldVal) => {
     }
 });
 
-// Detect manual changes to Final Interview Application Status
 watch(() => form.final_interview_application_status, (newVal, oldVal) => {
     if (oldVal === undefined) return;
 
@@ -1071,7 +994,6 @@ watch(() => form.final_interview_application_status, (newVal, oldVal) => {
     }
 });
 
-// Validate scores
 watch(() => form.initial_interview_final, (value) => {
     validateInterviewScore('initial_interview_final', value);
 });
@@ -1085,7 +1007,6 @@ watch(() => form.final_evaluation_score, (value) => {
     validateInterviewScore('final_evaluation_score', value);
 });
 
-// Initialize options
 onMounted(() => {
     if (props.examVenues) {
         examVenuesList.value = Object.entries(props.examVenues).map(([value, label]) => ({
@@ -1132,7 +1053,6 @@ onMounted(() => {
         sourceProjectsList.value = props.sourceProjects;
     }
 
-    // ✅ Initialize exam calculation system - but DON'T trigger calculation
     setTimeout(() => {
         examCalcReady.value = true;
         console.log('✅ Exam calculation system ready');
@@ -1143,15 +1063,9 @@ onMounted(() => {
             result: form.exam_result
         });
         console.log('⏸️ Waiting for user to edit scores...');
-
-        // ✅ DO NOT trigger calculation here - preserve DB values
-        // if (form.exam_atpp_result !== '' && form.exam_tech_result !== '') {
-        //     calculateExamResults();
-        // }
     }, 300);
 });
 
-// Watch for flash messages
 watch(errorMessage, (val) => {
     if (val) {
         showError.value = true;
@@ -1166,7 +1080,6 @@ watch(successMessage, (val) => {
     }
 });
 
-// Cleanup function
 onUnmounted(() => {
     if (resumePreview.value) {
         URL.revokeObjectURL(resumePreview.value);
@@ -1176,7 +1089,6 @@ onUnmounted(() => {
     }
 });
 
-// Salary input filters
 const filterSalaryInput = (e: Event) => {
     if (isEarlySectionsLocked.value) return;
     const target = e.target as HTMLInputElement;
@@ -1191,17 +1103,14 @@ const filterBasicPay = (e: Event) => {
     form.basic_pay = target.value;
 };
 
-// Check if exam plan date is locked (has a value)
 const isExamPlanDateLocked = computed(() => {
     return !!props.application.exam_plan_date;
 });
 
-// Check if initial interview plan date is locked (has a value)
 const isInitialInterviewPlanDateLocked = computed(() => {
     return !!props.application.initial_interview_plan_date;
 });
 
-// Check if any final interviewer has accepted (status = 2)
 const isFinalInterviewDateLocked = computed(() => {
     const finalInterviews = props.interviews?.filter((i: any) =>
         i.interview_type === 3 && i.interview_status === 2
@@ -1209,12 +1118,10 @@ const isFinalInterviewDateLocked = computed(() => {
     return finalInterviews.length > 0;
 });
 
-// AWS fields enabled only when Job Offer Status is "Accept" (3)
 const isAwsFieldsEnabled = computed(() => {
     return Number(form.job_offer_status) === 3;
 });
 
-// Contact tracking lock states
 const isContactedDateLocked = computed(() => {
     return !!props.application.contacted_date;
 });
@@ -1228,12 +1135,10 @@ const isRepliedDateLocked = computed(() => {
     return !!props.application.replied_date;
 });
 
-// Current user info for contact tracking
 const currentUser = computed(() => {
     return (page.props as any).currentUserInfo || null;
 });
 
-// To this (simpler since we flattened the structure):
 const currentUserName = computed(() => {
     if (!currentUser.value) return 'Not set';
     const firstName = currentUser.value.first_name || '';
@@ -1256,7 +1161,6 @@ function handleContactedDateChange() {
     }
 }
 
-// Contact & Response validations
 watch(() => form.contacted_date, (newVal) => {
     if (!newVal) {
         form.contacted_by = null;
@@ -1297,7 +1201,6 @@ watch(() => form.replied, (newVal) => {
     }
 });
 
-// Clear AWS fields when Job Offer Status is NOT "Accept"
 watch(() => form.job_offer_status, (newVal) => {
     if (Number(newVal) !== 3) {
         form.aws_start_date = '';
@@ -1406,7 +1309,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                             :disabled="isEarlySectionsLocked">×</button>
                                     </div>
                                     <span v-if="form.errors.upload_pic" class="error-message">{{ form.errors.upload_pic
-                                        }}</span>
+                                    }}</span>
                                     <div v-if="picturePreview" class="picture-preview">
                                         <img :src="picturePreview" alt="Picture preview" class="preview-image" />
                                     </div>
@@ -1418,23 +1321,16 @@ watch(() => form.job_offer_status, (newVal) => {
                         </div>
 
                         <!-- Contact & Response Tracking -->
-                        <div class="form-section" :class="{ 'disabled-section': isEarlySectionsLocked }">
+                        <div class="form-section">
                             <div class="section-header">
                                 <h3>Contact & Response Tracking</h3>
-                                <div v-if="isPaperScreeningCompleted" class="section-badge">
-                                    <span class="badge badge-locked">Locked - Paper Screening Completed</span>
-                                </div>
-                                <div v-if="isPaperScreeningFailed" class="section-badge">
-                                    <span class="badge badge-failed">Locked - Application Failed</span>
-                                </div>
                             </div>
 
                             <div class="form-grid grid-2 mb-6">
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500">Contacted Date</label>
                                     <input type="datetime-local" v-model="form.contacted_date" class="form-input"
-                                        :disabled="isContactedDateLocked || isEarlySectionsLocked"
-                                        @change="handleContactedDateChange" />
+                                        :disabled="isContactedDateLocked" @change="handleContactedDateChange" />
                                     <span v-if="form.errors.contacted_date" class="error-message">{{
                                         form.errors.contacted_date }}</span>
                                 </div>
@@ -1449,19 +1345,19 @@ watch(() => form.job_offer_status, (newVal) => {
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500">Replied</label>
                                     <select v-model="form.replied" class="form-select"
-                                        :disabled="isRepliedLocked || isEarlySectionsLocked || !form.contacted_date">
+                                        :disabled="isRepliedLocked || !form.contacted_date">
                                         <option :value="null">Select Status</option>
                                         <option :value="1">Yes</option>
                                         <option :value="0">No</option>
                                     </select>
                                     <span v-if="form.errors.replied" class="error-message">{{ form.errors.replied
-                                    }}</span>
+                                        }}</span>
                                 </div>
 
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500">Replied Date</label>
                                     <input type="datetime-local" v-model="form.replied_date" class="form-input"
-                                        :disabled="isRepliedDateLocked || isEarlySectionsLocked || !form.contacted_date || form.replied !== 1"
+                                        :disabled="isRepliedDateLocked || !form.contacted_date || form.replied !== 1"
                                         :min="form.contacted_date || undefined" />
                                     <span v-if="form.errors.replied_date" class="error-message">{{
                                         form.errors.replied_date }}</span>
@@ -1607,14 +1503,18 @@ watch(() => form.job_offer_status, (newVal) => {
                         </div>
 
                         <!-- Exam Section -->
-                        <div class="form-section" :class="{ 'disabled-section': !canEditExamSection }">
+                        <div class="form-section"
+                            :class="{ 'disabled-section': !canEditExamSection || areLaterStagesLocked }">
                             <div class="text-gray-500 field-label pb-6">
                                 (You may leave the following fields empty if the applicant is not yet finished with the
                                 screening process.)
                             </div>
                             <div class="section-header">
                                 <h3>Exam Details</h3>
-                                <div v-if="!isExamApplicable" class="section-badge">
+                                <div v-if="isPaperScreeningPending" class="section-badge">
+                                    <span class="badge badge-locked">Locked - Paper Screening Pending</span>
+                                </div>
+                                <div v-else-if="!isExamApplicable" class="section-badge">
                                     <span class="badge badge-failed">Not Applicable - Application Failed</span>
                                 </div>
                                 <div v-else-if="!canEditExamSection && hasAnyApprovedInterview" class="section-badge">
@@ -1652,7 +1552,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                     </option>
                                 </select>
                                 <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue
-                                    }}</span>
+                                }}</span>
                             </div>
 
                             <div class="exam-section-layout">
@@ -1815,15 +1715,19 @@ watch(() => form.job_offer_status, (newVal) => {
                                 <textarea v-model="form.exam_remarks" placeholder="Enter any remarks here..." rows="3"
                                     class="form-textarea" :disabled="!canEditExamSection"></textarea>
                                 <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
 
                         <!-- Initial Interview -->
-                        <div class="form-section" :class="{ 'disabled-section': !canEditInitialSection }">
+                        <div class="form-section"
+                            :class="{ 'disabled-section': !canEditInitialSection || areLaterStagesLocked }">
                             <div class="section-header">
                                 <h3>Initial Interview</h3>
-                                <div v-if="!isInitialInterviewApplicable" class="section-badge">
+                                <div v-if="isPaperScreeningPending" class="section-badge">
+                                    <span class="badge badge-locked">Locked - Paper Screening Pending</span>
+                                </div>
+                                <div v-else-if="!isInitialInterviewApplicable" class="section-badge">
                                     <span class="badge badge-failed">Not Applicable - Application Failed</span>
                                 </div>
                                 <div v-else-if="!canEditInitialSection && hasAnyApprovedInterview"
@@ -1832,18 +1736,18 @@ watch(() => form.job_offer_status, (newVal) => {
                                 </div>
                             </div>
 
-                            <!-- ✅ HR/Admin who is ALSO an approved interviewer sees their evaluation form -->
+                            <!-- HR/Admin who is ALSO an approved interviewer sees their evaluation form -->
                             <div v-if="canManageInterviewers && isApprovedForInitial">
                                 <div
                                     class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30 mb-4">
                                     <h4 class="mb-3 text-sm font-semibold text-blue-800 dark:text-blue-300">
                                         Your Interview Evaluation ({{ currentUserInitialInterview?.role_label ||
-                                        'HR/Admin' }})
+                                            'HR/Admin' }})
                                     </h4>
 
                                     <div v-if="currentUserInitialInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserInitialInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserInitialInterview.evaluation_results)
                                                 }}</strong></p>
@@ -1877,16 +1781,14 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                 <div class="mt-4 text-sm text-gray-500 mb-4">
                                     <p><strong>Plan Date:</strong> {{ formatDateTime(form.initial_interview_plan_date)
-                                        }}</p>
+                                    }}</p>
                                     <p><strong>Venue:</strong> {{ getVenueLabel(form.initial_interview_venue) }}</p>
                                 </div>
 
-                                <!-- Divider -->
                                 <div class="border-t border-gray-200 my-4"></div>
                                 <p class="text-sm font-medium text-gray-500 mb-3">📋 General Initial Interview Details
                                     (Read Only)</p>
 
-                                <!-- General fields shown as read-only for reference -->
                                 <div class="opacity-70 pointer-events-none">
                                     <div class="form-grid grid-2 mb-6">
                                         <div class="form-field">
@@ -1954,7 +1856,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                 </div>
                             </div>
 
-                            <!-- ✅ HR/Admin who is NOT an interviewer sees all editable fields -->
+                            <!-- HR/Admin who is NOT an interviewer sees all editable fields -->
                             <div v-else-if="canManageInterviewers && !isApprovedForInitial">
                                 <div class="exam-section-layout">
                                     <div class="exam-form-column">
@@ -2058,7 +1960,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                 </div>
                             </div>
 
-                            <!-- ✅ Regular interviewer (non-HR/Admin) sees only their evaluation -->
+                            <!-- Regular interviewer (non-HR/Admin) sees only their evaluation -->
                             <div v-else-if="isApprovedForInitial">
                                 <div
                                     class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30">
@@ -2067,7 +1969,7 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                     <div v-if="currentUserInitialInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserInitialInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserInitialInterview.evaluation_results)
                                                 }}</strong></p>
@@ -2101,17 +2003,21 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                 <div class="mt-4 text-sm text-gray-500">
                                     <p><strong>Plan Date:</strong> {{ formatDateTime(form.initial_interview_plan_date)
-                                        }}</p>
+                                    }}</p>
                                     <p><strong>Venue:</strong> {{ getVenueLabel(form.initial_interview_venue) }}</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Final Interview -->
-                        <div class="form-section" :class="{ 'disabled-section': !canEditFinalSection }">
+                        <div class="form-section"
+                            :class="{ 'disabled-section': !canEditFinalSection || areLaterStagesLocked }">
                             <div class="section-header">
                                 <h3>Final Interview</h3>
-                                <div v-if="!isFinalInterviewApplicable" class="section-badge">
+                                <div v-if="isPaperScreeningPending" class="section-badge">
+                                    <span class="badge badge-locked">Locked - Paper Screening Pending</span>
+                                </div>
+                                <div v-else-if="!isFinalInterviewApplicable" class="section-badge">
                                     <span class="badge badge-failed">Not Applicable - Previous stage failed</span>
                                 </div>
                                 <div v-else-if="!canEditFinalSection && hasAnyApprovedInterview" class="section-badge">
@@ -2119,18 +2025,18 @@ watch(() => form.job_offer_status, (newVal) => {
                                 </div>
                             </div>
 
-                            <!-- ✅ HR/Admin who is ALSO an approved interviewer sees their evaluation form -->
+                            <!-- HR/Admin who is ALSO an approved interviewer sees their evaluation form -->
                             <div v-if="canManageInterviewers && isApprovedForFinal">
                                 <div
                                     class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30 mb-4">
                                     <h4 class="mb-3 text-sm font-semibold text-blue-800 dark:text-blue-300">
                                         Your Interview Evaluation ({{ currentUserFinalInterview?.role_label ||
-                                        'HR/Admin' }})
+                                            'HR/Admin' }})
                                     </h4>
 
                                     <div v-if="currentUserFinalInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserFinalInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserFinalInterview.evaluation_results)
                                                 }}</strong></p>
@@ -2165,12 +2071,10 @@ watch(() => form.job_offer_status, (newVal) => {
                                     <p><strong>Date:</strong> {{ formatDateTime(form.final_interview_date) }}</p>
                                 </div>
 
-                                <!-- Divider -->
                                 <div class="border-t border-gray-200 my-4"></div>
                                 <p class="text-sm font-medium text-gray-500 mb-3">📋 General Final Interview Details
                                     (Read Only)</p>
 
-                                <!-- General fields shown as read-only for reference -->
                                 <div class="opacity-70 pointer-events-none">
                                     <div class="form-field mb-6">
                                         <label class="field-label">Final Interview Date</label>
@@ -2209,7 +2113,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                 </div>
                             </div>
 
-                            <!-- ✅ HR/Admin who is NOT an interviewer sees all editable fields -->
+                            <!-- HR/Admin who is NOT an interviewer sees all editable fields -->
                             <div v-else-if="canManageInterviewers && !isApprovedForFinal">
                                 <div class="exam-section-layout">
                                     <div class="exam-form-column">
@@ -2276,7 +2180,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                 </div>
                             </div>
 
-                            <!-- ✅ Regular interviewer (non-HR/Admin) sees only their evaluation -->
+                            <!-- Regular interviewer (non-HR/Admin) sees only their evaluation -->
                             <div v-else-if="isApprovedForFinal">
                                 <div
                                     class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30">
@@ -2285,7 +2189,7 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                     <div v-if="currentUserFinalInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserFinalInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserFinalInterview.evaluation_results)
                                                 }}</strong></p>
@@ -2324,11 +2228,14 @@ watch(() => form.job_offer_status, (newVal) => {
 
 
                         <!-- Job Offer -->
-                        <div class="form-section" :class="{ 'disabled-section': !canEditJobOfferSection }">
+                        <div class="form-section"
+                            :class="{ 'disabled-section': !canEditJobOfferSection || areLaterStagesLocked }">
                             <div class="section-header">
                                 <h3>Job Offer</h3>
-                                <!-- Failed stages -->
-                                <div v-if="Number(application.paper_screening_status) === PAPER_SCREENING.FAILED"
+                                <div v-if="isPaperScreeningPending" class="section-badge">
+                                    <span class="badge badge-locked">Locked - Paper Screening Pending</span>
+                                </div>
+                                <div v-else-if="Number(application.paper_screening_status) === PAPER_SCREENING.FAILED"
                                     class="section-badge">
                                     <span class="badge badge-failed">Not Applicable - Paper Screening Failed</span>
                                 </div>
@@ -2344,7 +2251,6 @@ watch(() => form.job_offer_status, (newVal) => {
                                     class="section-badge">
                                     <span class="badge badge-failed">Not Applicable - Final Interview Failed</span>
                                 </div>
-                                <!-- Final Interview not yet Passed/P2 -->
                                 <div v-else-if="Number(application.final_interview_application_status) !== INTERVIEW_STATUS.PASSED &&
                                     Number(application.final_interview_application_status) !== INTERVIEW_STATUS.P2"
                                     class="section-badge">
@@ -2354,7 +2260,6 @@ watch(() => form.job_offer_status, (newVal) => {
                                             application.final_interview_application_status)?.label || 'Not set'}})
                                     </span>
                                 </div>
-                                <!-- Not HR/Admin -->
                                 <div v-else-if="!canManageInterviewers" class="section-badge">
                                     <span class="badge badge-locked">Only HR/Admin can edit</span>
                                 </div>
@@ -2381,7 +2286,6 @@ watch(() => form.job_offer_status, (newVal) => {
                                     </select>
                                 </div>
                             </div>
-                            <!-- AWS Fields - Only enabled when Status is "Accept" -->
                             <div class="form-grid grid-3 mt-4">
                                 <div class="form-field">
                                     <label class="field-label">AWS Start Date</label>
@@ -2397,7 +2301,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                         placeholder="Enter AWS rank"
                                         :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled" />
                                     <span v-if="form.errors.aws_rank" class="error-message">{{ form.errors.aws_rank
-                                        }}</span>
+                                    }}</span>
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label">Parked To</label>
@@ -2405,7 +2309,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                         placeholder="Enter parked location"
                                         :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled" />
                                     <span v-if="form.errors.parked_to" class="error-message">{{ form.errors.parked_to
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
 
@@ -2447,7 +2351,6 @@ watch(() => form.job_offer_status, (newVal) => {
         </div>
     </AppLayout>
 </template>
-
 <style scoped>
 .disabled-section {
     opacity: 0.7;
