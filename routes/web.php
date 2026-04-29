@@ -94,9 +94,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/intermediate/applications/{applicationId}/has-mixed-results/{type}', [IntermediateInterviewerController::class, 'hasMixedResults']);
         Route::post('/intermediate/applications/{applicationId}/interviews/stage-update-schedule', [IntermediateInterviewerController::class, 'stageUpdateSchedule']);
     });
-    
-    Route::get('/intermediate/applications/{id}/edit', [IntermediateApplicationController::class, 'edit'])
-    ->name('intermediate.applications.edit');
 
     Route::put('/intermediate/applications/{id}', [IntermediateApplicationController::class, 'update'])
         ->name('intermediate.applications.update');
@@ -316,6 +313,9 @@ Route::middleware(['check.permission'])->group(function () {
 
         Route::get('/intermediate/applications/{id}', [IntermediateApplicationController::class, 'show'])
             ->name('intermediate.applications.show');
+
+        Route::get('/intermediate/applications/{id}/edit', [IntermediateApplicationController::class, 'edit'])
+            ->name('intermediate.applications.edit');
     });
 
 
