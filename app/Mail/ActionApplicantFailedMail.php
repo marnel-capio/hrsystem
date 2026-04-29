@@ -25,6 +25,7 @@ class ActionApplicantFailedMail extends Mailable
     public function build()
     {
         return $this->subject('【HR System】ACTION Application Result')
+        ->bcc("awsrecruiter@awsys-i.com")
             ->view('emails.ATS-0006')
             ->with([
                 'application' => $this->application,
