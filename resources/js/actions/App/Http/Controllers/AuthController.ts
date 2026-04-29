@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AuthController::login
  * @see app/Http/Controllers/AuthController.php:21
@@ -106,12 +107,6 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
         logoutForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: logout.url(options),
             method: 'post',
-        })
-    
-    logout.form = logoutForm
-const AuthController = { login, logout }
-
-export default AuthController: 'post',
         })
     
     logout.form = logoutForm

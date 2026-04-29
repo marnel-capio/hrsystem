@@ -291,54 +291,52 @@ public function getTotalApplicants(int $batchId): int
                 if ($existingApplicant && $lastApplication) {
                     $lastAppTime = Carbon::parse($lastApplication->source_date);
 
-                    $isFailed = in_array($lastApplication->exam_application_status, $failedExamStatuses) ||
-                                in_array($lastApplication->initial_interview_application_status, $failedInitialStatuses) ||
-                                in_array($lastApplication->final_interview_application_status, $failedFinalStatuses) ||
-                                in_array($lastApplication->job_offer_status, $failedJobOfferStatuses);
+$isFailed = in_array((int) $lastApplication->exam_application_status, $failedExamStatuses, true) ||
+            in_array((int) $lastApplication->initial_interview_application_status, $failedInitialStatuses, true) ||
+            in_array((int) $lastApplication->final_interview_application_status, $failedFinalStatuses, true) ||
+            in_array((int) $lastApplication->job_offer_status, $failedJobOfferStatuses, true);
 
-                    $withinSixMonths = $lastAppTime > $sixMonthsAgo;
 
-                    if ($isFailed && $withinSixMonths) {
-                        $skippedApplicants[] = "{$name} - Failed within last 6 months, cannot reapply yet.";
-                        DB::rollBack();
+$withinSixMonths = $lastAppTime > $sixMonthsAgo;
+$passedPreviousExam = (int) $lastApplication->exam_application_status === 5;
 
-                        continue;
-                    }
+if ($isFailed && $withinSixMonths) {
+    $skippedApplicants[] = "{$name} - Failed within last 6 months, cannot reapply yet.";
+    DB::rollBack();
+    continue;
+}
 
-                    if ($isFailed && ! $withinSixMonths) {
-                        // duplicate + failed before + old enough => NEW
-                        $applicationBranch = 'new';
-                        $applicationOverrides = [
-                            'remarks' => 'New upload.',
-                            'exam_application_status' => null,
-                            'initial_interview_application_status' => null,
-                            'final_interview_application_status' => null,
-                            'job_offer_status' => null,
-                            'exam_plan_date' => null,
-                        ];
-                    } elseif (! $isFailed && $withinSixMonths) {
-                        // duplicate + not failed + recent => FOR INITIAL INTERVIEW
-                        $applicationBranch = 'for_initial_interview';
-                        $applicationOverrides = [
-                            'remarks' => 'For Initial Interview. Re-applied from previous batch. Passed exam in previously applied batch.',
-                            'exam_application_status' => $lastApplication->exam_application_status ?: 5,
-                            'exam_plan_date' => $lastApplication->exam_plan_date,
-                            'initial_interview_application_status' => 1,
-                            'final_interview_application_status' => null,
-                            'job_offer_status' => null,
-                        ];
-                    } else {
-                        // duplicate + not failed + older than 6 months => FOR EXAM
-                        $applicationBranch = 'for_exam';
-                        $applicationOverrides = [
-                            'remarks' => 'Re-applied from previous ACTION batch.',
-                            'exam_application_status' => null,
-                            'exam_plan_date' => null,
-                            'initial_interview_application_status' => null,
-                            'final_interview_application_status' => null,
-                            'job_offer_status' => null,
-                        ];
-                    }
+if ($isFailed && ! $withinSixMonths) {
+    $applicationBranch = 'new';
+    $applicationOverrides = [
+        'remarks' => 'New upload.',
+        'exam_application_status' => null,
+        'initial_interview_application_status' => null,
+        'final_interview_application_status' => null,
+        'job_offer_status' => null,
+        'exam_plan_date' => null,
+    ];
+} elseif ($passedPreviousExam && $withinSixMonths) {
+    $applicationBranch = 'for_initial_interview';
+    $applicationOverrides = [
+        'remarks' => 'For Initial Interview. Re-applied from previous batch. Passed exam in previously applied batch.',
+        'exam_application_status' => $lastApplication->exam_application_status,
+        'exam_plan_date' => $lastApplication->exam_plan_date,
+        'initial_interview_application_status' => 1,
+        'final_interview_application_status' => null,
+        'job_offer_status' => null,
+    ];
+} else {
+    $applicationBranch = 'for_exam';
+    $applicationOverrides = [
+        'remarks' => 'Re-applied from previous ACTION batch.',
+        'exam_application_status' => null,
+        'exam_plan_date' => null,
+        'initial_interview_application_status' => null,
+        'final_interview_application_status' => null,
+        'job_offer_status' => null,
+    ];
+}
                 }
 
                 // -------------------------
