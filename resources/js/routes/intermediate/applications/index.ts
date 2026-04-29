@@ -148,103 +148,6 @@ sendNotification.post = (args: { applicationId: string | number } | [application
     
     sendNotification.form = sendNotificationForm
 /**
-* @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:630
- * @route '/intermediate/applications/{id}/edit'
- */
-export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: edit.url(args, options),
-    method: 'get',
-})
-
-edit.definition = {
-    methods: ["get","head"],
-    url: '/intermediate/applications/{id}/edit',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:630
- * @route '/intermediate/applications/{id}/edit'
- */
-edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { id: args }
-    }
-
-    
-    if (Array.isArray(args)) {
-        args = {
-                    id: args[0],
-                }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-                        id: args.id,
-                }
-
-    return edit.definition.url
-            .replace('{id}', parsedArgs.id.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:630
- * @route '/intermediate/applications/{id}/edit'
- */
-edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: edit.url(args, options),
-    method: 'get',
-})
-/**
-* @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:630
- * @route '/intermediate/applications/{id}/edit'
- */
-edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: edit.url(args, options),
-    method: 'head',
-})
-
-    /**
-* @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:630
- * @route '/intermediate/applications/{id}/edit'
- */
-    const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: edit.url(args, options),
-        method: 'get',
-    })
-
-            /**
-* @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:630
- * @route '/intermediate/applications/{id}/edit'
- */
-        editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: edit.url(args, options),
-            method: 'get',
-        })
-            /**
-* @see \App\Http\Controllers\IntermediateApplicationController::edit
- * @see app/Http/Controllers/IntermediateApplicationController.php:630
- * @route '/intermediate/applications/{id}/edit'
- */
-        editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: edit.url(args, {
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    edit.form = editForm
-/**
 * @see \App\Http\Controllers\IntermediateApplicationController::update
  * @see app/Http/Controllers/IntermediateApplicationController.php:832
  * @route '/intermediate/applications/{id}'
@@ -788,10 +691,106 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
         })
     
     show.form = showForm
+/**
+* @see \App\Http\Controllers\IntermediateApplicationController::edit
+ * @see app/Http/Controllers/IntermediateApplicationController.php:630
+ * @route '/intermediate/applications/{id}/edit'
+ */
+export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(args, options),
+    method: 'get',
+})
+
+edit.definition = {
+    methods: ["get","head"],
+    url: '/intermediate/applications/{id}/edit',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\IntermediateApplicationController::edit
+ * @see app/Http/Controllers/IntermediateApplicationController.php:630
+ * @route '/intermediate/applications/{id}/edit'
+ */
+edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return edit.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\IntermediateApplicationController::edit
+ * @see app/Http/Controllers/IntermediateApplicationController.php:630
+ * @route '/intermediate/applications/{id}/edit'
+ */
+edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(args, options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\IntermediateApplicationController::edit
+ * @see app/Http/Controllers/IntermediateApplicationController.php:630
+ * @route '/intermediate/applications/{id}/edit'
+ */
+edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: edit.url(args, options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\IntermediateApplicationController::edit
+ * @see app/Http/Controllers/IntermediateApplicationController.php:630
+ * @route '/intermediate/applications/{id}/edit'
+ */
+    const editForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\IntermediateApplicationController::edit
+ * @see app/Http/Controllers/IntermediateApplicationController.php:630
+ * @route '/intermediate/applications/{id}/edit'
+ */
+        editForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\IntermediateApplicationController::edit
+ * @see app/Http/Controllers/IntermediateApplicationController.php:630
+ * @route '/intermediate/applications/{id}/edit'
+ */
+        editForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
 const applications = {
     updatePaperScreening: Object.assign(updatePaperScreening, updatePaperScreening),
 sendNotification: Object.assign(sendNotification, sendNotification),
-edit: Object.assign(edit, edit),
 update: Object.assign(update, update),
 print: Object.assign(print, print),
 index: Object.assign(index, index),
@@ -799,6 +798,7 @@ import: Object.assign(importMethod, importMethod),
 register: Object.assign(register, register),
 store: Object.assign(store, store),
 show: Object.assign(show, show),
+edit: Object.assign(edit, edit),
 }
 
 export default applications
