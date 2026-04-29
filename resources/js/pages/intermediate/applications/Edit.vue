@@ -1309,7 +1309,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                             :disabled="isEarlySectionsLocked">×</button>
                                     </div>
                                     <span v-if="form.errors.upload_pic" class="error-message">{{ form.errors.upload_pic
-                                        }}</span>
+                                    }}</span>
                                     <div v-if="picturePreview" class="picture-preview">
                                         <img :src="picturePreview" alt="Picture preview" class="preview-image" />
                                     </div>
@@ -1321,23 +1321,16 @@ watch(() => form.job_offer_status, (newVal) => {
                         </div>
 
                         <!-- Contact & Response Tracking -->
-                        <div class="form-section" :class="{ 'disabled-section': isEarlySectionsLocked }">
+                        <div class="form-section">
                             <div class="section-header">
                                 <h3>Contact & Response Tracking</h3>
-                                <div v-if="isPaperScreeningCompleted" class="section-badge">
-                                    <span class="badge badge-locked">Locked - Paper Screening Completed</span>
-                                </div>
-                                <div v-if="isPaperScreeningFailed" class="section-badge">
-                                    <span class="badge badge-failed">Locked - Application Failed</span>
-                                </div>
                             </div>
 
                             <div class="form-grid grid-2 mb-6">
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500">Contacted Date</label>
                                     <input type="datetime-local" v-model="form.contacted_date" class="form-input"
-                                        :disabled="isContactedDateLocked || isEarlySectionsLocked"
-                                        @change="handleContactedDateChange" />
+                                        :disabled="isContactedDateLocked" @change="handleContactedDateChange" />
                                     <span v-if="form.errors.contacted_date" class="error-message">{{
                                         form.errors.contacted_date }}</span>
                                 </div>
@@ -1352,19 +1345,19 @@ watch(() => form.job_offer_status, (newVal) => {
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500">Replied</label>
                                     <select v-model="form.replied" class="form-select"
-                                        :disabled="isRepliedLocked || isEarlySectionsLocked || !form.contacted_date">
+                                        :disabled="isRepliedLocked || !form.contacted_date">
                                         <option :value="null">Select Status</option>
                                         <option :value="1">Yes</option>
                                         <option :value="0">No</option>
                                     </select>
                                     <span v-if="form.errors.replied" class="error-message">{{ form.errors.replied
-                                    }}</span>
+                                        }}</span>
                                 </div>
 
                                 <div class="form-field">
                                     <label class="field-label !text-gray-500">Replied Date</label>
                                     <input type="datetime-local" v-model="form.replied_date" class="form-input"
-                                        :disabled="isRepliedDateLocked || isEarlySectionsLocked || !form.contacted_date || form.replied !== 1"
+                                        :disabled="isRepliedDateLocked || !form.contacted_date || form.replied !== 1"
                                         :min="form.contacted_date || undefined" />
                                     <span v-if="form.errors.replied_date" class="error-message">{{
                                         form.errors.replied_date }}</span>
@@ -1510,7 +1503,8 @@ watch(() => form.job_offer_status, (newVal) => {
                         </div>
 
                         <!-- Exam Section -->
-                        <div class="form-section" :class="{ 'disabled-section': !canEditExamSection || areLaterStagesLocked }">
+                        <div class="form-section"
+                            :class="{ 'disabled-section': !canEditExamSection || areLaterStagesLocked }">
                             <div class="text-gray-500 field-label pb-6">
                                 (You may leave the following fields empty if the applicant is not yet finished with the
                                 screening process.)
@@ -1558,7 +1552,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                     </option>
                                 </select>
                                 <span v-if="form.errors.exam_venue" class="error-message">{{ form.errors.exam_venue
-                                    }}</span>
+                                }}</span>
                             </div>
 
                             <div class="exam-section-layout">
@@ -1721,12 +1715,13 @@ watch(() => form.job_offer_status, (newVal) => {
                                 <textarea v-model="form.exam_remarks" placeholder="Enter any remarks here..." rows="3"
                                     class="form-textarea" :disabled="!canEditExamSection"></textarea>
                                 <span v-if="form.errors.exam_remarks" class="error-message">{{ form.errors.exam_remarks
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
 
                         <!-- Initial Interview -->
-                        <div class="form-section" :class="{ 'disabled-section': !canEditInitialSection || areLaterStagesLocked }">
+                        <div class="form-section"
+                            :class="{ 'disabled-section': !canEditInitialSection || areLaterStagesLocked }">
                             <div class="section-header">
                                 <h3>Initial Interview</h3>
                                 <div v-if="isPaperScreeningPending" class="section-badge">
@@ -1747,12 +1742,12 @@ watch(() => form.job_offer_status, (newVal) => {
                                     class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30 mb-4">
                                     <h4 class="mb-3 text-sm font-semibold text-blue-800 dark:text-blue-300">
                                         Your Interview Evaluation ({{ currentUserInitialInterview?.role_label ||
-                                        'HR/Admin' }})
+                                            'HR/Admin' }})
                                     </h4>
 
                                     <div v-if="currentUserInitialInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserInitialInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserInitialInterview.evaluation_results)
                                                 }}</strong></p>
@@ -1786,7 +1781,7 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                 <div class="mt-4 text-sm text-gray-500 mb-4">
                                     <p><strong>Plan Date:</strong> {{ formatDateTime(form.initial_interview_plan_date)
-                                        }}</p>
+                                    }}</p>
                                     <p><strong>Venue:</strong> {{ getVenueLabel(form.initial_interview_venue) }}</p>
                                 </div>
 
@@ -1974,7 +1969,7 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                     <div v-if="currentUserInitialInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserInitialInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserInitialInterview.evaluation_results)
                                                 }}</strong></p>
@@ -2008,14 +2003,15 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                 <div class="mt-4 text-sm text-gray-500">
                                     <p><strong>Plan Date:</strong> {{ formatDateTime(form.initial_interview_plan_date)
-                                        }}</p>
+                                    }}</p>
                                     <p><strong>Venue:</strong> {{ getVenueLabel(form.initial_interview_venue) }}</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Final Interview -->
-                        <div class="form-section" :class="{ 'disabled-section': !canEditFinalSection || areLaterStagesLocked }">
+                        <div class="form-section"
+                            :class="{ 'disabled-section': !canEditFinalSection || areLaterStagesLocked }">
                             <div class="section-header">
                                 <h3>Final Interview</h3>
                                 <div v-if="isPaperScreeningPending" class="section-badge">
@@ -2035,12 +2031,12 @@ watch(() => form.job_offer_status, (newVal) => {
                                     class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/30 mb-4">
                                     <h4 class="mb-3 text-sm font-semibold text-blue-800 dark:text-blue-300">
                                         Your Interview Evaluation ({{ currentUserFinalInterview?.role_label ||
-                                        'HR/Admin' }})
+                                            'HR/Admin' }})
                                     </h4>
 
                                     <div v-if="currentUserFinalInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserFinalInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserFinalInterview.evaluation_results)
                                                 }}</strong></p>
@@ -2193,7 +2189,7 @@ watch(() => form.job_offer_status, (newVal) => {
 
                                     <div v-if="currentUserFinalInterview?.evaluation_score" class="mb-4 text-sm">
                                         <p>Current Score: <strong>{{ currentUserFinalInterview.evaluation_score || '-'
-                                                }}</strong></p>
+                                        }}</strong></p>
                                         <p>Current Result: <strong>{{
                                             getEvaluationResultLabel(currentUserFinalInterview.evaluation_results)
                                                 }}</strong></p>
@@ -2232,7 +2228,8 @@ watch(() => form.job_offer_status, (newVal) => {
 
 
                         <!-- Job Offer -->
-                        <div class="form-section" :class="{ 'disabled-section': !canEditJobOfferSection || areLaterStagesLocked }">
+                        <div class="form-section"
+                            :class="{ 'disabled-section': !canEditJobOfferSection || areLaterStagesLocked }">
                             <div class="section-header">
                                 <h3>Job Offer</h3>
                                 <div v-if="isPaperScreeningPending" class="section-badge">
@@ -2304,7 +2301,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                         placeholder="Enter AWS rank"
                                         :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled" />
                                     <span v-if="form.errors.aws_rank" class="error-message">{{ form.errors.aws_rank
-                                        }}</span>
+                                    }}</span>
                                 </div>
                                 <div class="form-field">
                                     <label class="field-label">Parked To</label>
@@ -2312,7 +2309,7 @@ watch(() => form.job_offer_status, (newVal) => {
                                         placeholder="Enter parked location"
                                         :disabled="!canEditJobOfferSection || !isAwsFieldsEnabled" />
                                     <span v-if="form.errors.parked_to" class="error-message">{{ form.errors.parked_to
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
 

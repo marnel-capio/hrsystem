@@ -853,7 +853,6 @@ class IntermediateApplicationController extends Controller
             'work_preference' => ['nullable'],
             'basic_pay' => [
                 'nullable',
-                'regex:/^[0-9,]+$/',
             ],
             'bonuses' => ['nullable'],
             'hmo' => ['nullable'],
@@ -1084,71 +1083,53 @@ class IntermediateApplicationController extends Controller
                 \Log::info('Keeping manual final interview values (not all interviewers submitted)');
             }
 
-            $newStage = $application->application_stage;
+$newStage = $application->application_stage;
 
-            // Priority 1: Job Offer
-            if ($this->hasJobOfferDataFromRequest($request)) {
-                $newStage = 5;
-            }
-            // Priority 2: Final Interview
-            elseif ($this->hasFinalInterviewDataFromRequest($request)) {
-                $newStage = 4;
-            }
-            // Priority 3: Initial Interview or Exam (interchangeable)
-            else {
-                $hasExam = $this->hasExamDataFromRequest($request);
-                $hasInitial = $this->hasInitialInterviewDataFromRequest($request);
+// Priority 1: Job Offer
+if ($this->hasJobOfferDataFromRequest($request)) {
+    $newStage = 5;
+}
+// Priority 2: Final Interview
+elseif ($this->hasFinalInterviewDataFromRequest($request)) {
+    $newStage = 4;
+}
+// Priority 3: Initial Interview or Exam - set based on which was JUST edited
+else {
+    // Check which stage's fields were actually CHANGED in this request
+    $examFieldsChanged = $this->hasExamFieldsChanged($request, $application);
+    $initialFieldsChanged = $this->hasInitialInterviewFieldsChanged($request, $application);
+    $finalFieldsChanged = $this->hasFinalInterviewFieldsChanged($request, $application);
 
-                if ($hasInitial && ! $hasExam) {
-                    // Only Initial Interview has data → For Initial Interview
-                    $newStage = 3;
-                } elseif ($hasExam && ! $hasInitial) {
-                    // Only Exam has data → For Exam
-                    $newStage = 2;
-                } elseif ($hasExam && $hasInitial) {
-                    // Both have data → Check which was most recently edited
-                    $examUpdatedAt = $application->exam_updated_at ?? $application->updated_time;
-                    $initialUpdatedAt = $application->initial_interview_updated_at ?? $application->updated_time;
+    \Log::info('Stage detection - fields changed', [
+        'exam_changed' => $examFieldsChanged,
+        'initial_changed' => $initialFieldsChanged,
+        'final_changed' => $finalFieldsChanged,
+    ]);
 
-                    // Get the latest update timestamp from the request data
-                    $requestExamFields = [
-                        'exam_plan_date', 'exam_actual_date', 'exam_venue',
-                        'exam_atpp_part1_correct', 'exam_atpp_part1_wrong',
-                        'exam_atpp_part2_correct', 'exam_atpp_part2_wrong',
-                        'exam_atpp_part3_correct', 'exam_atpp_part3_wrong',
-                        'exam_atpp_result', 'exam_tech_result', 'exam_remarks',
-                    ];
+    if ($initialFieldsChanged && !$examFieldsChanged) {
+        // Only Initial Interview was edited in this request
+        $newStage = 3;
+    } elseif ($examFieldsChanged && !$initialFieldsChanged) {
+        // Only Exam was edited in this request
+        $newStage = 2;
+    } elseif ($initialFieldsChanged && $examFieldsChanged) {
+        // Both edited - use the one that was edited most recently
+        // Determine which has more fields changed
+        $examChangeCount = $this->countChangedExamFields($request, $application);
+        $initialChangeCount = $this->countChangedInitialFields($request, $application);
+        
+        if ($initialChangeCount >= $examChangeCount) {
+            $newStage = 3; // Initial Interview
+        } else {
+            $newStage = 2; // Exam
+        }
+    }
+    // If neither changed, keep current stage
+}
 
-                    $requestInitialFields = [
-                        'initial_interview_plan_date', 'initial_interview_actual_date',
-                        'initial_interview_venue', 'initial_interview_final',
-                        'initial_interview_remarks',
-                    ];
-
-                    $examHasNewData = collect($requestExamFields)->some(fn ($field) => $request->has($field) && $request->$field !== null);
-                    $initialHasNewData = collect($requestInitialFields)->some(fn ($field) => $request->has($field) && $request->$field !== null);
-
-                    if ($examHasNewData && ! $initialHasNewData) {
-                        // Exam fields were edited in this request → For Exam
-                        $newStage = 2;
-                    } elseif ($initialHasNewData && ! $examHasNewData) {
-                        // Initial interview fields were edited in this request → For Initial Interview
-                        $newStage = 3;
-                    } elseif ($examHasNewData && $initialHasNewData) {
-                        // Both edited in this request → Default to Exam (stage 2)
-                        $newStage = 2;
-                    }
-                    // If neither was edited in this request, keep current stage
-
-                } elseif (! $hasExam && ! $hasInitial) {
-                    // Neither has data → New
-                    $newStage = 1;
-                }
-            }
-
-            if ($newStage != $application->application_stage) {
-                $validated['application_stage'] = $newStage;
-            }
+if ($newStage != $application->application_stage) {
+    $validated['application_stage'] = $newStage;
+}
 
             $application->update($validated);
 
@@ -1174,6 +1155,148 @@ class IntermediateApplicationController extends Controller
                 ->with('error', 'An error occurred while updating the record. Please try again.');
         }
     }
+
+    /**
+ * Check if any Exam fields were actually changed in this request
+ */
+private function hasExamFieldsChanged(Request $request, $application): bool
+{
+    $fields = [
+        'exam_plan_date',
+        'exam_actual_date',
+        'exam_venue',
+        'exam_atpp_part1_correct',
+        'exam_atpp_part1_wrong',
+        'exam_atpp_part2_correct',
+        'exam_atpp_part2_wrong',
+        'exam_atpp_part3_correct',
+        'exam_atpp_part3_wrong',
+        'exam_atpp_result',
+        'exam_tech_result',
+        'exam_result',
+        'exam_application_status',
+        'exam_remarks',
+    ];
+
+    foreach ($fields as $field) {
+        if ($request->has($field) && $request->$field != $application->$field) {
+            \Log::info("Exam field changed: {$field}", [
+                'old' => $application->$field,
+                'new' => $request->$field,
+            ]);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Check if any Initial Interview fields were actually changed in this request
+ */
+private function hasInitialInterviewFieldsChanged(Request $request, $application): bool
+{
+    $fields = [
+        'initial_interview_plan_date',
+        'initial_interview_actual_date',
+        'initial_interview_venue',
+        'initial_interview_final',
+        'initial_interview_result',
+        'initial_interview_application_status',
+        'initial_interview_remarks',
+    ];
+
+    foreach ($fields as $field) {
+        if ($request->has($field) && $request->$field != $application->$field) {
+            \Log::info("Initial field changed: {$field}", [
+                'old' => $application->$field,
+                'new' => $request->$field,
+            ]);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Check if any Final Interview fields were actually changed in this request
+ */
+private function hasFinalInterviewFieldsChanged(Request $request, $application): bool
+{
+    $fields = [
+        'final_interview_date',
+        'final_interview_final',
+        'final_interview_result',
+        'final_interview_application_status',
+        'final_interview_remarks',
+    ];
+
+    foreach ($fields as $field) {
+        if ($request->has($field) && $request->$field != $application->$field) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Count how many Exam fields were changed
+ */
+private function countChangedExamFields(Request $request, $application): int
+{
+    $fields = [
+        'exam_plan_date',
+        'exam_actual_date',
+        'exam_venue',
+        'exam_atpp_part1_correct',
+        'exam_atpp_part1_wrong',
+        'exam_atpp_part2_correct',
+        'exam_atpp_part2_wrong',
+        'exam_atpp_part3_correct',
+        'exam_atpp_part3_wrong',
+        'exam_atpp_result',
+        'exam_tech_result',
+        'exam_result',
+        'exam_application_status',
+        'exam_remarks',
+    ];
+
+    $count = 0;
+    foreach ($fields as $field) {
+        if ($request->has($field) && $request->$field != $application->$field) {
+            $count++;
+        }
+    }
+
+    return $count;
+}
+
+/**
+ * Count how many Initial Interview fields were changed
+ */
+private function countChangedInitialFields(Request $request, $application): int
+{
+    $fields = [
+        'initial_interview_plan_date',
+        'initial_interview_actual_date',
+        'initial_interview_venue',
+        'initial_interview_final',
+        'initial_interview_result',
+        'initial_interview_application_status',
+        'initial_interview_remarks',
+    ];
+
+    $count = 0;
+    foreach ($fields as $field) {
+        if ($request->has($field) && $request->$field != $application->$field) {
+            $count++;
+        }
+    }
+
+    return $count;
+}
 
     /**
      * Recalculate initial interview average from ALL approved interviewer evaluations
