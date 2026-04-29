@@ -27,6 +27,7 @@ class ATS0009Mail extends Mailable
     public function build()
     {
         return $this->subject('【HR System】Intermediate Application Result')
+        ->bcc("awsrecruiter@awsys-i.com")
                     ->view('emails.ATS-0009')
                     ->with([
                         'application' => $this->application,
