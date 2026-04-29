@@ -249,6 +249,18 @@ public function getTotalApplicants(int $batchId): int
                 $email = trim($row['Email Address'] ?? '');
                 $existingApplicant = ActionApplicant::where('email_address', $email)->first();
 
+                if ($existingApplicant) {
+    $alreadyInBatch = ActionApplication::where('action_applicant_id', $existingApplicant->id)
+        ->where('action_batch_id', $request->batch_id)
+        ->exists();
+
+    if ($alreadyInBatch) {
+        $skippedApplicants[] = "{$name} - Already exists in this batch.";
+        DB::rollBack();
+        continue;
+    }
+}
+
                 $lastApplication = $existingApplicant
                     ? ActionApplication::where('action_applicant_id', $existingApplicant->id)
                         ->orderBy('source_date', 'desc')
@@ -347,17 +359,24 @@ public function getTotalApplicants(int $batchId): int
                 // -------------------------
                 // CREATE / UPDATE APPLICATION
                 // -------------------------
-                ActionApplication::updateOrCreateFromRow(
-                    $applicant->id,
-                    $request->batch_id,
-                    $row,
-                    $exam_application_status,
-                    $exam_plan_date,
-                    now()->format('Y-m-d H:i:s'),
-                    $batchTargetLocation,
-                    $createdTime,
-                    $applicationOverrides
-                );
+$application = ActionApplication::updateOrCreateFromRow(
+    $applicant->id,
+    $request->batch_id,
+    $row,
+    $exam_application_status,
+    $exam_plan_date,
+    now()->format('Y-m-d H:i:s'),
+    $batchTargetLocation,
+    $createdTime,
+    $applicationOverrides
+);
+
+if (! $application) {
+    $skippedApplicants[] = "{$name} - Already exists in this batch.";
+    DB::rollBack();
+    continue;
+}
+
 
                 DB::commit();
                 $importedApplicants[] = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
