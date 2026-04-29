@@ -456,7 +456,7 @@ watch(
             toastMessage.value = val;
             toastType.value = 'success';
             showToast.value = true;
-            setTimeout(() => (showToast.value = false), 5000);
+            setTimeout(() => (showToast.value = false), 3000);
         }
     },
     { immediate: true },
@@ -473,6 +473,9 @@ const updateProject = () => {
     project_description: editingProject.value.project_description,
   }, {
     onSuccess: () => {
+      toastMessage.value = "Record updated successfully!";
+      toastType.value = 'success';
+      showToast.value = true;
       modalVisible.value = false
       editingProject.value = null
       refreshDropdownContents()
