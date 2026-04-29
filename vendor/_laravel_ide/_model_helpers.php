@@ -2179,8 +2179,16 @@ namespace App\Models {
     /**
      * App\Models\BusinessUnitModel
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string $business_unit
+     * @property int $id
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermediateRequisitionModel> $requisitions2
      * @property-read int|null $requisitions2_count
+     * @method static \Illuminate\Database\Eloquent\Builder<BusinessUnitModel>|BusinessUnitModel whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<BusinessUnitModel>|BusinessUnitModel whereBusinessUnit($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<BusinessUnitModel>|BusinessUnitModel whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<BusinessUnitModel>|BusinessUnitModel whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessUnitModel>|BusinessUnitModel newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessUnitModel>|BusinessUnitModel newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessUnitModel>|BusinessUnitModel query()
@@ -3941,6 +3949,8 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
+     * @property string|null $reason_for_decline
+     * @property string|null $reason_by_category
      * @property string|null $parked_to
      * @property string|null $aws_rank
      * @property \Illuminate\Support\Carbon|null $aws_start_date
@@ -3974,6 +3984,8 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $exam_actual_date
      * @property \Illuminate\Support\Carbon|null $exam_plan_date
      * @property integer $paper_screening_status
+     * @property string|null $site_assignment
+     * @property string|null $asking_rate
      * @property string|null $current_employer
      * @property \Illuminate\Support\Carbon|null $replied_date
      * @property integer|null $replied
@@ -4042,6 +4054,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereReplied($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereRepliedDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereCurrentEmployer($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAskingRate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereSiteAssignment($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication wherePaperScreeningStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamPlanDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereExamActualDate($value)
@@ -4075,6 +4089,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAwsStartDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereAwsRank($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereParkedTo($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereReasonByCategory($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereReasonForDecline($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateApplication>|IntermediateApplication whereCreatedTime($value)
@@ -5445,13 +5461,14 @@ namespace App\Models {
     /**
      * App\Models\IntermediateRequisitionModel
      *
+     * @property mixed $business_unit_id
      * @property \Illuminate\Support\Carbon|null $updated_time
      * @property mixed $updated_by
      * @property \Illuminate\Support\Carbon|null $created_time
      * @property mixed $created_by
      * @property string|null $remarks
-     * @property string|null $expected_salary_range
      * @property string|null $custom_location
+     * @property string|null $expected_salary_range
      * @property string|null $role
      * @property string|null $preferred_skills
      * @property string|null $required_skills
@@ -5497,13 +5514,14 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRequiredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel wherePreferredSkills($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRole($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCustomLocation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereExpectedSalaryRange($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCustomLocation($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereRemarks($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereCreatedTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereUpdatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereUpdatedTime($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel whereBusinessUnitId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<IntermediateRequisitionModel>|IntermediateRequisitionModel query()
