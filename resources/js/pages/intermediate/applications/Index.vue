@@ -14,6 +14,7 @@ interface Application {
     project_name?: string;
     position?: string;
     application_stage: number;
+    job_offer_status?: number;
     remarks?: string;
 }
 
@@ -53,7 +54,7 @@ watch(
 );
 
 const clearFlash = () =>
-    (flashMessages.value = { success: '', error: '', info: '',  email_success: '' });
+    (flashMessages.value = { success: '', error: '', info: '', email_success: '' });
 
 const closeSuccess = () => (flashMessages.value.success = '');
 
@@ -65,10 +66,10 @@ onMounted(() => {
 });
 
 const closeEmailSuccess = () => {
-    flashMessages.value.email_success = '';  
+    flashMessages.value.email_success = '';
     setTimeout(() => {
-        flashMessages.value.email_success = '';  
-    }, 3000); 
+        flashMessages.value.email_success = '';
+    }, 3000);
 };
 
 // ------------------- IMPORT MODAL -------------------
@@ -245,7 +246,12 @@ const showingTo = computed(() =>
     Math.min(currentPage.value * perPage, filteredApplications.value.length),
 );
 
-const getStageLabel = (stage: number) => {
+const getStageLabel = (stage: number, app?: Application) => {
+    if (app?.job_offer_status === 3) return 'Offer Accepted';
+    if (app?.job_offer_status === 4) return 'Offer Declined';
+    if (app?.job_offer_status === 5) return 'Offer Withdrawn';
+    if (app?.job_offer_status === 6) return 'Offer Retracted';
+
     const labels: Record<number, string> = {
         1: 'New',
         2: 'For Exam',
@@ -255,6 +261,35 @@ const getStageLabel = (stage: number) => {
         6: 'Failed',
     };
     return labels[stage] || 'Unknown';
+};
+
+const getOverallStatus = (app: Application) => {
+    // Since the index doesn't have all the detailed status fields,
+    // we can only use what's available
+    if ((app as any).job_offer_status === 3) return 'Offer Accepted';
+    if ((app as any).job_offer_status === 4) return 'Offer Declined';
+    if ((app as any).job_offer_status === 5) return 'Offer Withdrawn';
+    if ((app as any).job_offer_status === 6) return 'Offer Retracted';
+
+    return null;
+};
+
+const getStageBadgeClass = (stage: number, app?: Application) => {
+    // Job offer terminal states
+    if (app?.job_offer_status === 3) return 'bg-green-100 text-green-800';  // Accepted
+    if (app?.job_offer_status === 4 || app?.job_offer_status === 5 || app?.job_offer_status === 6) {
+        return 'bg-red-100 text-red-800';  // Declined/Withdrawn/Retracted
+    }
+
+    switch (stage) {
+        case 1: return 'bg-yellow-100 text-yellow-800';
+        case 2: return 'bg-orange-100 text-orange-800';
+        case 3: return 'bg-blue-100 text-blue-800';
+        case 4: return 'bg-purple-100 text-purple-800';
+        case 5: return 'bg-green-100 text-green-800';
+        case 6: return 'bg-red-100 text-red-800';
+        default: return 'bg-gray-100 text-gray-500';
+    }
 };
 
 const canCreateOrImport = computed(() => {
@@ -269,51 +304,35 @@ onMounted(() => {
     if (flashMessages.value.email_success || flashMessages.value.email_success) {
         setTimeout(() => {
             flashMessages.value.email_success = '';
-            flashMessages.value.email_success = ''; 
-        }, 3000); 
+            flashMessages.value.email_success = '';
+        }, 3000);
     }
 });
 </script>
 <template>
     <AppLayout>
         <div v-if="flashMessages.email_success" class="full-width-alert">
-        <div class="alert-banner alert-success-banner">
-            <div class="alert-body">{{ successMessage }}</div>
-            <button class="close-btn" @click="closeEmailSuccess">×</button>
-        </div>
+            <div class="alert-banner alert-success-banner">
+                <div class="alert-body">{{ successMessage }}</div>
+                <button class="close-btn" @click="closeEmailSuccess">×</button>
+            </div>
         </div>
         <!-- TOASTS (MATCHED FRIEND STYLE) -->
-        <div
-            class="fixed top-4 right-4 z-50 flex w-full max-w-sm flex-col gap-2 sm:w-96"
-        >
+        <div class="fixed top-4 right-4 z-50 flex w-full max-w-sm flex-col gap-2 sm:w-96">
             <!-- SUCCESS -->
             <TransitionGroup name="toast" tag="div">
-                <div
-                    v-if="flashMessages.success"
-                    key="success"
-                    class="max-h-80 animate-in overflow-y-auto rounded-xl border border-green-400 bg-green-100 p-4 text-green-700 shadow-2xl backdrop-blur-sm duration-300 fade-in slide-in-from-top-2"
-                >
+                <div v-if="flashMessages.success" key="success"
+                    class="max-h-80 animate-in overflow-y-auto rounded-xl border border-green-400 bg-green-100 p-4 text-green-700 shadow-2xl backdrop-blur-sm duration-300 fade-in slide-in-from-top-2">
                     <div class="flex items-start gap-3">
-                        <svg
-                            class="mt-0.5 h-5 w-5 flex-shrink-0"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                        >
-                            <path
-                                fill-rule="evenodd"
+                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
                                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                clip-rule="evenodd"
-                            />
+                                clip-rule="evenodd" />
                         </svg>
                         <div class="min-w-0 flex-1">
-                            <pre
-                                class="text-sm font-medium whitespace-pre-wrap"
-                                >{{ flashMessages.success }}</pre
-                            >
+                            <pre class="text-sm font-medium whitespace-pre-wrap">{{ flashMessages.success }}</pre>
                         </div>
-                        <button
-                            @click="closeSuccess"
-                            style="
+                        <button @click="closeSuccess" style="
                                 all: unset;
                                 cursor: pointer;
                                 width: 28px;
@@ -325,8 +344,7 @@ onMounted(() => {
                                 display: flex;
                                 align-items: center;
                                 justify-content: center;
-                            "
-                        >
+                            ">
                             X
                         </button>
                     </div>
@@ -335,32 +353,18 @@ onMounted(() => {
 
             <!-- ERROR -->
             <TransitionGroup name="toast" tag="div">
-                <div
-                    v-if="flashMessages.error"
-                    key="error"
-                    class="max-h-80 animate-in overflow-y-auto rounded-xl border border-red-400 bg-red-100 p-4 text-red-700 shadow-2xl backdrop-blur-sm duration-300 fade-in slide-in-from-top-2"
-                >
+                <div v-if="flashMessages.error" key="error"
+                    class="max-h-80 animate-in overflow-y-auto rounded-xl border border-red-400 bg-red-100 p-4 text-red-700 shadow-2xl backdrop-blur-sm duration-300 fade-in slide-in-from-top-2">
                     <div class="flex items-start gap-3">
-                        <svg
-                            class="mt-0.5 h-5 w-5 flex-shrink-0"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                        >
-                            <path
-                                fill-rule="evenodd"
+                        <svg class="mt-0.5 h-5 w-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
                                 d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                clip-rule="evenodd"
-                            />
+                                clip-rule="evenodd" />
                         </svg>
                         <div class="min-w-0 flex-1">
-                            <pre
-                                class="text-sm font-medium whitespace-pre-wrap"
-                                >{{ flashMessages.error }}</pre
-                            >
+                            <pre class="text-sm font-medium whitespace-pre-wrap">{{ flashMessages.error }}</pre>
                         </div>
-                        <button
-                            @click="closeError"
-                            style="
+                        <button @click="closeError" style="
                                 all: unset;
                                 cursor: pointer;
                                 width: 28px;
@@ -372,8 +376,7 @@ onMounted(() => {
                                 display: flex;
                                 align-items: center;
                                 justify-content: center;
-                            "
-                        >
+                            ">
                             X
                         </button>
                     </div>
@@ -383,62 +386,32 @@ onMounted(() => {
 
         <!-- IMPORT MODAL -->
         <transition name="fade">
-            <div
-                v-if="showImportModal"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
-            >
+            <div v-if="showImportModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
                 <div class="w-96 rounded-xl bg-white p-6 shadow-lg">
                     <h3 class="mb-4 text-lg font-semibold">
                         Upload Applications from Google Forms
                     </h3>
                     <!-- File Input -->
-                    <label class="mt-6 mb-1 block text-sm font-medium"
-                        >Choose File (.xlsx or .csv)</label
-                    >
-                    <input
-                        ref="fileInput"
-                        type="file"
-                        accept=".xlsx,.csv"
-                        @change="onImportFileChange"
-                        class="file-input-btn mb-1 w-full"
-                    />
+                    <label class="mt-6 mb-1 block text-sm font-medium">Choose File (.xlsx or .csv)</label>
+                    <input ref="fileInput" type="file" accept=".xlsx,.csv" @change="onImportFileChange"
+                        class="file-input-btn mb-1 w-full" />
                     <p v-if="importError" class="mt-1 text-xs text-red-600">
                         {{ importError }}
                     </p>
 
                     <!-- BUTTONS -->
                     <div class="mt-4 flex justify-end gap-2">
-                        <button
-                            @click="closeImportModal"
-                            class="btn-primary bg-gray-400 hover:bg-gray-500"
-                        >
+                        <button @click="closeImportModal" class="btn-primary bg-gray-400 hover:bg-gray-500">
                             Cancel
                         </button>
-                        <button
-                            @click="submitImport"
-                            :disabled="processing"
-                            class="btn-primary flex items-center gap-2"
-                        >
-                            <svg
-                                v-if="processing"
-                                class="h-4 w-4 animate-spin text-white"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    class="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    stroke-width="4"
-                                ></circle>
-                                <path
-                                    class="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                ></path>
+                        <button @click="submitImport" :disabled="processing"
+                            class="btn-primary flex items-center gap-2">
+                            <svg v-if="processing" class="h-4 w-4 animate-spin text-white"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                                </path>
                             </svg>
                             <span>{{
                                 processing ? 'Uploading...' : 'Upload File'
@@ -454,15 +427,9 @@ onMounted(() => {
             <div class="flex items-center justify-between">
                 <h2 class="page-title">Intermediate Application List</h2>
                 <div v-if="canCreateOrImport" class="flex flex-nowrap gap-2">
-                    <Link
-                        href="/intermediate/applications/register"
-                        class="btn-primary !bg-[#1C7BA5] whitespace-nowrap"
-                        >Create Intermediate Application</Link
-                    >
-                    <button
-                        @click="showImportModal = true"
-                        class="btn-primary whitespace-nowrap"
-                    >
+                    <Link href="/intermediate/applications/register"
+                        class="btn-primary !bg-[#1C7BA5] whitespace-nowrap">Create Intermediate Application</Link>
+                    <button @click="showImportModal = true" class="btn-primary whitespace-nowrap">
                         Upload Applications from Google Forms
                     </button>
                 </div>
@@ -471,30 +438,16 @@ onMounted(() => {
             <!-- SEARCH -->
             <div class="mb-4 flex gap-4">
                 <div class="relative w-full">
-                    <span
-                        class="absolute inset-y-0 left-3 flex items-center text-zinc-500"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z"
-                            />
+                    <span class="absolute inset-y-0 left-3 flex items-center text-zinc-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-4.35-4.35m0 0A7 7 0 1010.3 3a7 7 0 006.35 13.65z" />
                         </svg>
                     </span>
-                    <input
-                        v-model="searchQuery"
-                        type="text"
+                    <input v-model="searchQuery" type="text"
                         placeholder="Search by Applicant Name, Project, Position, Application Stage, or Remarks"
-                        class="w-full rounded-lg border bg-white py-2 pr-3 pl-10 dark:border-zinc-700 dark:bg-zinc-900"
-                    />
+                        class="w-full rounded-lg border bg-white py-2 pr-3 pl-10 dark:border-zinc-700 dark:bg-zinc-900" />
                 </div>
             </div>
 
@@ -506,9 +459,7 @@ onMounted(() => {
                 </div>
 
                 <div class="table-wrapper">
-                    <table
-                        class="ats-table w-full table-auto border-collapse border text-sm"
-                    >
+                    <table class="ats-table w-full table-auto border-collapse border text-sm">
                         <thead class="bg-zinc-100 text-left dark:bg-zinc-800">
                             <tr>
                                 <th class="border px-3 py-2">Applicant Name</th>
@@ -521,15 +472,9 @@ onMounted(() => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr
-                                v-for="app in paginatedApplications"
-                                :key="app.id"
-                            >
+                            <tr v-for="app in paginatedApplications" :key="app.id">
                                 <td class="border px-3 py-2">
-                                    <Link
-                                        :href="`/intermediate/applications/${app.id}`"
-                                        class="table-link"
-                                    >
+                                    <Link :href="`/intermediate/applications/${app.id}`" class="table-link">
                                         {{ app.first_name }} {{ app.last_name }}
                                     </Link>
                                 </td>
@@ -543,42 +488,20 @@ onMounted(() => {
                                     <span
                                         :class="[
                                             'inline-flex rounded-full px-3 py-1 text-sm font-semibold',
-                                            app.application_stage === 1
-                                                ? 'bg-yellow-100 text-yellow-800'
-                                                : app.application_stage === 2
-                                                  ? 'bg-orange-100 text-orange-800'
-                                                  : app.application_stage === 3
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : app.application_stage ===
-                                                        4
-                                                      ? 'bg-purple-100 text-purple-800'
-                                                      : app.application_stage ===
-                                                          5
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : app.application_stage ===
-                                                            6
-                                                          ? 'bg-red-100 text-red-800'
-                                                          : 'bg-gray-100 text-gray-500',
+                                            getStageBadgeClass(app.application_stage, app)
                                         ]"
-                                        >{{
-                                            getStageLabel(app.application_stage)
-                                        }}</span
-                                    >
+                                         >
+                                        {{ getStageLabel(app.application_stage, app) }}
+                                    </span>
                                 </td>
                                 <td class="border px-3 py-2">
-                                    <div
-                                        class="remarks-clamp"
-                                        :title="app.remarks"
-                                    >
+                                    <div class="remarks-clamp" :title="app.remarks">
                                         {{ app.remarks || '—' }}
                                     </div>
                                 </td>
                             </tr>
                             <tr v-if="!paginatedApplications.length">
-                                <td
-                                    colspan="5"
-                                    class="p-6 text-center text-zinc-500"
-                                >
+                                <td colspan="5" class="p-6 text-center text-zinc-500">
                                     No applications found.
                                 </td>
                             </tr>
@@ -587,42 +510,25 @@ onMounted(() => {
                 </div>
 
                 <!-- PAGINATION -->
-                <div
-                    class="mt-3 flex justify-center gap-2 text-xs"
-                    v-if="filteredApplications.length > perPage"
-                >
-                    <span
-                        @click="prevBlock"
-                        class="cursor-pointer rounded border px-3 py-2"
-                        :class="{
-                            'cursor-not-allowed opacity-50': startPage === 1,
-                        }"
-                    >
+                <div class="mt-3 flex justify-center gap-2 text-xs" v-if="filteredApplications.length > perPage">
+                    <span @click="prevBlock" class="cursor-pointer rounded border px-3 py-2" :class="{
+                        'cursor-not-allowed opacity-50': startPage === 1,
+                    }">
                         Prev
                     </span>
 
-                    <span
-                        v-for="pageNumber in pageNumbers"
-                        :key="pageNumber"
-                        @click="goToPage(pageNumber)"
-                        class="cursor-pointer rounded border px-3 py-2"
-                        :class="
-                            pageNumber === currentPage
-                                ? 'bg-blue-600 text-white'
-                                : ''
-                        "
-                    >
+                    <span v-for="pageNumber in pageNumbers" :key="pageNumber" @click="goToPage(pageNumber)"
+                        class="cursor-pointer rounded border px-3 py-2" :class="pageNumber === currentPage
+                            ? 'bg-blue-600 text-white'
+                            : ''
+                            ">
                         {{ pageNumber }}
                     </span>
 
-                    <span
-                        @click="nextBlock"
-                        class="cursor-pointer rounded border px-3 py-2"
-                        :class="{
-                            'cursor-not-allowed opacity-50':
-                                endPage === totalPages,
-                        }"
-                    >
+                    <span @click="nextBlock" class="cursor-pointer rounded border px-3 py-2" :class="{
+                        'cursor-not-allowed opacity-50':
+                            endPage === totalPages,
+                    }">
                         Next
                     </span>
                 </div>

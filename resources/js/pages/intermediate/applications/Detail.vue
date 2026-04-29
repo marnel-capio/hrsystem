@@ -631,36 +631,48 @@ function getApplicationStatusBadgeClass(status: number | null | undefined) {
 }
 
 const getOverallStatus = () => {
-    const stage = Number(application.value.application_stage);
+    const jobStatus = Number(application.value?.job_offer_status);
+    const finalStatus = Number(application.value?.final_interview_application_status);
+    const initialStatus = Number(application.value?.initial_interview_application_status);
+    const examStatus = Number(application.value?.exam_application_status);
+    const paperScreeningStatus = Number(application.value?.paper_screening_status);
 
-    const stageLabels = {
-        1: 'New',
-        2: 'For Exam',
-        3: 'For Initial Interview',
-        4: 'For Final Interview',
-        5: 'For Job Offer',
-        6: 'Failed',
-    };
+    // Terminal job offer outcomes
+    if (jobStatus === 3) return 'Offer Accepted';
+    if (jobStatus === 4) return 'Offer Declined';
+    if (jobStatus === 5) return 'Offer Withdrawn';
+    if (jobStatus === 6) return 'Offer Retracted';
 
-    return stageLabels[stage] || 'New';
+    // Failures
+    if (finalStatus === 5) return 'Failed Final Interview';
+    if (initialStatus === 5) return 'Failed Initial Interview';
+    if (examStatus === 5) return 'Failed Exam';
+    if (paperScreeningStatus === 5) return 'Failed Paper Screening';
+
+    // Next stage labels
+    if (finalStatus === 3 || finalStatus === 4) return 'For Job Offer';
+    if (initialStatus === 3 || initialStatus === 4) return 'For Final Interview';
+    if (examStatus === 3 || examStatus === 4) return 'For Initial Interview';
+
+    // Active stages
+    if (finalStatus === 1 || finalStatus === 2) return 'For Final Interview';
+    if (initialStatus === 1 || initialStatus === 2) return 'For Initial Interview';
+    if (examStatus === 1 || examStatus === 2) return 'For Exam';
+    if (paperScreeningStatus === 1 || paperScreeningStatus === 2) return 'New';
+
+    return 'New';
 };
 
 const getOverallStatusColor = () => {
-    const stage = Number(application.value.application_stage);
+    const status = getOverallStatus();
 
-    switch (stage) {
-        case 1: // New
-            return 'bg-yellow-100 text-yellow-800';
-        case 2: // For Exam
-        case 3: // For Initial Interview
-        case 4: // For Final Interview
-        case 5: // For Job Offer
-            return 'bg-blue-100 text-blue-800';
-        case 6: // Failed
-            return 'bg-red-100 text-red-800';
-        default:
-            return 'bg-gray-100 text-gray-800';
+    if (status === 'Offer Accepted') return 'bg-green-100 text-green-800';
+    if (status.includes('Failed') || status === 'Offer Declined' || status === 'Offer Withdrawn' || status === 'Offer Retracted') {
+        return 'bg-red-100 text-red-800';
     }
+    if (status.startsWith('For ')) return 'bg-blue-100 text-blue-800';
+    
+    return 'bg-yellow-100 text-yellow-800';
 };
 
 const canViewDeclineReason = (interview: any) => {

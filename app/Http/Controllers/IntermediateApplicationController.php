@@ -55,6 +55,7 @@ class IntermediateApplicationController extends Controller
                     'project_name' => $application->projectName,
                     'position' => $application->position,
                     'application_stage' => $application->application_stage,
+                    'job_offer_status' => $application->job_offer_status,
                     'remarks' => $application->remarks,
                 ];
             });
@@ -1792,7 +1793,7 @@ private function countChangedInitialFields(Request $request, $application): int
             throw new \Exception('No job offer schedule set for this application.');
         }
 
-        $hrRecruiters = User::whereIn('permissions', [1, 2, 3])
+        $hrRecruiters = User::whereIn('permissions', [3])
             ->where('active_status', 1)
             ->whereNotNull('email_address')
             ->get();
