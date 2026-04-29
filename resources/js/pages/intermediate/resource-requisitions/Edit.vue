@@ -396,7 +396,7 @@ const selectProject = (project: any) => {
 
 // label for selected project
 const selectedProjectLabel = computed(() => {
-  const project = props.newProjects.find(
+  const project = projects.value.find(
     (p) => p.id === Number(form.value.project_id)
   )
   return project ? project.project_name : ''
@@ -404,17 +404,16 @@ const selectedProjectLabel = computed(() => {
 
 // filtered list
 const filteredProjects = computed(() => {
-  if (!projectSearchQuery.value) return props.newProjects
-  return props.newProjects.filter((p) =>
+  if (!projectSearchQuery.value) return projects.value
+
+  return projects.value.filter((p) =>
     (p?.project_name ?? '')
       .toLowerCase()
       .includes(projectSearchQuery.value.toLowerCase())
   )
 })
 
-// Add this to your onMounted hook
 onMounted(() => {
-  // Initialize project dropdown with current value
   if (form.value.project_id) {
     const project = props.newProjects.find(
       p => p.id === Number(form.value.project_id)
@@ -424,8 +423,99 @@ onMounted(() => {
     }
   }
   
-  // Other existing onMounted code...
 })
+
+
+const projects = ref([...props.newProjects])
+const editProject = ref({
+  project_name: '',
+  project_description: ''
+});
+const modalVisible = ref(false)
+const editingProject = ref<any>(null)
+const openEditProject = (project: any) => {
+  editingProject.value = { ...project }
+  modalVisible.value = true
+}
+
+
+const showToast = ref(false);
+const toastMessage = ref<string | null>(null);
+const toastType = ref<'success' | 'error'>('success');
+
+const successMessage = computed(() => page.props.flash?.success);
+
+const closeToast = () => {
+    showToast.value = false;
+};
+
+watch(
+    successMessage,
+    (val) => {
+        if (val) {
+            toastMessage.value = val;
+            toastType.value = 'success';
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 5000);
+        }
+    },
+    { immediate: true },
+);
+
+
+const updateProject = () => {
+  if (!editingProject.value) return
+
+  if (!validateEditProject()) return
+
+  router.post(`/intermediate/projects/${editingProject.value.id}/update`, {
+    project_name: editingProject.value.project_name,
+    project_description: editingProject.value.project_description,
+  }, {
+    onSuccess: () => {
+      modalVisible.value = false
+      editingProject.value = null
+      refreshDropdownContents()
+    },
+    onFinish: () => {
+      form.value.processing = false
+      loading.value = false
+    },
+    onError: (errors) => {
+      editProjectErrors.value = errors
+      modalVisible.value = true
+    }
+  })
+}
+
+const editProjectErrors = ref<any>({})
+
+const validateEditProject = () => {
+  editProjectErrors.value = {}
+
+  if (!editingProject.value.project_name) {
+    editProjectErrors.value.project_name = "This field is required."
+  }
+
+  if (editingProject.value.project_name?.length > 20) {
+    editProjectErrors.value.project_name = "This field exceeds the maximum allowed length."
+  }
+
+  if (editingProject.value.project_description?.length > 1024) {
+    editProjectErrors.value.project_description = "This field exceeds the maximum allowed length."
+  }
+
+  return Object.keys(editProjectErrors.value).length === 0
+}
+
+const refreshDropdownContents = () => {
+  router.reload({
+  only: ['newProjects'],
+  onSuccess: (page: any) => {
+    projects.value = [...page.props.newProjects]
+  }
+})
+}
 
 </script>
 
@@ -433,6 +523,21 @@ onMounted(() => {
   <Head title="Resource Requisition Register" />
 
   <AppLayout :errors="page.props.errors">
+    <div v-if="showToast" class="full-width-alert">
+            <div
+                :class="[
+                    'alert-banner',
+                    toastType === 'success'
+                        ? 'alert-success-banner'
+                        : 'alert-error-banner',
+                ]"
+            >
+                <div class="alert-body">{{ toastMessage }}</div>
+                <button type="button" class="close-btn" @click="closeToast">
+                    ×
+                </button>
+            </div>
+        </div>
 
   <div class="w-3/4 mx-auto">
 
@@ -443,6 +548,64 @@ onMounted(() => {
     <!-- Form container -->
     <div class="text-xs overflow-x-auto mt-6 p-6 bg-white shadow-lg rounded-lg border">
       <p class="text-red-500 mb-10 mt-4"><b>Note:</b> This Resource Requisition is already approved by SR Manager.</p>
+      
+      <!-- PROJECT MODAL -->
+      <div
+        v-if="modalVisible"
+        class="fixed inset-0 bg-black/20 flex items-center justify-center z-50 text-sm"
+      >
+        <div class="bg-white w-1/3 rounded-lg shadow-lg p-6 relative">
+
+          <span class="absolute top-2 right-3 text-black cursor-pointer text-sm" @click="modalVisible = false; editingProject = null">
+            ✕
+          </span>
+
+          <h2 class="text-lg font-bold mb-4">Edit Project</h2>
+
+          <div class="mb-4">
+            <label class="text-sm font-bold">Project Name <label class="text-red-500">*</label></label>
+            <input
+              v-model="editingProject.project_name"
+              class="modal-input border p-2 rounded w-full"
+              placeholder="Project Name"
+            />
+            <span v-if="editProjectErrors.project_name" class="text-red-500 text-xs">
+              {{ editProjectErrors.project_name }}
+            </span>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-sm">Project Description</label>
+            <textarea
+              v-model="editingProject.project_description"
+              class="modal-textarea border p-2 rounded w-full"
+              placeholder="Project Description (optional)"
+            ></textarea>
+            <span v-if="editProjectErrors.project_description" class="text-red-500 text-xs">
+              {{ editProjectErrors.project_description }}
+            </span>
+            
+          </div>
+
+          <div class="flex justify-end gap-2 mt-6">
+            <button class="btn-secondary" 
+            @click="modalVisible = false; editingProject = null">
+              Cancel
+            </button>
+
+            <button
+              class="btn btn-primary"
+              type="button"
+              :disabled="form.processing"
+              @click="updateProject"
+            > 
+            Update
+            </button>
+          </div>
+
+        </div>
+      </div>
+      
       <!-- Engagement Type, Sourcing Type, Request Type -->
       <div class="grid grid-cols-3 gap-5">
         <!-- Engagement Type -->
@@ -580,9 +743,29 @@ onMounted(() => {
                   </div>
                   <div class="dropdown-options-list requisition-list">
                       <div v-for="project in filteredProjects" :key="project.id"
-                          class="dropdown-option-item" :class="{ 'is-selected': form.project_id === project.id }"
+                          class="dropdown-option-item flex items-center justify-between"
+                          :class="{ 'is-selected': form.project_id === project.id }"
                           @click="selectProject(project)">
-                        <div class="option-main">{{ project.project_name }}</div>
+
+                        <div class="option-main">
+                          {{ project.project_name }}
+                        </div>
+
+                        <!-- Pen icon -->
+                        <svg
+                          class="w-4 h-4 text-red-500 hover:text-red-800 cursor-pointer"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          @click.stop="openEditProject(project)"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11 16l-4 1 1-4 9.586-9.586z"
+                          />
+                        </svg>
                       </div>
                       <div v-if="filteredProjects.length === 0"
                           class="dropdown-empty-item text-gray-500 flex justify-center items-center">
@@ -595,12 +778,6 @@ onMounted(() => {
             {{ page.props.errors.project_id }}
           </span>
         </div>
-
-
-
-
-
-
 
 
         <!-- Business Unit -->

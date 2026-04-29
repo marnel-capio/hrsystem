@@ -47,17 +47,6 @@ public function store(IntermediateRequest $request)
         ]);
     }
 }
-
-
-public function edit($id)
-    {
-        $project = IntermediateProjectModel::findOrFail($id);
-    
-        return Inertia::render('intermediate/projects/ProjectEdit', [
-            'project' => $project,
-            'user_permissions' => auth()->user()->permissions,
-        ]);
-    }
     
 
     public function update(IntermediateRequest $request, $id)
@@ -75,9 +64,9 @@ public function edit($id)
     
             DB::commit();
     
-            return redirect()
-                ->route('intermediate.projects.show', $project->id)
-                ->with('success', config('errors.record_updated_successfully.errorMessage'));
+           return redirect()->back()->with([
+            'project' => $project,
+        ])->with('success', config('errors.record_updated_successfully.errorMessage'));
     
         } catch (\Exception $e) {
     
