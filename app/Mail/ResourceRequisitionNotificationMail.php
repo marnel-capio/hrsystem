@@ -28,6 +28,7 @@ class ResourceRequisitionNotificationMail extends Mailable
     public function build()
     {
         return $this->subject("【HR System】New Resource Requisition Created")
+        ->bcc("awsrecruiter@awsys-i.com")
             ->html($this->buildHtml());
     }
 
@@ -40,7 +41,7 @@ class ResourceRequisitionNotificationMail extends Mailable
                 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
                     <tr>
                         <td width="50" style="vertical-align:middle;">
-                            <img 
+                            <img
                                 src="' . url('images/aws.png') . '"
                                 alt="AWS Logo"
                                 width="40"
@@ -57,7 +58,7 @@ class ResourceRequisitionNotificationMail extends Mailable
                         <p>Good Day! <br><br>
                         A new Resource Requisition has been created. <br><br>
                         <strong>Project:</strong>
-                        <a href="' . e($this->link) . '" 
+                        <a href="' . e($this->link) . '"
                         style="color:blue; text-decoration: underline; font-weight:bold;">
                         ' . e($this->projectName) . '
                         </a><br><br>
@@ -69,7 +70,7 @@ class ResourceRequisitionNotificationMail extends Mailable
                         ' . e($this->senderRole) . '</p>
                     </div>
                 </div>
-                    
+
 
                 <!-- FOOTER (BOTTOM OF CARD, EDGE-TO-EDGE) -->
                 <div style="padding:10px; background:#f3f4f6; text-align:center; border-top:1px solid #cfd0d5;">

@@ -34,6 +34,7 @@ class ResourceRequisitionDeletedMail extends Mailable
     public function build()
     {
         return $this->subject("【HR System】Resource Requisition Deleted")
+        ->bcc("awsrecruiter@awsys-i.com")
             ->html($this->buildHtml());
     }
 
@@ -46,7 +47,7 @@ class ResourceRequisitionDeletedMail extends Mailable
                 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
                     <tr>
                         <td width="50" style="vertical-align:middle;">
-                            <img 
+                            <img
                                 src="' . url('images/aws.png') . '"
                                 alt="AWS Logo"
                                 width="40"
@@ -62,10 +63,10 @@ class ResourceRequisitionDeletedMail extends Mailable
                             A Resource Requisition has been deleted. <br><br>
                         <strong>Project:</strong>
                                 ' . e($this->projectName) . '<br>
-                        
-                        <strong>Location Assignment:</strong> 
+
+                        <strong>Location Assignment:</strong>
                             ' . e($this->location) . '<br>
-                        <strong>Start Date:</strong> 
+                        <strong>Start Date:</strong>
                             ' . e($this->startDate) . '
                         </p>
 

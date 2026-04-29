@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\IsoWeekFormat;
 use Carbon\Carbon;
 
 class ResourceScheduleRequest extends FormRequest
@@ -35,10 +34,10 @@ class ResourceScheduleRequest extends FormRequest
         ];
 
         foreach ($wbsFields as $field) {
-            $rules["{$field}_startdate"] = ['nullable', new IsoWeekFormat()];
+            $rules["{$field}_startdate"] = ['nullable',];
 
             if ($field !== 'training') {
-                $rules["{$field}_enddate"] = ['nullable', new IsoWeekFormat()];
+                $rules["{$field}_enddate"] = ['nullable',];
             }
         }
 

@@ -35,6 +35,7 @@ class ATS0004Mail extends Mailable
     public function build()
     {
         return $this->subject('【HR System】Applicant Schedule Pending Approval')
+        ->bcc("awsrecruiter@awsys-i.com")
                     ->view('emails.ATS-0004')
                     ->with([
                         'application' => $this->application,

@@ -27,6 +27,7 @@ public $senderRole;
     public function build()
     {
         return $this->subject('【HR System】Scheduled Job Offer')
+        ->bcc("awsrecruiter@awsys-i.com")
             ->view('emails.ATS-0007')
             ->with([
                 'application' => $this->application,
