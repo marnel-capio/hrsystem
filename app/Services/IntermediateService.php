@@ -46,7 +46,6 @@ class IntermediateService
 
         $project->project_name = $data['project_name'];
         $project->project_description = $data['project_description']?? null;
-        $project->remarks = $data['remarks'] ?? null;
         $project->updated_by = auth()->user()->id;
         $project->updated_time = now();
 

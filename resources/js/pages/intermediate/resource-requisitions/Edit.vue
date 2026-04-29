@@ -377,6 +377,56 @@ onMounted(() => {
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 2); 
 const tomorrowISOString = tomorrow.toISOString().slice(0, 10); 
+
+
+// Add these near the top of your script section
+const isProjectDropdownOpen = ref(false)
+const projectSearchQuery = ref('')
+
+const toggleProjectDropdown = () => {
+  isProjectDropdownOpen.value = !isProjectDropdownOpen.value
+}
+
+const selectProject = (project: any) => {
+  form.value.project_id = project.id;
+  form.value.project_description = project.project_description;
+  isProjectDropdownOpen.value = false; 
+  projectSearchQuery.value = '';       
+};
+
+// label for selected project
+const selectedProjectLabel = computed(() => {
+  const project = props.newProjects.find(
+    (p) => p.id === Number(form.value.project_id)
+  )
+  return project ? project.project_name : ''
+})
+
+// filtered list
+const filteredProjects = computed(() => {
+  if (!projectSearchQuery.value) return props.newProjects
+  return props.newProjects.filter((p) =>
+    (p?.project_name ?? '')
+      .toLowerCase()
+      .includes(projectSearchQuery.value.toLowerCase())
+  )
+})
+
+// Add this to your onMounted hook
+onMounted(() => {
+  // Initialize project dropdown with current value
+  if (form.value.project_id) {
+    const project = props.newProjects.find(
+      p => p.id === Number(form.value.project_id)
+    )
+    if (project) {
+      form.value.project_description = project.project_description
+    }
+  }
+  
+  // Other existing onMounted code...
+})
+
 </script>
 
 <template>
@@ -507,15 +557,51 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <!-- Project, Business Unit -->
       <div class="grid grid-cols-2 gap-5 mt-5">
         <!-- Project (Dropdown) -->
-        <div class="flex flex-col">
-          <label class="text-sm font-semibold mb-1 text-bold">Project <label class="text-red-500">*</label></label>
-          <input
-            v-model="requisition.project_name"
-            type="text"
-            class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed" disabled
-            placeholder="Enter Project Name"
-          />
+        <div class="form-field">
+          <label class="text-sm font-bold mb-1">Project<label class="text-red-500">*</label></label>
+          <div class="custom-select-wrapper"
+              :class="{ 'is-open': isProjectDropdownOpen }">
+              <div class="border p-2 rounded w-full flex items-center justify-between cursor-pointer bg-white"
+                  @click="toggleProjectDropdown" tabindex="0">
+                  <span class="custom-select-value text-sm">
+                      {{ selectedProjectLabel || 'Select Project' }}
+                  </span>
+                  <svg class="custom-select-arrow" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 9l-7 7-7-7"></path>
+                  </svg>
+              </div>
+              <div class="custom-select-dropdown border border-1-black border p-2 rounded-sm " v-show="isProjectDropdownOpen">
+                  <div class="dropdown-search">
+                      <input type="text" v-model="projectSearchQuery"
+                          placeholder="Search/Input project..."
+                          class="text-sm border border-1-black border p-2 rounded-sm w-full" @click.stop />
+                  </div>
+                  <div class="dropdown-options-list requisition-list">
+                      <div v-for="project in filteredProjects" :key="project.id"
+                          class="dropdown-option-item" :class="{ 'is-selected': form.project_id === project.id }"
+                          @click="selectProject(project)">
+                        <div class="option-main">{{ project.project_name }}</div>
+                      </div>
+                      <div v-if="filteredProjects.length === 0"
+                          class="dropdown-empty-item text-gray-500 flex justify-center items-center">
+                          No project found
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <span v-if="page.props.errors?.project_id" class="text-red-600 text-xs mt-1">
+            {{ page.props.errors.project_id }}
+          </span>
         </div>
+
+
+
+
+
+
+
 
         <!-- Business Unit -->
         <div class="flex flex-col">
@@ -532,7 +618,7 @@ const tomorrowISOString = tomorrow.toISOString().slice(0, 10);
       <div class="flex flex-col mt-5">
         <label class="text-sm mb-1">Project Description</label>
         <textarea
-          v-model="requisition.project_description"
+          v-model="form.project_description"
           placeholder="Project description will auto-fill based on Project selection"
           class="border p-2 rounded w-full bg-gray-200 cursor-not-allowed"
           readonly
@@ -782,5 +868,63 @@ button[type="submit"]:disabled {
 
 .btn-secondary:hover {
   background: #e5e7eb;
+}
+
+/* Add these styles to your style section */
+.custom-select-wrapper {
+  position: relative;
+}
+
+.custom-select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-select-arrow {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s;
+}
+
+.is-open .custom-select-arrow {
+  transform: rotate(180deg);
+}
+
+.custom-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: white;
+  margin-top: 0.25rem;
+}
+
+.dropdown-search {
+  padding: 0.25rem;
+}
+
+.dropdown-options-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-option-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.dropdown-option-item:hover {
+  background-color: #f3f4f6;
+}
+
+.is-selected {
+  background-color: #e5e7eb;
+}
+
+.dropdown-empty-item {
+  padding: 0.5rem 1rem;
+  font-style: italic;
 }
 </style>
