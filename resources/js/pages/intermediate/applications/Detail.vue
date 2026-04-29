@@ -1524,7 +1524,14 @@ const getLocationLabel = (location: number | null) => {
                                 <div
                                     class="flex items-center justify-between rounded-lg bg-zinc-100 px-4 py-2 dark:bg-zinc-800">
                                     <span class="font-semibold">Project Name:</span>
-                                    <span class="font-extrabold text-blue-600">{{ application.project_name }}</span>
+                                    <Link 
+                                        v-if="application.resource_schedule_id"
+                                        :href="`/intermediate/resource-requisitions/${application.resource_schedule_id}`"
+                                        class="font-extrabold text-blue-600 hover:text-blue-800 hover:underline transition"
+                                    >
+                                        {{ application.project_name }}
+                                    </Link>
+                                    <span v-else class="font-extrabold text-blue-600">{{ application.project_name }}</span>
                                 </div>
                                 <div class="flex items-center justify-between rounded-lg bg-zinc-100 px-4 py-2 dark:bg-zinc-800">
                                     <span class="font-semibold">Project Site/Location:</span>

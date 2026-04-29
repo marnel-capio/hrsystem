@@ -413,6 +413,7 @@ class IntermediateApplicationController extends Controller
                 'upload_resume' => $application->upload_resume,
                 'application_stage' => $application->application_stage,
                 'project_name' => $projectName,
+                'resource_schedule_id' => $application->resource_schedule_id,
                 'paper_screening_status' => $application->paper_screening_status,
                 'location_assignment' => $application->resourceSchedule->location_assignment ?? null,
                 // Screening Questions
