@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1647
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1637
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
 export const sendNotification = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ sendNotification.definition = {
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1647
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1637
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
 sendNotification.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ sendNotification.url = (args: { application: string | number } | [application: s
 
 /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1647
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1637
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
 sendNotification.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -54,7 +54,7 @@ sendNotification.post = (args: { application: string | number } | [application: 
 
     /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1647
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1637
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
     const sendNotificationForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -64,7 +64,7 @@ sendNotification.post = (args: { application: string | number } | [application: 
 
             /**
 * @see \App\Http\Controllers\IntermediateApplicationController::sendNotification
- * @see app/Http/Controllers/IntermediateApplicationController.php:1647
+ * @see app/Http/Controllers/IntermediateApplicationController.php:1637
  * @route '/action/applications/intermediate/applications/{application}/send-notification'
  */
         sendNotificationForm.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -631,36 +631,23 @@ function getApplicationStatusBadgeClass(status: number | null | undefined) {
 }
 
 const getOverallStatus = () => {
+    // Check job offer terminal statuses first
     const jobStatus = Number(application.value?.job_offer_status);
-    const finalStatus = Number(application.value?.final_interview_application_status);
-    const initialStatus = Number(application.value?.initial_interview_application_status);
-    const examStatus = Number(application.value?.exam_application_status);
-    const paperScreeningStatus = Number(application.value?.paper_screening_status);
-
-    // Terminal job offer outcomes
+    
     if (jobStatus === 3) return 'Offer Accepted';
     if (jobStatus === 4) return 'Offer Declined';
     if (jobStatus === 5) return 'Offer Withdrawn';
     if (jobStatus === 6) return 'Offer Retracted';
-
-    // Failures
-    if (finalStatus === 5) return 'Failed Final Interview';
-    if (initialStatus === 5) return 'Failed Initial Interview';
-    if (examStatus === 5) return 'Failed Exam';
-    if (paperScreeningStatus === 5) return 'Failed Paper Screening';
-
-    // Next stage labels
-    if (finalStatus === 3 || finalStatus === 4) return 'For Job Offer';
-    if (initialStatus === 3 || initialStatus === 4) return 'For Final Interview';
-    if (examStatus === 3 || examStatus === 4) return 'For Initial Interview';
-
-    // Active stages
-    if (finalStatus === 1 || finalStatus === 2) return 'For Final Interview';
-    if (initialStatus === 1 || initialStatus === 2) return 'For Initial Interview';
-    if (examStatus === 1 || examStatus === 2) return 'For Exam';
-    if (paperScreeningStatus === 1 || paperScreeningStatus === 2) return 'New';
-
-    return 'New';
+    
+    // Map the application_stage number to a label
+    const stageLabels: Record<number, string> = {
+        1: 'New',
+        2: 'For Exam',
+        3: 'For Initial Interview',
+        4: 'For Final Interview',
+        5: 'For Job Offer',
+    };
+    return stageLabels[Number(application.value?.application_stage)] || 'New';
 };
 
 const getOverallStatusColor = () => {

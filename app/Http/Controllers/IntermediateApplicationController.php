@@ -1175,8 +1175,6 @@ private function hasExamFieldsChanged(Request $request, $application): bool
         'exam_atpp_part3_wrong',
         'exam_atpp_result',
         'exam_tech_result',
-        'exam_result',
-        'exam_application_status',
         'exam_remarks',
     ];
 
@@ -1203,8 +1201,6 @@ private function hasInitialInterviewFieldsChanged(Request $request, $application
         'initial_interview_actual_date',
         'initial_interview_venue',
         'initial_interview_final',
-        'initial_interview_result',
-        'initial_interview_application_status',
         'initial_interview_remarks',
     ];
 
@@ -1229,8 +1225,6 @@ private function hasFinalInterviewFieldsChanged(Request $request, $application):
     $fields = [
         'final_interview_date',
         'final_interview_final',
-        'final_interview_result',
-        'final_interview_application_status',
         'final_interview_remarks',
     ];
 
@@ -1260,8 +1254,6 @@ private function countChangedExamFields(Request $request, $application): int
         'exam_atpp_part3_wrong',
         'exam_atpp_result',
         'exam_tech_result',
-        'exam_result',
-        'exam_application_status',
         'exam_remarks',
     ];
 
@@ -1285,8 +1277,6 @@ private function countChangedInitialFields(Request $request, $application): int
         'initial_interview_actual_date',
         'initial_interview_venue',
         'initial_interview_final',
-        'initial_interview_result',
-        'initial_interview_application_status',
         'initial_interview_remarks',
     ];
 
